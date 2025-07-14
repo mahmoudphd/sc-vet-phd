@@ -1,0 +1,20 @@
+{
+    "batchCostAccounting": "محاسبة تكاليف الدُفعات",
+    "newCostRun": "تشغيل تكلفة جديد",
+    "compareStandards": "مقارنة المعايير",
+    "avgCostUnit": "متوسط التكلفة/وحدة",
+    "yieldVariance": "تباين العائد",
+    "materialWaste": "هدر المواد",
+    "batchEfficiency": "كفاءة الدفعة",
+    "batchID": "معرف الدفعة",
+    "materialCost": "تكلفة المواد",
+    "conversionCost": "تكلفة التحويل",
+    "totalCost": "التكلفة الإجمالية",
+    "costPerUnit": "التكلفة لكل وحدة",
+    "variance": "التباين",
+    "costBreakdown": "تفصيل التكاليف",
+    "varianceAnalysis": "تحليل التباين",
+    "material": "المواد",
+    "labor": "العمالة",
+    "overhead": "النفقات العامة"
+  }

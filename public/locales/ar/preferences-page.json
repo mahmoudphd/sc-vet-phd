@@ -1,0 +1,16 @@
+{
+    "blockchain-preferences": "تفضيلات البلوكشين",
+    "network-configuration": "تهيئة الشبكة",
+    "ethereum-mainnet": "شبكة إيثريوم الرئيسية",
+    "goerli-testnet": "شبكة جورلي التجريبية",
+    "custom-rpc-endpoint": "نقطة نهاية RPC مخصصة",
+    "transaction-preferences": "تفضيلات المعاملات",
+    "auto-sign-transactions": "التوقيع التلقائي للمعاملات الروتينية",
+    "gas-price-suggestions": "تمكين اقتراحات أسعار الغاز",
+    "smart-contract-notifications": "إشعارات العقود الذكية",
+    "inventory-updates": "تحديثات المخزون",
+    "quality-events": "أحداث الجودة",
+    "batch-finalization": "إنهاء الدفعة",
+    "reset-defaults": "إعادة التعيين الافتراضي",
+    "save-preferences": "حفظ التفضيلات"
+  }

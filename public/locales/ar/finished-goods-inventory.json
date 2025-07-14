@@ -1,0 +1,23 @@
+{
+    "finished-goods-inventory": "مخزون البضائع التامة الصنع",
+    "new-receipt": "إيصال جديد",
+    "export-csv": "تصدير CSV",
+    "total-skus": "إجمالي الوحدات",
+    "quarantined": "تحت الحجر",
+    "inventory-trend": "اتجاه المخزون",
+    "search-products": "بحث في المنتجات...",
+    "all-products": "جميع المنتجات",
+    "oral-preparations": "المستحضرات الفموية",
+    "parenterals": "المستحضرات الحقنية",
+    "all-statuses": "جميع الحالات",
+    "released": "مفرج عنه",
+    "quarantined-status": "محجوز",
+    "product": "المنتج",
+    "batch": "الدفعة",
+    "quantity": "الكمية",
+    "location": "الموقع",
+    "status": "الحالة",
+    "expiry": "تاريخ الانتهاء",
+    "storage": "التخزين",
+    "vials-unit": "قارورة"
+  }

@@ -1,0 +1,33 @@
+{
+    "batch-release-authorization": "Batch Release Authorization",
+    "search-batches-placeholder": "Search batches...",
+    "filter-all-products": "All Products",
+    "filter-pending-release": "Pending Release",
+    "pending-releases": "Pending Releases",
+    "batches-count": "Batches",
+    "oos-results": "Out of Specification Results",
+    "batch-count": "1 Batch",
+    "table-headers": {
+      "batch-id": "Batch ID",
+      "qc-status": "QC Status",
+      "documentation": "Documentation",
+      "approver": "Approver",
+      "release-date": "Release Date",
+      "actions": "Actions"
+    },
+    "status-passed": "Passed",
+    "status-failed": "Failed",
+    "documents-complete": "Complete",
+    "approve-button": "Approve",
+    "reject-button": "Reject",
+    "audit-trail-button": "Audit Trail",
+    "export-certificates-button": "Export Release Certificates",
+    "direction": "ltr",
+    "approve-confirmation-title": "Confirm Approval",
+    "approve-confirmation-message": "Are you sure you want to approve batch {{batchId}}?",
+    "reject-confirmation-title": "Confirm Rejection",
+    "reject-confirmation-message": "Are you sure you want to reject batch {{batchId}}?",
+    "rejection-reason-placeholder": "Enter rejection reason...",
+    "cancel-button": "Cancel",
+    "confirm-button": "Confirm"
+  }

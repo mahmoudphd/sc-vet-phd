@@ -1,0 +1,25 @@
+{
+    "sustainability-dashboard": "لوحة معلومات الاستدامة",
+    "esg-report": "تقرير ESG",
+    "total-emissions": "إجمالي الانبعاثات",
+    "re100-progress": "تقدم RE100",
+    "carbon-intensity": "كثافة الكربون",
+    "scope-1-2-3": "النطاق 1+2+3",
+    "emission-breakdown": "تفصيل الانبعاثات",
+    "reduction-initiatives": "مبادرات التخفيض",
+    "category": "الفئة",
+    "emissions": "الانبعاثات",
+    "target": "الهدف",
+    "progress": "التقدم",
+    "certification": "الشهادة",
+    "yoy-decrease": "↓ 12٪ سنويا",
+    "aligned-with": "متوافق مع SBTi • تصنيف CDP: A-",
+    "emission-category": {
+      "manufacturing": "التصنيع",
+      "transport": "النقل",
+      "packaging": "التعبئة",
+      "energy": "الطاقة"
+    },
+    "target-format": "2025: {{value}}٪",
+    "iso-certification": "ISO 14001"
+  }

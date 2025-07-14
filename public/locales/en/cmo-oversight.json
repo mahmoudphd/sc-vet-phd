@@ -1,0 +1,17 @@
+{
+    "contract-manufacturing-oversight": "Contract Manufacturing Oversight",
+    "capacity-planner": "Capacity Planner",
+    "quality-dashboard": "Quality Dashboard",
+    "approved-cmos": "Approved CMOs",
+    "avg-audit-score": "Avg. Audit Score",
+    "active-batches": "Active Batches",
+    "yield-variance": "Yield Variance",
+    "production-schedule": "Production Schedule",
+    "compliance-matrix": "Compliance Matrix",
+    "cmo": "CMO",
+    "capabilities": "Capabilities",
+    "compliance": "Compliance",
+    "capacity": "Capacity",
+    "audit-score": "Audit Score",
+    "certified-label": "{{standard}} Certified"
+}

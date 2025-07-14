@@ -1,0 +1,12 @@
+{
+    "blockchain-security": "أمان بلوكتشين",
+    "private-key-management": "إدارة المفتاح الخاص",
+    "backup-required": "النسخ الاحتياطي مطلوب",
+    "export-encrypted-key": "تصدير المفتاح المشفر",
+    "2fa-status": "حالة المصادقة الثنائية",
+    "authenticator-app": "تطبيق المصادقة",
+    "active": "نشط",
+    "active-sessions": "الجلسات النشطة",
+    "smart-contract-permissions": "أذوات العقد الذكي",
+    "read-write": "قراءة/كتابة"
+  }

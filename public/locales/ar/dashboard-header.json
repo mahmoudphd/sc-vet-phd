@@ -1,0 +1,9 @@
+{
+    "by-author": "بواسطة <strong>{{author}}</strong>",
+    "version": "الإصدار 0.0.1",
+    "mainnet-live": "الشبكة الرئيسية تعمل",
+    "profile": "الملف الشخصي",
+    "security": "الأمان",
+    "preferences": "التفضيلات",
+    "logout": "تسجيل الخروج"
+  }

@@ -1,0 +1,16 @@
+{
+    "blockchain-preferences": "Blockchain Preferences",
+    "network-configuration": "Network Configuration",
+    "ethereum-mainnet": "Ethereum Mainnet",
+    "goerli-testnet": "Goerli Testnet",
+    "custom-rpc-endpoint": "Custom RPC Endpoint",
+    "transaction-preferences": "Transaction Preferences",
+    "auto-sign-transactions": "Auto-sign routine transactions",
+    "gas-price-suggestions": "Enable gas price suggestions",
+    "smart-contract-notifications": "Smart Contract Notifications",
+    "inventory-updates": "Inventory Updates",
+    "quality-events": "Quality Events",
+    "batch-finalization": "Batch Finalization",
+    "reset-defaults": "Reset Defaults",
+    "save-preferences": "Save Preferences"
+}

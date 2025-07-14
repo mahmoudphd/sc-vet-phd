@@ -1,0 +1,63 @@
+{
+    "new-configuration-modal": {
+      "title": "تكوين منتج جديد",
+      "product-name-placeholder": "اسم المنتج",
+      "product-description-placeholder": "وصف المنتج",
+      "compliance-standards": {
+        "ich-q11": "معيار ICH Q11",
+        "ich-q8": "معيار ICH Q8",
+        "fda": "إرشادات FDA"
+      },
+      "product-components": "مكونات التركيبة",
+      "component-name-placeholder": "اسم المكون",
+      "percentage-placeholder": "النسبة المئوية",
+      "add-component": "إضافة مكون",
+      "cancel": "إلغاء",
+      "save-draft": "حفظ المسودة"
+    },
+    "view-spec-modal": {
+      "title": "مواصفات المنتج",
+      "product-id": "معرف المنتج",
+      "compliance-standard": "معيار الامتثال",
+      "description": "الوصف",
+      "formula-composition": "تكوين التركيبة",
+      "component": "المكون",
+      "percentage": "النسبة المئوية",
+      "specification": "المواصفات",
+      "usp-standard": "معيار USP",
+      "verification-text": "أؤكد أن هذه التركيبة تفي بمتطلبات الجودة"
+    },
+    "version-history-modal": {
+      "title": "سجل الإصدارات",
+      "current": "الحالي",
+      "archived": "مؤرشف",
+      "modified": "معدل"
+    },
+    "main-section": {
+      "title": "إدارة تركيبات المنتجات",
+      "new-configuration": "تكوين جديد",
+      "version-history": "سجل الإصدارات",
+      "active-configuration": "التركيبات النشطة",
+      "components-per-product": "مكونات/منتج",
+      "approval-rate": "معدل الموافقة",
+      "first-pass": "المرور الأول",
+      "component-distribution": "توزيع المكونات",
+      "formulation-timeline": "الجدول الزمني للتركيبة",
+      "table-headers": {
+        "product-id": "معرف المنتج",
+        "formulation": "التركيبة",
+        "components": "المكونات",
+        "version": "الإصدار",
+        "compliance": "الامتثال",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "status": {
+        "draft": "مسودة"
+      },
+      "actions": {
+        "view-spec": "عرض المواصفات",
+        "history": "السجل"
+      }
+    }
+}

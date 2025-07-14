@@ -1,0 +1,20 @@
+{
+    "title": "ALCOA+ Audit Trail System",
+    "exportCSV": "Export CSV",
+    "advancedFilters": "Advanced Filters",
+    "totalRecords": "Total Records",
+    "last7Days": "Last 7 Days",
+    "dataIntegrity": "Data Integrity Score",
+    "activityTimeline": "Activity Timeline",
+    "activityFrequency": "Activity Frequency",
+    "tableHeaders": {
+      "timestamp": "Timestamp",
+      "user": "User",
+      "action": "Action",
+      "entity": "Entity",
+      "signature": "Signature",
+      "details": "Details"
+    },
+    "viewContext": "View Context",
+    "footerText": "ALCOA+ Compliant Audit Trail • 21 CFR Part 11 Validated"
+  }

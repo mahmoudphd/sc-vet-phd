@@ -1,0 +1,17 @@
+{
+    "next-gen-supply-chain-management": "Next-Gen Supply Chain Management",
+    "secure-decentralized-logistics": "Secure, decentralized logistics tracking powered by blockchain technology",
+    "welcome-back": "Welcome Back",
+    "secure-dashboard-access": "Securely access your supply chain dashboard",
+    "continue-with-metamask": "Continue with MetaMask",
+    "wallet-connected-successfully": "Wallet Connected Successfully",
+    "enter-dashboard": "Enter Dashboard",
+    "connect-different-wallet": "Connect different wallet",
+    "need-help-connecting": "Need help connecting?",
+    "contact-support": "Contact Support",
+    "authentication-successful": "Authentication Successful",
+    "authentication-successful-description": "Your wallet has been securely connected. Redirecting to dashboard...",
+    "secure-blockchain-connection": "Secure Blockchain Connection",
+    "metaMask-not-installed-error": "MetaMask is not installed",
+    "signature-authentication-error": "Failed to authenticate signature"
+  }

@@ -1,0 +1,26 @@
+{
+    "batch-release-authorization": "تفويض إصدار الدفعات",
+    "search-batches-placeholder": "ابحث في الدفعات...",
+    "filter-all-products": "جميع المنتجات",
+    "filter-pending-release": "في انتظار الإصدار",
+    "pending-releases": "الإصدارات المعلقة",
+    "batches-count": "{count} دفعات",
+    "oos-results": "نتائج غير مطابقة",
+    "batch-count": "دفعة واحدة",
+    "table-headers": {
+      "batch-id": "معرف الدفعة",
+      "qc-status": "حالة الجودة",
+      "documentation": "المستندات",
+      "approver": "المعتمد",
+      "release-date": "تاريخ الإصدار",
+      "actions": "الإجراءات"
+    },
+    "status-passed": "مطابق",
+    "status-failed": "غير مطابق",
+    "documents-complete": "مكتمل",
+    "approve-button": "اعتماد",
+    "reject-button": "رفض",
+    "audit-trail-button": "سجل التدقيق",
+    "export-certificates-button": "تصدير شهادات الإصدار",
+    "direction": "rtl"
+}

@@ -1,0 +1,24 @@
+{
+    "page-title": "الإجراءات التصحيحية والوقائية",
+    "initiate-capa": "+ بدء إجراء تصحيحي",
+    "overdue-actions": "الإجراءات المتأخرة",
+    "effectiveness-rate": "معدل الفعالية",
+    "table-headers": {
+      "capa-id": "معرف الإجراء",
+      "action": "الإجراء",
+      "due-date": "تاريخ الاستحقاق",
+      "status": "الحالة",
+      "effectiveness": "الفعالية",
+      "linked-deviation": "الانحراف المرتبط"
+    },
+    "statuses": {
+      "completed": "مكتمل",
+      "in-progress": "قيد التنفيذ",
+      "overdue": "متأخر"
+    },
+    "effectiveness-statuses": {
+      "effective": "فعال",
+      "pending": "قيد الانتظار",
+      "ineffective": "غير فعال"
+    }
+}

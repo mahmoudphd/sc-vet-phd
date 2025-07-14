@@ -1,0 +1,17 @@
+{
+    "equipment-maintenance-register": "Equipment Maintenance Register",
+    "new-work-order": "New Work Order",
+    "calibration-schedule": "Calibration Schedule",
+    "critical-equipment": "Critical Equipment",
+    "overdue-maintenance": "Overdue Maintenance",
+    "calibration-compliance": "Calibration Compliance",
+    "equipment-id": "Equipment ID",
+    "name": "Name",
+    "criticality": "Criticality",
+    "last-service": "Last Service",
+    "status": "Status",
+    "next-due": "Next Due",
+    "critical": "Critical",
+    "operational": "Operational",
+    "30-days": "30 Days"
+  }

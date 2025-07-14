@@ -1,0 +1,14 @@
+{
+    "equipment-maintenance-program": "Equipment Maintenance Program",
+    "new-work-order": "+ New Work Order",
+    "pending-actions": "Pending Actions",
+    "overdue-tasks": "Overdue Tasks",
+    "require-immediate-action": "Require Immediate Action",
+    "equipment": "Equipment",
+    "last-service": "Last Service",
+    "next-due": "Next Due",
+    "status": "Status",
+    "criticality": "Criticality",
+    "maintenance-calendar": "Maintenance Calendar",
+    "maintenance-schedule-calendar": "Maintenance Schedule Calendar"
+}

@@ -1,0 +1,22 @@
+{
+    "gmp-title": "نظام تأهيل العاملين بممارسات التصنيع الجيدة",
+    "new-training-plan-button": "خطة تدريب جديدة",
+    "export-compliance-report-button": "تصدير تقرير الامتثال",
+    "total-qualified-label": "إجمالي المؤهلين",
+    "training-due-label": "تدريب مستحق",
+    "certifications-expiring-label": "شهادات منتهية الصلاحية",
+    "qualification-status-heading": "حالة التأهيل",
+    "training-timeline-heading": "الجدول الزمني للتدريب",
+    "employee-column": "الموظف",
+    "role-column": "الدور",
+    "certifications-column": "الشهادات",
+    "training-progress-column": "تقدم التدريب",
+    "expiry-date-column": "تاريخ الانتهاء",
+    "status-column": "الحالة",
+    "active-label": "نشط",
+    "compliance-percentage": "98% امتثال",
+    "quality-auditor-role": "مراجع الجودة",
+    "qualified-status": "مؤهل",
+    "pending-status": "قيد الانتظار",
+    "expired-status": "منتهي الصلاحية"
+  }

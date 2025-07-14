@@ -1,0 +1,34 @@
+{
+    "dashboard-heading": "لوحة تحكم تأهيل المواد",
+    "new-qualification-button": "تأهيل جديد",
+    "supplier-audit-button": "مراجعة الموردين",
+    "qualification-progress": "تقدم التأهيل",
+    "pending-label": "قيد الانتظار: 3",
+    "approved-label": "تم الموافقة: 12",
+    "compliance-score": "درجة الامتثال",
+    "alcoa-compliant": "مطابق لمعايير ALCOA+",
+    "expiring-soon": "تنتهي قريبًا",
+    "materials": "المواد",
+    "material-header": "المادة",
+    "supplier-header": "المورد",
+    "status-header": "الحالة",
+    "test-results-header": "نتائج الاختبار",
+    "certificate-header": "الشهادة",
+    "expiry-header": "تاريخ الانتهاء",
+    "actions-header": "الإجراءات",
+    "status": {
+      "approved": "تمت الموافقة"
+    },
+    "certificate": {
+      "coa-available": "شهادة تحليل متاحة"
+    },
+    "view-coa-button": "عرض شهادة التحليل",
+    "retest-button": "إعادة الاختبار",
+    "test-parameters-heading": "معايير الاختبار",
+    "test-parameters": {
+      "identity": "الهوية",
+      "purity": "النقاء",
+      "microbial": "ميكروبي",
+      "endotoxins": "الاندوتوكسينات"
+    }
+}

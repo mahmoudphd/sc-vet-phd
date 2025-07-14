@@ -1,0 +1,65 @@
+{
+    "new-configuration-modal": {
+      "title": "New Product Configuration",
+      "product-name-placeholder": "Product Name",
+      "product-description-placeholder": "Product Description",
+      "compliance-standards": {
+        "ich-q11": "ICH Q11",
+        "ich-q8": "ICH Q8",
+        "fda": "FDA Guidance"
+      },
+      "product-components": "Product Components",
+      "component-name-placeholder": "Component Name",
+      "percentage-placeholder": "%",
+      "add-component": "Add Component",
+      "cancel": "Cancel",
+      "save-draft": "Save Draft"
+    },
+    "view-spec-modal": {
+      "title": "Product Specification",
+      "product-id": "Product ID",
+      "compliance-standard": "Compliance Standard",
+      "description": "Description",
+      "formula-composition": "Formula Composition",
+      "component": "Component",
+      "percentage": "Percentage",
+      "specification": "Specification",
+      "usp-standard": "USP Standard",
+      "verification-text": "I verify this formula meets quality requirements"
+    },
+    "version-history-modal": {
+      "title": "Version History",
+      "current": "Current",
+      "archived": "Archived",
+      "modified": "Modified"
+    },
+    "main-section": {
+      "title": "Product Structure Management",
+      "new-configuration": "New Configuration",
+      "version-history": "Version History",
+      "active-configuration": "Active Configuration",
+      "components-per-product": "Components/Product",
+      "approval-rate": "Approval Rate",
+      "first-pass": "First Pass",
+      "component-distribution": "Component Distribution",
+      "formulation-timeline": "Formulation Timeline",
+      "table-headers": {
+        "product-id": "Product ID",
+        "formulation": "Formulation",
+        "components": "Components",
+        "version": "Version",
+        "compliance": "Compliance",
+        "status": "Status",
+        "actions": "Actions",
+        "product":  "Product",
+        "name": "Name"
+      },
+      "status": {
+        "draft": "Draft"
+      },
+      "actions": {
+        "view-spec": "View Spec",
+        "history": "History"
+      }
+    }
+  }

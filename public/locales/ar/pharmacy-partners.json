@@ -1,0 +1,20 @@
+{
+    "pharmacy-network-management": "إدارة شبكة الصيدليات",
+    "stock-monitor": "مراقبة المخزون",
+    "recall-portal": "بواسة السحب",
+    "network-size": "حجم الشبكة",
+    "avg-stock-turn": "متوسط دوران المخزون",
+    "days": "أيام",
+    "recall-compliance": "الالتزام بالسحب",
+    "patient-ratings": "تقييمات المرضى",
+    "sales-heatmap": "خريطة حرارية للمبيعات",
+    "pharmacy": "الصيدلية",
+    "location": "الموقع",
+    "license": "الترخيص",
+    "last-delivery": "آخر توصيل",
+    "stock-level": "مستوى المخزون",
+    "active": "نشط",
+    "optimal": "مثالي",
+    "low": "منخفض",
+    "critical": "حرج"
+}

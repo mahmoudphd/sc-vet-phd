@@ -1,0 +1,17 @@
+{
+    "equipment-maintenance-register": "سجل صيانة المعدات",
+    "new-work-order": "أمر عمل جديد",
+    "calibration-schedule": "جدول المعايرة",
+    "critical-equipment": "المعدات الحرجة",
+    "overdue-maintenance": "الصيانة المتأخرة",
+    "calibration-compliance": "الامتثال للمعايرة",
+    "equipment-id": "معرف المعدة",
+    "name": "الاسم",
+    "criticality": "الحرجة",
+    "last-service": "آخر خدمة",
+    "status": "الحالة",
+    "next-due": "الاستحقاق القادم",
+    "critical": "حرج",
+    "operational": "تشغيل",
+    "30-days": "30 يوم"
+}

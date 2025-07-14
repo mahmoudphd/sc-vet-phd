@@ -1,0 +1,28 @@
+{
+    "pharmaceutical-cost-intelligence": "Pharmaceutical Cost Intelligence",
+    "export-report": "Export Report",
+    "cogs": "Benchmark Price",
+    "material-variance": "Material Variance",
+    "yield-efficiency": "Yield Efficiency",
+    "waste-cost": "target Cost",
+    "cost-composition": "Cost Composition",
+    "cost-trend-analysis": "Cost Trend Analysis",
+    "cost-category": "Cost Category",
+    "actual": "Actual",
+    "budget": "Budget",
+    "variance": "Variance",
+    "percent-of-total": "% of Total",
+    "vs-usp-standard": "vs USP Standard",
+    "theoretical-yield": "Theoretical",
+    "of-cogs": "of COGS",
+    "cost-categories": {
+      "api": "API",
+      "excipients": "Excipients",
+      "packaging": "Packaging",
+      "labor": "Labor"
+    },
+    "variance-values": {
+      "api": "+7.1%",
+      "default": "-1.5%"
+    }
+  }

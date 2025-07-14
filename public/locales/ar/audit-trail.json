@@ -1,0 +1,20 @@
+{
+    "title": "نظام تدقيق ALCOA+",
+    "exportCSV": "تصدير CSV",
+    "advancedFilters": "الفلاتر المتقدمة",
+    "totalRecords": "إجمالي السجلات",
+    "last7Days": "آخر 7 أيام",
+    "dataIntegrity": "نسبة سلامة البيانات",
+    "activityTimeline": "الجدول الزمني للنشاط",
+    "activityFrequency": "تكرار النشاط",
+    "tableHeaders": {
+      "timestamp": "الوقت والتاريخ",
+      "user": "المستخدم",
+      "action": "الإجراء",
+      "entity": "الكيان",
+      "signature": "التوقيع",
+      "details": "التفاصيل"
+    },
+    "viewContext": "عرض السياق",
+    "footerText": "مسار تدقيق متوافق مع ALCOA+ • معتمد بموجب 21 CFR الجزء 11"
+  }

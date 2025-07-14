@@ -1,0 +1,12 @@
+{
+    "blockchain-security": "Blockchain Security",
+    "private-key-management": "Private Key Management",
+    "backup-required": "Backup Required",
+    "export-encrypted-key": "Export Encrypted Key",
+    "2fa-status": "2FA Status",
+    "authenticator-app": "Authenticator App",
+    "active": "Active",
+    "active-sessions": "Active Sessions",
+    "smart-contract-permissions": "Smart Contract Permissions",
+    "read-write": "Read/Write"
+  }

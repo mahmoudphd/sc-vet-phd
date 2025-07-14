@@ -1,0 +1,54 @@
+{
+      "heading": "Scrap Products",
+      "buttons": {
+        "newScrap": "New Scrap",
+        "recordScrap": "Record Scrap",
+        "cancel": "Cancel"
+      },
+      "dialog": {
+        "recordScrapTitle": "Record Scrap Product"
+      },
+      "form": {
+        "selectBatch": "Select Batch",
+        "reason": "Reason for Scrap",
+        "weight": "Weight (kg)",
+        "selectType": "Select Scrap Type",
+        "selectRemovalMethod": "Select Removal Method"
+      },
+      "table": {
+        "headers": {
+          "scrapId": "Scrap ID",
+          "batch": "Batch ID",
+          "reason": "Reason",
+          "type": "Type",
+          "weight": "Weight (kg)",
+          "status": "Status",
+          "removalMethod": "Removal Method"
+        }
+      },
+      "type": {
+        "partial": "Partial",
+        "full": "Full"
+      },
+      "removalMethods": {
+        "recycled": "Recycled",
+        "disposed": "Disposed",
+        "reused": "Reused",
+        "incinerated": "Incinerated"
+      },
+      "status": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      },
+      "errors": {
+        "fillAllFields": "Please fill in all required fields."
+      },
+      "success": {
+        "scrapRecorded": "Scrap recorded successfully."
+      },
+      "products": {
+        "anthelminticOralSuspension": "Anthelmintic Oral Suspension"
+      }
+  }
+  

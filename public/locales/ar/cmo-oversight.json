@@ -1,0 +1,17 @@
+{
+    "contract-manufacturing-oversight": "الإشراف على التصنيع التعاقدي",
+    "capacity-planner": "مخطط السعة",
+    "quality-dashboard": "لوحة تحكم الجودة",
+    "approved-cmos": "الشركات المصنعة المعتمدة",
+    "avg-audit-score": "متوسط ​​نتيجة المراجعة",
+    "active-batches": "الدُفعات النشطة",
+    "yield-variance": "التباين في الإنتاجية",
+    "production-schedule": "جدول الإنتاج",
+    "compliance-matrix": "مصفوفة الامتثال",
+    "cmo": "CMO",
+    "capabilities": "القدرات",
+    "compliance": "الامتثال",
+    "capacity": "السعة",
+    "audit-score": "نتيجة المراجعة",
+    "certified-label": "معتمد {{standard}}"
+  }

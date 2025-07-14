@@ -1,0 +1,22 @@
+{
+    "pharmaceutical-sales-analytics": "Pharmaceutical Sales Analytics",
+    "compare-regions": "Compare Regions",
+    "time-period-quarter": "Quarter",
+    "ytd-sales": "YTD Sales",
+    "yoy-increase": "↑ 14.5% YoY",
+    "top-product": "Top Product",
+    "percent-of-total": "{{percent}}% of Total",
+    "new-rx-rate": "New RX Rate",
+    "sales-performance": "Sales Performance",
+    "geographic-distribution": "Geographic Distribution",
+    "top-products": "Top Products",
+    "product-antiparasitic": "Antiparasitic",
+    "product-antibiotic": "Antibiotic",
+    "product-vaccine-adjuvant": "Vaccine Adjuvant",
+    "channel-performance": "Channel Performance",
+    "channel-hospital": "Hospital",
+    "channel-retail": "Retail",
+    "channel-online": "Online",
+    "current-year": "Current Year",
+    "previous-year": "Previous Year"
+  }

@@ -1,0 +1,25 @@
+{
+    "sustainability-dashboard": "Sustainability Dashboard",
+    "esg-report": "ESG Report",
+    "total-emissions": "Total Emissions",
+    "re100-progress": "RE100 Progress",
+    "carbon-intensity": "Carbon Intensity",
+    "scope-1-2-3": "Scope 1+2+3",
+    "emission-breakdown": "Emission Breakdown",
+    "reduction-initiatives": "Reduction Initiatives",
+    "category": "Category",
+    "emissions": "Emissions",
+    "target": "Target",
+    "progress": "Progress",
+    "certification": "Certification",
+    "yoy-decrease": "↓ 12% YoY",
+    "aligned-with": "Aligned with SBTi • CDP Rating: A-",
+    "emission-category": {
+      "manufacturing": "Manufacturing",
+      "transport": "Transport",
+      "packaging": "Packaging",
+      "energy": "Energy"
+    },
+    "target-format": "2025: {{value}}%",
+    "iso-certification": "ISO 14001"
+  }

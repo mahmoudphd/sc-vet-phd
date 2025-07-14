@@ -1,0 +1,22 @@
+{
+    "pharmaceutical-sales-analytics": "تحليلات مبيعات المستحضرات الصيدلانية",
+    "compare-regions": "مقارنة المناطق",
+    "time-period-quarter": "ربع سنوي",
+    "ytd-sales": "المبيعات منذ بداية العام",
+    "yoy-increase": "↑ 14.5% على أساس سنوي",
+    "top-product": "أهم منتج",
+    "percent-of-total": "{{percent}}% من الإجمالي",
+    "new-rx-rate": "معدل الوصفات الجديدة",
+    "sales-performance": "أداء المبيعات",
+    "geographic-distribution": "التوزيع الجغرافي",
+    "top-products": "أهم المنتجات",
+    "product-antiparasitic": "مضاد الطفيليات",
+    "product-antibiotic": "مضاد حيوي",
+    "product-vaccine-adjuvant": "مساعد اللقاح",
+    "channel-performance": "أداء القنوات",
+    "channel-hospital": "مستشفى",
+    "channel-retail": "تجزئة",
+    "channel-online": "عبر الإنترنت",
+    "current-year": "العام الحالي",
+    "previous-year": "العام السابق"
+  }

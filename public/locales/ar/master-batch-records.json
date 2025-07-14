@@ -1,0 +1,19 @@
+{
+    "heading": "سجلات الدُفعات الرئيسية",
+    "search-placeholder": "ابحث في السجلات...",
+    "filter-all-products": "جميع المنتجات",
+    "filter-oral": "مستحضرات فموية",
+    "filter-injectable": "محاليل حقن",
+    "table-id": "معرف السجل",
+    "table-product": "المنتج",
+    "table-approval-status": "حالة الموافقة",
+    "table-date": "التاريخ",
+    "table-author": "المُعد",
+    "table-actions": "الإجراءات",
+    "view-pdf": "عرض PDF",
+    "approval-status": {
+      "approved": "مُعتمَد",
+      "pending": "قيد الانتظار",
+      "rejected": "مرفوض"
+    }
+  }

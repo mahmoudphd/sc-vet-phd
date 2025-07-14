@@ -1,0 +1,20 @@
+{
+    "active-cold-chain-monitoring": "مراقبة السلسلة الباردة النشطة",
+    "new-shipment": "شحنة جديدة",
+    "export-compliance-report": "تصدير تقرير الامتثال",
+    "current-temperature": "درجة الحرارة الحالية",
+    "within-range": "ضمن النطاق",
+    "active-shipments": "الشحنات النشطة",
+    "active-alerts": "التنبيهات النشطة",
+    "last-24-hours": "آخر 24 ساعة",
+    "shipment": "الشحنة",
+    "temperature-trend": "اتجاه درجة الحرارة",
+    "location": "الموقع",
+    "status": "الحالة",
+    "actions": "الإجراءات",
+    "view-details": "عرض التفاصيل",
+    "geographical-distribution": "التوزيع الجغرافي",
+    "gps-tracking-map": "خريطة تتبع GPS",
+    "thermometer-icon": "أيقونة الترمومتر",
+    "in-transit": "قيد النقل"
+  }

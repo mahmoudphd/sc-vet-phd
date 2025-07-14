@@ -1,0 +1,48 @@
+{
+    "activeBatches": {
+      "heading": "Active Production Batches"
+    },
+    "buttons": {
+      "newBatch": "New Batch",
+      "cancel": "Cancel",
+      "createBatch": "Create Batch"
+    },
+    "dialog": {
+      "createBatchTitle": "Create New Production Batch"
+    },
+    "form": {
+      "selectProduct": "Select Product",
+      "batchIdentifier": "Batch Identifier",
+      "batchSize": "Batch Size (units)"
+    },
+    "products": {
+      "oral": "Oral Suspension",
+      "injectable": "Injectable Solution",
+      "tablet": "Coated Tablets",
+      "anthelminticOralSuspension": "Anthelmintic Oral Suspension"
+    },
+    "stages": {
+      "mixing": "Mixing"
+    },
+    "status": {
+      "onTrack": "On Track",
+      "delayed": "Delayed"
+    },
+    "errors": {
+      "fillAllFields": "Please fill all required fields"
+    },
+    "success": {
+      "batchCreated": "New batch created successfully"
+    },
+    "table": {
+      "headers": {
+        "batchId": "Batch ID",
+        "product": "Product",
+        "stage": "Stage",
+        "temperature": "Temperature",
+        "status": "Status",
+        "progress": "Progress",
+        "actions": "Actions"
+      }
+    }
+  }

@@ -1,0 +1,20 @@
+{
+    "pharmacy-network-management": "Pharmacy Network Management",
+    "stock-monitor": "Stock Monitor",
+    "recall-portal": "Recall Portal",
+    "network-size": "Network Size",
+    "avg-stock-turn": "Avg. Stock Turn",
+    "days": "Days",
+    "recall-compliance": "Recall Compliance",
+    "patient-ratings": "Patient Ratings",
+    "sales-heatmap": "Sales Heatmap",
+    "pharmacy": "Pharmacy",
+    "location": "Location",
+    "license": "License",
+    "last-delivery": "Last Delivery",
+    "stock-level": "Stock Level",
+    "active": "Active",
+    "optimal": "Optimal",
+    "low": "Low",
+    "critical": "Critical"
+}

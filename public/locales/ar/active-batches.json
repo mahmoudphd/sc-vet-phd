@@ -1,0 +1,48 @@
+{
+  "activeBatches": {
+    "heading": "الدُفعات الإنتاجية النشطة"
+  },
+  "buttons": {
+    "newBatch": "دفعة جديدة",
+    "cancel": "إلغاء",
+    "createBatch": "إنشاء دفعة"
+  },
+  "dialog": {
+    "createBatchTitle": "إنشاء دفعة إنتاجية جديدة"
+  },
+  "form": {
+    "selectProduct": "اختر المنتج",
+    "batchIdentifier": "معرّف الدفعة",
+    "batchSize": "حجم الدفعة (وحدات)"
+  },
+  "products": {
+    "oral": "معلق فموي",
+    "injectable": "محلول حقني",
+    "tablet": "أقراص مطلية",
+    "anthelminticOralSuspension": "معلق فموي مضاد للديدان"
+  },
+  "stages": {
+    "mixing": "مرحلة الخلط"
+  },
+  "status": {
+    "onTrack": "ضمن الخطة",
+    "delayed": "متأخر"
+  },
+  "errors": {
+    "fillAllFields": "يرجى ملء جميع الحقول المطلوبة"
+  },
+  "success": {
+    "batchCreated": "تم إنشاء الدفعة بنجاح"
+  },
+  "table": {
+    "headers": {
+      "batchId": "رقم الدفعة",
+      "product": "المنتج",
+      "stage": "المرحلة",
+      "temperature": "درجة الحرارة",
+      "status": "الحالة",
+      "progress": "التقدم",
+      "actions": "الإجراءات"
+    }
+  }
+}

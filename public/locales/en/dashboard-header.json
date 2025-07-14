@@ -1,0 +1,9 @@
+    {
+    "by-author": "By <strong>{{author}}</strong>",
+    "version": "V 0.0.1",
+    "mainnet-live": "Mainnet Live",
+    "profile": "Profile",
+    "security": "Security",
+    "preferences": "Preferences",
+    "logout": "Logout"
+  }

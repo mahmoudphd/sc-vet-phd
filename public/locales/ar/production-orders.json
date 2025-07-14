@@ -1,0 +1,27 @@
+{
+    "page-title": "جدول الإنتاج",
+    "new-order-button": "طلب جديد",
+    "table-headers": {
+      "order-id": "رقم الطلب",
+      "product": "المنتج",
+      "priority": "الأولوية",
+      "materials": "المواد",
+      "progress": "التقدم",
+      "schedule": "الجدول الزمني"
+    },
+    "status": {
+      "priority": {
+        "high": "عالي",
+        "medium": "متوسط",
+        "low": "منخفض"
+      },
+      "materials": {
+        "allocated": "مخصص",
+        "pending": "قيد الانتظار"
+      }
+    },
+    "chart-title": "الجدول الزمني للإنتاج",
+    "product-names": {
+      "vaccine-adjuvant": "مساعد اللقاح"
+    }
+}

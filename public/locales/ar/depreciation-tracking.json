@@ -1,0 +1,20 @@
+{
+    "capex-depreciation-schedule": "جدول إهلاك الاستثمارات الرأسمالية",
+    "add-asset": "إضافة أصل",
+    "tax-report": "تقرير الضرائب",
+    "total-capex": "إجمالي الاستثمارات الرأسمالية",
+    "accumulated-depreciation": "الإهلاك المتراكم",
+    "net-book-value": "القيمة الدفترية الصافية",
+    "asset-id": "معرف الأصل",
+    "equipment": "المعدات",
+    "category": "الفئة",
+    "acquisition-cost": "تكلفة التملك",
+    "current-value": "القيمة الحالية",
+    "depreciation-method": "طريقة الإهلاك",
+    "remaining-life": "العمر المتبقي",
+    "depreciation-schedule": "جدول الإهلاك",
+    "asset-distribution": "توزيع الأصول",
+    "production": "الإنتاج",
+    "lab": "المختبر",
+    "it": "تكنولوجيا المعلومات"
+  }

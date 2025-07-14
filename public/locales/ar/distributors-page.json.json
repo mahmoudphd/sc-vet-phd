@@ -1,0 +1,37 @@
+{
+    "main-heading": "شبكة الموزعين العالمية",
+    "actions": {
+      "add-region": "إضافة منطقة",
+      "compliance-report": "تقرير الامتثال"
+    },
+    "metrics": {
+      "certified-partners": {
+        "title": "الشركاء المعتمدون",
+        "compliant-text": "٪98 متوافق"
+      },
+      "avg-delivery-time": {
+        "title": "متوسط وقت التسليم"
+      },
+      "license-expirations": {
+        "title": "انتهاء الترخيص"
+      },
+      "gdp-compliance": {
+        "title": "امتثال GDP"
+      }
+    },
+    "geo-coverage-title": "التغطية الجغرافية",
+    "table-headers": {
+      "distributor": "الموزع",
+      "region": "المنطقة",
+      "compliance": "الامتثال",
+      "otd": "التسليم في الوقت المحدد",
+      "licenses": "التراخيص",
+      "last-audit": "آخر مراجعة"
+    },
+    "compliance-status": {
+      "gdp-certified": "معتمد GDP"
+    },
+    "license-status": {
+      "active": "نشط"
+    }
+  }

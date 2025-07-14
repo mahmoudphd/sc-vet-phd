@@ -1,0 +1,34 @@
+{
+    "dashboard-heading": "Material Qualification Dashboard",
+    "new-qualification-button": "New Qualification",
+    "supplier-audit-button": "Supplier Audit",
+    "qualification-progress": "Qualification Progress",
+    "pending-label": "Pending: 3",
+    "approved-label": "Approved: 12",
+    "compliance-score": "Compliance Score",
+    "alcoa-compliant": "ALCOA+ Compliant",
+    "expiring-soon": "Expiring Soon",
+    "materials": "Materials",
+    "material-header": "Material",
+    "supplier-header": "Supplier",
+    "status-header": "Status",
+    "test-results-header": "Test Results",
+    "certificate-header": "Certificate",
+    "expiry-header": "Expiry",
+    "actions-header": "Actions",
+    "status": {
+      "approved": "Approved"
+    },
+    "certificate": {
+      "coa-available": "CoA Available"
+    },
+    "view-coa-button": "View CoA",
+    "retest-button": "Retest",
+    "test-parameters-heading": "Test Parameters",
+    "test-parameters": {
+      "identity": "Identity",
+      "purity": "Purity",
+      "microbial": "Microbial",
+      "endotoxins": "Endotoxins"
+    }
+  }

@@ -1,0 +1,53 @@
+{
+    "page-title": "Production Schedule",
+    "new-order-button": "New Order",
+    "table-headers": {
+      "order-id": "Order ID",
+      "product": "Product",
+      "priority": "Priority",
+      "materials": "Materials",
+      "progress": "Progress",
+      "schedule": "Schedule"
+    },
+    "status": {
+      "priority": {
+        "high": "High",
+        "medium": "Medium",
+        "low": "Low"
+      },
+      "materials": {
+        "allocated": "Allocated",
+        "pending": "Pending"
+      }
+    },
+    "chart-title": "Production Timeline",
+    "product-names": {
+      "vaccine-adjuvant": "Vaccine Adjuvant"
+    },
+    "priority": {
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low"
+    },
+    "form": {
+      "productId": "Product ID",
+      "productName": "Product Name",
+      "quantity": "Quantity",
+      "priority": "Priority",
+      "materialsStatus": "Materials Status"
+    },
+    "dialog": {
+      "createOrderTitle": "Create New Production Order",
+      "createOrderDescription": "Fill in the details to create a new production order."
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "createOrder": "Create Order"
+    },
+    "errors": {
+      "fillAllFields": "Please fill in all required fields."
+    },
+    "success": {
+      "orderCreated": "New production order created successfully."
+    }
+  }

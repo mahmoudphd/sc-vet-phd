@@ -1,0 +1,28 @@
+{
+    "pharmaceutical-cost-intelligence": "الذكاء التحليلي للتكاليف الدوائية",
+    "export-report": "تصدير التقرير",
+    "cogs": "تكلفة البضائع المباعة",
+    "material-variance": "التباين في المواد",
+    "yield-efficiency": "كفاءة الإنتاج",
+    "waste-cost": "تكلفة الهدر",
+    "cost-composition": "توزيع التكاليف",
+    "cost-trend-analysis": "تحليل اتجاهات التكلفة",
+    "cost-category": "فئة التكلفة",
+    "actual": "الفعلي",
+    "budget": "الميزانية",
+    "variance": "الانحراف",
+    "percent-of-total": "النسبة من الإجمالي",
+    "vs-usp-standard": "مقارنة بمعيار USP",
+    "theoretical-yield": "النظرية",
+    "of-cogs": "من تكلفة البضائع المباعة",
+    "cost-categories": {
+      "api": "المادة الفعالة",
+      "excipients": "المواد المساعدة",
+      "packaging": "التغليف",
+      "labor": "اليد العاملة"
+    },
+    "variance-values": {
+      "api": "+7.1٪",
+      "default": "-1.5٪"
+    }
+}

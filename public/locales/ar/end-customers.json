@@ -1,0 +1,21 @@
+{
+    "patient-therapy-management": "إدارة العلاج للمرضى",
+    "safety-reporting": "الإبلاغ عن السلامة",
+    "gdpr-compliance": "الامتثال لـ GDPR",
+    "active-patients": "المرضى النشطين",
+    "avg-adherence": "متوسط الالتزام",
+    "ae-reports": "تقارير الأحداث الضائرة",
+    "satisfaction": "الرضا",
+    "therapy-adherence": "الالتزام بالعلاج",
+    "demographics": "البيانات الديموغرافية",
+    "patient-id": "معرف المريض",
+    "therapy": "العلاج",
+    "adherence": "الالتزام",
+    "outcomes": "النتائج",
+    "feedback": "التقييمات",
+    "last-order": "آخر طلب",
+    "positive": "إيجابي",
+    "age-18-30": "18-30",
+    "age-31-50": "31-50",
+    "age-51-plus": "51+"
+  }

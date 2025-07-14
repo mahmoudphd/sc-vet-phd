@@ -1,0 +1,19 @@
+{
+    "heading": "Master Batch Records",
+    "search-placeholder": "Search records...",
+    "filter-all-products": "All Products",
+    "filter-oral": "Oral Preparations",
+    "filter-injectable": "Injectables",
+    "table-id": "Record ID",
+    "table-product": "Product",
+    "table-approval-status": "Approval Status",
+    "table-date": "Date",
+    "table-author": "Author",
+    "table-actions": "Actions",
+    "view-pdf": "View PDF",
+    "approval-status": {
+      "approved": "Approved",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  }

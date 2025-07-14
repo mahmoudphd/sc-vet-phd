@@ -1,0 +1,37 @@
+{
+  "gmp-title": "Good Manufacturing Practices (GMP) Personnel Qualification",
+  "new-training-plan-button": "New Training Plan",
+  "export-compliance-report-button": "Export Compliance Report",
+  "total-qualified-label": "Total Qualified Personnel",
+  "compliance-percentage": "Compliance with standards",
+  "training-due-label": "Training Due",
+  "certifications-expiring-label": "Certifications Expiring",
+  "qualification-status-heading": "Qualification Status Overview",
+  "training-timeline-heading": "Training Timeline",
+  "employee-column": "Employee",
+  "role-column": "Role",
+  "certifications-column": "Certifications",
+  "training-progress-column": "Training Progress",
+  "expiry-date-column": "Expiry Date",
+  "status-column": "Status",
+  "actions-column": "Actions",
+  "active-label": "Active",
+  "qualified-status": "Qualified",
+  "quality-auditor-role": "Quality Auditor",
+  
+  "training-plan-name-label": "Training Plan Name",
+  "training-plan-name-placeholder": "Enter plan name...",
+  "due-date-label": "Due Date",
+  "cancel-button": "Cancel",
+  "create-button": "Create",
+  
+  "export-format-label": "Export Format",
+  "date-range-label": "Date Range",
+  "export-button": "Export",
+  
+  "renew-certification-button": "Renew Certification",
+  "renew-certification-description": "Renew certification for {{name}}",
+  "expiry-date-label": "New Expiry Date",
+  "submit-button": "Submit"
+
+  }

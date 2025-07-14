@@ -1,0 +1,14 @@
+{
+    "equipment-maintenance-program": "برنامج صيانة المعدات",
+    "new-work-order": "+ أمر عمل جديد",
+    "pending-actions": "الإجراءات المعلقة",
+    "overdue-tasks": "المهام المتأخرة",
+    "require-immediate-action": "تتطلب إجراءً فوريًا",
+    "equipment": "المعدات",
+    "last-service": "آخر خدمة",
+    "next-due": "القادم مستحق",
+    "status": "الحالة",
+    "criticality": "الأهمية",
+    "maintenance-calendar": "تقويم الصيانة",
+    "maintenance-schedule-calendar": "تقويم جدول الصيانة"
+}
