@@ -1,27 +1,69 @@
-import { 
-    Card, 
-    Flex, 
-    Heading, 
-    Text, 
-    Table, 
-    Badge, 
-    Button,
-    Grid,
-    Progress,
-    Select,
-    Box
+import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  Table,
+  Badge,
+  Button,
+  Grid,
+  Progress,
+  Select,
+  Box
 } from '@radix-ui/themes';
 import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
-  
+import { useState } from 'react';
+
+const solutionOptions = [
+  "Negotiating better prices with supplier",
+  "Reducing waste in material usage",
+  "Automation to reduce manual labor costs",
+  "Optimizing machine usage",
+  "Improving inventory management",
+  "Minimize transportation costs",
+  "Reduce rework costs",
+  "Other"
+];
+
 const CostAnalysis = () => {
   const { t } = useTranslation('cost-analysis');
-  const costData = [
-    { category: 'Direct Materials', value: 45, color: '#3b82f6' },
-    // { category: 'excipients', value: 25, color: '#10b981' },
-    // { category: 'packaging', value: 20, color: '#f59e0b' },
-    // { category: 'labor', value: 10, color: '#ef4444' },
-  ];
+
+  const [costData, setCostData] = useState([
+    {
+      category: 'Direct Materials',
+      value: 45,
+      color: '#3b82f6',
+      actual: '$1.4M',
+      budget: '$1.3M',
+      solution: 'Negotiating better prices with supplier',
+      costAfter: '$1.25M'
+    },
+    {
+      category: 'Packaging',
+      value: 20,
+      color: '#f59e0b',
+      actual: '$700K',
+      budget: '$650K',
+      solution: 'Reducing waste in material usage',
+      costAfter: '$630K'
+    },
+    {
+      category: 'Labor',
+      value: 10,
+      color: '#ef4444',
+      actual: '$400K',
+      budget: '$350K',
+      solution: 'Automation to reduce manual labor costs',
+      costAfter: '$340K'
+    }
+  ]);
+
+  const handleSolutionChange = (index, newSolution) => {
+    const updatedData = [...costData];
+    updatedData[index].solution = newSolution;
+    setCostData(updatedData);
+  };
 
   return (
     <Box p="6">
@@ -107,20 +149,38 @@ const CostAnalysis = () => {
             <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('solution')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('cost-after')}</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((category) => (
+          {costData.map((category, index) => (
             <Table.Row key={category.category}>
               <Table.Cell>{category.category}</Table.Cell>
-              <Table.Cell>$1.4M</Table.Cell>
-              <Table.Cell>$1.3M</Table.Cell>
+              <Table.Cell>{category.actual}</Table.Cell>
+              <Table.Cell>{category.budget}</Table.Cell>
               <Table.Cell>
                 <Badge color={category.category === 'api' ? 'red' : 'green'}>
                   {t(`variance-values.${category.category === 'api' ? 'api' : 'default'}`)}
                 </Badge>
               </Table.Cell>
               <Table.Cell>{category.value}%</Table.Cell>
+              <Table.Cell>
+                <Select.Root
+                  defaultValue={category.solution}
+                  onValueChange={(value) => handleSolutionChange(index, value)}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {solutionOptions.map((option, i) => (
+                      <Select.Item key={i} value={option}>
+                        {option}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              <Table.Cell>{category.costAfter}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
@@ -129,4 +189,4 @@ const CostAnalysis = () => {
   );
 };
 
-export default CostAnalysis
+export default CostAnalysis;
