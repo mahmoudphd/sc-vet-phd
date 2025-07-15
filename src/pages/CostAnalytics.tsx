@@ -59,7 +59,7 @@ const CostAnalysis = () => {
     }
   ]);
 
-  const handleSolutionChange = (index, newSolution) => {
+const handleSolutionChange = (index: number, newSolution: string) => {
     const updatedData = [...costData];
     updatedData[index].solution = newSolution;
     setCostData(updatedData);
