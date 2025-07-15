@@ -1,4 +1,3 @@
-// Updated CostAnalysis.tsx to include product selector at top and retain all latest charts and elements
 import {
   Card,
   Flex,
@@ -9,22 +8,10 @@ import {
   Grid,
   Progress,
   Select,
-  Box,
-  Accordion
+  Box
 } from '@radix-ui/themes';
 import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useState } from 'react';
-
-const solutionOptions = [
-  'Negotiating Better Prices With Supplier',
-  'Reducing Waste In Material Usage',
-  'Automation To Reduce Manual Labor Costs',
-  'Optimizing Machine Usage',
-  'Improving Inventory Management',
-  'Minimize Transportation Costs',
-  'Reduce Rework Costs',
-  'Other'
-];
 
 const rawMaterialItems = [
   { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
@@ -72,7 +59,6 @@ const CostAnalysis = () => {
       target: 1100000,
       percent: 40,
       color: '#3b82f6',
-      items: selectedItems.map(item => ({ name: item.name, cost: item.kg * item.pricePerKg }))
     },
     { category: 'Direct Labor', actual: 600000, target: 580000, percent: 20, color: '#10b981' },
     { category: 'Packaging Materials', actual: 450000, target: 420000, percent: 15, color: '#f59e0b' },
@@ -91,7 +77,8 @@ const CostAnalysis = () => {
     after: totalAfter / unitsProduced
   };
 
-  const formatCurrency = (val: number) => `${symbol}${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  const formatCurrency = (val: number) =>
+    `${symbol}${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
   return (
     <Box p="6">
