@@ -53,7 +53,7 @@ const products = {
 
 const currencySymbols = {
   USD: '$',
-  EGP: 'EGP '
+  EGP: 'EGP'
 };
 
 const CostAnalysis = () => {
@@ -63,7 +63,7 @@ const CostAnalysis = () => {
   const symbol = currencySymbols[currency];
   const selectedItems = products[selectedProduct] || [];
 
-  // حساب التكاليف لكل بند
+  // بيانات التكلفة الرئيسية
   const costData = [
     {
       category: 'Raw Materials',
@@ -81,6 +81,7 @@ const CostAnalysis = () => {
 
   const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
   const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
+  // بعد تطبيق حلول مفترضة (مثلاً نقص 10,000 على كل بند)
   const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
   const unitsProduced = 10000;
 
@@ -95,11 +96,12 @@ const CostAnalysis = () => {
 
   return (
     <Box p="6">
+      {/* عنوان وتحديد المنتج والعملة */}
       <Flex justify="between" align="center" mb="5">
         <Flex align="center" gap="4">
           <Heading size="6">Inter-Organizational Cost Management</Heading>
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
-            <Select.Trigger aria-label="Select Product" />
+            <Select.Trigger />
             <Select.Content>
               {Object.keys(products).map(product => (
                 <Select.Item key={product} value={product}>
@@ -110,9 +112,11 @@ const CostAnalysis = () => {
           </Select.Root>
         </Flex>
         <Flex gap="3">
-          <Button variant="soft">{symbol} Export Report</Button>
+          <Button variant="soft">
+            {symbol} Export Report
+          </Button>
           <Select.Root value={currency} onValueChange={setCurrency}>
-            <Select.Trigger aria-label="Select Currency" />
+            <Select.Trigger />
             <Select.Content>
               <Select.Item value="USD">USD</Select.Item>
               <Select.Item value="EGP">EGP</Select.Item>
@@ -121,6 +125,7 @@ const CostAnalysis = () => {
         </Flex>
       </Flex>
 
+      {/* ملخص التكاليف */}
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
@@ -146,12 +151,13 @@ const CostAnalysis = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Progress To Target</Text>
-            <Progress value={(totalActual / totalTarget) * 100} />
-            <Text size="1">{((totalActual / totalTarget) * 100).toFixed(1)}% Toward Target</Text>
+            <Progress value={(totalAfter / totalTarget) * 100} />
+            <Text size="1">{((totalAfter / totalTarget) * 100).toFixed(1)}% Toward Target</Text>
           </Flex>
         </Card>
       </Grid>
 
+      {/* تكلفة الوحدة */}
       <Card mb="4">
         <Flex justify="between" align="center">
           <Text size="2">Cost Per Unit</Text>
@@ -160,11 +166,9 @@ const CostAnalysis = () => {
         <Text size="1">
           Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}
         </Text>
-        <Text size="1" mt="2">
-          Benchmark Price: {formatCurrency(260)}
-        </Text>
       </Card>
 
+      {/* الرسومات البيانية */}
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
@@ -193,6 +197,7 @@ const CostAnalysis = () => {
         </Card>
       </Flex>
 
+      {/* جدول تفاصيل التكاليف */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -206,24 +211,44 @@ const CostAnalysis = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((cat) => {
-            const variance = (((cat.actual - cat.target) / cat.target) * 100).toFixed(1);
-            const costAfter = cat.actual - 10000; // مثال خصم
+          {costData.map((category) => {
+            const variance = (((category.actual - category.target) / category.target) * 100).toFixed(1);
+            const costAfter = category.actual - 10000; // افتراضياً ناقص 10000 كحل مؤقت
             return (
-              <Table.Row key={cat.category}>
-                <Table.Cell><b>{cat.category}</b></Table.Cell>
-                <Table.Cell>{formatCurrency(cat.actual)}</Table.Cell>
-                <Table.Cell>{formatCurrency(cat.target)}</Table.Cell>
-                <Table.Cell style={{ color: variance.startsWith('-') ? 'green' : 'red' }}>
-                  {variance}%
-                </Table.Cell>
-                <Table.Cell>{cat.percent}%</Table.Cell>
+              <Table.Row key={category.category}>
                 <Table.Cell>
-                  {/* إضافة خيارات الحلول أو غيرها حسب الحاجة */}
+                  {category.category === 'Raw Materials' ? (
+                    <>
+                      <b>{category.category}</b>
+                      <Table.Root variant="transparent" style={{ marginTop: '0.5rem' }}>
+                        <Table.Body>
+                          {category.items.map(item => (
+                            <Table.Row key={item.name}>
+                              <Table.Cell style={{ paddingLeft: '1.5rem' }}>{item.name}</Table.Cell>
+                              <Table.Cell>{formatCurrency(item.cost)}</Table.Cell>
+                              <Table.Cell></Table.Cell>
+                              <Table.Cell></Table.Cell>
+                              <Table.Cell></Table.Cell>
+                              <Table.Cell></Table.Cell>
+                              <Table.Cell></Table.Cell>
+                            </Table.Row>
+                          ))}
+                        </Table.Body>
+                      </Table.Root>
+                    </>
+                  ) : (
+                    <b>{category.category}</b>
+                  )}
+                </Table.Cell>
+                <Table.Cell>{formatCurrency(category.actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(category.target)}</Table.Cell>
+                <Table.Cell>{variance}%</Table.Cell>
+                <Table.Cell>{category.percent}%</Table.Cell>
+                <Table.Cell>
                   <Select.Root defaultValue={solutionOptions[0]}>
-                    <Select.Trigger aria-label="Select Solution" />
+                    <Select.Trigger style={{ minWidth: '180px' }} />
                     <Select.Content>
-                      {solutionOptions.map((opt) => (
+                      {solutionOptions.map(opt => (
                         <Select.Item key={opt} value={opt}>
                           {opt}
                         </Select.Item>
@@ -237,35 +262,9 @@ const CostAnalysis = () => {
           })}
         </Table.Body>
       </Table.Root>
-
-      {/* تفاصيل المواد الخام تظهر عند اختيار Raw Materials */}
-      {selectedProduct && (
-        <Card mt="5" p="4">
-          <Heading size="5" mb="3">Raw Material Details For {selectedProduct}</Heading>
-          <Table.Root variant="surface">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Concentration (Kg)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Price / Kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {selectedItems.map((item) => (
-                <Table.Row key={item.name}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.kg}</Table.Cell>
-                  <Table.Cell>{formatCurrency(item.pricePerKg)}</Table.Cell>
-                  <Table.Cell>{formatCurrency(item.kg * item.pricePerKg)}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Card>
-      )}
     </Box>
   );
 };
 
 export default CostAnalysis;
+
