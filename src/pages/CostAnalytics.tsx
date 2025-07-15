@@ -1,4 +1,3 @@
-// Updated CostAnalysis.tsx with Accordion support and full cost breakdown
 import {
   Card,
   Flex,
@@ -9,9 +8,10 @@ import {
   Grid,
   Progress,
   Select,
-  Box,
-  Accordion
+  Box
 } from '@radix-ui/themes';
+
+import * as Accordion from '@radix-ui/react-accordion';
 import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useState } from 'react';
 
@@ -47,113 +47,213 @@ const rawMaterialItems = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const renderRawMaterialsAccordion = () => (
-  <Accordion.Root type="single" collapsible>
-    <Accordion.Item value="raw-materials">
-      <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
-      <Accordion.Content>
+// مثال بيانات التكلفة لكل بند
+const costDataInitial = [
+  {
+    category: 'Raw Materials',
+    actual: 133.11,
+    target: 1100000,
+    percent: 40,
+    gapSolution: solutionOptions[0],
+    costAfter: -9866.89
+  },
+  {
+    category: 'Direct Labor',
+    actual: 600000,
+    target: 580000,
+    percent: 20,
+    gapSolution: solutionOptions[1],
+    costAfter: 590000
+  },
+  {
+    category: 'Packaging Materials',
+    actual: 450000,
+    target: 420000,
+    percent: 15,
+    gapSolution: solutionOptions[2],
+    costAfter: 440000
+  },
+  {
+    category: 'Overhead',
+    actual: 300000,
+    target: 280000,
+    percent: 15,
+    gapSolution: solutionOptions[3],
+    costAfter: 290000
+  },
+  {
+    category: 'Other Costs',
+    actual: 200000,
+    target: 190000,
+    percent: 10,
+    gapSolution: solutionOptions[4],
+    costAfter: 190000
+  }
+];
+
+const CostAnalysis = () => {
+  const [costData, setCostData] = useState(costDataInitial);
+
+  const totalActual = costData.reduce((acc, item) => acc + Number(item.actual), 0);
+  const totalTarget = costData.reduce((acc, item) => acc + Number(item.target), 0);
+  const totalCostAfter = costData.reduce((acc, item) => acc + Number(item.costAfter), 0);
+  const totalVariance = totalActual - totalTarget;
+
+  const unitsProduced = 10000;
+
+  const costPerUnitActual = totalActual / unitsProduced;
+  const benchmarkPrice = totalTarget / unitsProduced;
+  const costPerUnitAfter = totalCostAfter / unitsProduced;
+
+  // format number as currency with EGP prefix
+  const formatCurrency = (val: number) =>
+    `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  // handler to update gap solution dropdown in table
+  const handleGapSolutionChange = (index: number, newValue: string) => {
+    setCostData(prev =>
+      prev.map((item, i) =>
+        i === index ? { ...item, gapSolution: newValue } : item
+      )
+    );
+  };
+
+  // Accordion component to show raw materials detailed breakdown
+  const renderRawMaterialsAccordion = () => (
+    <Accordion.Root type="single" collapsible defaultValue="raw-materials">
+      <Accordion.Item value="raw-materials">
+        <Accordion.Trigger style={{ cursor: 'pointer', fontWeight: 'bold', marginBottom: 8 }}>
+          Raw Materials Breakdown
+        </Accordion.Trigger>
+        <Accordion.Content>
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Price/Kg (EGP)</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost (EGP)</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {rawMaterialItems.map((item, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.kg}</Table.Cell>
+                  <Table.Cell>{item.pricePerKg.toFixed(2)}</Table.Cell>
+                  <Table.Cell>{(item.kg * item.pricePerKg).toFixed(2)}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Accordion.Content>
+      </Accordion.Item>
+    </Accordion.Root>
+  );
+
+  return (
+    <Box p="6">
+      <Heading size="6" mb="6">Inter-Organizational Cost Management</Heading>
+
+      {/* Summary cards */}
+      <Grid columns="4" gap="4" mb="6">
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Total Actual Cost</Text>
+            <Heading size="7">{formatCurrency(totalActual)}</Heading>
+            <Text size="1">Based On Current Numbers</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Target Cost</Text>
+            <Heading size="7">{formatCurrency(totalTarget)}</Heading>
+            <Text size="1">Ideal Goal</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Post-Optimization Estimate</Text>
+            <Heading size="7">{formatCurrency(totalCostAfter)}</Heading>
+            <Text size="1">Estimated Savings Included</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Progress to Target</Text>
+            <Progress value={(totalActual / totalTarget) * 100} />
+            <Text size="1">{((totalActual / totalTarget) * 100).toFixed(1)}% Toward Target</Text>
+          </Flex>
+        </Card>
+      </Grid>
+
+      {/* Cost Per Unit and Benchmark Price */}
+      <Card mb="6">
+        <Flex direction="column" gap="2">
+          <Text size="2">Cost Per Unit</Text>
+          <Heading size="5">{formatCurrency(costPerUnitActual)}</Heading>
+          <Text size="2" mt="2">Benchmark Price</Text>
+          <Heading size="5">{formatCurrency(benchmarkPrice)}</Heading>
+        </Flex>
+      </Card>
+
+      {/* Accordion for Raw Materials */}
+      {renderRawMaterialsAccordion()}
+
+      {/* Detailed Cost Breakdown Table */}
+      <Card mt="6">
+        <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {rawMaterialItems.map((item, index) => (
+            {costData.map((item, index) => (
               <Table.Row key={index}>
-                <Table.Cell>{item.name}</Table.Cell>
-                <Table.Cell>{item.kg}</Table.Cell>
-                <Table.Cell>EGP{item.pricePerKg.toFixed(2)}</Table.Cell>
-                <Table.Cell>EGP{(item.kg * item.pricePerKg).toFixed(2)}</Table.Cell>
+                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell>{formatCurrency(Number(item.actual))}</Table.Cell>
+                <Table.Cell>{formatCurrency(Number(item.target))}</Table.Cell>
+                <Table.Cell>{formatCurrency(Number(item.actual) - Number(item.target))}</Table.Cell>
+                <Table.Cell>{item.percent}</Table.Cell>
+                <Table.Cell>
+                  <Select.Root
+                    value={item.gapSolution}
+                    onValueChange={(val: string) => handleGapSolutionChange(index, val)}
+                  >
+                    <Select.Trigger aria-label="Select Gap Solution" />
+                    <Select.Content>
+                      {solutionOptions.map((option, i) => (
+                        <Select.Item key={i} value={option}>
+                          {option}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Table.Cell>
+                <Table.Cell>{formatCurrency(Number(item.costAfter))}</Table.Cell>
               </Table.Row>
             ))}
+
+            <Table.Row>
+              <Table.Cell><strong>Total</strong></Table.Cell>
+              <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalTarget)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalVariance)}</Table.Cell>
+              <Table.Cell>100%</Table.Cell>
+              <Table.Cell>-</Table.Cell>
+              <Table.Cell>{formatCurrency(totalCostAfter)}</Table.Cell>
+            </Table.Row>
           </Table.Body>
         </Table.Root>
-      </Accordion.Content>
-    </Accordion.Item>
-  </Accordion.Root>
-);
-
-const renderCostBreakdownTable = () => {
-  const [solutions, setSolutions] = useState(Array(5).fill(solutionOptions[0]));
-  const data = [
-    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', 0, -9866.89],
-    ['Direct Labor', 600000, 580000, 20000, '20%', 1, 590000],
-    ['Packaging Materials', 450000, 420000, 30000, '15%', 2, 440000],
-    ['Overhead', 300000, 280000, 20000, '15%', 3, 290000],
-    ['Other Costs', 200000, 190000, 10000, '10%', 4, 190000]
-  ];
-  const totalActual = data.reduce((acc, val) => acc + val[1], 0);
-  const totalTarget = data.reduce((acc, val) => acc + val[2], 0);
-  const totalAfter = data.reduce((acc, val) => acc + val[6], 0);
-  const totalVariance = totalActual - totalTarget;
-
-  const handleSolutionChange = (index, newValue) => {
-    const updated = [...solutions];
-    updated[index] = newValue;
-    setSolutions(updated);
-  };
-
-  return (
-    <Card mt="5">
-      <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {data.map((row, i) => (
-            <Table.Row key={i}>
-              <Table.Cell>{row[0]}</Table.Cell>
-              <Table.Cell>EGP{row[1].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>EGP{row[2].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>EGP{row[3].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>{row[4]}</Table.Cell>
-              <Table.Cell>
-                <Select.Root value={solutions[i]} onValueChange={(val) => handleSolutionChange(i, val)}>
-                  <Select.Trigger />
-                  <Select.Content>
-                    {solutionOptions.map((option) => (
-                      <Select.Item key={option} value={option}>{option}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
-              <Table.Cell>EGP{row[6].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-            </Table.Row>
-          ))}
-          <Table.Row>
-            <Table.Cell><strong>Total</strong></Table.Cell>
-            <Table.Cell>EGP{totalActual.toLocaleString()}</Table.Cell>
-            <Table.Cell>EGP{totalTarget.toLocaleString()}</Table.Cell>
-            <Table.Cell>EGP{totalVariance.toLocaleString()}</Table.Cell>
-            <Table.Cell>100%</Table.Cell>
-            <Table.Cell>-</Table.Cell>
-            <Table.Cell>EGP{totalAfter.toLocaleString()}</Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
-    </Card>
-  );
-};
-
-const CostAnalysis = () => {
-  return (
-    <Box p="6">
-      <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
-      {renderRawMaterialsAccordion()}
-      {renderCostBreakdownTable()}
+      </Card>
     </Box>
   );
 };
