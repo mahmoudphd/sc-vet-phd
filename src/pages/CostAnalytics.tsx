@@ -1,4 +1,4 @@
-// Updated CostAnalysis.tsx with type safety, product selector, currency toggle, and charts
+// Updated CostAnalysis.tsx to include product selector at top and retain all latest charts and elements
 import {
   Card,
   Flex,
@@ -25,13 +25,7 @@ const solutionOptions = [
   'Other'
 ];
 
-type MaterialItem = {
-  name: string;
-  kg: number;
-  pricePerKg: number;
-};
-
-const rawMaterialItems: MaterialItem[] = [
+const rawMaterialItems = [
   { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
   { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
   { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
@@ -52,31 +46,32 @@ const rawMaterialItems: MaterialItem[] = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const products: Record<string, MaterialItem[]> = {
+const products = {
   'Poultry Product': rawMaterialItems,
   'Liver Tonic': rawMaterialItems.slice(0, 10),
   'Energy Plus': rawMaterialItems.slice(10)
 };
 
-const currencySymbols: { [key: string]: string } = {
+const currencySymbols = {
   USD: '$',
   EGP: 'EGP'
 };
 
 const CostAnalysis = () => {
-  const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP');
-  const [selectedProduct, setSelectedProduct] = useState<string>('Poultry Product');
+  const [currency, setCurrency] = useState('EGP');
+  const [selectedProduct, setSelectedProduct] = useState('Poultry Product');
 
   const symbol = currencySymbols[currency];
-  const selectedItems: MaterialItem[] = products[selectedProduct] || [];
+  const selectedItems = products[selectedProduct] || [];
 
   const costData = [
     {
       category: 'Raw Materials',
-      actual: selectedItems.reduce((acc: number, item: MaterialItem) => acc + item.kg * item.pricePerKg, 0),
+      actual: selectedItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0),
       target: 1100000,
       percent: 40,
-      color: '#3b82f6'
+      color: '#3b82f6',
+      items: selectedItems.map(item => ({ name: item.name, cost: item.kg * item.pricePerKg }))
     },
     { category: 'Direct Labor', actual: 600000, target: 580000, percent: 20, color: '#10b981' },
     { category: 'Packaging Materials', actual: 450000, target: 420000, percent: 15, color: '#f59e0b' },
@@ -84,9 +79,9 @@ const CostAnalysis = () => {
     { category: 'Other Costs', actual: 200000, target: 190000, percent: 10, color: '#f97316' }
   ];
 
-  const totalActual = costData.reduce((acc: number, item) => acc + item.actual, 0);
-  const totalTarget = costData.reduce((acc: number, item) => acc + item.target, 0);
-  const totalAfter = costData.reduce((acc: number, item) => acc + (item.actual - 10000), 0);
+  const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
+  const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
+  const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
   const unitsProduced = 10000;
 
   const costPerUnit = {
@@ -95,7 +90,7 @@ const CostAnalysis = () => {
     after: totalAfter / unitsProduced
   };
 
-  const formatCurrency = (val: number) => `${symbol}${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  const formatCurrency = (val) => `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <Box p="6">
@@ -113,7 +108,7 @@ const CostAnalysis = () => {
         </Flex>
         <Flex gap="3">
           <Button variant="soft">{symbol} Export Report</Button>
-          <Select.Root value={currency} onValueChange={(val) => setCurrency(val as 'USD' | 'EGP')}>
+          <Select.Root value={currency} onValueChange={(val) => setCurrency(val)}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="USD">USD</Select.Item>
@@ -127,35 +122,43 @@ const CostAnalysis = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Total Actual Cost</Text>
-            <Heading size="6">{formatCurrency(totalActual)}</Heading>
+            <Heading size="7">{formatCurrency(totalActual)}</Heading>
             <Text size="1">Based on current numbers</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Target Cost</Text>
-            <Heading size="6">{formatCurrency(totalTarget)}</Heading>
+            <Heading size="7">{formatCurrency(totalTarget)}</Heading>
             <Text size="1">Ideal goal</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="6">{formatCurrency(totalAfter)}</Heading>
+            <Heading size="7">{formatCurrency(totalAfter)}</Heading>
             <Text size="1">Estimated savings included</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Progress to Target</Text>
-            <Progress value={(totalTarget / totalActual) * 100} />
-            <Text size="1">{((totalTarget / totalActual) * 100).toFixed(1)}% toward target</Text>
+            <Progress value={93.5} />
+            <Text size="1">93.5% toward target</Text>
           </Flex>
         </Card>
       </Grid>
 
-      <Grid columns="2" gap="4" mb="5">
-        <Card>
+      <Card mb="4">
+        <Flex justify="between" align="center">
+          <Text size="2">Cost Per Unit</Text>
+          <Text size="3">{formatCurrency(costPerUnit.actual)}</Text>
+        </Flex>
+        <Text size="1">Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}</Text>
+      </Card>
+
+      <Flex gap="4">
+        <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
             <Pie
@@ -165,7 +168,7 @@ const CostAnalysis = () => {
               innerRadius={60}
               outerRadius={80}
               paddingAngle={5}
-              dataKey="percent"
+              dataKey="actual"
               nameKey="category"
             >
               {costData.map((entry, index) => (
@@ -174,13 +177,13 @@ const CostAnalysis = () => {
             </Pie>
           </PieChart>
         </Card>
-        <Card>
+        <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Trend Analysis</Heading>
-          <BarChart width={400} height={250} data={costData}>
+          <BarChart width={500} height={250} data={costData}>
             <Bar dataKey="actual" fill="#3b82f6" />
           </BarChart>
         </Card>
-      </Grid>
+      </Flex>
     </Box>
   );
 };
