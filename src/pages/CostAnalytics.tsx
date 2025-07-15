@@ -1,4 +1,4 @@
-// Updated CostAnalysis.tsx with Raw Materials expandable list, benchmark, and renamed Gap Solution dropdown
+// Updated CostAnalysis.tsx with benchmark section, renamed column, collapsible raw materials
 import {
   Card,
   Flex,
@@ -15,7 +15,7 @@ import {
 import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useState } from 'react';
 
-const gapSolutions = [
+const solutionOptions = [
   'Negotiating Better Prices With Supplier',
   'Reducing Waste In Material Usage',
   'Automation To Reduce Manual Labor Costs',
@@ -47,68 +47,40 @@ const rawMaterialItems = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const currencySymbols: Record<string, string> = {
-  USD: '$',
-  EGP: 'EGP'
-};
-
 const CostAnalysis = () => {
-  const [currency, setCurrency] = useState<string>('EGP');
-  const symbol = currencySymbols[currency];
-
-  const rawTotal = rawMaterialItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0);
-  const totalTarget = 2570000;
+  const totalRawMaterialCost = rawMaterialItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0);
   const totalActual = 1550133.11;
+  const totalTarget = 2570000;
   const totalAfter = 1500133.11;
-  const unitsProduced = 10000;
-  const costPerUnit = totalActual / unitsProduced;
+  const costPerUnit = totalActual / 10000;
   const benchmarkPrice = 257;
+  const symbol = 'EGP';
 
-  const formatCurrency = (val: number) => `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const format = (val: number) => `${symbol}${val.toFixed(2)}`;
 
   return (
     <Box p="6">
       <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
 
       <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Total Actual Cost</Text>
-            <Heading size="6">{formatCurrency(totalActual)}</Heading>
-            <Text size="1">Based On Current Numbers</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Target Cost</Text>
-            <Heading size="6">{formatCurrency(totalTarget)}</Heading>
-            <Text size="1">Ideal Goal</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="6">{formatCurrency(totalAfter)}</Heading>
-            <Text size="1">Estimated Savings Included</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Progress To Target</Text>
-            <Progress value={93.5} />
-            <Text size="1">93.5% Toward Target</Text>
-          </Flex>
-        </Card>
+        <Card><Text size="2">Total Actual Cost</Text><Heading size="7">{format(totalActual)}</Heading><Text size="1">Based On Current Numbers</Text></Card>
+        <Card><Text size="2">Target Cost</Text><Heading size="7">{format(totalTarget)}</Heading><Text size="1">Ideal Goal</Text></Card>
+        <Card><Text size="2">Post-Optimization Estimate</Text><Heading size="7">{format(totalAfter)}</Heading><Text size="1">Estimated Savings Included</Text></Card>
+        <Card><Text size="2">Progress To Target</Text><Progress value={93.5} /><Text size="1">93.5% Toward Target</Text></Card>
       </Grid>
 
       <Card mb="4">
-        <Text size="2">Cost Per Unit</Text>
-        <Text size="3">{formatCurrency(costPerUnit)}</Text>
+        <Flex justify="between" align="center">
+          <Text size="2">Cost Per Unit</Text>
+          <Text size="3">{format(costPerUnit)}</Text>
+        </Flex>
       </Card>
 
-      <Card mb="5">
-        <Text size="2">Benchmark Price</Text>
-        <Text size="3">{formatCurrency(benchmarkPrice)}</Text>
+      <Card mb="4">
+        <Flex justify="between" align="center">
+          <Text size="2">Benchmark Price</Text>
+          <Text size="3">{format(benchmarkPrice)}</Text>
+        </Flex>
       </Card>
 
       <Card>
@@ -127,16 +99,35 @@ const CostAnalysis = () => {
           </Table.Header>
           <Table.Body>
             <Table.Row>
+              <Table.Cell><strong>Raw Materials</strong></Table.Cell>
+              <Table.Cell>{format(totalRawMaterialCost)}</Table.Cell>
+              <Table.Cell>{format(1100000)}</Table.Cell>
+              <Table.Cell>{format(totalRawMaterialCost - 1100000)}</Table.Cell>
+              <Table.Cell>40%</Table.Cell>
               <Table.Cell>
+                <Select.Root defaultValue="Negotiating Better Prices With Supplier">
+                  <Select.Trigger />
+                  <Select.Content>
+                    {solutionOptions.map((s, i) => <Select.Item key={i} value={s}>{s}</Select.Item>)}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              <Table.Cell>{format(totalRawMaterialCost - 10000)}</Table.Cell>
+            </Table.Row>
+
+            <Table.Row>
+              <Table.Cell colSpan={7}>
                 <Accordion.Root type="single" collapsible>
-                  <Accordion.Item value="raw">
-                    <Accordion.Trigger><strong>Raw Materials</strong></Accordion.Trigger>
+                  <Accordion.Item value="materials">
+                    <Accordion.Header>
+                      <Accordion.Trigger>Show Raw Material Breakdown</Accordion.Trigger>
+                    </Accordion.Header>
                     <Accordion.Content>
                       <Table.Root>
                         <Table.Header>
                           <Table.Row>
-                            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell>Kg</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
                           </Table.Row>
@@ -146,8 +137,8 @@ const CostAnalysis = () => {
                             <Table.Row key={index}>
                               <Table.Cell>{item.name}</Table.Cell>
                               <Table.Cell>{item.kg}</Table.Cell>
-                              <Table.Cell>{formatCurrency(item.pricePerKg)}</Table.Cell>
-                              <Table.Cell>{formatCurrency(item.kg * item.pricePerKg)}</Table.Cell>
+                              <Table.Cell>{format(item.pricePerKg)}</Table.Cell>
+                              <Table.Cell>{format(item.kg * item.pricePerKg)}</Table.Cell>
                             </Table.Row>
                           ))}
                         </Table.Body>
@@ -156,21 +147,6 @@ const CostAnalysis = () => {
                   </Accordion.Item>
                 </Accordion.Root>
               </Table.Cell>
-              <Table.Cell>{formatCurrency(rawTotal)}</Table.Cell>
-              <Table.Cell>{formatCurrency(1100000)}</Table.Cell>
-              <Table.Cell>{formatCurrency(rawTotal - 1100000)}</Table.Cell>
-              <Table.Cell>40%</Table.Cell>
-              <Table.Cell>
-                <Select.Root>
-                  <Select.Trigger />
-                  <Select.Content>
-                    {gapSolutions.map((option, i) => (
-                      <Select.Item key={i} value={option}>{option}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
-              <Table.Cell>{formatCurrency(rawTotal - 10000)}</Table.Cell>
             </Table.Row>
           </Table.Body>
         </Table.Root>
