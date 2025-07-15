@@ -1,3 +1,4 @@
+// Updated CostAnalysis.tsx with type safety, product selector, currency toggle, and charts
 import {
   Card,
   Flex,
@@ -13,7 +14,24 @@ import {
 import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useState } from 'react';
 
-const rawMaterialItems = [
+const solutionOptions = [
+  'Negotiating Better Prices With Supplier',
+  'Reducing Waste In Material Usage',
+  'Automation To Reduce Manual Labor Costs',
+  'Optimizing Machine Usage',
+  'Improving Inventory Management',
+  'Minimize Transportation Costs',
+  'Reduce Rework Costs',
+  'Other'
+];
+
+type MaterialItem = {
+  name: string;
+  kg: number;
+  pricePerKg: number;
+};
+
+const rawMaterialItems: MaterialItem[] = [
   { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
   { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
   { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
@@ -34,7 +52,7 @@ const rawMaterialItems = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const products = {
+const products: Record<string, MaterialItem[]> = {
   'Poultry Product': rawMaterialItems,
   'Liver Tonic': rawMaterialItems.slice(0, 10),
   'Energy Plus': rawMaterialItems.slice(10)
@@ -47,18 +65,18 @@ const currencySymbols: { [key: string]: string } = {
 
 const CostAnalysis = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP');
-  const [selectedProduct, setSelectedProduct] = useState('Poultry Product');
+  const [selectedProduct, setSelectedProduct] = useState<string>('Poultry Product');
 
   const symbol = currencySymbols[currency];
-  const selectedItems = products[selectedProduct] || [];
+  const selectedItems: MaterialItem[] = products[selectedProduct] || [];
 
   const costData = [
     {
       category: 'Raw Materials',
-      actual: selectedItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0),
+      actual: selectedItems.reduce((acc: number, item: MaterialItem) => acc + item.kg * item.pricePerKg, 0),
       target: 1100000,
       percent: 40,
-      color: '#3b82f6',
+      color: '#3b82f6'
     },
     { category: 'Direct Labor', actual: 600000, target: 580000, percent: 20, color: '#10b981' },
     { category: 'Packaging Materials', actual: 450000, target: 420000, percent: 15, color: '#f59e0b' },
@@ -66,9 +84,9 @@ const CostAnalysis = () => {
     { category: 'Other Costs', actual: 200000, target: 190000, percent: 10, color: '#f97316' }
   ];
 
-  const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
-  const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
-  const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
+  const totalActual = costData.reduce((acc: number, item) => acc + item.actual, 0);
+  const totalTarget = costData.reduce((acc: number, item) => acc + item.target, 0);
+  const totalAfter = costData.reduce((acc: number, item) => acc + (item.actual - 10000), 0);
   const unitsProduced = 10000;
 
   const costPerUnit = {
@@ -77,8 +95,7 @@ const CostAnalysis = () => {
     after: totalAfter / unitsProduced
   };
 
-  const formatCurrency = (val: number) =>
-    `${symbol}${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
+  const formatCurrency = (val: number) => `${symbol}${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
 
   return (
     <Box p="6">
@@ -110,43 +127,35 @@ const CostAnalysis = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Total Actual Cost</Text>
-            <Heading size="7">{formatCurrency(totalActual)}</Heading>
-            <Text size="1">Based on Current Numbers</Text>
+            <Heading size="6">{formatCurrency(totalActual)}</Heading>
+            <Text size="1">Based on current numbers</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Target Cost</Text>
-            <Heading size="7">{formatCurrency(totalTarget)}</Heading>
-            <Text size="1">Ideal Goal</Text>
+            <Heading size="6">{formatCurrency(totalTarget)}</Heading>
+            <Text size="1">Ideal goal</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="7">{formatCurrency(totalAfter)}</Heading>
-            <Text size="1">Estimated Savings Included</Text>
+            <Heading size="6">{formatCurrency(totalAfter)}</Heading>
+            <Text size="1">Estimated savings included</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Progress to Target</Text>
             <Progress value={(totalTarget / totalActual) * 100} />
-            <Text size="1">{((totalTarget / totalActual) * 100).toFixed(1)}% Toward Target</Text>
+            <Text size="1">{((totalTarget / totalActual) * 100).toFixed(1)}% toward target</Text>
           </Flex>
         </Card>
       </Grid>
 
-      <Card mb="5">
-        <Flex justify="between" align="center" mb="3">
-          <Heading size="4">Cost Per Unit</Heading>
-          <Text size="2">Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}</Text>
-        </Flex>
-        <Heading size="6">{formatCurrency(costPerUnit.actual)}</Heading>
-      </Card>
-
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
+      <Grid columns="2" gap="4" mb="5">
+        <Card>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
             <Pie
@@ -156,7 +165,7 @@ const CostAnalysis = () => {
               innerRadius={60}
               outerRadius={80}
               paddingAngle={5}
-              dataKey="actual"
+              dataKey="percent"
               nameKey="category"
             >
               {costData.map((entry, index) => (
@@ -165,13 +174,13 @@ const CostAnalysis = () => {
             </Pie>
           </PieChart>
         </Card>
-        <Card style={{ flex: 1 }}>
+        <Card>
           <Heading size="4" mb="3">Cost Trend Analysis</Heading>
           <BarChart width={400} height={250} data={costData}>
             <Bar dataKey="actual" fill="#3b82f6" />
           </BarChart>
         </Card>
-      </Flex>
+      </Grid>
     </Box>
   );
 };
