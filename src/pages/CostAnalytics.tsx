@@ -1,4 +1,4 @@
-// Updated CostAnalysis.tsx with separated Benchmark Price and improved labels
+// Updated CostAnalysis.tsx with Accordion support and full cost breakdown
 import {
   Card,
   Flex,
@@ -9,7 +9,8 @@ import {
   Grid,
   Progress,
   Select,
-  Box
+  Box,
+  Accordion
 } from '@radix-ui/themes';
 import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
 import { useState } from 'react';
@@ -46,150 +47,93 @@ const rawMaterialItems = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const products = {
-  'Poultry Product': rawMaterialItems,
-  'Liver Tonic': rawMaterialItems.slice(0, 10),
-  'Energy Plus': rawMaterialItems.slice(10)
-};
+const renderRawMaterialsAccordion = () => (
+  <Accordion.Root type="single" collapsible>
+    <Accordion.Item value="raw-materials">
+      <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
+      <Accordion.Content>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rawMaterialItems.map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>{item.name}</Table.Cell>
+                <Table.Cell>{item.kg}</Table.Cell>
+                <Table.Cell>EGP{item.pricePerKg.toFixed(2)}</Table.Cell>
+                <Table.Cell>EGP{(item.kg * item.pricePerKg).toFixed(2)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Accordion.Content>
+    </Accordion.Item>
+  </Accordion.Root>
+);
 
-const currencySymbols: Record<string, string> = {
-  USD: '$',
-  EGP: 'EGP'
+const renderCostBreakdownTable = () => {
+  const data = [
+    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', solutionOptions[0], -9866.89],
+    ['Direct Labor', 600000, 580000, 20000, '20%', solutionOptions[1], 590000],
+    ['Packaging Materials', 450000, 420000, 30000, '15%', solutionOptions[2], 440000],
+    ['Overhead', 300000, 280000, 20000, '15%', solutionOptions[3], 290000],
+    ['Other Costs', 200000, 190000, 10000, '10%', solutionOptions[4], 190000]
+  ];
+  const totalActual = data.reduce((acc, val) => acc + val[1], 0);
+  const totalTarget = data.reduce((acc, val) => acc + val[2], 0);
+  const totalAfter = data.reduce((acc, val) => acc + val[6], 0);
+  const totalVariance = totalActual - totalTarget;
+
+  return (
+    <Card mt="5">
+      <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {data.map((row, i) => (
+            <Table.Row key={i}>
+              {row.map((val, j) => (
+                <Table.Cell key={j}>{typeof val === 'number' ? `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : val}</Table.Cell>
+              ))}
+            </Table.Row>
+          ))}
+          <Table.Row>
+            <Table.Cell><strong>Total</strong></Table.Cell>
+            <Table.Cell>EGP{totalActual.toLocaleString()}</Table.Cell>
+            <Table.Cell>EGP{totalTarget.toLocaleString()}</Table.Cell>
+            <Table.Cell>EGP{totalVariance.toLocaleString()}</Table.Cell>
+            <Table.Cell>100%</Table.Cell>
+            <Table.Cell>-</Table.Cell>
+            <Table.Cell>EGP{totalAfter.toLocaleString()}</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+    </Card>
+  );
 };
 
 const CostAnalysis = () => {
-  const [currency, setCurrency] = useState<string>('EGP');
-  const [selectedProduct, setSelectedProduct] = useState<string>('Poultry Product');
-
-  const symbol = currencySymbols[currency];
-  const selectedItems = products[selectedProduct] || [];
-
-  const costData = [
-    {
-      category: 'Raw Materials',
-      actual: selectedItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0),
-      target: 1100000,
-      percent: 40,
-      color: '#3b82f6',
-      items: selectedItems.map(item => ({ name: item.name, cost: item.kg * item.pricePerKg }))
-    },
-    { category: 'Direct Labor', actual: 600000, target: 580000, percent: 20, color: '#10b981' },
-    { category: 'Packaging Materials', actual: 450000, target: 420000, percent: 15, color: '#f59e0b' },
-    { category: 'Overhead', actual: 300000, target: 280000, percent: 15, color: '#a855f7' },
-    { category: 'Other Costs', actual: 200000, target: 190000, percent: 10, color: '#f97316' }
-  ];
-
-  const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
-  const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
-  const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
-  const unitsProduced = 10000;
-
-  const costPerUnit = {
-    actual: totalActual / unitsProduced,
-    target: totalTarget / unitsProduced,
-    after: totalAfter / unitsProduced
-  };
-
-  const formatCurrency = (val: number) => `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
   return (
     <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Flex align="center" gap="4">
-          <Heading size="6">Inter-Organizational Cost Management</Heading>
-          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
-            <Select.Trigger />
-            <Select.Content>
-              {Object.keys(products).map(product => (
-                <Select.Item key={product} value={product}>{product}</Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </Flex>
-        <Flex gap="3">
-          <Button variant="soft">{symbol} Export Report</Button>
-          <Select.Root value={currency} onValueChange={(val: string) => setCurrency(val)}>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="USD">USD</Select.Item>
-              <Select.Item value="EGP">EGP</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </Flex>
-      </Flex>
-
-      <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Total Actual Cost</Text>
-            <Heading size="7">{formatCurrency(totalActual)}</Heading>
-            <Text size="1">Based On Current Numbers</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Target Cost</Text>
-            <Heading size="7">{formatCurrency(totalTarget)}</Heading>
-            <Text size="1">Ideal Goal</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="7">{formatCurrency(totalAfter)}</Heading>
-            <Text size="1">Estimated Savings Included</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Progress To Target</Text>
-            <Progress value={93.5} />
-            <Text size="1">93.5% Toward Target</Text>
-          </Flex>
-        </Card>
-      </Grid>
-
-      <Card mb="4">
-        <Flex justify="between" align="center">
-          <Text size="2">Cost Per Unit</Text>
-          <Text size="3">{formatCurrency(costPerUnit.actual)}</Text>
-        </Flex>
-      </Card>
-
-      <Card mb="5">
-        <Flex justify="between" align="center">
-          <Text size="2">Benchmark Price</Text>
-          <Text size="3">{formatCurrency(costPerUnit.target)}</Text>
-        </Flex>
-      </Card>
-
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Composition</Heading>
-          <PieChart width={300} height={250}>
-            <Pie
-              data={costData}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="actual"
-              nameKey="category"
-            >
-              {costData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={entry.color} />
-              ))}
-            </Pie>
-          </PieChart>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
-          <BarChart width={500} height={250} data={costData}>
-            <Bar dataKey="actual" fill="#3b82f6" />
-          </BarChart>
-        </Card>
-      </Flex>
+      <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
+      {renderRawMaterialsAccordion()}
+      {renderCostBreakdownTable()}
     </Box>
   );
 };
