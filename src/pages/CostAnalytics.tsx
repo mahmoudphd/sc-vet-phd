@@ -1,11 +1,9 @@
-// Updated CostAnalysis.tsx with cost per unit and updated title
 import {
   Card,
   Flex,
   Heading,
   Text,
   Table,
-  Badge,
   Button,
   Grid,
   Progress,
@@ -42,16 +40,9 @@ const currencySymbols: { [key: string]: string } = {
 const CostAnalysis = () => {
   const [costData, setCostData] = useState(initialCostData);
   const [solutions, setSolutions] = useState(Array(costData.length).fill(''));
-  const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP');
 
   const symbol = currencySymbols[currency];
-
-  const handleSolutionChange = (index: number, newSolution: string) => {
-    const updatedSolutions = [...solutions];
-    updatedSolutions[index] = newSolution;
-    setSolutions(updatedSolutions);
-  };
-
   const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
   const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
   const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
@@ -62,6 +53,8 @@ const CostAnalysis = () => {
     target: totalTarget / unitsProduced,
     after: totalAfter / unitsProduced
   };
+
+  const formatCurrency = (val: number) => `${symbol}${(val / 1000).toFixed(0)}K`;
 
   return (
     <Box p="6">
@@ -164,20 +157,22 @@ const CostAnalysis = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          <Table.Row>
-            <Table.Cell colSpan={7}><strong>Direct Cost</strong></Table.Cell>
-          </Table.Row>
+          <Table.Row><Table.Cell colSpan={7}><strong>Direct Cost</strong></Table.Cell></Table.Row>
           {costData.map((item, index) => (
             <Table.Row key={item.category}>
               <Table.Cell>{item.category}</Table.Cell>
-              <Table.Cell>{symbol}{(item.actual / 1000).toFixed(0)}K</Table.Cell>
-              <Table.Cell>{symbol}{(item.target / 1000).toFixed(0)}K</Table.Cell>
+              <Table.Cell>{formatCurrency(item.actual)}</Table.Cell>
+              <Table.Cell>{formatCurrency(item.target)}</Table.Cell>
               <Table.Cell>{(((item.actual - item.target) / item.target) * 100).toFixed(1)}%</Table.Cell>
               <Table.Cell>{item.percent}%</Table.Cell>
               <Table.Cell>
                 <Select.Root
                   value={solutions[index]}
-                  onValueChange={(value) => handleSolutionChange(index, value)}
+                  onValueChange={(value) => {
+                    const updated = [...solutions];
+                    updated[index] = value;
+                    setSolutions(updated);
+                  }}
                 >
                   <Select.Trigger placeholder="Choose..." />
                   <Select.Content>
@@ -187,23 +182,19 @@ const CostAnalysis = () => {
                   </Select.Content>
                 </Select.Root>
               </Table.Cell>
-              <Table.Cell>{symbol}{((item.actual - 10000) / 1000).toFixed(0)}K</Table.Cell>
+              <Table.Cell>{formatCurrency(item.actual - 10000)}</Table.Cell>
             </Table.Row>
           ))}
-          <Table.Row>
-            <Table.Cell colSpan={7}><strong>Overhead</strong></Table.Cell>
-          </Table.Row>
-          <Table.Row>
-            <Table.Cell colSpan={7}><strong>Other Costs</strong></Table.Cell>
-          </Table.Row>
+          <Table.Row><Table.Cell colSpan={7}><strong>Overhead</strong></Table.Cell></Table.Row>
+          <Table.Row><Table.Cell colSpan={7}><strong>Other Costs</strong></Table.Cell></Table.Row>
           <Table.Row>
             <Table.Cell><strong>Total</strong></Table.Cell>
-            <Table.Cell><strong>{symbol}{(totalActual / 1000).toFixed(0)}K</strong></Table.Cell>
-            <Table.Cell><strong>{symbol}{(totalTarget / 1000).toFixed(0)}K</strong></Table.Cell>
+            <Table.Cell><strong>{formatCurrency(totalActual)}</strong></Table.Cell>
+            <Table.Cell><strong>{formatCurrency(totalTarget)}</strong></Table.Cell>
             <Table.Cell></Table.Cell>
             <Table.Cell><strong>100%</strong></Table.Cell>
             <Table.Cell></Table.Cell>
-            <Table.Cell><strong>{symbol}{(totalAfter / 1000).toFixed(0)}K</strong></Table.Cell>
+            <Table.Cell><strong>{formatCurrency(totalAfter)}</strong></Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
