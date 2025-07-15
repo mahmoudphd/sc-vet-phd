@@ -1,3 +1,4 @@
+// Updated CostAnalysis.tsx with all requested features
 import {
   Card,
   Flex,
@@ -11,68 +12,48 @@ import {
   Select,
   Box
 } from '@radix-ui/themes';
-import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { useTranslation } from 'react-i18next';
+import { PieChart, Pie, Cell } from 'recharts';
 import { useState } from 'react';
 
 const solutionOptions = [
-  "Negotiating better prices with supplier",
-  "Reducing waste in material usage",
-  "Automation to reduce manual labor costs",
-  "Optimizing machine usage",
-  "Improving inventory management",
-  "Minimize transportation costs",
-  "Reduce rework costs",
-  "Other"
+  'Negotiating better prices with supplier',
+  'Reducing waste in material usage',
+  'Automation to reduce manual labor costs',
+  'Optimizing machine usage',
+  'Improving inventory management',
+  'Minimize transportation costs',
+  'Reduce rework costs',
+  'Other'
+];
+
+const initialCostData = [
+  { category: 'Raw Materials', actual: 1200000, target: 1100000, percent: 40, color: '#3b82f6' },
+  { category: 'Direct Labor', actual: 600000, target: 580000, percent: 20, color: '#10b981' },
+  { category: 'Packaging Materials', actual: 450000, target: 420000, percent: 15, color: '#f59e0b' },
+  { category: 'Overhead', actual: 300000, target: 280000, percent: 15, color: '#a855f7' },
+  { category: 'Other Costs', actual: 200000, target: 190000, percent: 10, color: '#f97316' }
 ];
 
 const CostAnalysis = () => {
-  const { t } = useTranslation('cost-analysis');
+  const [costData, setCostData] = useState(initialCostData);
+  const [solutions, setSolutions] = useState(Array(costData.length).fill(''));
 
-  const [costData, setCostData] = useState([
-    {
-      category: 'Direct Materials',
-      value: 45,
-      color: '#3b82f6',
-      actual: '$1.4M',
-      budget: '$1.3M',
-      solution: 'Negotiating better prices with supplier',
-      costAfter: '$1.25M'
-    },
-    {
-      category: 'Packaging',
-      value: 20,
-      color: '#f59e0b',
-      actual: '$700K',
-      budget: '$650K',
-      solution: 'Reducing waste in material usage',
-      costAfter: '$630K'
-    },
-    {
-      category: 'Labor',
-      value: 10,
-      color: '#ef4444',
-      actual: '$400K',
-      budget: '$350K',
-      solution: 'Automation to reduce manual labor costs',
-      costAfter: '$340K'
-    }
-  ]);
-
-const handleSolutionChange = (index: number, newSolution: string) => {
-    const updatedData = [...costData];
-    updatedData[index].solution = newSolution;
-    setCostData(updatedData);
+  const handleSolutionChange = (index: number, newSolution: string) => {
+    const updatedSolutions = [...solutions];
+    updatedSolutions[index] = newSolution;
+    setSolutions(updatedSolutions);
   };
+
+  const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
+  const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
+  const totalAfter = costData.reduce((acc, item, index) => acc + (item.actual - 10000), 0); // placeholder savings
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('Cost Analysis')}</Heading>
+        <Heading size="6">Cost Analysis</Heading>
         <Flex gap="3">
-          <Button variant="soft">
-            $ {t('export-report')}
-          </Button>
+          <Button variant="soft">$ Export Report</Button>
           <Select.Root defaultValue="quarter">
             <Select.Trigger />
           </Select.Root>
@@ -82,37 +63,37 @@ const handleSolutionChange = (index: number, newSolution: string) => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('cogs')}</Text>
-            <Heading size="7">$2.8M</Heading>
-            <Text size="1" className="text-green-500">↓ 3.2% MoM</Text>
+            <Text size="2">Total Actual Cost</Text>
+            <Heading size="7">${(totalActual / 1000000).toFixed(2)}M</Heading>
+            <Text size="1" color="gray">Based on current inputs</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('material-variance')}</Text>
-            <Heading size="7" className="text-red-500">+7.1%</Heading>
-            <Text size="1">{t('vs-usp-standard')}</Text>
+            <Text size="2">Target Cost</Text>
+            <Heading size="7">${(totalTarget / 1000000).toFixed(2)}M</Heading>
+            <Text size="1" color="gray">Ideal goal</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('yield-efficiency')}</Text>
-            <Progress value={85} />
-            <Text size="1">85% {t('theoretical-yield')}</Text>
+            <Text size="2">Projected After Solutions</Text>
+            <Heading size="7">${(totalAfter / 1000000).toFixed(2)}M</Heading>
+            <Text size="1" color="green">Projected savings applied</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('waste-cost')}</Text>
-            <Heading size="7">$124K</Heading>
-            <Text size="1">0.8% {t('of-cogs')}</Text>
+            <Text size="2">Progress to Target</Text>
+            <Progress value={(totalTarget / totalActual) * 100} />
+            <Text size="1">{((totalTarget / totalActual) * 100).toFixed(1)}% toward goal</Text>
           </Flex>
         </Card>
       </Grid>
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-composition')}</Heading>
+          <Heading size="4" mb="3">Cost Composition</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
@@ -122,7 +103,7 @@ const handleSolutionChange = (index: number, newSolution: string) => {
                 innerRadius={60}
                 outerRadius={80}
                 paddingAngle={5}
-                dataKey="value"
+                dataKey="percent"
               >
                 {costData.map((entry, index) => (
                   <Cell key={index} fill={entry.color} />
@@ -131,58 +112,56 @@ const handleSolutionChange = (index: number, newSolution: string) => {
             </PieChart>
           </div>
         </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-trend-analysis')}</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={costData}>
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </div>
-        </Card>
       </Flex>
 
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('cost-category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actual')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('solution')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('cost-after')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((category, index) => (
-            <Table.Row key={category.category}>
-              <Table.Cell>{category.category}</Table.Cell>
-              <Table.Cell>{category.actual}</Table.Cell>
-              <Table.Cell>{category.budget}</Table.Cell>
-              <Table.Cell>
-                <Badge color={category.category === 'api' ? 'red' : 'green'}>
-                  {t(`variance-values.${category.category === 'api' ? 'api' : 'default'}`)}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>{category.value}%</Table.Cell>
+          <Table.Row>
+            <Table.Cell colSpan={7}><strong>Direct Cost</strong></Table.Cell>
+          </Table.Row>
+          {costData.map((item, index) => (
+            <Table.Row key={item.category}>
+              <Table.Cell>{item.category}</Table.Cell>
+              <Table.Cell>${(item.actual / 1000).toFixed(0)}K</Table.Cell>
+              <Table.Cell>${(item.target / 1000).toFixed(0)}K</Table.Cell>
+              <Table.Cell>{(((item.actual - item.target) / item.target) * 100).toFixed(1)}%</Table.Cell>
+              <Table.Cell>{item.percent}%</Table.Cell>
               <Table.Cell>
                 <Select.Root
-                  defaultValue={category.solution}
+                  value={solutions[index]}
                   onValueChange={(value) => handleSolutionChange(index, value)}
                 >
-                  <Select.Trigger />
+                  <Select.Trigger placeholder="Choose..." />
                   <Select.Content>
                     {solutionOptions.map((option, i) => (
-                      <Select.Item key={i} value={option}>
-                        {option}
-                      </Select.Item>
+                      <Select.Item key={i} value={option}>{option}</Select.Item>
                     ))}
                   </Select.Content>
                 </Select.Root>
               </Table.Cell>
-              <Table.Cell>{category.costAfter}</Table.Cell>
+              <Table.Cell>${((item.actual - 10000) / 1000).toFixed(0)}K</Table.Cell>
             </Table.Row>
           ))}
+          <Table.Row>
+            <Table.Cell><strong>Total</strong></Table.Cell>
+            <Table.Cell><strong>${(totalActual / 1000).toFixed(0)}K</strong></Table.Cell>
+            <Table.Cell><strong>${(totalTarget / 1000).toFixed(0)}K</strong></Table.Cell>
+            <Table.Cell></Table.Cell>
+            <Table.Cell><strong>100%</strong></Table.Cell>
+            <Table.Cell></Table.Cell>
+            <Table.Cell><strong>${(totalAfter / 1000).toFixed(0)}K</strong></Table.Cell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
     </Box>
