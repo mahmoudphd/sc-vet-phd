@@ -78,17 +78,24 @@ const renderRawMaterialsAccordion = () => (
 );
 
 const renderCostBreakdownTable = () => {
+  const [solutions, setSolutions] = useState(Array(5).fill(solutionOptions[0]));
   const data = [
-    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', solutionOptions[0], -9866.89],
-    ['Direct Labor', 600000, 580000, 20000, '20%', solutionOptions[1], 590000],
-    ['Packaging Materials', 450000, 420000, 30000, '15%', solutionOptions[2], 440000],
-    ['Overhead', 300000, 280000, 20000, '15%', solutionOptions[3], 290000],
-    ['Other Costs', 200000, 190000, 10000, '10%', solutionOptions[4], 190000]
+    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', 0, -9866.89],
+    ['Direct Labor', 600000, 580000, 20000, '20%', 1, 590000],
+    ['Packaging Materials', 450000, 420000, 30000, '15%', 2, 440000],
+    ['Overhead', 300000, 280000, 20000, '15%', 3, 290000],
+    ['Other Costs', 200000, 190000, 10000, '10%', 4, 190000]
   ];
   const totalActual = data.reduce((acc, val) => acc + val[1], 0);
   const totalTarget = data.reduce((acc, val) => acc + val[2], 0);
   const totalAfter = data.reduce((acc, val) => acc + val[6], 0);
   const totalVariance = totalActual - totalTarget;
+
+  const handleSolutionChange = (index, newValue) => {
+    const updated = [...solutions];
+    updated[index] = newValue;
+    setSolutions(updated);
+  };
 
   return (
     <Card mt="5">
@@ -108,9 +115,22 @@ const renderCostBreakdownTable = () => {
         <Table.Body>
           {data.map((row, i) => (
             <Table.Row key={i}>
-              {row.map((val, j) => (
-                <Table.Cell key={j}>{typeof val === 'number' ? `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : val}</Table.Cell>
-              ))}
+              <Table.Cell>{row[0]}</Table.Cell>
+              <Table.Cell>EGP{row[1].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>EGP{row[2].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>EGP{row[3].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>{row[4]}</Table.Cell>
+              <Table.Cell>
+                <Select.Root value={solutions[i]} onValueChange={(val) => handleSolutionChange(i, val)}>
+                  <Select.Trigger />
+                  <Select.Content>
+                    {solutionOptions.map((option) => (
+                      <Select.Item key={option} value={option}>{option}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              <Table.Cell>EGP{row[6].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
             </Table.Row>
           ))}
           <Table.Row>
