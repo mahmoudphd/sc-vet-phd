@@ -123,28 +123,28 @@ const CostAnalysis = () => {
           <Flex direction="column" gap="1">
             <Text size="2">Total Actual Cost</Text>
             <Heading size="7">{formatCurrency(totalActual)}</Heading>
-            <Text size="1">Based on current numbers</Text>
+            <Text size="1">Based on Current Numbers</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Target Cost</Text>
             <Heading size="7">{formatCurrency(totalTarget)}</Heading>
-            <Text size="1">Ideal goal</Text>
+            <Text size="1">Ideal Goal</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Post-Optimization Estimate</Text>
             <Heading size="7">{formatCurrency(totalAfter)}</Heading>
-            <Text size="1">Estimated savings included</Text>
+            <Text size="1">Estimated Savings Included</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Progress to Target</Text>
             <Progress value={93.5} />
-            <Text size="1">93.5% toward target</Text>
+            <Text size="1">93.5% Toward Target</Text>
           </Flex>
         </Card>
       </Grid>
@@ -155,9 +155,10 @@ const CostAnalysis = () => {
           <Text size="3">{formatCurrency(costPerUnit.actual)}</Text>
         </Flex>
         <Text size="1">Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}</Text>
+        <Text size="1" mt="1">Benchmark Price: {formatCurrency(costPerUnit.target)}</Text>
       </Card>
 
-      <Flex gap="4">
+      <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
@@ -184,6 +185,45 @@ const CostAnalysis = () => {
           </BarChart>
         </Card>
       </Flex>
+
+      <Card>
+        <Heading size="4" mb="3">Detailed Cost Table</Heading>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {costData.map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell><strong>{item.category}</strong></Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.target)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual - item.target)}</Table.Cell>
+                <Table.Cell>{item.percent}%</Table.Cell>
+                <Table.Cell>{solutionOptions[index % solutionOptions.length]}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual - 10000)}</Table.Cell>
+              </Table.Row>
+            ))}
+            <Table.Row>
+              <Table.Cell><strong>Total</strong></Table.Cell>
+              <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalTarget)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalActual - totalTarget)}</Table.Cell>
+              <Table.Cell>100%</Table.Cell>
+              <Table.Cell>-</Table.Cell>
+              <Table.Cell>{formatCurrency(totalAfter)}</Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table.Root>
+      </Card>
     </Box>
   );
 };
