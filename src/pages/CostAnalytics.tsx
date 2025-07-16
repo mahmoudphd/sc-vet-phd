@@ -89,7 +89,6 @@ const CostAnalysis = () => {
   const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
   const totalCostAfter = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
 
-  // Benchmark trend data with initial fixed actuals and dynamic May actual from totalActual
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: 220 },
     { month: 'Feb', actual: 170.5, benchmark: 220 },
@@ -98,10 +97,8 @@ const CostAnalysis = () => {
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice }
   ];
 
-  // Calculate target cost based on benchmarkPrice and profitMargin
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
-  // Merge targetCost and gap to each data point for the chart
   const benchmarkTrendDataWithGap = benchmarkTrendData.map(d => ({
     ...d,
     targetCost,
@@ -113,7 +110,6 @@ const CostAnalysis = () => {
 
   return (
     <Box p="6">
-      {/* Header */}
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3">
@@ -138,7 +134,6 @@ const CostAnalysis = () => {
         </Flex>
       </Flex>
 
-      {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
         <Card>
           <Flex direction="column" gap="1">
@@ -161,7 +156,7 @@ const CostAnalysis = () => {
             <Text size="2">Benchmark Price</Text>
             <TextField.Root
               size="2"
-              value={benchmarkPrice}
+              value={benchmarkPrice.toString()}
               onChange={(e) => setBenchmarkPrice(Number(e.target.value))}
             />
           </Flex>
@@ -171,7 +166,7 @@ const CostAnalysis = () => {
             <Text size="2">Profit Margin (%)</Text>
             <TextField.Root
               size="2"
-              value={profitMargin}
+              value={profitMargin.toString()}
               onChange={(e) => setProfitMargin(Number(e.target.value))}
             />
           </Flex>
@@ -199,7 +194,6 @@ const CostAnalysis = () => {
         </Button>
       </Flex>
 
-      {/* Charts */}
       <Flex gap="4" mb="6">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
@@ -277,7 +271,6 @@ const CostAnalysis = () => {
         </Card>
       </Flex>
 
-      {/* Editable Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -312,12 +305,10 @@ const CostAnalysis = () => {
             const actual = parseFloat(item.actual ?? '0');
             const budget = parseFloat(item.budget ?? '0');
 
-            // Variance calculation: Target - Actual
             const varianceValue = budget - actual;
             const varianceColor = varianceValue > 0 ? 'red' : 'green';
             const varianceLabel = varianceValue.toFixed(2);
 
-            // % Of Total calculation
             const percentOfTotal = totalActual !== 0 ? (actual / totalActual) * 100 : 0;
             const percentOfTotalLabel = `${percentOfTotal.toFixed(1)}%`;
 
@@ -329,14 +320,14 @@ const CostAnalysis = () => {
                 <Table.Cell>
                   <TextField.Root
                     size="1"
-                    value={item.actual}
+                    value={item.actual ?? ''}
                     onChange={(e) => updateCostField(index, 'actual', e.target.value)}
                   />
                 </Table.Cell>
                 <Table.Cell>
                   <TextField.Root
                     size="1"
-                    value={item.budget}
+                    value={item.budget ?? ''}
                     onChange={(e) => updateCostField(index, 'budget', e.target.value)}
                   />
                 </Table.Cell>
@@ -368,7 +359,7 @@ const CostAnalysis = () => {
                 <Table.Cell>
                   <TextField.Root
                     size="1"
-                    value={item.costAfter}
+                    value={item.costAfter ?? ''}
                     onChange={(e) => updateCostField(index, 'costAfter', e.target.value)}
                   />
                 </Table.Cell>
