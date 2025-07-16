@@ -1,184 +1,193 @@
-// src/components/CostManagementFull.jsx
+import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  Table,
+  Button,
+  Grid,
+  Progress,
+  Select,
+  Box
+} from '@radix-ui/themes';
+import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
-import React, { useState } from 'react';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-
-export default function CostManagementFull() {
-  const [selectedProduct, setSelectedProduct] = useState('Poultry Product');
-  const [currency, setCurrency] = useState('EGP');
-  const [showExportMenu, setShowExportMenu] = useState(false);
-
-  const conversionRate = 30; // 1 USD = 30 EGP
-
-  const convert = (value) => {
-    return currency === 'EGP'
-      ? `${value.toLocaleString()} EGP`
-      : `${(value / conversionRate).toFixed(2)} USD`;
-  };
+const CostAnalysis = () => {
+  const { t } = useTranslation('cost-analysis');
 
   const costData = [
     {
-      item: 'المواد الخام',
-      unitCost: 15000,
-      targetCost: 12000,
-      solution: 'شراء بالجملة',
-      costAfter: 11000,
+      category: 'Direct Materials',
+      value: 45,
+      color: '#3b82f6',
+      actual: '$1.4M',
+      budget: '$1.3M',
+      solution: 'Negotiate supplier contracts',
+      costAfter: '$1.25M'
     },
     {
-      item: 'التصنيع',
-      unitCost: 10000,
-      targetCost: 8000,
-      solution: 'تحسين التشغيل',
-      costAfter: 7800,
+      category: 'Packaging',
+      value: 20,
+      color: '#f59e0b',
+      actual: '$700K',
+      budget: '$650K',
+      solution: 'Use alternative packaging',
+      costAfter: '$630K'
     },
+    {
+      category: 'Labor',
+      value: 10,
+      color: '#ef4444',
+      actual: '$400K',
+      budget: '$350K',
+      solution: 'Optimize shifts',
+      costAfter: '$340K'
+    }
   ];
 
-  const actualCost = costData.reduce((sum, row) => sum + row.unitCost, 0);
-  const totalCost = costData.reduce((sum, row) => sum + row.targetCost, 0);
-  const optimizedCost = costData.reduce((sum, row) => sum + row.costAfter, 0);
-  const yieldPercent = ((totalCost / actualCost) * 100).toFixed(1);
-  const progressToTarget = ((optimizedCost / totalCost) * 100).toFixed(1);
-
-  const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(costData.map(row => ({
-      'Cost Item': row.item,
-      'Actual Cost': convert(row.unitCost),
-      'Target Cost': convert(row.targetCost),
-      'Proposed Solution': row.solution,
-      'After Optimization': convert(row.costAfter),
-    })));
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Report");
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([wbout], { type: "application/octet-stream" }), 'CostReport.xlsx');
-  };
-
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    doc.text("Inter-Organizational Cost Report", 14, 15);
-    autoTable(doc, {
-      startY: 20,
-      head: [['Cost Item', 'Actual Cost', 'Target Cost', 'Proposed Solution', 'After Optimization']],
-      body: costData.map(row => [
-        row.item,
-        convert(row.unitCost),
-        convert(row.targetCost),
-        row.solution,
-        convert(row.costAfter),
-      ]),
-    });
-    doc.save("CostReport.pdf");
+  const parseValue = (str: string) => {
+    const num = parseFloat(str.replace(/[$,MK]/gi, ''));
+    return str.includes('M') ? num * 1_000_000 : str.includes('K') ? num * 1_000 : num;
   };
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Top Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-xl font-bold text-gray-800">
-          Inter-Organizational Cost Management
-        </h2>
+    <Box p="6">
+      {/* Title and Controls */}
+      <Flex justify="between" align="center" mb="5">
+        <Heading size="6">Inter-Organizational Cost Management</Heading>
+        <Flex gap="3">
+          <Select.Root defaultValue="product-1">
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="product-1">Product A</Select.Item>
+              <Select.Item value="product-2">Product B</Select.Item>
+            </Select.Content>
+          </Select.Root>
 
-        <div className="flex items-center gap-3 relative">
-          {/* Product Dropdown */}
-          <select
-            className="border border-gray-300 rounded px-3 py-1 text-sm"
-            value={selectedProduct}
-            onChange={(e) => setSelectedProduct(e.target.value)}
-          >
-            <option value="Poultry Product">Poultry Product</option>
-            <option value="Dairy Product">Dairy Product</option>
-            <option value="Pet Product">Pet Product</option>
-          </select>
+          <Select.Root defaultValue="EGP">
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
+            </Select.Content>
+          </Select.Root>
 
-          {/* Export Dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setShowExportMenu(!showExportMenu)}
-              className="bg-blue-600 text-white px-4 py-1 rounded text-sm hover:bg-blue-700"
-            >
-              Export Report
-            </button>
-            {showExportMenu && (
-              <div className="absolute mt-1 right-0 bg-white border rounded shadow z-10 w-40">
-                <button onClick={exportToExcel} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export as Excel</button>
-                <button onClick={exportToPDF} className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-sm">Export as PDF</button>
-              </div>
-            )}
-          </div>
-
-          {/* Currency Selector */}
-          <select
-            className="border border-gray-300 rounded px-3 py-1 text-sm"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-          >
-            <option value="EGP">EGP</option>
-            <option value="USD">USD</option>
-          </select>
-        </div>
-      </div>
+          <Button variant="soft">Export Report</Button>
+        </Flex>
+      </Flex>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        <KPI title="Actual Cost" value={convert(actualCost)} color="text-blue-700" />
-        <KPI title="Total Cost" value={convert(totalCost)} color="text-blue-700" />
-        <KPI title="Yield / Target Cost" value={`${yieldPercent}%`} color="text-green-700" />
-        <KPI title="Post-Optimization Estimate" value={convert(optimizedCost)} color="text-yellow-700" />
-        <KPI title="Progress to Target" value={`${progressToTarget}%`} color="text-purple-700" progress={progressToTarget} />
-      </div>
+      <Grid columns="3" gap="4" mb="6">
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Actual Cost</Text>
+            <Heading size="6">$2.75M</Heading>
+          </Flex>
+        </Card>
 
-      {/* Table */}
-      <div className="overflow-x-auto mt-6">
-        <table className="min-w-full border border-gray-300 text-right text-sm">
-          <thead className="bg-gray-100">
-            <tr>
-              <th className="border px-4 py-2">Actual Cost</th>
-              <th className="border px-4 py-2">Total Cost ({currency})</th>
-              <th className="border px-4 py-2">Yield / Target Cost ({currency})</th>
-              <th className="border px-4 py-2">Post-Optimization Estimate ({currency})</th>
-              <th className="border px-4 py-2">Progress to Target</th>
-              <th className="border px-4 py-2">Proposed Solution</th>
-              <th className="border px-4 py-2">After Optimization ({currency})</th>
-            </tr>
-          </thead>
-          <tbody>
-            {costData.map((row, index) => {
-              const gap = row.unitCost - row.targetCost;
-              const gapPercent = ((gap / row.targetCost) * 100).toFixed(1);
-              return (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="border px-4 py-2">{row.item}</td>
-                  <td className="border px-4 py-2">{convert(row.unitCost)}</td>
-                  <td className="border px-4 py-2">{convert(row.targetCost)}</td>
-                  <td className="border px-4 py-2">{convert(row.costAfter)}</td>
-                  <td className="border px-4 py-2">{gapPercent}%</td>
-                  <td className="border px-4 py-2">{row.solution}</td>
-                  <td className="border px-4 py-2">{convert(row.costAfter)}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Total Cost</Text>
+            <Heading size="6">$3.15M</Heading>
+          </Flex>
+        </Card>
 
-// KPI Card Component
-function KPI({ title, value, color, progress }) {
-  return (
-    <div className="bg-white shadow p-4 rounded-xl text-center">
-      <p className="text-sm text-gray-500 mb-2">{title}</p>
-      <p className={`text-xl font-semibold ${color} mb-1`}>{value}</p>
-      {progress && (
-        <div className="w-full bg-gray-200 h-2 rounded-full">
-          <div className="bg-purple-600 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
-        </div>
-      )}
-    </div>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Yield / Target</Text>
+            <Heading size="6">85% / 90%</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Post-Optimization Estimate</Text>
+            <Heading size="6">$2.85M</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="2">
+            <Text size="2">Progress to Target</Text>
+            <Progress value={78} />
+            <Text size="1">78% achieved</Text>
+          </Flex>
+        </Card>
+      </Grid>
+
+      {/* Chart Section */}
+      <Flex gap="4" mb="5">
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">{t('cost-composition')}</Heading>
+          <div className="h-64">
+            <PieChart width={300} height={250}>
+              <Pie
+                data={costData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {costData.map((entry, index) => (
+                  <Cell key={index} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </div>
+        </Card>
+
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">{t('cost-trend-analysis')}</Heading>
+          <div className="h-64">
+            <BarChart width={500} height={250} data={costData}>
+              <Bar dataKey="value" fill="#3b82f6" />
+            </BarChart>
+          </div>
+        </Card>
+      </Flex>
+
+      {/* Data Table */}
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>{t('cost-category')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('actual')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('solution')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('cost-after')}</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {costData.map((category) => {
+            const actual = parseValue(category.actual);
+            const budget = parseValue(category.budget);
+            const variance = ((actual - budget) / budget) * 100;
+            const varianceLabel = `${variance > 0 ? '+' : ''}${variance.toFixed(1)}%`;
+            const varianceColor = variance > 0 ? 'red' : 'green';
+
+            return (
+              <Table.Row key={category.category}>
+                <Table.Cell>{category.category}</Table.Cell>
+                <Table.Cell>{category.actual}</Table.Cell>
+                <Table.Cell>{category.budget}</Table.Cell>
+                <Table.Cell>
+                  <Text color={varianceColor}>{varianceLabel}</Text>
+                </Table.Cell>
+                <Table.Cell>{category.value}%</Table.Cell>
+                <Table.Cell>{category.solution}</Table.Cell>
+                <Table.Cell>{category.costAfter}</Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table.Root>
+    </Box>
   );
-}
+};
+
+export default CostAnalysis;
