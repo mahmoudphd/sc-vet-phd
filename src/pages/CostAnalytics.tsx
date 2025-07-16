@@ -59,6 +59,7 @@ const currencySymbols: Record<string, string> = {
 const CostAnalysis = () => {
   const [currency, setCurrency] = useState<string>('EGP');
   const [selectedProduct, setSelectedProduct] = useState<string>('Poultry Product');
+  const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
 
   const symbol = currencySymbols[currency];
   const selectedItems = products[selectedProduct] || [];
@@ -97,6 +98,11 @@ const CostAnalysis = () => {
     }
   ];
 
+  // initialize solution state to empty strings if not set
+  if (selectedSolutions.length !== costData.length) {
+    setSelectedSolutions(Array(costData.length).fill(''));
+  }
+
   const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
   const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
   const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
@@ -119,7 +125,7 @@ const CostAnalysis = () => {
       <Flex justify="between" align="center" mb="5">
         <Flex align="center" gap="4">
           <Heading size="6">Inter-Organizational Cost Management</Heading>
-          <Select.Root value={selectedProduct} onValueChange={val => setSelectedProduct(val)}>
+          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <Select.Trigger />
             <Select.Content>
               {Object.keys(products).map(product => (
@@ -132,7 +138,7 @@ const CostAnalysis = () => {
         </Flex>
         <Flex gap="3">
           <Button variant="soft">{symbol} Export Report</Button>
-          <Select.Root value={currency} onValueChange={val => setCurrency(val)}>
+          <Select.Root value={currency} onValueChange={setCurrency}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="USD">USD</Select.Item>
@@ -181,9 +187,7 @@ const CostAnalysis = () => {
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">
-            Cost Composition
-          </Heading>
+          <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
             <Pie data={costData} dataKey="actual" nameKey="category" cx="50%" cy="50%" outerRadius={80}>
               {costData.map((entry, index) => (
@@ -193,9 +197,7 @@ const CostAnalysis = () => {
           </PieChart>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">
-            Cost Trend Analysis
-          </Heading>
+          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
           <BarChart width={500} height={250} data={costData}>
             <Bar dataKey="actual" fill="#3b82f6" />
           </BarChart>
@@ -203,9 +205,7 @@ const CostAnalysis = () => {
       </Flex>
 
       <Card>
-        <Heading size="4" mb="3">
-          Detailed Cost Table
-        </Heading>
+        <Heading size="4" mb="3">Detailed Cost Table</Heading>
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
@@ -221,23 +221,35 @@ const CostAnalysis = () => {
           <Table.Body>
             {costData.map((item, index) => (
               <Table.Row key={index}>
-                <Table.Cell>
-                  <strong>{item.category}</strong>
-                </Table.Cell>
+                <Table.Cell><strong>{item.category}</strong></Table.Cell>
                 <Table.Cell>{formatCurrency(item.actual)}</Table.Cell>
                 <Table.Cell>{formatCurrency(item.target)}</Table.Cell>
                 <Table.Cell>{formatCurrency(item.actual - item.target)}</Table.Cell>
+                <Table.Cell>{((item.actual / totalActual) * 100).toFixed(2)}%</Table.Cell>
                 <Table.Cell>
-                  {((item.actual / totalActual) * 100).toFixed(2)}%
+                  <Select.Root
+                    value={selectedSolutions[index]}
+                    onValueChange={(val) => {
+                      const updated = [...selectedSolutions];
+                      updated[index] = val;
+                      setSelectedSolutions(updated);
+                    }}
+                  >
+                    <Select.Trigger placeholder="Choose Solution" />
+                    <Select.Content>
+                      {solutionOptions.map((option, i) => (
+                        <Select.Item key={i} value={option}>
+                          {option}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
                 </Table.Cell>
-                <Table.Cell>{solutionOptions[index % solutionOptions.length]}</Table.Cell>
                 <Table.Cell>{formatCurrency(item.actual - 10000)}</Table.Cell>
               </Table.Row>
             ))}
             <Table.Row>
-              <Table.Cell>
-                <strong>Total</strong>
-              </Table.Cell>
+              <Table.Cell><strong>Total</strong></Table.Cell>
               <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
               <Table.Cell>{formatCurrency(totalTarget)}</Table.Cell>
               <Table.Cell>{formatCurrency(totalActual - totalTarget)}</Table.Cell>
@@ -253,3 +265,5 @@ const CostAnalysis = () => {
 };
 
 export default CostAnalysis;
+
+
