@@ -8,8 +8,7 @@ import {
   Grid,
   Progress,
   Select,
-  Box,
-  TextField
+  Box
 } from '@radix-ui/themes';
 import { BarChart, Bar, PieChart, Pie, Cell, Tooltip as ReTooltip } from 'recharts';
 import { useState } from 'react';
@@ -108,11 +107,11 @@ const CostAnalysis = () => {
 
       <Grid columns="3" gap="4" mb="6">
         <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin (%)</Text><TextField.Input type="number" value={profitMargin} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><TextField.Input type="number" value={targetCost} onChange={(e) => setTargetCost(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin (%)</Text><input type="number" value={profitMargin} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><input type="number" value={targetCost} onChange={(e) => setTargetCost(Number(e.target.value))} /></Flex></Card>
         <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6">{formatCurrency(3450)}</Heading></Flex></Card>
         <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><TextField.Input type="number" value={postOptimizationEstimate} onChange={(e) => setPostOptimizationEstimate(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><input type="number" value={postOptimizationEstimate} onChange={(e) => setPostOptimizationEstimate(Number(e.target.value))} /></Flex></Card>
       </Grid>
 
       <Flex gap="4" mb="6">
@@ -166,8 +165,8 @@ const CostAnalysis = () => {
             return (
               <Table.Row key={item.category}>
                 <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell><TextField.Input type="number" value={item.actual} onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))} /></Table.Cell>
-                <Table.Cell><TextField.Input type="number" value={item.budget} onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell><input type="number" value={item.actual} onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell><input type="number" value={item.budget} onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))} /></Table.Cell>
                 <Table.Cell><Text color={varianceColor}>{variance.toFixed(1)}%</Text></Table.Cell>
                 <Table.Cell>{percentOfTotal.toFixed(1)}%</Table.Cell>
                 <Table.Cell>
@@ -183,7 +182,7 @@ const CostAnalysis = () => {
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell><TextField.Input type="number" value={item.costAfter} onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell><input type="number" value={item.costAfter} onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))} /></Table.Cell>
               </Table.Row>
             );
           })}
