@@ -41,7 +41,7 @@ const CostAnalysis = () => {
   const [targetCost, setTargetCost] = useState<number>(3200);
   const [postOptimizationEstimate, setPostOptimizationEstimate] = useState<number>(3150);
   const [profitMargin, setProfitMargin] = useState<number>(25);
-  const [benchmarkPrice, setBenchmarkPrice] = useState<number>(3450); // أضفنا هذا
+  const [benchmarkPrice, setBenchmarkPrice] = useState<number>(3450);
   const [costData, setCostData] = useState(initialData);
 
   const formatCurrency = (num: number | string | undefined) => {
@@ -90,21 +90,11 @@ const CostAnalysis = () => {
 
       <Grid columns="3" gap="4" mb="6">
         <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Actual Cost</Text><Heading size="6" weight="bold">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Profit Margin (%)</Text><input type="number" value={profitMargin} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Target Cost</Text><input type="number" value={targetCost} onChange={(e) => setTargetCost(Number(e.target.value))} /></Flex></Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2" weight="bold">Benchmark Price</Text>
-            <input
-              type="number"
-              value={benchmarkPrice}
-              onChange={(e) => setBenchmarkPrice(Number(e.target.value))}
-              style={{ fontSize: '1.25rem', padding: '4px' }}
-            />
-          </Flex>
-        </Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Profit Margin (%)</Text><Text weight="bold">{profitMargin}%</Text></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Target Cost</Text><Text weight="bold">{formatCurrency(targetCost)}</Text></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Benchmark Price</Text><input type="number" value={benchmarkPrice} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
         <Card><Flex direction="column" gap="2"><Text size="2" weight="bold">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Post-Optimization Estimate</Text><input type="number" value={postOptimizationEstimate} onChange={(e) => setPostOptimizationEstimate(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Post-Optimization Estimate</Text><Heading size="6" weight="bold">{formatCurrency(postOptimizationEstimate)}</Heading></Flex></Card>
       </Grid>
 
       <Flex gap="4" mb="6">
@@ -121,7 +111,7 @@ const CostAnalysis = () => {
         </Card>
 
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
+          <Heading size="4" mb="3">Benchmark Price Analysis</Heading>
           <BarChart width={500} height={250} data={costData.filter(i => !i.isGroup)}>
             <Bar dataKey="value" fill="#3b82f6" />
             <ReferenceLine y={benchmarkPrice} stroke="red" strokeDasharray="3 3" label={`Benchmark: ${formatCurrency(benchmarkPrice)}`} />
@@ -130,16 +120,16 @@ const CostAnalysis = () => {
         </Card>
       </Flex>
 
-      <Table.Root variant="surface">
+      <Table.Root variant="surface" style={{ fontSize: '14px', borderCollapse: 'collapse' }}>
         <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+          <Table.Row style={{ borderBottom: '2px solid #ccc' }}>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Budget</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>% Of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ fontWeight: 'bold' }}>Cost After</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -157,10 +147,10 @@ const CostAnalysis = () => {
             const varianceColor = variance > 0 ? 'red' : 'green';
 
             return (
-              <Table.Row key={item.category}>
+              <Table.Row key={item.category} style={{ borderBottom: '1px solid #eee' }}>
                 <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell><input type="number" value={item.actual} onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))} /></Table.Cell>
-                <Table.Cell><input type="number" value={item.budget} onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell><input type="number" value={item.actual} onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))} /> {currency}</Table.Cell>
+                <Table.Cell><input type="number" value={item.budget} onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))} /> {currency}</Table.Cell>
                 <Table.Cell><Text color={varianceColor}>{variance.toFixed(1)}%</Text></Table.Cell>
                 <Table.Cell>{percentOfTotal.toFixed(1)}%</Table.Cell>
                 <Table.Cell>
@@ -176,7 +166,7 @@ const CostAnalysis = () => {
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell><input type="number" value={item.costAfter} onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell><input type="number" value={item.costAfter} onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))} /> {currency}</Table.Cell>
               </Table.Row>
             );
           })}
