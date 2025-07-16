@@ -9,9 +9,21 @@ import {
   Grid,
   Progress,
   Select,
-  Box
+  Box,
+  TextField
 } from '@radix-ui/themes';
-import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 import { useState } from 'react';
 
 const solutionOptions = [
@@ -29,8 +41,9 @@ const CostAnalysis = () => {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [solutions, setSolutions] = useState<Record<string, string>>({});
   const [benchmarkPrice, setBenchmarkPrice] = useState(3450);
+  const [targetCost, setTargetCost] = useState(3200);
   const [profitMargin, setProfitMargin] = useState(25);
-  const [targetCost, setTargetCost] = useState(0);
+  const [showGap, setShowGap] = useState(false);
 
   const formatCurrency = (num: number | string | undefined) => {
     const value = typeof num === 'string' ? parseFloat(num ?? '0') : num ?? 0;
@@ -82,14 +95,19 @@ const CostAnalysis = () => {
   const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
   const totalCostAfter = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
 
-  // Update dynamic target cost once budget calculated
-  if (targetCost !== totalBudget) {
-    setTargetCost(totalBudget);
-  }
+  const benchmarkTrendData = [
+    { month: 'Jan', actual: 3250, benchmark: 3400 },
+    { month: 'Feb', actual: 3300, benchmark: 3425 },
+    { month: 'Mar', actual: 3340, benchmark: 3440 },
+    { month: 'Apr', actual: 3360, benchmark: 3435 },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice }
+  ];
+
+  const averageGap = benchmarkTrendData.reduce((sum, d) => sum + (d.benchmark - d.actual), 0) / benchmarkTrendData.length;
 
   return (
     <Box p="6">
-      {/* Header */}
+      {/* Controls */}
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3">
@@ -114,38 +132,67 @@ const CostAnalysis = () => {
         </Flex>
       </Flex>
 
+      {/* Manual Inputs */}
+      <Flex gap="4" mb="5">
+        <TextField.Root>
+          <TextField.Input type="number" value={targetCost} onChange={e => setTargetCost(+e.target.value)} placeholder="Target Cost" />
+        </TextField.Root>
+        <TextField.Root>
+          <TextField.Input type="number" value={benchmarkPrice} onChange={e => setBenchmarkPrice(+e.target.value)} placeholder="Benchmark Price" />
+        </TextField.Root>
+        <TextField.Root>
+          <TextField.Input type="number" value={profitMargin} onChange={e => setProfitMargin(+e.target.value)} placeholder="Profit Margin (%)" />
+        </TextField.Root>
+      </Flex>
+
       {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
         <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Actual Cost</Text><Heading size="6" weight="bold">{formatCurrency(totalActual)}</Heading></Flex></Card>
         <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Target Cost</Text><Heading size="6" weight="bold">{formatCurrency(targetCost)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Profit Margin (%)</Text><Heading size="6" weight="bold">{profitMargin}%</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Benchmark Price</Text><input type="number" value={benchmarkPrice} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2" weight="bold">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Post-Optimization Estimate</Text><Heading size="6" weight="bold">{formatCurrency(3150)}</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Benchmark Price</Text><Heading size="6" weight="bold">{formatCurrency(benchmarkPrice)}</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Profit Margin</Text><Heading size="6" weight="bold">{profitMargin}%</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="2"><Text size="2" weight="bold">Progress To Target</Text><Progress value={Math.min((targetCost / totalActual) * 100, 100)} /><Text size="1">{Math.round((targetCost / totalActual) * 100)}% Achieved</Text></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Post-Optimization Estimate</Text><Heading size="6" weight="bold">{formatCurrency(totalCostAfter)}</Heading></Flex></Card>
       </Grid>
 
-      {/* Charts */}
+      {/* Gap Analysis Toggle and Charts */}
+      <Flex justify="end" mb="4">
+        <Button variant="solid" onClick={() => setShowGap(!showGap)}>
+          {showGap ? 'Hide Gap Analysis' : 'Show Gap Analysis'}
+        </Button>
+      </Flex>
+
       <Flex gap="4" mb="6">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
-            <Pie data={[
-              { name: 'Direct Cost', value: 80 },
-              { name: 'Overhead', value: 12 },
-              { name: 'Other Costs', value: 8 }
-            ]} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+            <Pie data={[{ name: 'Direct Cost', value: 80 }, { name: 'Overhead', value: 12 }, { name: 'Other Costs', value: 8 }]} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
               <Cell fill="#3b82f6" />
               <Cell fill="#f59e0b" />
               <Cell fill="#ef4444" />
             </Pie>
+            <Legend />
           </PieChart>
         </Card>
 
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Benchmark Price Analysis</Heading>
-          <BarChart width={500} height={250} data={[{ name: 'Benchmark Price', value: benchmarkPrice }]}>
-            <Bar dataKey="value" fill="#10b981" />
-          </BarChart>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={benchmarkTrendData}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Legend />
+              <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Our Product Price" />
+              <Line type="monotone" dataKey="benchmark" stroke="#ef4444" name="Market Benchmark" />
+              {showGap && <Line type="monotone" dataKey={(d: any) => d.benchmark - d.actual} stroke="#10b981" name="Price Gap" dot={false} />} 
+            </LineChart>
+          </ResponsiveContainer>
+          {showGap && (
+            <Text align="center" mt="3" size="2" color="gray">
+              Average Gap: <strong>{formatCurrency(averageGap)}</strong>
+            </Text>
+          )}
         </Card>
       </Flex>
 
@@ -167,7 +214,9 @@ const CostAnalysis = () => {
             if (item.isGroup) {
               return (
                 <Table.Row key={`group-${index}`}>
-                  <Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell>
+                  <Table.Cell colSpan={7}>
+                    <Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text>
+                  </Table.Cell>
                 </Table.Row>
               );
             }
@@ -180,11 +229,11 @@ const CostAnalysis = () => {
 
             return (
               <Table.Row key={item.category}>
-                <Table.Cell><Text size="3">{item.category}</Text></Table.Cell>
-                <Table.Cell><Text size="3">{formatCurrency(actual)}</Text></Table.Cell>
-                <Table.Cell><Text size="3">{formatCurrency(budget)}</Text></Table.Cell>
-                <Table.Cell><Text size="3" color={varianceColor}>{varianceLabel}</Text></Table.Cell>
-                <Table.Cell><Text size="3">{item.value}%</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{formatCurrency(actual)}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{formatCurrency(budget)}</Text></Table.Cell>
+                <Table.Cell><Text color={varianceColor}>{varianceLabel}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{item.value}%</Text></Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={solutions[item.category] || ''}
@@ -198,18 +247,19 @@ const CostAnalysis = () => {
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell><Text size="3">{formatCurrency(item.costAfter)}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{formatCurrency(item.costAfter)}</Text></Table.Cell>
               </Table.Row>
             );
           })}
+
           <Table.Row>
             <Table.Cell><Text weight="bold">Total</Text></Table.Cell>
-            <Table.Cell><Text size="3">{formatCurrency(totalActual)}</Text></Table.Cell>
-            <Table.Cell><Text size="3">{formatCurrency(totalBudget)}</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalActual)}</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalBudget)}</Text></Table.Cell>
             <Table.Cell />
-            <Table.Cell><Text weight="bold" size="3">100%</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
             <Table.Cell />
-            <Table.Cell><Text weight="bold" size="3">{formatCurrency(totalCostAfter)}</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter)}</Text></Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
