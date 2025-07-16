@@ -13,30 +13,18 @@ import {
 } from '@radix-ui/themes';
 import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
-
-const solutionOptions = [
-  "Negotiating better prices with supplier",
-  "Reducing waste in material usage",
-  "Automation to reduce manual labor costs",
-  "Optimizing machine usage",
-  "Improving inventory management",
-  "Minimize transportation costs",
-  "Reduce rework costs",
-  "Other"
-];
 
 const CostAnalysis = () => {
   const { t } = useTranslation('cost-analysis');
 
-  const [costData, setCostData] = useState([
+  const costData = [
     {
       category: 'Direct Materials',
       value: 45,
       color: '#3b82f6',
       actual: '$1.4M',
       budget: '$1.3M',
-      solution: 'Negotiating better prices with supplier',
+      solution: 'Negotiate supplier contracts',
       costAfter: '$1.25M'
     },
     {
@@ -45,7 +33,7 @@ const CostAnalysis = () => {
       color: '#f59e0b',
       actual: '$700K',
       budget: '$650K',
-      solution: 'Reducing waste in material usage',
+      solution: 'Use alternative packaging',
       costAfter: '$630K'
     },
     {
@@ -54,16 +42,10 @@ const CostAnalysis = () => {
       color: '#ef4444',
       actual: '$400K',
       budget: '$350K',
-      solution: 'Automation to reduce manual labor costs',
+      solution: 'Optimize shifts',
       costAfter: '$340K'
     }
-  ]);
-
-  const handleSolutionChange = (index, newSolution) => {
-    const updatedData = [...costData];
-    updatedData[index].solution = newSolution;
-    setCostData(updatedData);
-  };
+  ];
 
   return (
     <Box p="6">
@@ -154,7 +136,7 @@ const CostAnalysis = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((category, index) => (
+          {costData.map((category) => (
             <Table.Row key={category.category}>
               <Table.Cell>{category.category}</Table.Cell>
               <Table.Cell>{category.actual}</Table.Cell>
@@ -165,21 +147,7 @@ const CostAnalysis = () => {
                 </Badge>
               </Table.Cell>
               <Table.Cell>{category.value}%</Table.Cell>
-              <Table.Cell>
-                <Select.Root
-                  defaultValue={category.solution}
-                  onValueChange={(value) => handleSolutionChange(index, value)}
-                >
-                  <Select.Trigger />
-                  <Select.Content>
-                    {solutionOptions.map((option, i) => (
-                      <Select.Item key={i} value={option}>
-                        {option}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
+              <Table.Cell>{category.solution}</Table.Cell>
               <Table.Cell>{category.costAfter}</Table.Cell>
             </Table.Row>
           ))}
