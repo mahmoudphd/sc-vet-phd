@@ -12,18 +12,7 @@ import {
   Box,
   TextField
 } from '@radix-ui/themes';
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  Tooltip,
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell, Legend, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 
 const solutionOptions = [
@@ -107,61 +96,28 @@ const CostAnalysis = () => {
 
   return (
     <Box p="6">
-      {/* Controls */}
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
-        <Flex gap="3">
-          <Select.Root defaultValue="poultry-1">
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="poultry-1">Poultry Product 1</Select.Item>
-              <Select.Item value="poultry-2">Poultry Product 2</Select.Item>
-              <Select.Item value="poultry-3">Poultry Product 3</Select.Item>
-            </Select.Content>
-          </Select.Root>
-
-          <Select.Root defaultValue="EGP" onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select.Root>
-
-          <Button variant="soft">Export Report</Button>
-        </Flex>
+      <Flex direction="column" gap="3" mb="4">
+        <TextField.Root size="2" placeholder="Target Cost" value={targetCost} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetCost(Number(e.target.value))} />
+        <TextField.Root size="2" placeholder="Benchmark Price" value={benchmarkPrice} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(Number(e.target.value))} />
+        <TextField.Root size="2" placeholder="Profit Margin %" value={profitMargin} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(Number(e.target.value))} />
       </Flex>
 
-      {/* Manual Inputs */}
-      <Flex gap="4" mb="5">
-        <TextField.Root>
-          <TextField.Input type="number" value={targetCost} onChange={e => setTargetCost(+e.target.value)} placeholder="Target Cost" />
-        </TextField.Root>
-        <TextField.Root>
-          <TextField.Input type="number" value={benchmarkPrice} onChange={e => setBenchmarkPrice(+e.target.value)} placeholder="Benchmark Price" />
-        </TextField.Root>
-        <TextField.Root>
-          <TextField.Input type="number" value={profitMargin} onChange={e => setProfitMargin(+e.target.value)} placeholder="Profit Margin (%)" />
-        </TextField.Root>
-      </Flex>
-
-      {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Actual Cost</Text><Heading size="6" weight="bold">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Target Cost</Text><Heading size="6" weight="bold">{formatCurrency(targetCost)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Benchmark Price</Text><Heading size="6" weight="bold">{formatCurrency(benchmarkPrice)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Profit Margin</Text><Heading size="6" weight="bold">{profitMargin}%</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2" weight="bold">Progress To Target</Text><Progress value={Math.min((targetCost / totalActual) * 100, 100)} /><Text size="1">{Math.round((targetCost / totalActual) * 100)}% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2" weight="bold">Post-Optimization Estimate</Text><Heading size="6" weight="bold">{formatCurrency(totalCostAfter)}</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6"><strong>{formatCurrency(totalActual)}</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6"><strong>{formatCurrency(totalBudget)}</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6"><strong>{formatCurrency(benchmarkPrice)}</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin</Text><Heading size="6"><strong>{profitMargin}%</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><Heading size="6"><strong>{formatCurrency(totalCostAfter)}</strong></Heading></Flex></Card>
       </Grid>
 
-      {/* Gap Analysis Toggle and Charts */}
       <Flex justify="end" mb="4">
         <Button variant="solid" onClick={() => setShowGap(!showGap)}>
           {showGap ? 'Hide Gap Analysis' : 'Show Gap Analysis'}
         </Button>
       </Flex>
 
+      {/* Charts */}
       <Flex gap="4" mb="6">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
@@ -214,9 +170,7 @@ const CostAnalysis = () => {
             if (item.isGroup) {
               return (
                 <Table.Row key={`group-${index}`}>
-                  <Table.Cell colSpan={7}>
-                    <Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text>
-                  </Table.Cell>
+                  <Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell>
                 </Table.Row>
               );
             }
@@ -229,7 +183,7 @@ const CostAnalysis = () => {
 
             return (
               <Table.Row key={item.category}>
-                <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
+                <Table.Cell>{item.category}</Table.Cell>
                 <Table.Cell><Text weight="medium">{formatCurrency(actual)}</Text></Table.Cell>
                 <Table.Cell><Text weight="medium">{formatCurrency(budget)}</Text></Table.Cell>
                 <Table.Cell><Text color={varianceColor}>{varianceLabel}</Text></Table.Cell>
