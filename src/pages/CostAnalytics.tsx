@@ -102,7 +102,7 @@ const CostAnalysis = () => {
   const benchmarkTrendDataWithGap = benchmarkTrendData.map(d => ({
     ...d,
     targetCost,
-    gap: parseFloat(d.actual) - targetCost
+    gap: d.actual - targetCost
   }));
 
   const averageGap =
@@ -260,12 +260,7 @@ const CostAnalysis = () => {
           {showGap && (
             <Text align="center" mt="3" size="2" color="gray">
               Average Gap:{' '}
-              <strong>
-                {formatCurrency(
-                  benchmarkTrendDataWithGap.reduce((sum, d) => sum + d.gap, 0) /
-                    benchmarkTrendDataWithGap.length
-                )}
-              </strong>
+              <strong>{formatCurrency(averageGap)}</strong>
             </Text>
           )}
         </Card>
@@ -305,6 +300,7 @@ const CostAnalysis = () => {
             const actual = parseFloat(item.actual ?? '0');
             const budget = parseFloat(item.budget ?? '0');
 
+            // variance = Target - Actual (value)
             const varianceValue = budget - actual;
             const varianceColor = varianceValue > 0 ? 'red' : 'green';
             const varianceLabel = varianceValue.toFixed(2);
