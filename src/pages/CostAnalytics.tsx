@@ -1,132 +1,161 @@
-import { 
-    Card, 
-    Flex, 
-    Heading, 
-    Text, 
-    Table, 
-    Badge, 
-    Button,
-    Grid,
-    Progress,
-    Select,
-    Box
+// Updated CostAnalysis.tsx with Accordion support and full cost breakdown
+import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  Table,
+  Button,
+  Grid,
+  Progress,
+  Select,
+  Box,
+  Accordion
 } from '@radix-ui/themes';
-import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { useTranslation } from 'react-i18next';
-  
-const CostAnalysis = () => {
-  const { t } = useTranslation('cost-analysis');
-  const costData = [
-    { category: 'Direct Materials', value: 45, color: '#3b82f6' },
-    // { category: 'excipients', value: 25, color: '#10b981' },
-    // { category: 'packaging', value: 20, color: '#f59e0b' },
-    // { category: 'labor', value: 10, color: '#ef4444' },
+import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { useState } from 'react';
+
+const solutionOptions = [
+  'Negotiating Better Prices With Supplier',
+  'Reducing Waste In Material Usage',
+  'Automation To Reduce Manual Labor Costs',
+  'Optimizing Machine Usage',
+  'Improving Inventory Management',
+  'Minimize Transportation Costs',
+  'Reduce Rework Costs',
+  'Other'
+];
+
+const rawMaterialItems = [
+  { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
+  { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
+  { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
+  { name: 'Nicotinamide (Vitamin B3)', kg: 0.01, pricePerKg: 400 },
+  { name: 'Pantothenic Acid', kg: 0.004, pricePerKg: 1700 },
+  { name: 'Vitamin B6', kg: 0.0015, pricePerKg: 900 },
+  { name: 'Leucine', kg: 0.03, pricePerKg: 200 },
+  { name: 'Threonine', kg: 0.01, pricePerKg: 950 },
+  { name: 'Taurine', kg: 0.0025, pricePerKg: 3000 },
+  { name: 'Glycine', kg: 0.0025, pricePerKg: 4200 },
+  { name: 'Arginine', kg: 0.0025, pricePerKg: 5000 },
+  { name: 'Cynarin', kg: 0.0025, pricePerKg: 3900 },
+  { name: 'Silymarin', kg: 0.025, pricePerKg: 700 },
+  { name: 'Sorbitol', kg: 0.01, pricePerKg: 360 },
+  { name: 'Carnitine', kg: 0.005, pricePerKg: 1070 },
+  { name: 'Betaine', kg: 0.02, pricePerKg: 1250 },
+  { name: 'Tween-80', kg: 0.075, pricePerKg: 90 },
+  { name: 'Water', kg: 0.571, pricePerKg: 1 }
+];
+
+const renderRawMaterialsAccordion = () => (
+  <Accordion.Root type="single" collapsible>
+    <Accordion.Item value="raw-materials">
+      <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
+      <Accordion.Content>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rawMaterialItems.map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>{item.name}</Table.Cell>
+                <Table.Cell>{item.kg}</Table.Cell>
+                <Table.Cell>EGP{item.pricePerKg.toFixed(2)}</Table.Cell>
+                <Table.Cell>EGP{(item.kg * item.pricePerKg).toFixed(2)}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Accordion.Content>
+    </Accordion.Item>
+  </Accordion.Root>
+);
+
+const renderCostBreakdownTable = () => {
+  const [solutions, setSolutions] = useState(Array(5).fill(solutionOptions[0]));
+  const data = [
+    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', 0, -9866.89],
+    ['Direct Labor', 600000, 580000, 20000, '20%', 1, 590000],
+    ['Packaging Materials', 450000, 420000, 30000, '15%', 2, 440000],
+    ['Overhead', 300000, 280000, 20000, '15%', 3, 290000],
+    ['Other Costs', 200000, 190000, 10000, '10%', 4, 190000]
   ];
+  const totalActual = data.reduce((acc, val) => acc + val[1], 0);
+  const totalTarget = data.reduce((acc, val) => acc + val[2], 0);
+  const totalAfter = data.reduce((acc, val) => acc + val[6], 0);
+  const totalVariance = totalActual - totalTarget;
+
+  const handleSolutionChange = (index, newValue) => {
+    const updated = [...solutions];
+    updated[index] = newValue;
+    setSolutions(updated);
+  };
 
   return (
-    <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('Cost Analysis')}</Heading>
-        <Flex gap="3">
-          <Button variant="soft">
-            $ {t('export-report')}
-          </Button>
-          <Select.Root defaultValue="quarter">
-            <Select.Trigger />
-          </Select.Root>
-        </Flex>
-      </Flex>
-
-      <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('cogs')}</Text>
-            <Heading size="7">$2.8M</Heading>
-            <Text size="1" className="text-green-500">↓ 3.2% MoM</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('material-variance')}</Text>
-            <Heading size="7" className="text-red-500">+7.1%</Heading>
-            <Text size="1">{t('vs-usp-standard')}</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('yield-efficiency')}</Text>
-            <Progress value={85} />
-            <Text size="1">85% {t('theoretical-yield')}</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('waste-cost')}</Text>
-            <Heading size="7">$124K</Heading>
-            <Text size="1">0.8% {t('of-cogs')}</Text>
-          </Flex>
-        </Card>
-      </Grid>
-
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-composition')}</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={costData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {costData.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </div>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-trend-analysis')}</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={costData}>
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </div>
-        </Card>
-      </Flex>
-
+    <Card mt="5">
+      <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('cost-category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actual')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((category) => (
-            <Table.Row key={category.category}>
-              <Table.Cell>{category.category}</Table.Cell>
-              <Table.Cell>$1.4M</Table.Cell>
-              <Table.Cell>$1.3M</Table.Cell>
+          {data.map((row, i) => (
+            <Table.Row key={i}>
+              <Table.Cell>{row[0]}</Table.Cell>
+              <Table.Cell>EGP{row[1].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>EGP{row[2].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>EGP{row[3].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
+              <Table.Cell>{row[4]}</Table.Cell>
               <Table.Cell>
-                <Badge color={category.category === 'api' ? 'red' : 'green'}>
-                  {t(`variance-values.${category.category === 'api' ? 'api' : 'default'}`)}
-                </Badge>
+                <Select.Root value={solutions[i]} onValueChange={(val) => handleSolutionChange(i, val)}>
+                  <Select.Trigger />
+                  <Select.Content>
+                    {solutionOptions.map((option) => (
+                      <Select.Item key={option} value={option}>{option}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
-              <Table.Cell>{category.value}%</Table.Cell>
+              <Table.Cell>EGP{row[6].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
             </Table.Row>
           ))}
+          <Table.Row>
+            <Table.Cell><strong>Total</strong></Table.Cell>
+            <Table.Cell>EGP{totalActual.toLocaleString()}</Table.Cell>
+            <Table.Cell>EGP{totalTarget.toLocaleString()}</Table.Cell>
+            <Table.Cell>EGP{totalVariance.toLocaleString()}</Table.Cell>
+            <Table.Cell>100%</Table.Cell>
+            <Table.Cell>-</Table.Cell>
+            <Table.Cell>EGP{totalAfter.toLocaleString()}</Table.Cell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
+    </Card>
+  );
+};
+
+const CostAnalysis = () => {
+  return (
+    <Box p="6">
+      <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
+      {renderRawMaterialsAccordion()}
+      {renderCostBreakdownTable()}
     </Box>
   );
 };
 
-export default CostAnalysis
+export default CostAnalysis;
