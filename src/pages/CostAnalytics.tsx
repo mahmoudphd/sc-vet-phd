@@ -1,132 +1,222 @@
-import { 
-    Card, 
-    Flex, 
-    Heading, 
-    Text, 
-    Table, 
-    Badge, 
-    Button,
-    Grid,
-    Progress,
-    Select,
-    Box
+import {
+  Card,
+  Flex,
+  Heading,
+  Text,
+  Table,
+  Button,
+  Grid,
+  Progress,
+  Select,
+  Box
 } from '@radix-ui/themes';
-import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { useTranslation } from 'react-i18next';
-  
+import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import { useState } from 'react';
+
+const solutionOptions = [
+  'Negotiating Better Prices With Supplier',
+  'Reducing Waste In Material Usage',
+  'Automation To Reduce Manual Labor Costs',
+  'Optimizing Machine Usage',
+  'Improving Inventory Management',
+  'Minimize Transportation Costs',
+  'Reduce Rework Costs',
+  'Other'
+];
+
+const rawMaterialItems = [
+  { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
+  { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
+  { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
+  { name: 'Nicotinamide (Vitamin B3)', kg: 0.01, pricePerKg: 400 },
+  { name: 'Pantothenic Acid', kg: 0.004, pricePerKg: 1700 },
+  { name: 'Vitamin B6', kg: 0.0015, pricePerKg: 900 },
+  { name: 'Leucine', kg: 0.03, pricePerKg: 200 },
+  { name: 'Threonine', kg: 0.01, pricePerKg: 950 },
+  { name: 'Taurine', kg: 0.0025, pricePerKg: 3000 },
+  { name: 'Glycine', kg: 0.0025, pricePerKg: 4200 },
+  { name: 'Arginine', kg: 0.0025, pricePerKg: 5000 },
+  { name: 'Cynarin', kg: 0.0025, pricePerKg: 3900 },
+  { name: 'Silymarin', kg: 0.025, pricePerKg: 700 },
+  { name: 'Sorbitol', kg: 0.01, pricePerKg: 360 },
+  { name: 'Carnitine', kg: 0.005, pricePerKg: 1070 },
+  { name: 'Betaine', kg: 0.02, pricePerKg: 1250 },
+  { name: 'Tween-80', kg: 0.075, pricePerKg: 90 },
+  { name: 'Water', kg: 0.571, pricePerKg: 1 }
+];
+
+const products = {
+const products: Record<string, { name: string; kg: number; pricePerKg: number }[]> = {
+  'Poultry Product': rawMaterialItems,
+  'Liver Tonic': rawMaterialItems.slice(0, 10),
+  'Energy Plus': rawMaterialItems.slice(10)
+};
+
+const currencySymbols = {
+const currencySymbols: Record<string, string> = {
+  USD: '$',
+  EGP: 'EGP'
+};
+
 const CostAnalysis = () => {
-  const { t } = useTranslation('cost-analysis');
+  const [currency, setCurrency] = useState('EGP');
+  const [selectedProduct, setSelectedProduct] = useState('Poultry Product');
+  const [currency, setCurrency] = useState<string>('EGP');
+  const [selectedProduct, setSelectedProduct] = useState<string>('Poultry Product');
+
+  const symbol = currencySymbols[currency];
+  const selectedItems = products[selectedProduct] || [];
+  const symbol = currencySymbols[currency as keyof typeof currencySymbols];
+  const selectedItems = products[selectedProduct as keyof typeof products] || [];
+
   const costData = [
-    { category: 'Direct Materials', value: 45, color: '#3b82f6' },
-    // { category: 'excipients', value: 25, color: '#10b981' },
-    // { category: 'packaging', value: 20, color: '#f59e0b' },
-    // { category: 'labor', value: 10, color: '#ef4444' },
+    {
+      category: 'Raw Materials',
+      actual: selectedItems.reduce((acc, item) => acc + item.kg * item.pricePerKg, 0),
+      actual: selectedItems.reduce(
+        (acc: number, item: { kg: number; pricePerKg: number }) => acc + item.kg * item.pricePerKg,
+        0
+      ),
+      target: 1100000,
+      percent: 40,
+      color: '#3b82f6',
+@@ -78,9 +81,9 @@
+    { category: 'Other Costs', actual: 200000, target: 190000, percent: 10, color: '#f97316' }
   ];
+
+  const totalActual = costData.reduce((acc, item) => acc + item.actual, 0);
+  const totalTarget = costData.reduce((acc, item) => acc + item.target, 0);
+  const totalAfter = costData.reduce((acc, item) => acc + (item.actual - 10000), 0);
+  const totalActual = costData.reduce((acc: number, item) => acc + item.actual, 0);
+  const totalTarget = costData.reduce((acc: number, item) => acc + item.target, 0);
+  const totalAfter = costData.reduce((acc: number, item) => acc + (item.actual - 10000), 0);
+  const unitsProduced = 10000;
+
+  const costPerUnit = {
+@@ -89,25 +92,28 @@
+    after: totalAfter / unitsProduced
+  };
+
+  const formatCurrency = (val) => `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatCurrency = (val: number) =>
+    `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('Cost Analysis')}</Heading>
-        <Flex gap="3">
-          <Button variant="soft">
-            $ {t('export-report')}
-          </Button>
-          <Select.Root defaultValue="quarter">
+        <Flex align="center" gap="4">
+          <Heading size="6">Inter-Organizational Cost Management</Heading>
+          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+          <Select.Root value={selectedProduct} onValueChange={(val: string) => setSelectedProduct(val)}>
             <Select.Trigger />
+            <Select.Content>
+              {Object.keys(products).map(product => (
+                <Select.Item key={product} value={product}>{product}</Select.Item>
+                <Select.Item key={product} value={product}>
+                  {product}
+                </Select.Item>
+              ))}
+            </Select.Content>
           </Select.Root>
         </Flex>
-      </Flex>
-
-      <Grid columns="4" gap="4" mb="5">
-        <Card>
+        <Flex gap="3">
+          <Button variant="soft">{symbol} Export Report</Button>
+          <Select.Root value={currency} onValueChange={(val) => setCurrency(val)}>
+          <Select.Root value={currency} onValueChange={(val: string) => setCurrency(val)}>
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="USD">USD</Select.Item>
+@@ -122,7 +128,7 @@
           <Flex direction="column" gap="1">
-            <Text size="2">{t('cogs')}</Text>
-            <Heading size="7">$2.8M</Heading>
-            <Text size="1" className="text-green-500">↓ 3.2% MoM</Text>
+            <Text size="2">Total Actual Cost</Text>
+            <Heading size="7">{formatCurrency(totalActual)}</Heading>
+            <Text size="1">Based on Current Numbers</Text>
+            <Text size="1">Based On Current Numbers</Text>
           </Flex>
         </Card>
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('material-variance')}</Text>
-            <Heading size="7" className="text-red-500">+7.1%</Heading>
-            <Text size="1">{t('vs-usp-standard')}</Text>
-          </Flex>
+@@ -141,7 +147,7 @@
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('yield-efficiency')}</Text>
-            <Progress value={85} />
-            <Text size="1">85% {t('theoretical-yield')}</Text>
+            <Text size="2">Progress to Target</Text>
+            <Text size="2">Progress To Target</Text>
+            <Progress value={93.5} />
+            <Text size="1">93.5% Toward Target</Text>
           </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('waste-cost')}</Text>
-            <Heading size="7">$124K</Heading>
-            <Text size="1">0.8% {t('of-cogs')}</Text>
-          </Flex>
-        </Card>
-      </Grid>
+@@ -153,13 +159,19 @@
+          <Text size="2">Cost Per Unit</Text>
+          <Text size="3">{formatCurrency(costPerUnit.actual)}</Text>
+        </Flex>
+        <Text size="1">Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}</Text>
+        <Text size="1" mt="1">Benchmark Price: {formatCurrency(costPerUnit.target)}</Text>
+        <Text size="1">
+          Target: {formatCurrency(costPerUnit.target)} | After: {formatCurrency(costPerUnit.after)}
+        </Text>
+        <Text size="1" mt="1">
+          Benchmark Price: {formatCurrency(costPerUnit.target)}
+        </Text>
+      </Card>
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-composition')}</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={costData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {costData.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </div>
+          <Heading size="4" mb="3">Cost Composition</Heading>
+          <Heading size="4" mb="3">
+            Cost Composition
+          </Heading>
+          <PieChart width={300} height={250}>
+            <Pie
+              data={costData}
+@@ -178,31 +190,37 @@
+          </PieChart>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('cost-trend-analysis')}</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={costData}>
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </div>
+          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
+          <Heading size="4" mb="3">
+            Cost Trend Analysis
+          </Heading>
+          <BarChart width={500} height={250} data={costData}>
+            <Bar dataKey="actual" fill="#3b82f6" />
+          </BarChart>
         </Card>
       </Flex>
 
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>{t('cost-category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actual')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {costData.map((category) => (
-            <Table.Row key={category.category}>
-              <Table.Cell>{category.category}</Table.Cell>
-              <Table.Cell>$1.4M</Table.Cell>
-              <Table.Cell>$1.3M</Table.Cell>
-              <Table.Cell>
-                <Badge color={category.category === 'api' ? 'red' : 'green'}>
-                  {t(`variance-values.${category.category === 'api' ? 'api' : 'default'}`)}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>{category.value}%</Table.Cell>
+      <Card>
+        <Heading size="4" mb="3">Detailed Cost Table</Heading>
+        <Heading size="4" mb="3">
+          Detailed Cost Table
+        </Heading>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Box>
-  );
-};
-
-export default CostAnalysis
+          </Table.Header>
+          <Table.Body>
+            {costData.map((item, index) => (
+              <Table.Row key={index}>
+                <Table.Cell><strong>{item.category}</strong></Table.Cell>
+                <Table.Cell>
+                  <strong>{item.category}</strong>
+                </Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.target)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual - item.target)}</Table.Cell>
+@@ -212,7 +230,9 @@
+              </Table.Row>
+            ))}
+            <Table.Row>
+              <Table.Cell><strong>Total</strong></Table.Cell>
+              <Table.Cell>
+                <strong>Total</strong>
+              </Table.Cell>
+              <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalTarget)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totalActual - totalTarget)}</Table.Cell>
