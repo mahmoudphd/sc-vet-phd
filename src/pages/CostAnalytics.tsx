@@ -30,7 +30,6 @@ const CostAnalysis = () => {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [solutions, setSolutions] = useState<Record<string, string>>({});
   const [benchmarkPrice, setBenchmarkPrice] = useState(3450);
-  const [targetCost, setTargetCost] = useState(3200);
   const [profitMargin, setProfitMargin] = useState(25);
   const [showGap, setShowGap] = useState(false);
 
@@ -39,7 +38,7 @@ const CostAnalysis = () => {
     return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${currency}`;
   };
 
-  const costData = [
+  const [costData, setCostData] = useState([
     { category: 'Direct Cost', isGroup: true },
     {
       category: 'Direct Materials',
@@ -78,7 +77,13 @@ const CostAnalysis = () => {
       budget: '230',
       costAfter: '225'
     }
-  ];
+  ]);
+
+  const updateCostField = (index: number, field: 'actual' | 'budget' | 'costAfter', value: string) => {
+    const updated = [...costData];
+    (updated[index] as any)[field] = value;
+    setCostData(updated);
+  };
 
   const totalActual = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.actual ?? '0'), 0);
   const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
@@ -121,18 +126,12 @@ const CostAnalysis = () => {
         </Flex>
       </Flex>
 
-      <Flex direction="column" gap="3" mb="4">
-        <TextField.Root size="2" placeholder="Target Cost" value={targetCost} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetCost(Number(e.target.value))} />
-        <TextField.Root size="2" placeholder="Benchmark Price" value={benchmarkPrice} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(Number(e.target.value))} />
-        <TextField.Root size="2" placeholder="Profit Margin %" value={profitMargin} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(Number(e.target.value))} />
-      </Flex>
-
       {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
         <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6"><strong>{formatCurrency(totalActual)}</strong></Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6"><strong>{formatCurrency(targetCost)}</strong></Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6"><strong>{formatCurrency(benchmarkPrice)}</strong></Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin</Text><Heading size="6"><strong>{profitMargin}%</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6"><strong>{formatCurrency(totalBudget)}</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><TextField.Root size="2" value={benchmarkPrice} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin</Text><TextField.Root size="2" value={profitMargin} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
         <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
         <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><Heading size="6"><strong>{formatCurrency(totalCostAfter)}</strong></Heading></Flex></Card>
       </Grid>
@@ -178,7 +177,7 @@ const CostAnalysis = () => {
         </Card>
       </Flex>
 
-      {/* Table remains unchanged below */}
+      {/* Editable Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -210,8 +209,8 @@ const CostAnalysis = () => {
             return (
               <Table.Row key={item.category}>
                 <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
-                <Table.Cell><Text weight="medium">{formatCurrency(actual)}</Text></Table.Cell>
-                <Table.Cell><Text weight="medium">{formatCurrency(budget)}</Text></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.actual} onChange={(e) => updateCostField(index, 'actual', e.target.value)} /></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.budget} onChange={(e) => updateCostField(index, 'budget', e.target.value)} /></Table.Cell>
                 <Table.Cell><Text weight="medium" color={varianceColor}>{varianceLabel}</Text></Table.Cell>
                 <Table.Cell><Text weight="medium">{item.value}%</Text></Table.Cell>
                 <Table.Cell>
@@ -227,7 +226,7 @@ const CostAnalysis = () => {
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell><Text weight="medium">{formatCurrency(item.costAfter)}</Text></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.costAfter} onChange={(e) => updateCostField(index, 'costAfter', e.target.value)} /></Table.Cell>
               </Table.Row>
             );
           })}
