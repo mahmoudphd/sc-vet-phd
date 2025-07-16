@@ -4,193 +4,187 @@ import {
   Heading,
   Text,
   Table,
+  Badge,
+  Button,
   Grid,
   Progress,
   Select,
   Box
 } from '@radix-ui/themes';
-import * as Accordion from '@radix-ui/react-accordion';
+import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 
 const solutionOptions = [
-  'Negotiating Better Prices With Supplier',
-  'Reducing Waste In Material Usage',
-  'Automation To Reduce Manual Labor Costs',
-  'Optimizing Machine Usage',
-  'Improving Inventory Management',
-  'Minimize Transportation Costs',
-  'Reduce Rework Costs',
-  'Other'
-];
-
-const rawMaterialItems = [
-  { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
-  { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
-  { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
-  { name: 'Nicotinamide (Vitamin B3)', kg: 0.01, pricePerKg: 400 },
-  { name: 'Pantothenic Acid', kg: 0.004, pricePerKg: 1700 },
-  { name: 'Vitamin B6', kg: 0.0015, pricePerKg: 900 },
-  { name: 'Leucine', kg: 0.03, pricePerKg: 200 },
-  { name: 'Threonine', kg: 0.01, pricePerKg: 950 },
-  { name: 'Taurine', kg: 0.0025, pricePerKg: 3000 },
-  { name: 'Glycine', kg: 0.0025, pricePerKg: 4200 },
-  { name: 'Arginine', kg: 0.0025, pricePerKg: 5000 },
-  { name: 'Cynarin', kg: 0.0025, pricePerKg: 3900 },
-  { name: 'Silymarin', kg: 0.025, pricePerKg: 700 },
-  { name: 'Sorbitol', kg: 0.01, pricePerKg: 360 },
-  { name: 'Carnitine', kg: 0.005, pricePerKg: 1070 },
-  { name: 'Betaine', kg: 0.02, pricePerKg: 1250 },
-  { name: 'Tween-80', kg: 0.075, pricePerKg: 90 },
-  { name: 'Water', kg: 0.571, pricePerKg: 1 }
-];
-
-const initialData = [
-  {
-    category: 'Raw Materials',
-    actual: 133.11,
-    target: 1100000,
-    percent: '40%',
-    solution: solutionOptions[0],
-    costAfter: -9866.89
-  },
-  {
-    category: 'Direct Labor',
-    actual: 600000,
-    target: 580000,
-    percent: '20%',
-    solution: solutionOptions[1],
-    costAfter: 590000
-  },
-  {
-    category: 'Packaging Materials',
-    actual: 450000,
-    target: 420000,
-    percent: '15%',
-    solution: solutionOptions[2],
-    costAfter: 440000
-  },
-  {
-    category: 'Overhead',
-    actual: 300000,
-    target: 280000,
-    percent: '15%',
-    solution: solutionOptions[3],
-    costAfter: 290000
-  },
-  {
-    category: 'Other Costs',
-    actual: 200000,
-    target: 190000,
-    percent: '10%',
-    solution: solutionOptions[4],
-    costAfter: 190000
-  }
+  "Negotiating better prices with supplier",
+  "Reducing waste in material usage",
+  "Automation to reduce manual labor costs",
+  "Optimizing machine usage",
+  "Improving inventory management",
+  "Minimize transportation costs",
+  "Reduce rework costs",
+  "Other"
 ];
 
 const CostAnalysis = () => {
-  const [rows, setRows] = useState(initialData);
+  const { t } = useTranslation('cost-analysis');
 
-  const handleSolutionChange = (index: number, newVal: string) => {
-    const updated = [...rows];
-    updated[index].solution = newVal;
-    setRows(updated);
+  const [costData, setCostData] = useState([
+    {
+      category: 'Direct Materials',
+      value: 45,
+      color: '#3b82f6',
+      actual: '$1.4M',
+      budget: '$1.3M',
+      solution: 'Negotiating better prices with supplier',
+      costAfter: '$1.25M'
+    },
+    {
+      category: 'Packaging',
+      value: 20,
+      color: '#f59e0b',
+      actual: '$700K',
+      budget: '$650K',
+      solution: 'Reducing waste in material usage',
+      costAfter: '$630K'
+    },
+    {
+      category: 'Labor',
+      value: 10,
+      color: '#ef4444',
+      actual: '$400K',
+      budget: '$350K',
+      solution: 'Automation to reduce manual labor costs',
+      costAfter: '$340K'
+    }
+  ]);
+
+  const handleSolutionChange = (index, newSolution) => {
+    const updatedData = [...costData];
+    updatedData[index].solution = newSolution;
+    setCostData(updatedData);
   };
-
-  const formatEGP = (val: number) =>
-    `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-
-  const totalActual = rows.reduce((sum, r) => sum + r.actual, 0);
-  const totalTarget = rows.reduce((sum, r) => sum + r.target, 0);
-  const totalAfter = rows.reduce((sum, r) => sum + r.costAfter, 0);
-  const totalVariance = totalActual - totalTarget;
-
-  const renderAccordion = () => (
-    <Accordion.Root type="single" collapsible defaultValue="materials">
-      <Accordion.Item value="materials">
-        <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
-        <Accordion.Content>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {rawMaterialItems.map((item, idx) => (
-                <Table.Row key={idx}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.kg}</Table.Cell>
-                  <Table.Cell>{formatEGP(item.pricePerKg)}</Table.Cell>
-                  <Table.Cell>{formatEGP(item.kg * item.pricePerKg)}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Accordion.Content>
-      </Accordion.Item>
-    </Accordion.Root>
-  );
 
   return (
     <Box p="6">
-      <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
+      <Flex justify="between" align="center" mb="5">
+        <Heading size="6">{t('Cost Analysis')}</Heading>
+        <Flex gap="3">
+          <Button variant="soft">
+            $ {t('export-report')}
+          </Button>
+          <Select.Root defaultValue="quarter">
+            <Select.Trigger />
+          </Select.Root>
+        </Flex>
+      </Flex>
 
-      {/* Accordion */}
-      {renderAccordion()}
+      <Grid columns="4" gap="4" mb="5">
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">{t('cogs')}</Text>
+            <Heading size="7">$2.8M</Heading>
+            <Text size="1" className="text-green-500">↓ 3.2% MoM</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">{t('material-variance')}</Text>
+            <Heading size="7" className="text-red-500">+7.1%</Heading>
+            <Text size="1">{t('vs-usp-standard')}</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">{t('yield-efficiency')}</Text>
+            <Progress value={85} />
+            <Text size="1">85% {t('theoretical-yield')}</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">{t('waste-cost')}</Text>
+            <Heading size="7">$124K</Heading>
+            <Text size="1">0.8% {t('of-cogs')}</Text>
+          </Flex>
+        </Card>
+      </Grid>
 
-      {/* Table */}
-      <Card mt="5">
-        <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>%</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+      <Flex gap="4" mb="5">
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">{t('cost-composition')}</Heading>
+          <div className="h-64">
+            <PieChart width={300} height={250}>
+              <Pie
+                data={costData}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {costData.map((entry, index) => (
+                  <Cell key={index} fill={entry.color} />
+                ))}
+              </Pie>
+            </PieChart>
+          </div>
+        </Card>
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">{t('cost-trend-analysis')}</Heading>
+          <div className="h-64">
+            <BarChart width={500} height={250} data={costData}>
+              <Bar dataKey="value" fill="#3b82f6" />
+            </BarChart>
+          </div>
+        </Card>
+      </Flex>
+
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>{t('cost-category')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('actual')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('budget')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('percent-of-total')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('solution')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('cost-after')}</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {costData.map((category, index) => (
+            <Table.Row key={category.category}>
+              <Table.Cell>{category.category}</Table.Cell>
+              <Table.Cell>{category.actual}</Table.Cell>
+              <Table.Cell>{category.budget}</Table.Cell>
+              <Table.Cell>
+                <Badge color={category.category === 'api' ? 'red' : 'green'}>
+                  {t(`variance-values.${category.category === 'api' ? 'api' : 'default'}`)}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell>{category.value}%</Table.Cell>
+              <Table.Cell>
+                <Select.Root
+                  defaultValue={category.solution}
+                  onValueChange={(value) => handleSolutionChange(index, value)}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {solutionOptions.map((option, i) => (
+                      <Select.Item key={i} value={option}>
+                        {option}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              <Table.Cell>{category.costAfter}</Table.Cell>
             </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.map((row, i) => (
-              <Table.Row key={i}>
-                <Table.Cell>{row.category}</Table.Cell>
-                <Table.Cell>{formatEGP(row.actual)}</Table.Cell>
-                <Table.Cell>{formatEGP(row.target)}</Table.Cell>
-                <Table.Cell>{formatEGP(row.actual - row.target)}</Table.Cell>
-                <Table.Cell>{row.percent}</Table.Cell>
-                <Table.Cell>
-                  <Select.Root value={row.solution} onValueChange={(val) => handleSolutionChange(i, val)}>
-                    <Select.Trigger />
-                    <Select.Content>
-                      {solutionOptions.map((option, idx) => (
-                        <Select.Item key={idx} value={option}>
-                          {option}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Table.Cell>
-                <Table.Cell>{formatEGP(row.costAfter)}</Table.Cell>
-              </Table.Row>
-            ))}
-            <Table.Row>
-              <Table.Cell><strong>Total</strong></Table.Cell>
-              <Table.Cell>{formatEGP(totalActual)}</Table.Cell>
-              <Table.Cell>{formatEGP(totalTarget)}</Table.Cell>
-              <Table.Cell>{formatEGP(totalVariance)}</Table.Cell>
-              <Table.Cell>100%</Table.Cell>
-              <Table.Cell>-</Table.Cell>
-              <Table.Cell>{formatEGP(totalAfter)}</Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table.Root>
-      </Card>
+          ))}
+        </Table.Body>
+      </Table.Root>
     </Box>
   );
 };
