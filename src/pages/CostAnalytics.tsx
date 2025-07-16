@@ -12,8 +12,6 @@ import {
 } from '@radix-ui/themes';
 import { BarChart, Bar, PieChart, Pie, Cell, Tooltip as ReTooltip } from 'recharts';
 import { useState } from 'react';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
 
 const solutionOptions = [
   'Negotiating Better Prices With Supplier',
@@ -62,22 +60,6 @@ const CostAnalysis = () => {
     });
   };
 
-  const exportExcel = () => {
-    const flatData = costData.filter(i => !i.isGroup).map(item => ({
-      Category: item.category,
-      Actual: item.actual,
-      Budget: item.budget,
-      'Cost After': item.costAfter,
-      Solution: solutions[item.category] || '',
-      '% Of Total': `${((Number(item.actual) / totalActual) * 100).toFixed(1)}%`
-    }));
-    const ws = XLSX.utils.json_to_sheet(flatData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Cost Report');
-    const buffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    saveAs(new Blob([buffer], { type: 'application/octet-stream' }), 'report.xlsx');
-  };
-
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
@@ -100,8 +82,6 @@ const CostAnalysis = () => {
               <Select.Item value="USD">USD</Select.Item>
             </Select.Content>
           </Select.Root>
-
-          <Button variant="soft" onClick={exportExcel}>Export Report</Button>
         </Flex>
       </Flex>
 
