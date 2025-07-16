@@ -39,37 +39,25 @@ const CostAnalysis = () => {
   const costData = [
     { category: 'Direct Cost', isGroup: true },
     {
-      category: 'Raw Materials',
-      value: 40,
-      actual: '1200000',
-      budget: '1100000',
-      solution: '',
-      costAfter: '1150000'
+      category: 'Direct Materials',
+      value: 45,
+      actual: '1400000',
+      budget: '1300000',
+      costAfter: '1250000'
     },
     {
-      category: 'Direct Labor',
+      category: 'Packaging',
       value: 20,
-      actual: '600000',
-      budget: '580000',
-      solution: '',
-      costAfter: '590000'
+      actual: '700000',
+      budget: '650000',
+      costAfter: '630000'
     },
     {
-      category: 'Packaging Materials',
-      value: 15,
-      actual: '450000',
-      budget: '420000',
-      solution: '',
-      costAfter: '430000'
-    },
-    { category: 'Overhead', isGroup: true },
-    {
-      category: 'Other Costs',
-      value: 25,
-      actual: '500000',
-      budget: '470000',
-      solution: '',
-      costAfter: '480000'
+      category: 'Labor',
+      value: 10,
+      actual: '400000',
+      budget: '350000',
+      costAfter: '340000'
     }
   ];
 
@@ -168,7 +156,9 @@ const CostAnalysis = () => {
               return (
                 <Table.Row key={`group-${index}`}>
                   <Table.Cell colSpan={7}>
-                    <Text weight="bold">{item.category}</Text>
+                    <Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>
+                      {item.category}
+                    </Text>
                   </Table.Cell>
                 </Table.Row>
               );
