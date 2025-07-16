@@ -166,3 +166,6 @@ const CostAnalysis = () => {
       </Table.Root>
     </Box>
   );
+};
+
+export default CostAnalysis;
