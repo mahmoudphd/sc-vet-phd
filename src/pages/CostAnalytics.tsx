@@ -31,8 +31,8 @@ const CostAnalysis = () => {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [solutions, setSolutions] = useState<Record<string, string>>({});
 
-  const formatCurrency = (num: number | string) => {
-    const value = typeof num === 'string' ? parseFloat(num) : num;
+  const formatCurrency = (num: number | string | undefined) => {
+    const value = typeof num === 'string' ? parseFloat(num ?? '0') : num ?? 0;
     return `${value.toLocaleString()} ${currency}`;
   };
 
@@ -75,7 +75,7 @@ const CostAnalysis = () => {
 
   const totalCostAfter = costData
     .filter(item => !item.isGroup)
-    .reduce((sum, item) => sum + parseFloat(item.costAfter), 0);
+    .reduce((sum, item) => sum + parseFloat(item.costAfter ?? '0'), 0);
 
   return (
     <Box p="6">
@@ -174,9 +174,9 @@ const CostAnalysis = () => {
               );
             }
 
-            const actual = parseFloat(item.actual);
-            const budget = parseFloat(item.budget);
-            const variance = ((actual - budget) / budget) * 100;
+            const actual = parseFloat(item.actual ?? '0');
+            const budget = parseFloat(item.budget ?? '0');
+            const variance = budget !== 0 ? ((actual - budget) / budget) * 100 : 0;
             const varianceLabel = `${variance > 0 ? '+' : ''}${variance.toFixed(1)}%`;
             const varianceColor = variance > 0 ? 'red' : 'green';
 
