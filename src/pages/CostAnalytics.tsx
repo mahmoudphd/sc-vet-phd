@@ -63,7 +63,7 @@ const CostAnalysis = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
+        <Heading size="6" weight="bold">Inter-Organizational Cost Management</Heading>
         <Flex gap="3">
           <Select.Root defaultValue="product-1">
             <Select.Trigger />
@@ -82,23 +82,79 @@ const CostAnalysis = () => {
               <Select.Item value="USD">USD</Select.Item>
             </Select.Content>
           </Select.Root>
+
+          <Button variant="soft">Export Report</Button> {/* زر بدون وظيفة */}
         </Flex>
       </Flex>
 
       <Grid columns="3" gap="4" mb="6">
-        <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin (%)</Text><input type="number" value={profitMargin} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><input type="number" value={targetCost} onChange={(e) => setTargetCost(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6">{formatCurrency(3450)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><input type="number" value={postOptimizationEstimate} onChange={(e) => setPostOptimizationEstimate(Number(e.target.value))} /></Flex></Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">Actual Cost</Text>
+            <Heading size="6" weight="bold">{formatCurrency(totalActual)}</Heading>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">Profit Margin (%)</Text>
+            <input
+              type="number"
+              value={profitMargin}
+              onChange={(e) => setProfitMargin(Number(e.target.value))}
+              style={{ fontWeight: 'bold' }}
+            />
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">Target Cost</Text>
+            <input
+              type="number"
+              value={targetCost}
+              onChange={(e) => setTargetCost(Number(e.target.value))}
+              style={{ fontWeight: 'bold' }}
+            />
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">Benchmark Price</Text>
+            <Heading size="6" weight="bold">{formatCurrency(3450)}</Heading>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">Progress To Target</Text>
+            <Progress value={80} />
+            <Text size="1" weight="bold">80% Achieved</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2" weight="bold">Post-Optimization Estimate</Text>
+            <input
+              type="number"
+              value={postOptimizationEstimate}
+              onChange={(e) => setPostOptimizationEstimate(Number(e.target.value))}
+              style={{ fontWeight: 'bold' }}
+            />
+          </Flex>
+        </Card>
       </Grid>
 
       <Flex gap="4" mb="6">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Composition</Heading>
+          <Heading size="4" mb="3" weight="bold">Cost Composition</Heading>
           <PieChart width={300} height={250}>
-            <Pie data={costData.filter(i => !i.isGroup)} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+            <Pie
+              data={costData.filter(i => !i.isGroup)}
+              cx="50%"
+              cy="50%"
+              innerRadius={60}
+              outerRadius={80}
+              paddingAngle={5}
+              dataKey="value"
+            >
               {costData.filter(i => !i.isGroup).map((entry, index) => (
                 <Cell key={index} fill={["#3b82f6", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6"][index % 5]} />
               ))}
@@ -108,7 +164,7 @@ const CostAnalysis = () => {
         </Card>
 
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
+          <Heading size="4" mb="3" weight="bold">Cost Trend Analysis</Heading>
           <BarChart width={500} height={250} data={costData.filter(i => !i.isGroup)}>
             <Bar dataKey="value" fill="#3b82f6" />
             <ReTooltip />
@@ -133,7 +189,11 @@ const CostAnalysis = () => {
             if (item.isGroup) {
               return (
                 <Table.Row key={`group-${index}`}>
-                  <Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell>
+                  <Table.Cell colSpan={7}>
+                    <Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>
+                      {item.category}
+                    </Text>
+                  </Table.Cell>
                 </Table.Row>
               );
             }
@@ -145,9 +205,25 @@ const CostAnalysis = () => {
             return (
               <Table.Row key={item.category}>
                 <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell><input type="number" value={item.actual} onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))} /></Table.Cell>
-                <Table.Cell><input type="number" value={item.budget} onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))} /></Table.Cell>
-                <Table.Cell><Text color={varianceColor}>{variance.toFixed(1)}%</Text></Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.actual}
+                    onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.budget}
+                    onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Text color={varianceColor}>{variance.toFixed(1)}%</Text>
+                </Table.Cell>
                 <Table.Cell>{percentOfTotal.toFixed(1)}%</Table.Cell>
                 <Table.Cell>
                   <Select.Root
@@ -162,19 +238,30 @@ const CostAnalysis = () => {
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell><input type="number" value={item.costAfter} onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))} /></Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.costAfter}
+                    onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
               </Table.Row>
             );
           })}
 
           <Table.Row>
-            <Table.Cell><Text weight="bold">Total</Text></Table.Cell>
+            <Table.Cell>
+              <Text weight="bold">Total</Text>
+            </Table.Cell>
             <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
             <Table.Cell>{formatCurrency(totalBudget)}</Table.Cell>
             <Table.Cell />
-            <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
+            <Table.Cell>
+              <Text weight="bold">100%</Text>
+            </Table.Cell>
             <Table.Cell />
-            <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter)}</Text></Table.Cell>
+            <Table.Cell>{formatCurrency(totalCostAfter)}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
