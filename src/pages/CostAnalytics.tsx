@@ -96,15 +96,41 @@ const CostAnalysis = () => {
 
   return (
     <Box p="6">
+      {/* Header */}
+      <Flex justify="between" align="center" mb="5">
+        <Heading size="6">Inter-Organizational Cost Management</Heading>
+        <Flex gap="3">
+          <Select.Root defaultValue="product-1">
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="product-1">Poultry Product 1</Select.Item>
+              <Select.Item value="product-2">Poultry Product 2</Select.Item>
+              <Select.Item value="product-3">Poultry Product 3</Select.Item>
+            </Select.Content>
+          </Select.Root>
+
+          <Select.Root defaultValue="EGP" onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
+            </Select.Content>
+          </Select.Root>
+
+          <Button variant="soft">Export Report</Button>
+        </Flex>
+      </Flex>
+
       <Flex direction="column" gap="3" mb="4">
         <TextField.Root size="2" placeholder="Target Cost" value={targetCost} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTargetCost(Number(e.target.value))} />
         <TextField.Root size="2" placeholder="Benchmark Price" value={benchmarkPrice} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(Number(e.target.value))} />
         <TextField.Root size="2" placeholder="Profit Margin %" value={profitMargin} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(Number(e.target.value))} />
       </Flex>
 
+      {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
         <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6"><strong>{formatCurrency(totalActual)}</strong></Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6"><strong>{formatCurrency(totalBudget)}</strong></Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6"><strong>{formatCurrency(targetCost)}</strong></Heading></Flex></Card>
         <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6"><strong>{formatCurrency(benchmarkPrice)}</strong></Heading></Flex></Card>
         <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin</Text><Heading size="6"><strong>{profitMargin}%</strong></Heading></Flex></Card>
         <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
@@ -152,7 +178,7 @@ const CostAnalysis = () => {
         </Card>
       </Flex>
 
-      {/* Table */}
+      {/* Table remains unchanged below */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -183,10 +209,10 @@ const CostAnalysis = () => {
 
             return (
               <Table.Row key={item.category}>
-                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
                 <Table.Cell><Text weight="medium">{formatCurrency(actual)}</Text></Table.Cell>
                 <Table.Cell><Text weight="medium">{formatCurrency(budget)}</Text></Table.Cell>
-                <Table.Cell><Text color={varianceColor}>{varianceLabel}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium" color={varianceColor}>{varianceLabel}</Text></Table.Cell>
                 <Table.Cell><Text weight="medium">{item.value}%</Text></Table.Cell>
                 <Table.Cell>
                   <Select.Root
