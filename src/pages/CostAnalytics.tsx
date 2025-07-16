@@ -12,43 +12,45 @@ import {
 } from '@radix-ui/themes';
 import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 
 const CostAnalysis = () => {
   const { t } = useTranslation('cost-analysis');
+  const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
 
   const costData = [
     {
       category: 'Direct Materials',
       value: 45,
       color: '#3b82f6',
-      actual: '$1.4M',
-      budget: '$1.3M',
+      actual: '1400000',
+      budget: '1300000',
       solution: 'Negotiate supplier contracts',
-      costAfter: '$1.25M'
+      costAfter: '1250000'
     },
     {
       category: 'Packaging',
       value: 20,
       color: '#f59e0b',
-      actual: '$700K',
-      budget: '$650K',
+      actual: '700000',
+      budget: '650000',
       solution: 'Use alternative packaging',
-      costAfter: '$630K'
+      costAfter: '630000'
     },
     {
       category: 'Labor',
       value: 10,
       color: '#ef4444',
-      actual: '$400K',
-      budget: '$350K',
+      actual: '400000',
+      budget: '350000',
       solution: 'Optimize shifts',
-      costAfter: '$340K'
+      costAfter: '340000'
     }
   ];
 
-  const parseValue = (str: string) => {
-    const num = parseFloat(str.replace(/[$,MK]/gi, ''));
-    return str.includes('M') ? num * 1_000_000 : str.includes('K') ? num * 1_000 : num;
+  const formatCurrency = (num: number | string) => {
+    const value = typeof num === 'string' ? parseFloat(num) : num;
+    return `${value.toLocaleString()} ${currency}`;
   };
 
   return (
@@ -65,7 +67,7 @@ const CostAnalysis = () => {
             </Select.Content>
           </Select.Root>
 
-          <Select.Root defaultValue="EGP">
+          <Select.Root defaultValue="EGP" onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="EGP">EGP</Select.Item>
@@ -82,28 +84,28 @@ const CostAnalysis = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Actual Cost</Text>
-            <Heading size="6">$2.75M</Heading>
+            <Heading size="6">{formatCurrency(2750000)}</Heading>
           </Flex>
         </Card>
 
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Total Cost</Text>
-            <Heading size="6">$3.15M</Heading>
+            <Heading size="6">{formatCurrency(3150000)}</Heading>
           </Flex>
         </Card>
 
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Yield / Target</Text>
-            <Heading size="6">85% / 90%</Heading>
+            <Text size="2">Target Cost</Text>
+            <Heading size="6">{formatCurrency(2900000)}</Heading>
           </Flex>
         </Card>
 
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="6">$2.85M</Heading>
+            <Text size="2">Benchmark Price</Text>
+            <Heading size="6">{formatCurrency(3050000)}</Heading>
           </Flex>
         </Card>
 
@@ -114,9 +116,16 @@ const CostAnalysis = () => {
             <Text size="1">78% achieved</Text>
           </Flex>
         </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Post-Optimization Estimate</Text>
+            <Heading size="6">{formatCurrency(2850000)}</Heading>
+          </Flex>
+        </Card>
       </Grid>
 
-      {/* Chart Section */}
+      {/* Charts */}
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">{t('cost-composition')}</Heading>
@@ -164,8 +173,8 @@ const CostAnalysis = () => {
         </Table.Header>
         <Table.Body>
           {costData.map((category) => {
-            const actual = parseValue(category.actual);
-            const budget = parseValue(category.budget);
+            const actual = parseFloat(category.actual);
+            const budget = parseFloat(category.budget);
             const variance = ((actual - budget) / budget) * 100;
             const varianceLabel = `${variance > 0 ? '+' : ''}${variance.toFixed(1)}%`;
             const varianceColor = variance > 0 ? 'red' : 'green';
@@ -173,14 +182,14 @@ const CostAnalysis = () => {
             return (
               <Table.Row key={category.category}>
                 <Table.Cell>{category.category}</Table.Cell>
-                <Table.Cell>{category.actual}</Table.Cell>
-                <Table.Cell>{category.budget}</Table.Cell>
+                <Table.Cell>{formatCurrency(actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(budget)}</Table.Cell>
                 <Table.Cell>
                   <Text color={varianceColor}>{varianceLabel}</Text>
                 </Table.Cell>
                 <Table.Cell>{category.value}%</Table.Cell>
                 <Table.Cell>{category.solution}</Table.Cell>
-                <Table.Cell>{category.costAfter}</Table.Cell>
+                <Table.Cell>{formatCurrency(category.costAfter)}</Table.Cell>
               </Table.Row>
             );
           })}
