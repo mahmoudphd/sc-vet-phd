@@ -83,7 +83,7 @@ const CostAnalysis = () => {
             </Select.Content>
           </Select.Root>
 
-          <Button variant="soft">Export Report</Button> {/* زر واضح وموجود */}
+          <Button variant="soft">Export Report</Button>
         </Flex>
       </Flex>
 
@@ -94,6 +94,7 @@ const CostAnalysis = () => {
             <Heading size="6" weight="bold">{formatCurrency(totalActual)}</Heading>
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2" weight="bold">Profit Margin (%)</Text>
@@ -105,6 +106,7 @@ const CostAnalysis = () => {
             />
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2" weight="bold">Target Cost</Text>
@@ -116,12 +118,14 @@ const CostAnalysis = () => {
             />
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2" weight="bold">Benchmark Price</Text>
             <Heading size="6" weight="bold">{formatCurrency(3450)}</Heading>
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Progress To Target</Text>
@@ -129,6 +133,7 @@ const CostAnalysis = () => {
             <Text size="1" weight="bold">80% Achieved</Text>
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2" weight="bold">Post-Optimization Estimate</Text>
@@ -165,4 +170,108 @@ const CostAnalysis = () => {
 
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3" weight="bold">Cost Trend Analysis</Heading>
-          <BarChart width={50
+          <BarChart width={500} height={250} data={costData.filter(i => !i.isGroup)}>
+            <Bar dataKey="value" fill="#3b82f6" />
+            <ReTooltip />
+          </BarChart>
+        </Card>
+      </Flex>
+
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {costData.map((item, index) => {
+            if (item.isGroup) {
+              return (
+                <Table.Row key={`group-${index}`}>
+                  <Table.Cell colSpan={7}>
+                    <Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>
+                      {item.category}
+                    </Text>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            }
+
+            const variance = item.budget !== 0 ? ((Number(item.actual) - Number(item.budget)) / Number(item.budget)) * 100 : 0;
+            const percentOfTotal = totalActual !== 0 ? (Number(item.actual) / totalActual) * 100 : 0;
+            const varianceColor = variance > 0 ? 'red' : 'green';
+
+            return (
+              <Table.Row key={item.category}>
+                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.actual}
+                    onChange={(e) => updateCostValue(index, 'actual', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.budget}
+                    onChange={(e) => updateCostValue(index, 'budget', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <Text color={varianceColor}>{variance.toFixed(1)}%</Text>
+                </Table.Cell>
+                <Table.Cell>{percentOfTotal.toFixed(1)}%</Table.Cell>
+                <Table.Cell>
+                  <Select.Root
+                    value={solutions[item.category] || ''}
+                    onValueChange={(val) => setSolutions((prev) => ({ ...prev, [item.category]: val }))}
+                  >
+                    <Select.Trigger placeholder="Select" />
+                    <Select.Content>
+                      {solutionOptions.map((option) => (
+                        <Select.Item key={option} value={option}>{option}</Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={item.costAfter}
+                    onChange={(e) => updateCostValue(index, 'costAfter', Number(e.target.value))}
+                    style={{ fontWeight: 'bold' }}
+                  />
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+
+          <Table.Row>
+            <Table.Cell>
+              <Text weight="bold">Total</Text>
+            </Table.Cell>
+            <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
+            <Table.Cell>{formatCurrency(totalBudget)}</Table.Cell>
+            <Table.Cell />
+            <Table.Cell>
+              <Text weight="bold">100%</Text>
+            </Table.Cell>
+            <Table.Cell />
+            <Table.Cell>{formatCurrency(totalCostAfter)}</Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+    </Box>
+  );
+};
+
+export default CostAnalysis;
