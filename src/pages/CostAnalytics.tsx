@@ -4,12 +4,13 @@ import {
   Heading,
   Text,
   Table,
+  Button,
   Grid,
   Progress,
   Select,
   Box
 } from '@radix-ui/themes';
-import * as Accordion from '@radix-ui/react-accordion';
+import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
 import { useState } from 'react';
 
 const solutionOptions = [
@@ -23,174 +24,259 @@ const solutionOptions = [
   'Other'
 ];
 
-const rawMaterialItems = [
-  { name: 'Vitamin B1', kg: 0.001, pricePerKg: 540 },
-  { name: 'Vitamin B2', kg: 0.006, pricePerKg: 600 },
-  { name: 'Vitamin B12', kg: 0.001, pricePerKg: 2300 },
-  { name: 'Nicotinamide (Vitamin B3)', kg: 0.01, pricePerKg: 400 },
-  { name: 'Pantothenic Acid', kg: 0.004, pricePerKg: 1700 },
-  { name: 'Vitamin B6', kg: 0.0015, pricePerKg: 900 },
-  { name: 'Leucine', kg: 0.03, pricePerKg: 200 },
-  { name: 'Threonine', kg: 0.01, pricePerKg: 950 },
-  { name: 'Taurine', kg: 0.0025, pricePerKg: 3000 },
-  { name: 'Glycine', kg: 0.0025, pricePerKg: 4200 },
-  { name: 'Arginine', kg: 0.0025, pricePerKg: 5000 },
-  { name: 'Cynarin', kg: 0.0025, pricePerKg: 3900 },
-  { name: 'Silymarin', kg: 0.025, pricePerKg: 700 },
-  { name: 'Sorbitol', kg: 0.01, pricePerKg: 360 },
-  { name: 'Carnitine', kg: 0.005, pricePerKg: 1070 },
-  { name: 'Betaine', kg: 0.02, pricePerKg: 1250 },
-  { name: 'Tween-80', kg: 0.075, pricePerKg: 90 },
-  { name: 'Water', kg: 0.571, pricePerKg: 1 }
-];
-
-const initialData = [
-  {
-    category: 'Raw Materials',
-    actual: 133.11,
-    target: 1100000,
-    percent: '40%',
-    solution: solutionOptions[0],
-    costAfter: -9866.89
-  },
-  {
-    category: 'Direct Labor',
-    actual: 600000,
-    target: 580000,
-    percent: '20%',
-    solution: solutionOptions[1],
-    costAfter: 590000
-  },
-  {
-    category: 'Packaging Materials',
-    actual: 450000,
-    target: 420000,
-    percent: '15%',
-    solution: solutionOptions[2],
-    costAfter: 440000
-  },
-  {
-    category: 'Overhead',
-    actual: 300000,
-    target: 280000,
-    percent: '15%',
-    solution: solutionOptions[3],
-    costAfter: 290000
-  },
-  {
-    category: 'Other Costs',
-    actual: 200000,
-    target: 190000,
-    percent: '10%',
-    solution: solutionOptions[4],
-    costAfter: 190000
-  }
-];
-
 const CostAnalysis = () => {
-  const [rows, setRows] = useState(initialData);
+  const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
+  const [solutions, setSolutions] = useState<Record<string, string>>({});
 
-  const handleSolutionChange = (index: number, newVal: string) => {
-    const updated = [...rows];
-    updated[index].solution = newVal;
-    setRows(updated);
+  const formatCurrency = (num: number | string | undefined) => {
+    const value = typeof num === 'string' ? parseFloat(num ?? '0') : num ?? 0;
+    return `${value.toLocaleString()} ${currency}`;
   };
 
-  const formatEGP = (val: number) =>
-    `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  // البيانات مع نسب متناسقة وتكاليف منطقية
+  const costData = [
+    { category: 'Direct Cost', isGroup: true },
+    {
+      category: 'Direct Materials',
+      value: 45,
+      actual: '1350000',
+      budget: '1300000',
+      costAfter: '1250000'
+    },
+    {
+      category: 'Packaging',
+      value: 20,
+      actual: '600000',
+      budget: '580000',
+      costAfter: '570000'
+    },
+    {
+      category: 'Labor',
+      value: 15,
+      actual: '450000',
+      budget: '420000',
+      costAfter: '430000'
+    },
+    { category: 'Overhead', isGroup: true },
+    {
+      category: 'Overhead',
+      value: 12,
+      actual: '360000',
+      budget: '350000',
+      costAfter: '345000'
+    },
+    {
+      category: 'Other Costs',
+      value: 8,
+      actual: '240000',
+      budget: '230000',
+      costAfter: '225000'
+    }
+  ];
 
-  const totalActual = rows.reduce((sum, r) => sum + r.actual, 0);
-  const totalTarget = rows.reduce((sum, r) => sum + r.target, 0);
-  const totalAfter = rows.reduce((sum, r) => sum + r.costAfter, 0);
-  const totalVariance = totalActual - totalTarget;
-
-  const renderAccordion = () => (
-    <Accordion.Root type="single" collapsible defaultValue="materials">
-      <Accordion.Item value="materials">
-        <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
-        <Accordion.Content>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {rawMaterialItems.map((item, idx) => (
-                <Table.Row key={idx}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.kg}</Table.Cell>
-                  <Table.Cell>{formatEGP(item.pricePerKg)}</Table.Cell>
-                  <Table.Cell>{formatEGP(item.kg * item.pricePerKg)}</Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Accordion.Content>
-      </Accordion.Item>
-    </Accordion.Root>
-  );
+  const totalCostAfter = costData
+    .filter(item => !item.isGroup)
+    .reduce((sum, item) => sum + parseFloat(item.costAfter ?? '0'), 0);
 
   return (
     <Box p="6">
-      <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
+      {/* Header Section */}
+      <Flex justify="between" align="center" mb="5">
+        <Heading size="6">Inter-Organizational Cost Management</Heading>
+        <Flex gap="3">
+          <Select.Root defaultValue="product-1">
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="product-1">Product A</Select.Item>
+              <Select.Item value="product-2">Product B</Select.Item>
+            </Select.Content>
+          </Select.Root>
 
-      {/* Accordion */}
-      {renderAccordion()}
+          <Select.Root
+            defaultValue="EGP"
+            onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}
+          >
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
+            </Select.Content>
+          </Select.Root>
 
-      {/* Table */}
-      <Card mt="5">
-        <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>%</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rows.map((row, i) => (
-              <Table.Row key={i}>
-                <Table.Cell>{row.category}</Table.Cell>
-                <Table.Cell>{formatEGP(row.actual)}</Table.Cell>
-                <Table.Cell>{formatEGP(row.target)}</Table.Cell>
-                <Table.Cell>{formatEGP(row.actual - row.target)}</Table.Cell>
-                <Table.Cell>{row.percent}</Table.Cell>
+          <Button variant="soft">Export Report</Button>
+        </Flex>
+      </Flex>
+
+      {/* KPI Cards */}
+      <Grid columns="3" gap="4" mb="6">
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Actual Cost</Text>
+            <Heading size="6">{formatCurrency(3350000)}</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Total Cost</Text>
+            <Heading size="6">{formatCurrency(3500000)}</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Target Cost</Text>
+            <Heading size="6">{formatCurrency(3200000)}</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Benchmark Price</Text>
+            <Heading size="6">{formatCurrency(3450000)}</Heading>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="2">
+            <Text size="2">Progress To Target</Text>
+            <Progress value={80} />
+            <Text size="1">80% Achieved</Text>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Post-Optimization Estimate</Text>
+            <Heading size="6">{formatCurrency(3150000)}</Heading>
+          </Flex>
+        </Card>
+      </Grid>
+
+      {/* Charts */}
+      <Flex gap="4" mb="6">
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">Cost Composition</Heading>
+          <div style={{ height: '250px' }}>
+            <PieChart width={300} height={250}>
+              <Pie
+                data={costData.filter(item => !item.isGroup)}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {costData
+                  .filter(item => !item.isGroup)
+                  .map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={["#3b82f6", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6"][index % 5]}
+                    />
+                  ))}
+              </Pie>
+            </PieChart>
+          </div>
+        </Card>
+
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
+          <div style={{ height: '250px' }}>
+            <BarChart width={500} height={250} data={costData.filter(item => !item.isGroup)}>
+              <Bar dataKey="value" fill="#3b82f6" />
+            </BarChart>
+          </div>
+        </Card>
+      </Flex>
+
+      {/* Table Section */}
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {costData.map((item, index) => {
+            if (item.isGroup) {
+              return (
+                <Table.Row key={`group-${index}`}>
+                  <Table.Cell colSpan={7}>
+                    <Text
+                      weight="bold"
+                      size="3"
+                      color="gray"
+                      style={{ backgroundColor: '#f3f4f6', padding: '6px' }}
+                    >
+                      {item.category}
+                    </Text>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            }
+
+            const actual = parseFloat(item.actual ?? '0');
+            const budget = parseFloat(item.budget ?? '0');
+            const variance = budget !== 0 ? ((actual - budget) / budget) * 100 : 0;
+            const varianceLabel = `${variance > 0 ? '+' : ''}${variance.toFixed(1)}%`;
+            const varianceColor = variance > 0 ? 'red' : 'green';
+
+            return (
+              <Table.Row key={item.category}>
+                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell>{formatCurrency(actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(budget)}</Table.Cell>
                 <Table.Cell>
-                  <Select.Root value={row.solution} onValueChange={(val) => handleSolutionChange(i, val)}>
-                    <Select.Trigger />
+                  <Text color={varianceColor}>{varianceLabel}</Text>
+                </Table.Cell>
+                <Table.Cell>{item.value}%</Table.Cell>
+                <Table.Cell>
+                  <Select.Root
+                    value={solutions[item.category] || ''}
+                    onValueChange={(val) =>
+                      setSolutions((prev) => ({ ...prev, [item.category]: val }))
+                    }
+                  >
+                    <Select.Trigger placeholder="Select" />
                     <Select.Content>
-                      {solutionOptions.map((option, idx) => (
-                        <Select.Item key={idx} value={option}>
+                      {solutionOptions.map((option) => (
+                        <Select.Item key={option} value={option}>
                           {option}
                         </Select.Item>
                       ))}
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell>{formatEGP(row.costAfter)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.costAfter)}</Table.Cell>
               </Table.Row>
-            ))}
-            <Table.Row>
-              <Table.Cell><strong>Total</strong></Table.Cell>
-              <Table.Cell>{formatEGP(totalActual)}</Table.Cell>
-              <Table.Cell>{formatEGP(totalTarget)}</Table.Cell>
-              <Table.Cell>{formatEGP(totalVariance)}</Table.Cell>
-              <Table.Cell>100%</Table.Cell>
-              <Table.Cell>-</Table.Cell>
-              <Table.Cell>{formatEGP(totalAfter)}</Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table.Root>
-      </Card>
+            );
+          })}
+
+          <Table.Row>
+            <Table.Cell>
+              <Text weight="bold">Total</Text>
+            </Table.Cell>
+            <Table.Cell />
+            <Table.Cell />
+            <Table.Cell />
+            <Table.Cell>
+              <Text weight="bold">100%</Text>
+            </Table.Cell>
+            <Table.Cell />
+            <Table.Cell>
+              <Text weight="bold">{formatCurrency(totalCostAfter)}</Text>
+            </Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
     </Box>
   );
 };
