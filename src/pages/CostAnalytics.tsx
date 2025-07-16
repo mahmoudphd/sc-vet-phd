@@ -24,43 +24,6 @@ const solutionOptions = [
   'Other'
 ];
 
-const costData = [
-  {
-    category: 'Direct Cost',
-    isGroupHeader: true
-  },
-  {
-    category: 'Raw Materials',
-    actual: 133.11,
-    target: 1100000,
-    color: '#3b82f6'
-  },
-  {
-    category: 'Direct Labor',
-    actual: 300000,
-    target: 250000,
-    color: '#10b981'
-  },
-  {
-    category: 'Packaging Materials',
-    actual: 50000,
-    target: 60000,
-    color: '#6366f1'
-  },
-  {
-    category: 'Overhead',
-    actual: 150000,
-    target: 140000,
-    color: '#f59e0b'
-  },
-  {
-    category: 'Other Costs',
-    actual: 200000,
-    target: 190000,
-    color: '#f97316'
-  }
-];
-
 const currencySymbols: Record<string, string> = {
   USD: '$',
   EGP: 'EGP'
@@ -68,9 +31,50 @@ const currencySymbols: Record<string, string> = {
 
 const CostAnalysis = () => {
   const [currency, setCurrency] = useState<string>('EGP');
-  const [selectedSolutions, setSelectedSolutions] = useState<string[]>(Array(costData.length).fill(''));
+  const [selectedSolutions, setSelectedSolutions] = useState<string[]>([]);
 
   const symbol = currencySymbols[currency];
+
+  const costData = [
+    {
+      category: 'Direct Cost',
+      isGroupHeader: true
+    },
+    {
+      category: 'Raw Materials',
+      actual: 133.11,
+      target: 1100000,
+      color: '#3b82f6'
+    },
+    {
+      category: 'Direct Labor',
+      actual: 300000,
+      target: 250000,
+      color: '#10b981'
+    },
+    {
+      category: 'Packaging Materials',
+      actual: 50000,
+      target: 60000,
+      color: '#6366f1'
+    },
+    {
+      category: 'Overhead',
+      actual: 150000,
+      target: 140000,
+      color: '#f59e0b'
+    },
+    {
+      category: 'Other Costs',
+      actual: 200000,
+      target: 190000,
+      color: '#f97316'
+    }
+  ];
+
+  if (selectedSolutions.length !== costData.length) {
+    setSelectedSolutions(Array(costData.length).fill(''));
+  }
 
   const totalActual = costData.filter(i => !i.isGroupHeader).reduce((acc, item) => acc + (item.actual || 0), 0);
   const totalTarget = costData.filter(i => !i.isGroupHeader).reduce((acc, item) => acc + (item.target || 0), 0);
