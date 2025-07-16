@@ -1,18 +1,15 @@
-// Updated CostAnalysis.tsx with Accordion support and full cost breakdown
 import {
   Card,
   Flex,
   Heading,
   Text,
   Table,
-  Button,
   Grid,
   Progress,
   Select,
-  Box,
-  Accordion
+  Box
 } from '@radix-ui/themes';
-import { PieChart, Pie, Cell, BarChart, Bar } from 'recharts';
+import * as Accordion from '@radix-ui/react-accordion';
 import { useState } from 'react';
 
 const solutionOptions = [
@@ -47,113 +44,153 @@ const rawMaterialItems = [
   { name: 'Water', kg: 0.571, pricePerKg: 1 }
 ];
 
-const renderRawMaterialsAccordion = () => (
-  <Accordion.Root type="single" collapsible>
-    <Accordion.Item value="raw-materials">
-      <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
-      <Accordion.Content>
-        <Table.Root variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rawMaterialItems.map((item, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>{item.name}</Table.Cell>
-                <Table.Cell>{item.kg}</Table.Cell>
-                <Table.Cell>EGP{item.pricePerKg.toFixed(2)}</Table.Cell>
-                <Table.Cell>EGP{(item.kg * item.pricePerKg).toFixed(2)}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </Accordion.Content>
-    </Accordion.Item>
-  </Accordion.Root>
-);
-
-const renderCostBreakdownTable = () => {
-  const [solutions, setSolutions] = useState(Array(5).fill(solutionOptions[0]));
-  const data = [
-    ['Raw Materials', 133.11, 1100000, -1099866.89, '40%', 0, -9866.89],
-    ['Direct Labor', 600000, 580000, 20000, '20%', 1, 590000],
-    ['Packaging Materials', 450000, 420000, 30000, '15%', 2, 440000],
-    ['Overhead', 300000, 280000, 20000, '15%', 3, 290000],
-    ['Other Costs', 200000, 190000, 10000, '10%', 4, 190000]
-  ];
-  const totalActual = data.reduce((acc, val) => acc + val[1], 0);
-  const totalTarget = data.reduce((acc, val) => acc + val[2], 0);
-  const totalAfter = data.reduce((acc, val) => acc + val[6], 0);
-  const totalVariance = totalActual - totalTarget;
-
-  const handleSolutionChange = (index, newValue) => {
-    const updated = [...solutions];
-    updated[index] = newValue;
-    setSolutions(updated);
-  };
-
-  return (
-    <Card mt="5">
-      <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {data.map((row, i) => (
-            <Table.Row key={i}>
-              <Table.Cell>{row[0]}</Table.Cell>
-              <Table.Cell>EGP{row[1].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>EGP{row[2].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>EGP{row[3].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-              <Table.Cell>{row[4]}</Table.Cell>
-              <Table.Cell>
-                <Select.Root value={solutions[i]} onValueChange={(val) => handleSolutionChange(i, val)}>
-                  <Select.Trigger />
-                  <Select.Content>
-                    {solutionOptions.map((option) => (
-                      <Select.Item key={option} value={option}>{option}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
-              <Table.Cell>EGP{row[6].toLocaleString(undefined, { minimumFractionDigits: 2 })}</Table.Cell>
-            </Table.Row>
-          ))}
-          <Table.Row>
-            <Table.Cell><strong>Total</strong></Table.Cell>
-            <Table.Cell>EGP{totalActual.toLocaleString()}</Table.Cell>
-            <Table.Cell>EGP{totalTarget.toLocaleString()}</Table.Cell>
-            <Table.Cell>EGP{totalVariance.toLocaleString()}</Table.Cell>
-            <Table.Cell>100%</Table.Cell>
-            <Table.Cell>-</Table.Cell>
-            <Table.Cell>EGP{totalAfter.toLocaleString()}</Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
-    </Card>
-  );
-};
+const initialData = [
+  {
+    category: 'Raw Materials',
+    actual: 133.11,
+    target: 1100000,
+    percent: '40%',
+    solution: solutionOptions[0],
+    costAfter: -9866.89
+  },
+  {
+    category: 'Direct Labor',
+    actual: 600000,
+    target: 580000,
+    percent: '20%',
+    solution: solutionOptions[1],
+    costAfter: 590000
+  },
+  {
+    category: 'Packaging Materials',
+    actual: 450000,
+    target: 420000,
+    percent: '15%',
+    solution: solutionOptions[2],
+    costAfter: 440000
+  },
+  {
+    category: 'Overhead',
+    actual: 300000,
+    target: 280000,
+    percent: '15%',
+    solution: solutionOptions[3],
+    costAfter: 290000
+  },
+  {
+    category: 'Other Costs',
+    actual: 200000,
+    target: 190000,
+    percent: '10%',
+    solution: solutionOptions[4],
+    costAfter: 190000
+  }
+];
 
 const CostAnalysis = () => {
+  const [rows, setRows] = useState(initialData);
+
+  const handleSolutionChange = (index: number, newVal: string) => {
+    const updated = [...rows];
+    updated[index].solution = newVal;
+    setRows(updated);
+  };
+
+  const formatEGP = (val: number) =>
+    `EGP${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+  const totalActual = rows.reduce((sum, r) => sum + r.actual, 0);
+  const totalTarget = rows.reduce((sum, r) => sum + r.target, 0);
+  const totalAfter = rows.reduce((sum, r) => sum + r.costAfter, 0);
+  const totalVariance = totalActual - totalTarget;
+
+  const renderAccordion = () => (
+    <Accordion.Root type="single" collapsible defaultValue="materials">
+      <Accordion.Item value="materials">
+        <Accordion.Trigger>Raw Materials Breakdown</Accordion.Trigger>
+        <Accordion.Content>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Kg</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {rawMaterialItems.map((item, idx) => (
+                <Table.Row key={idx}>
+                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.kg}</Table.Cell>
+                  <Table.Cell>{formatEGP(item.pricePerKg)}</Table.Cell>
+                  <Table.Cell>{formatEGP(item.kg * item.pricePerKg)}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </Accordion.Content>
+      </Accordion.Item>
+    </Accordion.Root>
+  );
+
   return (
     <Box p="6">
       <Heading size="6" mb="4">Inter-Organizational Cost Management</Heading>
-      {renderRawMaterialsAccordion()}
-      {renderCostBreakdownTable()}
+
+      {/* Accordion */}
+      {renderAccordion()}
+
+      {/* Table */}
+      <Card mt="5">
+        <Heading size="4" mb="3">Detailed Cost Breakdown</Heading>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>%</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Gap Solution</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rows.map((row, i) => (
+              <Table.Row key={i}>
+                <Table.Cell>{row.category}</Table.Cell>
+                <Table.Cell>{formatEGP(row.actual)}</Table.Cell>
+                <Table.Cell>{formatEGP(row.target)}</Table.Cell>
+                <Table.Cell>{formatEGP(row.actual - row.target)}</Table.Cell>
+                <Table.Cell>{row.percent}</Table.Cell>
+                <Table.Cell>
+                  <Select.Root value={row.solution} onValueChange={(val) => handleSolutionChange(i, val)}>
+                    <Select.Trigger />
+                    <Select.Content>
+                      {solutionOptions.map((option, idx) => (
+                        <Select.Item key={idx} value={option}>
+                          {option}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Table.Cell>
+                <Table.Cell>{formatEGP(row.costAfter)}</Table.Cell>
+              </Table.Row>
+            ))}
+            <Table.Row>
+              <Table.Cell><strong>Total</strong></Table.Cell>
+              <Table.Cell>{formatEGP(totalActual)}</Table.Cell>
+              <Table.Cell>{formatEGP(totalTarget)}</Table.Cell>
+              <Table.Cell>{formatEGP(totalVariance)}</Table.Cell>
+              <Table.Cell>100%</Table.Cell>
+              <Table.Cell>-</Table.Cell>
+              <Table.Cell>{formatEGP(totalAfter)}</Table.Cell>
+            </Table.Row>
+          </Table.Body>
+        </Table.Root>
+      </Card>
     </Box>
   );
 };
