@@ -62,21 +62,14 @@ const CostAnalysis = () => {
       solution: '',
       costAfter: '430000'
     },
-    {
-      category: 'Overhead',
-      value: 15,
-      actual: '300000',
-      budget: '280000',
-      solution: '',
-      costAfter: '290000'
-    },
+    { category: 'Overhead', isGroup: true },
     {
       category: 'Other Costs',
-      value: 10,
-      actual: '200000',
-      budget: '190000',
+      value: 25,
+      actual: '500000',
+      budget: '470000',
       solution: '',
-      costAfter: '185000'
+      costAfter: '480000'
     }
   ];
 
@@ -155,39 +148,6 @@ const CostAnalysis = () => {
           </Flex>
         </Card>
       </Grid>
-
-      {/* Charts */}
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Composition</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={costData.filter(i => !i.isGroup)}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {costData.filter(i => !i.isGroup).map((entry, index) => (
-                  <Cell key={index} fill={entry.color || '#3b82f6'} />
-                ))}
-              </Pie>
-            </PieChart>
-          </div>
-        </Card>
-
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={costData.filter(i => !i.isGroup)}>
-              <Bar dataKey="value" fill="#3b82f6" />
-            </BarChart>
-          </div>
-        </Card>
-      </Flex>
 
       {/* Table Section */}
       <Table.Root variant="surface">
