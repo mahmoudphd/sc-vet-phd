@@ -35,7 +35,7 @@ const CostAnalysis = () => {
 
   const formatCurrency = (num: number | string | undefined) => {
     const value = typeof num === 'string' ? parseFloat(num ?? '0') : num ?? 0;
-    return `${value.toLocaleString(undefined, { maximumFractionDigits: 2 })} ${currency}`;
+    return `${currency} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   };
 
   const [costData, setCostData] = useState([
@@ -89,15 +89,15 @@ const CostAnalysis = () => {
   const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
   const totalCostAfter = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
 
+  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
+
   const benchmarkTrendData = [
-    { month: 'Jan', actual: 169.61, benchmark: 220 },
-    { month: 'Feb', actual: 170.5, benchmark: 220 },
-    { month: 'Mar', actual: 168.0, benchmark: 220 },
-    { month: 'Apr', actual: 171.2, benchmark: 220 },
+    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
+    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
+    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
+    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice }
   ];
-
-  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map(d => ({
     ...d,
@@ -105,8 +105,7 @@ const CostAnalysis = () => {
     gap: d.actual - targetCost
   }));
 
-  const averageGap =
-    benchmarkTrendDataWithGap.reduce((sum, d) => sum + d.gap, 0) / benchmarkTrendDataWithGap.length;
+  const averageGap = benchmarkTrendDataWithGap.reduce((sum, d) => sum + d.gap, 0) / benchmarkTrendDataWithGap.length;
 
   return (
     <Box p="6">
@@ -137,53 +136,39 @@ const CostAnalysis = () => {
       <Grid columns="3" gap="4" mb="6">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Actual Cost</Text>
-            <Heading size="6">
-              <strong>{formatCurrency(totalActual)}</strong>
-            </Heading>
+            <Text size="2" weight="bold">Actual Cost</Text>
+            <Heading size="6"><strong>{formatCurrency(totalActual)}</strong></Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Target Cost</Text>
-            <Heading size="6">
-              <strong>{formatCurrency(totalBudget)}</strong>
-            </Heading>
+            <Text size="2" weight="bold">Target Cost</Text>
+            <Heading size="6"><strong>{formatCurrency(totalBudget)}</strong></Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Benchmark Price</Text>
-            <TextField.Root
-              size="2"
-              value={benchmarkPrice.toString()}
-              onChange={(e) => setBenchmarkPrice(Number(e.target.value))}
-            />
+            <Text size="2" weight="bold">Benchmark Price</Text>
+            <TextField.Root size="2" value={benchmarkPrice.toString()} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} />
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Profit Margin (%)</Text>
-            <TextField.Root
-              size="2"
-              value={profitMargin.toString()}
-              onChange={(e) => setProfitMargin(Number(e.target.value))}
-            />
+            <Text size="2" weight="bold">Profit Margin (%)</Text>
+            <TextField.Root size="2" value={profitMargin.toString()} onChange={(e) => setProfitMargin(Number(e.target.value))} />
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="2">
-            <Text size="2">Progress To Target</Text>
+            <Text size="2" weight="bold">Progress To Target</Text>
             <Progress value={80} />
             <Text size="1">80% Achieved</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Post-Optimization Estimate</Text>
-            <Heading size="6">
-              <strong>{formatCurrency(totalCostAfter)}</strong>
-            </Heading>
+            <Text size="2" weight="bold">Post-Optimization Estimate</Text>
+            <Heading size="6"><strong>{formatCurrency(totalCostAfter)}</strong></Heading>
           </Flex>
         </Card>
       </Grid>
@@ -198,19 +183,7 @@ const CostAnalysis = () => {
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
-            <Pie
-              data={[
-                { name: 'Direct Cost', value: 80 },
-                { name: 'Overhead', value: 12 },
-                { name: 'Other Costs', value: 8 }
-              ]}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
-              paddingAngle={5}
-              dataKey="value"
-            >
+            <Pie data={[{ name: 'Direct Cost', value: 80 }, { name: 'Overhead', value: 12 }, { name: 'Other Costs', value: 8 }]} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
               <Cell fill="#3b82f6" />
               <Cell fill="#f59e0b" />
               <Cell fill="#ef4444" />
@@ -227,40 +200,17 @@ const CostAnalysis = () => {
               <YAxis />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="actual"
-                stroke="#3b82f6"
-                name="Our Product Price"
-              />
-              <Line
-                type="monotone"
-                dataKey="benchmark"
-                stroke="#ef4444"
-                name="Market Benchmark"
-              />
-              <Line
-                type="monotone"
-                dataKey="targetCost"
-                stroke="#f97316"
-                name="Target Cost"
-                strokeDasharray="5 5"
-              />
+              <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Our Product Price" />
+              <Line type="monotone" dataKey="benchmark" stroke="#ef4444" name="Market Benchmark" />
+              <Line type="monotone" dataKey="targetCost" stroke="#f97316" name="Target Cost" strokeDasharray="5 5" />
               {showGap && (
-                <Line
-                  type="monotone"
-                  dataKey="gap"
-                  stroke="#10b981"
-                  name="Cost Gap (Actual - Target)"
-                  dot={false}
-                />
+                <Line type="monotone" dataKey="gap" stroke="#10b981" name="Cost Gap (Actual - Target)" dot={false} />
               )}
             </LineChart>
           </ResponsiveContainer>
           {showGap && (
             <Text align="center" mt="3" size="2" color="gray">
-              Average Gap:{' '}
-              <strong>{formatCurrency(averageGap)}</strong>
+              Average Gap: <strong>{formatCurrency(averageGap)}</strong>
             </Text>
           )}
         </Card>
@@ -283,104 +233,49 @@ const CostAnalysis = () => {
             if (item.isGroup) {
               return (
                 <Table.Row key={`group-${index}`}>
-                  <Table.Cell colSpan={7}>
-                    <Text
-                      weight="bold"
-                      size="3"
-                      color="gray"
-                      style={{ backgroundColor: '#f3f4f6', padding: '6px' }}
-                    >
-                      {item.category}
-                    </Text>
-                  </Table.Cell>
+                  <Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell>
                 </Table.Row>
               );
             }
 
             const actual = parseFloat(item.actual ?? '0');
             const budget = parseFloat(item.budget ?? '0');
-
-            // variance = Target - Actual (value)
             const varianceValue = budget - actual;
             const varianceColor = varianceValue > 0 ? 'red' : 'green';
-            const varianceLabel = varianceValue.toFixed(2);
-
             const percentOfTotal = totalActual !== 0 ? (actual / totalActual) * 100 : 0;
-            const percentOfTotalLabel = `${percentOfTotal.toFixed(1)}%`;
 
             return (
               <Table.Row key={item.category}>
-                <Table.Cell>
-                  <Text weight="medium">{item.category}</Text>
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    size="1"
-                    value={item.actual ?? ''}
-                    onChange={(e) => updateCostField(index, 'actual', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    size="1"
-                    value={item.budget ?? ''}
-                    onChange={(e) => updateCostField(index, 'budget', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <Text weight="medium" color={varianceColor}>
-                    {varianceLabel}
-                  </Text>
-                </Table.Cell>
-                <Table.Cell>
-                  <Text weight="medium">{percentOfTotalLabel}</Text>
-                </Table.Cell>
+                <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.actual ?? ''} onChange={(e) => updateCostField(index, 'actual', e.target.value)} /></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.budget ?? ''} onChange={(e) => updateCostField(index, 'budget', e.target.value)} /></Table.Cell>
+                <Table.Cell><Text weight="medium" color={varianceColor}>{varianceValue.toFixed(2)}</Text></Table.Cell>
+                <Table.Cell><Text weight="medium">{percentOfTotal.toFixed(1)}%</Text></Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={solutions[item.category] || ''}
-                    onValueChange={(val) =>
-                      setSolutions((prev) => ({ ...prev, [item.category]: val }))
-                    }
+                    onValueChange={(val) => setSolutions((prev) => ({ ...prev, [item.category]: val }))}
                   >
                     <Select.Trigger placeholder="Select" />
                     <Select.Content>
                       {solutionOptions.map((option) => (
-                        <Select.Item key={option} value={option}>
-                          {option}
-                        </Select.Item>
+                        <Select.Item key={option} value={option}>{option}</Select.Item>
                       ))}
                     </Select.Content>
                   </Select.Root>
                 </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    size="1"
-                    value={item.costAfter ?? ''}
-                    onChange={(e) => updateCostField(index, 'costAfter', e.target.value)}
-                  />
-                </Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.costAfter ?? ''} onChange={(e) => updateCostField(index, 'costAfter', e.target.value)} /></Table.Cell>
               </Table.Row>
             );
           })}
-
           <Table.Row>
-            <Table.Cell>
-              <Text weight="bold">Total</Text>
-            </Table.Cell>
-            <Table.Cell>
-              <Text weight="bold">{formatCurrency(totalActual)}</Text>
-            </Table.Cell>
-            <Table.Cell>
-              <Text weight="bold">{formatCurrency(totalBudget)}</Text>
-            </Table.Cell>
+            <Table.Cell><Text weight="bold">Total</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalActual)}</Text></Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalBudget)}</Text></Table.Cell>
             <Table.Cell />
-            <Table.Cell>
-              <Text weight="bold">100%</Text>
-            </Table.Cell>
+            <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
             <Table.Cell />
-            <Table.Cell>
-              <Text weight="bold">{formatCurrency(totalCostAfter)}</Text>
-            </Table.Cell>
+            <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter)}</Text></Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
