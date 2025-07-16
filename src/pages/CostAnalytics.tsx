@@ -137,6 +137,39 @@ const CostAnalysis = () => {
         </Card>
       </Grid>
 
+      {/* Charts */}
+      <Flex gap="4" mb="6">
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">Cost Composition</Heading>
+          <div style={{ height: '250px' }}>
+            <PieChart width={300} height={250}>
+              <Pie
+                data={costData.filter(item => !item.isGroup)}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              >
+                {costData.filter(item => !item.isGroup).map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={["#3b82f6", "#f59e0b", "#ef4444"][index % 3]} />
+                ))}
+              </Pie>
+            </PieChart>
+          </div>
+        </Card>
+
+        <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
+          <div style={{ height: '250px' }}>
+            <BarChart width={500} height={250} data={costData.filter(item => !item.isGroup)}>
+              <Bar dataKey="value" fill="#3b82f6" />
+            </BarChart>
+          </div>
+        </Card>
+      </Flex>
+
       {/* Table Section */}
       <Table.Root variant="surface">
         <Table.Header>
