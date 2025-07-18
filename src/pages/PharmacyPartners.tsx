@@ -10,22 +10,33 @@ import {
   Text,
   Box,
   Dialog,
-  Select,
 } from '@radix-ui/themes';
+import * as Select from '@radix-ui/react-select';
 import { useTranslation } from 'react-i18next';
 
-const stockOptions = ['optimal', 'low', 'critical'];
+const stockOptions = ['optimal', 'low', 'critical'] as const;
+type StockOption = typeof stockOptions[number];
+
+interface Pharmacy {
+  id: string;
+  name: string;
+  location: string;
+  license: 'Active' | 'Inactive';
+  lastDelivery: string;
+  stock: StockOption;
+  recallCompliance: number;
+}
 
 const PharmacyPartners = () => {
   const { t, i18n } = useTranslation('pharmacy-partners');
   const [isStockMonitorOpen, setIsStockMonitorOpen] = useState(false);
   const [isRecallPortalOpen, setIsRecallPortalOpen] = useState(false);
 
-  const getLocationName = () => {
+  const getLocationName = (): string => {
     return i18n.language.startsWith('ar') ? 'مصر' : 'Egypt';
   };
 
-  const [pharmacies, setPharmacies] = useState([
+  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([
     {
       id: 'PHARM-045',
       name: 'CarePlus Pharmacy',
@@ -46,7 +57,7 @@ const PharmacyPartners = () => {
     },
   ]);
 
-  const handleStockChange = (id, newStock) => {
+  const handleStockChange = (id: string, newStock: StockOption) => {
     setPharmacies((prev) =>
       prev.map((pharmacy) =>
         pharmacy.id === id ? { ...pharmacy, stock: newStock } : pharmacy
@@ -177,27 +188,36 @@ const PharmacyPartners = () => {
               </Table.Cell>
               <Table.Cell>{pharmacy.lastDelivery}</Table.Cell>
               <Table.Cell>
-                <Select
+                <Select.Root
                   value={pharmacy.stock}
-                  onValueChange={(val) => handleStockChange(pharmacy.id, val)}
+                  onValueChange={(val: StockOption) => handleStockChange(pharmacy.id, val)}
                 >
-                  {stockOptions.map((option) => (
-                    <Select.Item key={option} value={option}>
-                      <Badge
-                        variant="soft"
-                        color={
-                          option === 'optimal'
-                            ? 'green'
-                            : option === 'low'
-                            ? 'amber'
-                            : 'red'
-                        }
-                      >
-                        {t(option)}
-                      </Badge>
-                    </Select.Item>
-                  ))}
-                </Select>
+                  <Select.Trigger
+                    aria-label={t('stock-level')}
+                    style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 4, border: '1px solid #ccc', display: 'inline-flex', alignItems: 'center', gap: 5 }}
+                  >
+                    <Select.Value />
+                    <Select.Icon />
+                  </Select.Trigger>
+
+                  <Select.Content
+                    style={{ background: 'white', borderRadius: 6, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', padding: 5 }}
+                  >
+                    <Select.ScrollUpButton />
+                    <Select.Viewport>
+                      {stockOptions.map((option) => (
+                        <Select.Item
+                          key={option}
+                          value={option}
+                          style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
+                        >
+                          <Select.ItemText>{t(option)}</Select.ItemText>
+                        </Select.Item>
+                      ))}
+                    </Select.Viewport>
+                    <Select.ScrollDownButton />
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
               <Table.Cell>{pharmacy.recallCompliance}%</Table.Cell>
             </Table.Row>
