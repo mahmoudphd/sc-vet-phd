@@ -8,7 +8,6 @@ import {
   Table,
   Badge,
   Button,
-  Text,
   Box,
   Dialog,
   TextField,
@@ -42,13 +41,13 @@ const EmployeeManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [employees, setEmployees] = useState([
-    { id: 1, name: 'John Doe', email: 'john@supplychain.com', role: 'Warehouse Manager', 
-      department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
-    { id: 2, name: 'Jane Smith', email: 'jane@supplychain.com', role: 'Inventory Specialist', 
-      department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
-    { id: 3, name: 'Mike Johnson', email: 'mike@supplychain.com', role: 'Inventory Specialist', 
-      department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
-  ]);
+  { id: 1, name: 'Mohamed Ahmed', email: 'mohamed@supplychain.com', role: 'Warehouse Manager', 
+    department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
+  { id: 2, name: 'Moamen Mahmoud', email: 'moamen@supplychain.com', role: 'Inventory Specialist', 
+    department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
+  { id: 3, name: 'Housam Nabil', email: 'housam@supplychain.com', role: 'Inventory Specialist', 
+    department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
+]);
 
   const departmentData = [
     { name: t('logistics'), employees: 15 },
@@ -224,7 +223,25 @@ const EmployeeManagement = () => {
         <Table.Body>
           {filteredEmployees.map(employee => (
             <Table.Row key={employee.id}>
-              <Table.Cell>{employee.name}</Table.Cell>
+              <Table.Cell>
+                <Select.Root
+                  value={employee.name}
+                  onValueChange={(newName) => {
+                    setEmployees(employees.map(emp =>
+                      emp.id === employee.id ? { ...emp, name: newName } : emp
+                    ));
+                  }}
+                >
+                  <Select.Trigger aria-label="Select employee name" />
+                  <Select.Content>
+                    {employees.map(emp => (
+                      <Select.Item key={emp.id} value={emp.name}>
+                        {emp.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
               <Table.Cell>{employee.role}</Table.Cell>
               <Table.Cell>
                 <Badge variant="soft" color="blue">
