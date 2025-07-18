@@ -1,107 +1,84 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
-    Card, 
-    Flex, 
-    Heading, 
-    Table, 
-    Badge, 
-    Button, 
-    Grid,
-    Text,
-    Box,
-    Dialog,
-    TextField
+  Card, 
+  Flex, 
+  Heading, 
+  Table, 
+  Badge, 
+  Button, 
+  Grid, 
+  Text, 
+  Box, 
+  Dialog, 
+  TextField 
 } from '@radix-ui/themes';
 import { 
-    LineChart, 
-    Line, 
-    PieChart, 
-    Pie, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip,
-    Legend,
-    Cell
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  Cell 
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
+
+const customers = [
+  { id: 'CUST-001', product: 'Pain Relief Tablets', purchaseFrequency: 3, satisfaction: 'high', rating: 4.7, lastPurchase: '2025-07-10' },
+  { id: 'CUST-002', product: 'Vitamin Supplements', purchaseFrequency: 1, satisfaction: 'medium', rating: 4.1, lastPurchase: '2025-06-22' },
+  { id: 'CUST-003', product: 'Cold & Flu Syrup', purchaseFrequency: 5, satisfaction: 'low', rating: 3.5, lastPurchase: '2025-07-15' },
+];
+
+const purchaseFrequencyData = [
+  { month: 'Jan', frequency: 40 },
+  { month: 'Feb', frequency: 35 },
+  { month: 'Mar', frequency: 45 },
+  { month: 'Apr', frequency: 50 },
+  { month: 'May', frequency: 48 },
+  { month: 'Jun', frequency: 52 },
+];
+
+const satisfactionData = [
+  { name: 'High Satisfaction', value: 60, color: '#4caf50' },
+  { name: 'Medium Satisfaction', value: 30, color: '#ff9800' },
+  { name: 'Low Satisfaction', value: 10, color: '#f44336' },
+];
 
 const EndCustomers = () => {
   const { t } = useTranslation('end-customers');
   const [selectedReport, setSelectedReport] = useState('');
-  
-  const customers = [
-    { id: 'PAT-04578', therapy: 'Antiparasitic Treatment', adherence: 92, outcomes: 'positive', feedback: 4.7, lastOrder: '2023-07-01' },
-    { id: 'PAT-04579', therapy: 'Antifungal Therapy', adherence: 85, outcomes: 'neutral', feedback: 4.2, lastOrder: '2023-07-05' },
-    { id: 'PAT-04580', therapy: 'Antibiotic Course', adherence: 78, outcomes: 'negative', feedback: 3.9, lastOrder: '2023-07-10' },
-  ];
-
-  const adherenceData = [
-    { month: t('jan'), adherence: 85 },
-    { month: t('feb'), adherence: 88 },
-    { month: t('mar'), adherence: 90 },
-    { month: t('apr'), adherence: 87 },
-    { month: t('may'), adherence: 91 },
-    { month: t('jun'), adherence: 93 },
-  ];
-
-  const demographicsData = [
-    { name: t('age-18-30'), value: 25, color: '#3b82f6' },
-    { name: t('age-31-50'), value: 45, color: '#60a5fa' },
-    { name: t('age-51-plus'), value: 30, color: '#93c5fd' },
-  ];
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('patient-therapy-management')}</Heading>
+        <Heading size="6">{t('end-customer-management')}</Heading>
         <Flex gap="3">
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button variant="soft">{t('safety-reporting')}</Button>
+              <Button variant="soft">{t('submit-feedback')}</Button>
             </Dialog.Trigger>
             <Dialog.Content style={{ maxWidth: 450 }}>
-              <Dialog.Title>{t('safety-reporting')}</Dialog.Title>
-              <Dialog.Description mb="4">
-                {t('report-adverse-event')}
-              </Dialog.Description>
-              
+              <Dialog.Title>{t('submit-feedback')}</Dialog.Title>
+              <Dialog.Description mb="4">{t('feedback-instruction')}</Dialog.Description>
               <Flex direction="column" gap="3">
                 <TextField.Root
-                  placeholder={t('patient-id-placeholder')}
+                  placeholder={t('customer-id-placeholder')}
                   onChange={(e) => setSelectedReport(e.target.value)}
                 />
                 <TextField.Root
-                  placeholder={t('event-description')}
+                  placeholder={t('feedback-description')}
                   onChange={(e) => setSelectedReport(e.target.value)}
                 />
               </Flex>
-
               <Flex gap="3" mt="4" justify="end">
                 <Dialog.Close>
-                  <Button variant="soft" color="gray">
-                    {t('cancel')}
-                  </Button>
+                  <Button variant="soft" color="gray">{t('cancel')}</Button>
                 </Dialog.Close>
                 <Dialog.Close>
-                  <Button>{t('submit-report')}</Button>
-                </Dialog.Close>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">{t('gdpr-compliance')}</Button>
-            </Dialog.Trigger>
-            <Dialog.Content style={{ maxWidth: 500 }}>
-              <Dialog.Title>{t('gdpr-compliance')}</Dialog.Title>
-              <Text as="div" size="2" mb="4">
-                {t('gdpr-description')}
-              </Text>
-              <Flex gap="3" mt="4" justify="end">
-                <Dialog.Close>
-                  <Button>{t('close')}</Button>
+                  <Button>{t('submit')}</Button>
                 </Dialog.Close>
               </Flex>
             </Dialog.Content>
@@ -112,56 +89,50 @@ const EndCustomers = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('active-patients')}</Text>
-            <Heading size="7">24,589</Heading>
+            <Text size="2">{t('active-customers')}</Text>
+            <Heading size="7">15,742</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avg-adherence')}</Text>
-            <Heading size="7">89%</Heading>
+            <Text size="2">{t('avg-purchase-frequency')}</Text>
+            <Heading size="7">3.2 {t('times')}</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('ae-reports')}</Text>
-            <Heading size="7" className="text-red-500">45</Heading>
+            <Text size="2">{t('avg-satisfaction')}</Text>
+            <Heading size="7">85%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('satisfaction')}</Text>
-            <Heading size="7">4.6/5</Heading>
+            <Text size="2">{t('avg-rating')}</Text>
+            <Heading size="7">4.3/5</Heading>
           </Flex>
         </Card>
       </Grid>
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('therapy-adherence')}</Heading>
+          <Heading size="4" mb="3">{t('purchase-frequency-over-time')}</Heading>
           <div className="h-64">
-            <LineChart width={800} height={250} data={adherenceData}>
+            <LineChart width={800} height={250} data={purchaseFrequencyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="adherence" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-              />
+              <Line type="monotone" dataKey="frequency" stroke="#4caf50" strokeWidth={2} />
             </LineChart>
           </div>
         </Card>
-        
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('demographics')}</Heading>
+          <Heading size="4" mb="3">{t('customer-satisfaction')}</Heading>
           <div className="h-64">
             <PieChart width={400} height={250}>
               <Pie
-                data={demographicsData}
+                data={satisfactionData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -170,7 +141,7 @@ const EndCustomers = () => {
                 dataKey="value"
                 label
               >
-                {demographicsData.map((entry, index) => (
+                {satisfactionData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -184,27 +155,36 @@ const EndCustomers = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('patient-id')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('therapy')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('adherence')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('outcomes')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('feedback')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('last-order')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('customer-id')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('product-purchased')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('purchase-frequency')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('satisfaction')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('rating')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('last-purchase-date')}</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {customers.map((customer) => (
             <Table.Row key={customer.id}>
               <Table.Cell>{customer.id}</Table.Cell>
-              <Table.Cell>{customer.therapy}</Table.Cell>
-              <Table.Cell>{customer.adherence}%</Table.Cell>
+              <Table.Cell>{customer.product}</Table.Cell>
+              <Table.Cell>{customer.purchaseFrequency}</Table.Cell>
               <Table.Cell>
-                <Badge variant="soft" color={customer.outcomes === 'positive' ? 'green' : 'red'}>
-                  {t(customer.outcomes)}
+                <Badge
+                  variant="soft"
+                  color={
+                    customer.satisfaction === 'high'
+                      ? 'green'
+                      : customer.satisfaction === 'medium'
+                      ? 'amber'
+                      : 'red'
+                  }
+                >
+                  {t(customer.satisfaction)}
                 </Badge>
               </Table.Cell>
-              <Table.Cell>{customer.feedback}/5</Table.Cell>
-              <Table.Cell>{customer.lastOrder}</Table.Cell>
+              <Table.Cell>{customer.rating}/5</Table.Cell>
+              <Table.Cell>{customer.lastPurchase}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
