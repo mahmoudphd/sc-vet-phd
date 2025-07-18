@@ -11,8 +11,8 @@ import {
   Box,
   Dialog,
 } from '@radix-ui/themes';
-import * as Select from '@radix-ui/react-select';
 import { useTranslation } from 'react-i18next';
+import HeatMapGrid from 'react-heatmap-grid';
 
 const stockOptions = ['optimal', 'low', 'critical'] as const;
 type StockOption = typeof stockOptions[number];
@@ -26,6 +26,17 @@ interface Pharmacy {
   stock: StockOption;
   recallCompliance: number;
 }
+
+const xLabels = new Array(7).fill(0).map((_, i) => `Day ${i + 1}`);
+const yLabels = ['Store A', 'Store B', 'Store C', 'Store D', 'Store E'];
+
+const heatmapData = [
+  [12, 5, 7, 10, 8, 9, 4],
+  [6, 7, 3, 8, 10, 6, 7],
+  [10, 15, 12, 13, 14, 10, 8],
+  [5, 6, 7, 8, 9, 4, 6],
+  [7, 8, 6, 5, 4, 3, 2],
+];
 
 const PharmacyPartners = () => {
   const { t, i18n } = useTranslation('pharmacy-partners');
@@ -68,7 +79,7 @@ const PharmacyPartners = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('retail-network-management')}</Heading>
+        <Heading size="6">Retail Network Management</Heading>
         <Flex gap="3">
           <Button variant="soft" onClick={() => setIsStockMonitorOpen(true)}>
             {t('stock-monitor')}
@@ -159,9 +170,42 @@ const PharmacyPartners = () => {
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">{t('sales-heatmap')}</Heading>
-          {/* <div className="h-96">
-            <HeatMap data={pharmacySalesData} />
-          </div> */}
+          <div style={{ fontSize: 12 }}>
+            <HeatMapGrid
+              data={heatmapData}
+              xLabels={xLabels}
+              yLabels={yLabels}
+              cellHeight="30px"
+              cellWidth="40px"
+              xLabelsStyle={() => ({
+                color: '#777',
+                fontWeight: 'bold',
+              })}
+              yLabelsStyle={() => ({
+                fontWeight: 'bold',
+                color: '#777',
+              })}
+              cellRender={(x, y, value) => (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: value > 10 ? 'white' : 'black',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {value}
+                </div>
+              )}
+              cellStyle={(x, y, value) => ({
+                background: `rgba(255, 0, 0, ${value / 15})`,
+                border: '1px solid #ccc',
+              })}
+            />
+          </div>
         </Card>
       </Flex>
 
@@ -188,36 +232,24 @@ const PharmacyPartners = () => {
               </Table.Cell>
               <Table.Cell>{pharmacy.lastDelivery}</Table.Cell>
               <Table.Cell>
-                <Select.Root
+                <select
                   value={pharmacy.stock}
-                  onValueChange={(val: StockOption) => handleStockChange(pharmacy.id, val)}
+                  onChange={(e) =>
+                    handleStockChange(pharmacy.id, e.target.value as StockOption)
+                  }
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    cursor: 'pointer',
+                  }}
                 >
-                  <Select.Trigger
-                    aria-label={t('stock-level')}
-                    style={{ all: 'unset', cursor: 'pointer', padding: '6px 12px', borderRadius: 4, border: '1px solid #ccc', display: 'inline-flex', alignItems: 'center', gap: 5 }}
-                  >
-                    <Select.Value />
-                    <Select.Icon />
-                  </Select.Trigger>
-
-                  <Select.Content
-                    style={{ background: 'white', borderRadius: 6, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', padding: 5 }}
-                  >
-                    <Select.ScrollUpButton />
-                    <Select.Viewport>
-                      {stockOptions.map((option) => (
-                        <Select.Item
-                          key={option}
-                          value={option}
-                          style={{ padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}
-                        >
-                          <Select.ItemText>{t(option)}</Select.ItemText>
-                        </Select.Item>
-                      ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
-                  </Select.Content>
-                </Select.Root>
+                  {stockOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {t(option)}
+                    </option>
+                  ))}
+                </select>
               </Table.Cell>
               <Table.Cell>{pharmacy.recallCompliance}%</Table.Cell>
             </Table.Row>
