@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
+import {
   Card,
   Flex,
   Grid,
@@ -8,6 +8,7 @@ import {
   Table,
   Badge,
   Button,
+  Text,
   Box,
   Dialog,
   TextField,
@@ -15,8 +16,8 @@ import {
   DropdownMenu,
   Switch
 } from '@radix-ui/themes';
-import { 
-  BarChart, 
+import {
+  BarChart,
   Bar,
   PieChart,
   Pie,
@@ -41,19 +42,16 @@ const EmployeeManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [employees, setEmployees] = useState([
-  { id: 1, name: 'Mohamed Ahmed', email: 'mohamed@supplychain.com', role: 'Warehouse Manager', 
-    department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
-  { id: 2, name: 'Moamen Mahmoud', email: 'moamen@supplychain.com', role: 'Inventory Specialist', 
-    department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
-  { id: 3, name: 'Housam Nabil', email: 'housam@supplychain.com', role: 'Inventory Specialist', 
-    department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
-]);
+    { id: 1, name: 'Moamen Mahmoud', email: 'moamenmahmoud@supplychain.com', role: 'Warehouse Manager', department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
+    { id: 2, name: 'Housam Nabil', email: 'housamnabil@supplychain.com', role: 'Inventory Specialist', department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
+    { id: 3, name: 'Mike Johnson', email: 'mike@supplychain.com', role: 'Inventory Specialist', department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 }
+  ]);
 
   const departmentData = [
     { name: t('logistics'), employees: 15 },
     { name: t('operations'), employees: 22 },
     { name: t('purchasing'), employees: 8 },
-    { name: t('distribution'), employees: 12 },
+    { name: t('distribution'), employees: 12 }
   ];
 
   const performanceData = [
@@ -62,24 +60,52 @@ const EmployeeManagement = () => {
     { month: t('mar'), score: 4.7 },
     { month: t('apr'), score: 4.6 },
     { month: t('may'), score: 4.8 },
-    { month: t('jun'), score: 4.9 },
+    { month: t('jun'), score: 4.9 }
   ];
 
-  const filteredEmployees = employees.filter(emp => 
+  const filteredEmployees = employees.filter(emp =>
     emp.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
     (selectedDepartment === 'all' || emp.department === selectedDepartment)
   );
 
   const handleStatusChange = (id: number) => {
-    setEmployees(employees.map(emp => 
+    setEmployees(employees.map(emp =>
       emp.id === id ? { ...emp, status: emp.status === 'active' ? 'inactive' : 'active' } : emp
     ));
+  };
+
+  const employeePresets = {
+    'Mohamed Ahmed': { role: 'Inventory Specialist', department: 'Logistics' },
+    'Moamen Mahmoud': { role: 'Warehouse Manager', department: 'Logistics' },
+    'Housam Nabil': { role: 'Inventory Specialist', department: 'Operations' }
+  };
+
+  const handleSelectEmployee = (value: string) => {
+    const preset = employeePresets[value];
+    if (!preset) return;
+
+    const email = `${value.toLowerCase().replace(/ /g, '')}@supplychain.com`;
+    setEmployees(prev => [
+      ...prev,
+      {
+        id: prev.length + 1,
+        name: value,
+        email,
+        role: preset.role,
+        department: preset.department,
+        status: 'active',
+        trainingComplete: false,
+        performance: 4.5
+      }
+    ]);
+    setIsDialogOpen(false);
+    toast.success(t('success.employeeAdded'));
   };
 
   return (
     <Box p="6">
       <Toaster position="top-right" />
-      
+
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">{t('employee-management')}</Heading>
         <Flex gap="3">
@@ -97,36 +123,22 @@ const EmployeeManagement = () => {
               <Select.Item value="Purchasing">{t('purchasing')}</Select.Item>
             </Select.Content>
           </Select.Root>
-          <Dialog.Root>
+
+          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger>
               <Button>{t('add-employee')}</Button>
             </Dialog.Trigger>
             <Dialog.Content style={{ maxWidth: 500 }}>
               <Dialog.Title>{t('add-employee')}</Dialog.Title>
               <Flex direction="column" gap="3" mt="4">
-                <TextField.Root placeholder={t('full-name')} />
-                <TextField.Root placeholder={t('email')} />
-                <Select.Root>
-                  <Select.Trigger placeholder={t('select-role')} />
+                <Select.Root onValueChange={handleSelectEmployee}>
+                  <Select.Trigger placeholder="Select Employee Name" />
                   <Select.Content>
-                    <Select.Item value="Manager">{t('warehouse-manager')}</Select.Item>
-                    <Select.Item value="Specialist">{t('inventory-specialist')}</Select.Item>
+                    <Select.Item value="Mohamed Ahmed">Mohamed Ahmed</Select.Item>
+                    <Select.Item value="Moamen Mahmoud">Moamen Mahmoud</Select.Item>
+                    <Select.Item value="Housam Nabil">Housam Nabil</Select.Item>
                   </Select.Content>
                 </Select.Root>
-                <Select.Root>
-                  <Select.Trigger placeholder={t('select-department')} />
-                  <Select.Content>
-                    <Select.Item value="Logistics">{t('logistics')}</Select.Item>
-                    <Select.Item value="Operations">{t('operations')}</Select.Item>
-                    <Select.Item value="Purchasing">{t('purchasing')}</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft">{t('cancel')}</Button>
-                  </Dialog.Close>
-                  <Button>{t('save')}</Button>
-                </Flex>
               </Flex>
             </Dialog.Content>
           </Dialog.Root>
@@ -134,30 +146,10 @@ const EmployeeManagement = () => {
       </Flex>
 
       <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('total-employees')}</Text>
-            <Heading size="7">1,234</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('active-ratio')}</Text>
-            <Heading size="7">89%</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('avg-performance')}</Text>
-            <Heading size="7">4.7/5</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('departments')}</Text>
-            <Heading size="7">12</Heading>
-          </Flex>
-        </Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">{t('total-employees')}</Text><Heading size="7">{employees.length}</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">{t('active-ratio')}</Text><Heading size="7">89%</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">{t('avg-performance')}</Text><Heading size="7">4.7/5</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">{t('departments')}</Text><Heading size="7">12</Heading></Flex></Card>
       </Grid>
 
       <Flex gap="4" mb="5">
@@ -171,17 +163,11 @@ const EmployeeManagement = () => {
                 <YAxis domain={[4, 5]} />
                 <Tooltip />
                 <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="score" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                />
+                <Line type="monotone" dataKey="score" stroke="#3b82f6" strokeWidth={2} />
               </LineChart>
             </ResponsiveContainer>
           </div>
         </Card>
-        
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">{t('department-distribution')}</Heading>
           <div className="h-64">
@@ -223,30 +209,10 @@ const EmployeeManagement = () => {
         <Table.Body>
           {filteredEmployees.map(employee => (
             <Table.Row key={employee.id}>
-              <Table.Cell>
-                <Select.Root
-                  value={employee.name}
-                  onValueChange={(newName) => {
-                    setEmployees(employees.map(emp =>
-                      emp.id === employee.id ? { ...emp, name: newName } : emp
-                    ));
-                  }}
-                >
-                  <Select.Trigger aria-label="Select employee name" />
-                  <Select.Content>
-                    {employees.map(emp => (
-                      <Select.Item key={emp.id} value={emp.name}>
-                        {emp.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
+              <Table.Cell>{employee.name}</Table.Cell>
               <Table.Cell>{employee.role}</Table.Cell>
               <Table.Cell>
-                <Badge variant="soft" color="blue">
-                  {employee.department}
-                </Badge>
+                <Badge variant="soft" color="blue">{employee.department}</Badge>
               </Table.Cell>
               <Table.Cell>
                 <Flex align="center" gap="2">
