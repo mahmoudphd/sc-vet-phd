@@ -13,7 +13,17 @@ import {
   Text,
   TextField
 } from '@radix-ui/themes';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
@@ -48,13 +58,17 @@ const CO2Footprint = () => {
   };
 
   const reductionData = [
-    { initiative: 'Solar Panel Installation', description: 'Renewable energy for facilities', impact: 'High', reduction: 2.5 },
-    { initiative: 'LED Lighting', description: 'Efficient factory/office lighting', impact: 'Medium', reduction: 1.2 },
-    { initiative: 'Industrial Waste Recycling', description: 'Less landfill/burning emissions', impact: 'Medium', reduction: 1.5 },
-    { initiative: 'Fuel Consumption Optimization', description: 'Efficient transport/logistics', impact: 'Medium', reduction: 1.3 }
+    { initiative: 'Solar Panel Installation', reduction: 2.5 },
+    { initiative: 'LED Lighting', reduction: 1.2 },
+    { initiative: 'Industrial Waste Recycling', reduction: 1.5 },
+    { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
   ];
 
-  const totalEmissions = useMemo(() => emissionData.reduce((sum, item) => sum + item.emissions, 0), [emissionData]);
+  const totalEmissions = useMemo(
+    () => emissionData.reduce((sum, item) => sum + item.emissions, 0),
+    [emissionData]
+  );
+
   const emissionDataWithPercent = useMemo(() => {
     return emissionData.map(item => ({
       ...item,
@@ -142,7 +156,10 @@ const CO2Footprint = () => {
                   label
                 >
                   {emissionDataWithPercent.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#6366f1", "#22c55e", "#a855f7"][index % 7]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#6366f1', '#22c55e', '#a855f7'][index % 7]}
+                    />
                   ))}
                 </Pie>
               </PieChart>
@@ -185,7 +202,7 @@ const CO2Footprint = () => {
                   <TextField.Input
                     type="number"
                     value={item.emissions.toString()}
-                    onChange={(e) => handleEmissionChange(i, e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleEmissionChange(i, e.target.value)}
                     style={{ width: 80 }}
                   />
                 </TextField.Root>
