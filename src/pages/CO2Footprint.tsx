@@ -65,7 +65,6 @@ const initialReductionInitiatives = [
 
 export default function CO2Footprint() {
   const [selectedProduct, setSelectedProduct] = useState(initialProducts[0]);
-
   const [emissionData, setEmissionData] = useState(initialEmissionData);
   const [reductionData] = useState(initialReductionInitiatives);
 
@@ -84,6 +83,7 @@ export default function CO2Footprint() {
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Sustainability Dashboard</Heading>
+
         <Box style={{ width: 180 }}>
           <Select.Root
             value={selectedProduct}
@@ -109,6 +109,7 @@ export default function CO2Footprint() {
             <Text size="1" style={{ color: 'green' }}>↓ 12% YoY</Text>
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2">RE100 Progress</Text>
@@ -116,6 +117,7 @@ export default function CO2Footprint() {
             <Progress value={68} />
           </Flex>
         </Card>
+
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2">Carbon Intensity</Text>
@@ -148,6 +150,7 @@ export default function CO2Footprint() {
               </PieChart>
             </ResponsiveContainer>
           </div>
+
           <Box mt="3">
             {emissionDataWithPercent.map((entry) => (
               <Flex key={entry.category} align="center" gap="2" mb="1">
@@ -187,4 +190,44 @@ export default function CO2Footprint() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card
+        </Card>
+      </Flex>
+
+      <Table.Root variant="surface" style={{ marginTop: 20 }}>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Emissions (tCO₂e)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Certification</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+
+        <Table.Body>
+          {emissionDataWithPercent.map((item, i) => {
+            const target = (item.emissions * 0.8).toFixed(1);
+            const progress = 80; // fixed progress
+            return (
+              <Table.Row key={i}>
+                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell>{item.emissions.toFixed(1)}</Table.Cell>
+                <Table.Cell>{item.percentOfTotal}%</Table.Cell>
+                <Table.Cell>{target} tCO₂e</Table.Cell>
+                <Table.Cell>
+                  <Progress value={progress} />
+                </Table.Cell>
+                <Table.Cell>
+                  <Button variant="soft" disabled>
+                    ISO 14001
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table.Root>
+    </Box>
+  );
+}
