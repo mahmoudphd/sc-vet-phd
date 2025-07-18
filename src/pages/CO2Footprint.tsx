@@ -11,8 +11,19 @@ import {
   Select,
   Table,
   Text,
+  TextField
 } from '@radix-ui/themes';
-import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
@@ -31,7 +42,6 @@ const CO2Footprint = () => {
     { category: 'End of Life', emissions: 2.3 }
   ]);
 
-  // تحديث قيمة الانبعاث من حقل الادخال العادي (input HTML)
   const handleEmissionChange = (index: number, value: string) => {
     const newValue = parseFloat(value);
     if (!isNaN(newValue)) {
@@ -55,6 +65,7 @@ const CO2Footprint = () => {
   ];
 
   const totalEmissions = useMemo(() => emissionData.reduce((sum, item) => sum + item.emissions, 0), [emissionData]);
+
   const emissionDataWithPercent = useMemo(() => {
     return emissionData.map(item => ({
       ...item,
@@ -100,7 +111,6 @@ const CO2Footprint = () => {
             <Text size="1" color="green">↓ 12% YoY</Text>
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2">RE100 Progress</Text>
@@ -108,7 +118,6 @@ const CO2Footprint = () => {
             <Progress value={68} />
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2">Carbon Intensity</Text>
@@ -116,7 +125,6 @@ const CO2Footprint = () => {
             <Text size="1">Scope 1, 2 & 3</Text>
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2">Emission Reduction Potential</Text>
@@ -142,7 +150,10 @@ const CO2Footprint = () => {
                   label
                 >
                   {emissionDataWithPercent.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={['#3b82f6','#10b981','#f59e0b','#ef4444','#6366f1','#22c55e','#a855f7'][index % 7]} />
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={['#3b82f6','#10b981','#f59e0b','#ef4444','#6366f1','#22c55e','#a855f7'][index % 7]}
+                    />
                   ))}
                 </Pie>
               </PieChart>
@@ -181,18 +192,20 @@ const CO2Footprint = () => {
             <Table.Row key={i}>
               <Table.Cell>{item.category}</Table.Cell>
               <Table.Cell>
-                <input
-                  type="number"
-                  value={item.emissions}
-                  onChange={(e) => handleEmissionChange(i, e.target.value)}
-                  style={{ width: 80 }}
+                <TextField.Root
+                  size="1"
+                  value={item.emissions.toString()}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleEmissionChange(i, e.target.value)}
                 />
               </Table.Cell>
               <Table.Cell>{item.percentOfTotal}%</Table.Cell>
               <Table.Cell>{item.target} tCO₂e</Table.Cell>
               <Table.Cell><Progress value={80} /></Table.Cell>
               <Table.Cell>
-                <Select.Root value={certifications[i]} onValueChange={val => handleCertificationChange(i, val)}>
+                <Select.Root
+                  value={certifications[i]}
+                  onValueChange={(val) => handleCertificationChange(i, val)}
+                >
                   <Select.Trigger />
                   <Select.Content>
                     <Select.Item value="ISO 14001">ISO 14001</Select.Item>
