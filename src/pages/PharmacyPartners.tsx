@@ -9,42 +9,60 @@ import {
   Grid,
   Text,
   Box,
-  Dialog
+  Dialog,
+  Select,
 } from '@radix-ui/themes';
 import { useTranslation } from 'react-i18next';
 
+const stockOptions = ['optimal', 'low', 'critical'];
+
 const PharmacyPartners = () => {
-  const { t } = useTranslation('pharmacy-partners');
+  const { t, i18n } = useTranslation('pharmacy-partners');
   const [isStockMonitorOpen, setIsStockMonitorOpen] = useState(false);
   const [isRecallPortalOpen, setIsRecallPortalOpen] = useState(false);
 
-  const pharmacies = [
+  const getLocationName = () => {
+    return i18n.language.startsWith('ar') ? 'مصر' : 'Egypt';
+  };
+
+  const [pharmacies, setPharmacies] = useState([
     {
       id: 'PHARM-045',
       name: 'CarePlus Pharmacy',
-      location: 'London, UK',
+      location: getLocationName(),
       license: 'Active',
-      lastDelivery: '2023-07-15',
-      stock: 'Optimal',
-      recallCompliance: 100
+      lastDelivery: '2025-07-18',
+      stock: 'optimal',
+      recallCompliance: 100,
     },
-  ];
+    {
+      id: 'PHARM-046',
+      name: 'HealthyLife Retailer',
+      location: getLocationName(),
+      license: 'Inactive',
+      lastDelivery: '2025-06-30',
+      stock: 'low',
+      recallCompliance: 87,
+    },
+  ]);
+
+  const handleStockChange = (id, newStock) => {
+    setPharmacies((prev) =>
+      prev.map((pharmacy) =>
+        pharmacy.id === id ? { ...pharmacy, stock: newStock } : pharmacy
+      )
+    );
+  };
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('pharmacy-network-management')}</Heading>
+        <Heading size="6">{t('retail-network-management')}</Heading>
         <Flex gap="3">
-          <Button
-            variant="soft"
-            onClick={() => setIsStockMonitorOpen(true)}
-          >
+          <Button variant="soft" onClick={() => setIsStockMonitorOpen(true)}>
             {t('stock-monitor')}
           </Button>
-          <Button
-            variant="soft"
-            onClick={() => setIsRecallPortalOpen(true)}
-          >
+          <Button variant="soft" onClick={() => setIsRecallPortalOpen(true)}>
             {t('recall-portal')}
           </Button>
         </Flex>
@@ -121,7 +139,7 @@ const PharmacyPartners = () => {
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('patient-ratings')}</Text>
+            <Text size="2">{t('customer-ratings')}</Text>
             <Heading size="7">4.8/5</Heading>
           </Flex>
         </Card>
@@ -139,7 +157,7 @@ const PharmacyPartners = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('pharmacy')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('retailer')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('location')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('license')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('last-delivery')}</Table.ColumnHeaderCell>
@@ -159,12 +177,27 @@ const PharmacyPartners = () => {
               </Table.Cell>
               <Table.Cell>{pharmacy.lastDelivery}</Table.Cell>
               <Table.Cell>
-                <Badge variant="soft" color={
-                  pharmacy.stock === 'Optimal' ? 'green' :
-                    pharmacy.stock === 'Low' ? 'amber' : 'red'
-                }>
-                  {t(pharmacy.stock.toLowerCase())}
-                </Badge>
+                <Select
+                  value={pharmacy.stock}
+                  onValueChange={(val) => handleStockChange(pharmacy.id, val)}
+                >
+                  {stockOptions.map((option) => (
+                    <Select.Item key={option} value={option}>
+                      <Badge
+                        variant="soft"
+                        color={
+                          option === 'optimal'
+                            ? 'green'
+                            : option === 'low'
+                            ? 'amber'
+                            : 'red'
+                        }
+                      >
+                        {t(option)}
+                      </Badge>
+                    </Select.Item>
+                  ))}
+                </Select>
               </Table.Cell>
               <Table.Cell>{pharmacy.recallCompliance}%</Table.Cell>
             </Table.Row>
