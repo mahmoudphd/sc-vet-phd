@@ -18,6 +18,9 @@ import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveCo
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Product 1');
+  const [certifications, setCertifications] = useState<string[]>([
+    'ISO 14001', 'ISO 14001', 'ISO 14001', 'ISO 14001', 'ISO 14001', 'ISO 14001', 'ISO 14001'
+  ]);
 
   const [emissionData, setEmissionData] = useState([
     { category: 'Raw Materials', emissions: 5.0 },
@@ -28,6 +31,21 @@ const CO2Footprint = () => {
     { category: 'Use', emissions: 1.5 },
     { category: 'End of Life', emissions: 2.3 }
   ]);
+
+  const handleEmissionChange = (index: number, value: string) => {
+    const newValue = parseFloat(value);
+    if (!isNaN(newValue)) {
+      const newData = [...emissionData];
+      newData[index].emissions = newValue;
+      setEmissionData(newData);
+    }
+  };
+
+  const handleCertificationChange = (index: number, value: string) => {
+    const newCerts = [...certifications];
+    newCerts[index] = value;
+    setCertifications(newCerts);
+  };
 
   const reductionData = [
     { initiative: 'Solar Panel Installation', description: 'Renewable energy for facilities', impact: 'High', reduction: 2.5 },
@@ -87,7 +105,7 @@ const CO2Footprint = () => {
           <Flex direction="column" gap="1" p="4">
             <Text size="2">RE100 Progress</Text>
             <Heading size="7">68%</Heading>
-            <Progress value={68} />
+            <Progress value="68" />
           </Flex>
         </Card>
 
@@ -162,11 +180,27 @@ const CO2Footprint = () => {
           {emissionDataWithPercent.map((item, i) => (
             <Table.Row key={i}>
               <Table.Cell>{item.category}</Table.Cell>
-              <Table.Cell>{parseFloat(item.emissions).toFixed(1)}</Table.Cell>
+              <Table.Cell>
+                <TextField.Input
+                  type="number"
+                  value={item.emissions}
+                  onChange={e => handleEmissionChange(i, e.target.value)}
+                  style={{ width: 80 }}
+                />
+              </Table.Cell>
               <Table.Cell>{item.percentOfTotal}%</Table.Cell>
               <Table.Cell>{item.target} tCO₂e</Table.Cell>
-              <Table.Cell><Progress value={80} /></Table.Cell>
-              <Table.Cell><Button variant="soft" disabled>ISO 14001</Button></Table.Cell>
+              <Table.Cell><Progress value="80" /></Table.Cell>
+              <Table.Cell>
+                <Select.Root value={certifications[i]} onValueChange={val => handleCertificationChange(i, val)}>
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Item value="ISO 14001">ISO 14001</Select.Item>
+                    <Select.Item value="ISO 50001">ISO 50001</Select.Item>
+                    <Select.Item value="None">None</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
             </Table.Row>
           ))}
           <Table.Row>
