@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   Card, 
   Flex, 
@@ -26,29 +25,63 @@ import {
   Cell
 } from 'recharts';
 
+// دالة ترجمة بسيطة بدل i18next
+const translations: Record<string, string> = {
+  'customer-id': 'Customer ID',
+  'product-purchased': 'Product Purchased',
+  'purchased-frequency': 'Purchased Frequency',
+  'satisfaction-level': 'Satisfaction Level',
+  'rating': 'Rating',
+  'last-purchase-date': 'Last Purchase Date',
+  'high': 'High',
+  'medium': 'Medium',
+  'low': 'Low',
+  'times': 'times',
+  'end-customer-management': 'End Customer Management',
+  'safety-reporting': 'Safety Reporting',
+  'report-adverse-event': 'Report an adverse event related to the product.',
+  'customer-id-placeholder': 'Enter Customer ID',
+  'event-description': 'Describe the event',
+  'cancel': 'Cancel',
+  'submit-report': 'Submit Report',
+  'gdpr-compliance': 'GDPR Compliance',
+  'gdpr-description': 'We ensure full compliance with GDPR regulations.',
+  'close': 'Close',
+  'active-customers': 'Active Customers',
+  'avg-purchased-frequency': 'Average Purchased Frequency',
+  'avg-satisfaction-level': 'Average Satisfaction Level',
+  'avg-rating': 'Average Rating',
+  'purchased-frequency-over-time': 'Purchased Frequency Over Time',
+  'customer-satisfaction': 'Customer Satisfaction',
+  'high-satisfaction': 'High Satisfaction',
+  'medium-satisfaction': 'Medium Satisfaction',
+  'low-satisfaction': 'Low Satisfaction'
+};
+
+const t = (key: string) => translations[key] ?? key;
+
 const EndCustomers = () => {
-  const { t } = useTranslation('end-customers');
   const [selectedReport, setSelectedReport] = useState('');
 
   const customers = [
-    { id: 'CUST-001', product: 'Poultry Drug A', purchasedFrequency: 3, satisfactionLevel: 'high', rating: 4.7, lastPurchaseDate: '2025-07-10' },
-    { id: 'CUST-002', product: 'Veterinary Antibiotics', purchasedFrequency: 1, satisfactionLevel: 'medium', rating: 4.1, lastPurchaseDate: '2025-06-22' },
-    { id: 'CUST-003', product: 'Livestock Supplement', purchasedFrequency: 5, satisfactionLevel: 'low', rating: 3.5, lastPurchaseDate: '2025-07-15' },
+    { id: 'CUST-04578', productPurchased: 'Poultry Drug', purchasedFrequency: 92, satisfactionLevel: 'high', rating: 4.7, lastPurchaseDate: '2023-07-01' },
+    { id: 'CUST-04579', productPurchased: 'Fish Antibiotic', purchasedFrequency: 85, satisfactionLevel: 'medium', rating: 4.2, lastPurchaseDate: '2023-07-05' },
+    { id: 'CUST-04580', productPurchased: 'Cattle Vaccine', purchasedFrequency: 78, satisfactionLevel: 'low', rating: 3.9, lastPurchaseDate: '2023-07-10' },
   ];
 
   const purchasedFrequencyData = [
-    { month: t('jan'), purchasedFrequency: 40 },
-    { month: t('feb'), purchasedFrequency: 35 },
-    { month: t('mar'), purchasedFrequency: 45 },
-    { month: t('apr'), purchasedFrequency: 50 },
-    { month: t('may'), purchasedFrequency: 48 },
-    { month: t('jun'), purchasedFrequency: 52 },
+    { month: 'Jan', frequency: 85 },
+    { month: 'Feb', frequency: 88 },
+    { month: 'Mar', frequency: 90 },
+    { month: 'Apr', frequency: 87 },
+    { month: 'May', frequency: 91 },
+    { month: 'Jun', frequency: 93 },
   ];
 
   const satisfactionData = [
-    { name: t('high-satisfaction'), value: 60, color: '#4caf50' },
-    { name: t('medium-satisfaction'), value: 30, color: '#ff9800' },
-    { name: t('low-satisfaction'), value: 10, color: '#f44336' },
+    { name: t('high-satisfaction'), value: 25, color: '#3b82f6' },
+    { name: t('medium-satisfaction'), value: 45, color: '#60a5fa' },
+    { name: t('low-satisfaction'), value: 30, color: '#93c5fd' },
   ];
 
   return (
@@ -113,25 +146,25 @@ const EndCustomers = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('active-customers')}</Text>
-            <Heading size="7">15,742</Heading>
+            <Heading size="7">24,589</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('avg-purchased-frequency')}</Text>
-            <Heading size="7">3.2 {t('times')}</Heading>
+            <Heading size="7">89%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('avg-satisfaction-level')}</Text>
-            <Heading size="7">85%</Heading>
+            <Heading size="7">4.6/5</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('avg-rating')}</Text>
-            <Heading size="7">4.3/5</Heading>
+            <Heading size="7">4.6/5</Heading>
           </Flex>
         </Card>
       </Grid>
@@ -146,15 +179,16 @@ const EndCustomers = () => {
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="purchasedFrequency"
-                stroke="#4caf50"
+              <Line 
+                type="monotone" 
+                dataKey="frequency" 
+                stroke="#3b82f6" 
                 strokeWidth={2}
               />
             </LineChart>
           </div>
         </Card>
+        
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">{t('customer-satisfaction')}</Heading>
           <div className="h-64">
@@ -195,19 +229,13 @@ const EndCustomers = () => {
           {customers.map((customer) => (
             <Table.Row key={customer.id}>
               <Table.Cell>{customer.id}</Table.Cell>
-              <Table.Cell>{customer.product}</Table.Cell>
-              <Table.Cell>{customer.purchasedFrequency}</Table.Cell>
+              <Table.Cell>{customer.productPurchased}</Table.Cell>
+              <Table.Cell>{customer.purchasedFrequency} {t('times')}</Table.Cell>
               <Table.Cell>
-                <Badge
-                  variant="soft"
-                  color={
-                    customer.satisfactionLevel === 'high'
-                      ? 'green'
-                      : customer.satisfactionLevel === 'medium'
-                      ? 'amber'
-                      : 'red'
-                  }
-                >
+                <Badge variant="soft" color={
+                  customer.satisfactionLevel === 'high' ? 'green' :
+                  customer.satisfactionLevel === 'medium' ? 'amber' : 'red'
+                }>
                   {t(customer.satisfactionLevel)}
                 </Badge>
               </Table.Cell>
