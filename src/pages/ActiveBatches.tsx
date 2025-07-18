@@ -23,41 +23,75 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { useTranslation } from 'react-i18next';
 
+const stageOptions = [
+  'Weighting',
+  'Mixing',
+  'Granulation',
+  'Compression',
+  'Coating',
+  'Liquid Filling',
+  'Powder Filling',
+  'Sterilization',
+  'Quality Control',
+  'Packaging'
+];
+
+const productOptions = [
+  'Poultry Drug 1',
+  'Poultry Drug 2',
+  'Poultry Drug 3',
+];
+
 const ActiveBatches = () => {
   const { t } = useTranslation('active-batches');
   const [open, setOpen] = useState(false);
   const [productName, setProductName] = useState('');
   const [batchSize, setBatchSize] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
-
-  const batches = [
+  const [batches, setBatches] = useState([
     { 
       id: 'VC23001', 
-      product: 'products.anthelminticOralSuspension',
-      stage: 'stages.mixing',
+      product: 'Poultry Drug 1',
+      stage: 'Mixing',
       temp: 2.5,
       status: 'status.onTrack',
       progress: 65
     },
     { 
       id: 'VC23002', 
-      product: 'products.anthelminticOralSuspension',
-      stage: 'stages.mixing',
+      product: 'Poultry Drug 1',
+      stage: 'Mixing',
       temp: 2.5,
       status: 'status.onTrack',
       progress: 65
     },
-  ];
+  ]);
 
   const handleNewBatch = () => {
     if (!productName || !batchSize || !selectedProduct) {
       toast.error(t('errors.fillAllFields'));
       return;
     }
-
-    // Add your batch creation logic here
+    // Create new batch object
+    const newBatch = {
+      id: `VC${Math.floor(Math.random() * 90000) + 10000}`,
+      product: selectedProduct,
+      stage: stageOptions[0], // default stage
+      temp: 0,
+      status: 'status.onTrack',
+      progress: 0,
+    };
+    setBatches([...batches, newBatch]);
     setOpen(false);
     toast.success(t('success.batchCreated'));
+  };
+
+  const handleProductChange = (batchId: string, newProduct: string) => {
+    setBatches(batches.map(batch => batch.id === batchId ? {...batch, product: newProduct} : batch));
+  };
+
+  const handleStageChange = (batchId: string, newStage: string) => {
+    setBatches(batches.map(batch => batch.id === batchId ? {...batch, stage: newStage} : batch));
   };
 
   return (
@@ -82,15 +116,9 @@ const ActiveBatches = () => {
               >
                 <Select.Trigger placeholder={t('form.selectProduct')} />
                 <Select.Content>
-                  <Select.Item value="oral">
-                    {t('products.oral')}
-                  </Select.Item>
-                  <Select.Item value="injectable">
-                    {t('products.injectable')}
-                  </Select.Item>
-                  <Select.Item value="tablet">
-                    {t('products.tablet')}
-                  </Select.Item>
+                  {productOptions.map(prod => (
+                    <Select.Item key={prod} value={prod}>{prod}</Select.Item>
+                  ))}
                 </Select.Content>
               </Select.Root>
 
@@ -141,10 +169,37 @@ const ActiveBatches = () => {
           {batches.map((batch) => (
             <Table.Row key={batch.id}>
               <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>{t(batch.product)}</Table.Cell>
-              <Table.Cell>{t(batch.stage)}</Table.Cell>
+              
               <Table.Cell>
-                <div className="w-24 h-12">
+                <Select.Root
+                  value={batch.product}
+                  onValueChange={(val) => handleProductChange(batch.id, val)}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {productOptions.map(prod => (
+                      <Select.Item key={prod} value={prod}>{prod}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+
+              <Table.Cell>
+                <Select.Root
+                  value={batch.stage}
+                  onValueChange={(val) => handleStageChange(batch.id, val)}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {stageOptions.map(stage => (
+                      <Select.Item key={stage} value={stage}>{stage}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+
+              <Table.Cell>
+                <div style={{ width: 100, height: 40 }}>
                   <LineChart width={100} height={40} data={[
                     { temp: 2 }, { temp: 2.5 }, { temp: 3 }
                   ]}>
@@ -160,10 +215,7 @@ const ActiveBatches = () => {
               </Table.Cell>
               <Table.Cell>
                 <Badge 
-                  color={
-                    batch.status === 'status.onTrack' ? 'green' :
-                    batch.status === 'status.delayed' ? 'red' : 'amber'
-                  }
+                  color={batch.status === 'status.onTrack' ? 'green' : 'red'}
                   variant="soft"
                 >
                   {t(batch.status)}
@@ -194,16 +246,3 @@ const ActiveBatches = () => {
 };
 
 export default ActiveBatches;
-
-/*
-
-  On-Track
-  Pending
-
-  Stages    
-    - QC Testing
-    - Packaging
-    - Labeling
-    - storage
-
-*/
