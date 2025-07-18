@@ -169,3 +169,95 @@ const PharmacyPartners = () => {
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
+          <Heading size="4" mb="3">{t('sales-heatmap')}</Heading>
+          <div style={{ fontSize: 12 }}>
+            <HeatMapGrid
+              data={heatmapData}
+              xLabels={xLabels}
+              yLabels={yLabels}
+              cellHeight="30px"
+              cellWidth="40px"
+              xLabelsStyle={() => ({
+                color: '#777',
+                fontWeight: 'bold',
+              })}
+              yLabelsStyle={() => ({
+                fontWeight: 'bold',
+                color: '#777',
+              })}
+              cellRender={(x: number, y: number, value: number) => (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    color: value > 10 ? 'white' : 'black',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  {value}
+                </div>
+              )}
+              cellStyle={(x: number, y: number, value: number) => ({
+                background: `rgba(255, 0, 0, ${value / 15})`,
+                border: '1px solid #ccc',
+              })}
+            />
+          </div>
+        </Card>
+      </Flex>
+
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>{t('retailer')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('location')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('license')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('last-delivery')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('stock-level')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('recall-compliance')}</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {pharmacies.map((pharmacy) => (
+            <Table.Row key={pharmacy.id}>
+              <Table.Cell>{pharmacy.name}</Table.Cell>
+              <Table.Cell>{pharmacy.location}</Table.Cell>
+              <Table.Cell>
+                <Badge color={pharmacy.license === 'Active' ? 'green' : 'red'}>
+                  {t(pharmacy.license.toLowerCase())}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell>{pharmacy.lastDelivery}</Table.Cell>
+              <Table.Cell>
+                <select
+                  value={pharmacy.stock}
+                  onChange={(e) =>
+                    handleStockChange(pharmacy.id, e.target.value as StockOption)
+                  }
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 4,
+                    border: '1px solid #ccc',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {stockOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {t(option)}
+                    </option>
+                  ))}
+                </select>
+              </Table.Cell>
+              <Table.Cell>{pharmacy.recallCompliance}%</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Box>  // هذا يغلق <Box> الرئيسي
+  );
+};
+
+export default PharmacyPartners;
