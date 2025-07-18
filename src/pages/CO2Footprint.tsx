@@ -1,128 +1,243 @@
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+// SPDX-License-Identifier: UNLICENSED
 import {
   Card,
   Flex,
   Heading,
   Text,
   Table,
-  Badge,
   Button,
-  Grid,
-  Progress,
   Select,
+  Progress,
   Box
 } from '@radix-ui/themes';
-import { PieChart, Pie, Cell } from 'recharts';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
+import { useState, useMemo } from 'react';
 
-const CO2Footprint = () => {
-  const { t } = useTranslation('co2-footprint-page');
-  const [currency, setCurrency] = useState('USD');
+const initialProducts = ['Poultry Product 1', 'Poultry Product 2', 'Poultry Product 3'];
 
-  const emissionData = [
-    { category: 'manufacturing', value: 45, color: '#3b82f6' },
-    { category: 'transport', value: 30, color: '#10b981' },
-    { category: 'packaging', value: 15, color: '#f59e0b' },
-    { category: 'energy', value: 10, color: '#ef4444' },
-  ];
+const initialEmissionData = [
+  { category: 'Raw Materials', emissions: 5.2, color: '#3b82f6' },
+  { category: 'Manufacturing', emissions: 4.8, color: '#6366f1' },
+  { category: 'Packaging', emissions: 3.6, color: '#f59e0b' },
+  { category: 'Transport', emissions: 3.2, color: '#10b981' },
+  { category: 'Distribution', emissions: 2.5, color: '#8b5cf6' },
+  { category: 'Use', emissions: 2.1, color: '#ec4899' },
+  { category: 'End of Life', emissions: 3.1, color: '#ef4444' }
+];
 
-  const carbonIntensity = currency === 'USD'
-    ? '0.45 t/$K'
-    : '0.45 t/1K EGP';
+const initialReductionInitiatives = [
+  {
+    name: 'Solar Panel Installation',
+    reduction: 12,
+    impact: 'High',
+    color: '#10b981'
+  },
+  {
+    name: 'LED Lighting Upgrade',
+    reduction: 5,
+    impact: 'Medium',
+    color: '#f59e0b'
+  },
+  {
+    name: 'Industrial Waste Recycling',
+    reduction: 6,
+    impact: 'Medium',
+    color: '#6366f1'
+  },
+  {
+    name: 'Fuel Optimization in Transport',
+    reduction: 4,
+    impact: 'Medium',
+    color: '#3b82f6'
+  }
+];
+
+export default function CO2Footprint() {
+  const [selectedProduct, setSelectedProduct] = useState(initialProducts[0]);
+
+  const [emissionData, setEmissionData] = useState(initialEmissionData);
+  const [reductionData] = useState(initialReductionInitiatives);
+
+  const totalEmissions = useMemo(() => {
+    return emissionData.reduce((sum, item) => sum + item.emissions, 0);
+  }, [emissionData]);
+
+  // Calculate % of total dynamically for emissions
+  const emissionDataWithPercent = useMemo(() => {
+    return emissionData.map(item => ({
+      ...item,
+      percentOfTotal: totalEmissions ? ((item.emissions / totalEmissions) * 100).toFixed(1) : '0.0'
+    }));
+  }, [emissionData, totalEmissions]);
+
+  // Handlers for editable emissions values if you want to extend later
+  // (not required now, but added for completeness)
+  const updateEmissionValue = (index: number, value: number) => {
+    const updated = [...emissionData];
+    updated[index].emissions = value;
+    setEmissionData(updated);
+  };
 
   return (
     <Box p="6">
+      {/* Header with product selector */}
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('sustainability-dashboard')}</Heading>
-        <Flex gap="3">
-          <Button variant="soft">
-            {t('esg-report')}
-          </Button>
-          <Select.Root defaultValue="2023">
-            <Select.Trigger />
-          </Select.Root>
-        </Flex>
+        <Heading size="6">Sustainability Dashboard</Heading>
+        <Select.Root
+          value={selectedProduct}
+          onValueChange={val => setSelectedProduct(val)}
+          style={{ width: 180 }}
+        >
+          <Select.Trigger aria-label="Select product" />
+          <Select.Content>
+            {initialProducts.map(product => (
+              <Select.Item key={product} value={product}>
+                {product}
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
       </Flex>
 
-      <Grid columns="3" gap="4" mb="5">
+      {/* KPI Cards */}
+      <Flex gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('total-emissions')}</Text>
-            <Heading size="7">24.5K tCO₂e</Heading>
-            <Text size="1" className="text-green-500">{t('yoy-decrease')}</Text>
+            <Text size="2">Total Emissions</Text>
+            <Heading size="7">{totalEmissions.toFixed(1)} tCO₂e</Heading>
+            <Text size="1" style={{ color: 'green' }}>↓ 12% YoY</Text>
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('re100-progress')}</Text>
+            <Text size="2">RE100 Progress</Text>
             <Heading size="7">68%</Heading>
             <Progress value={68} />
           </Flex>
         </Card>
-
         <Card>
           <Flex direction="column" gap="1">
-            <Flex justify="between" align="center">
-              <Text size="2">{t('carbon-intensity')}</Text>
-              <Select.Root value={currency} onValueChange={setCurrency}>
-                <Select.Trigger />
-                <Select.Content>
-                  <Select.Item value="USD">USD</Select.Item>
-                  <Select.Item value="EGP">EGP</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            </Flex>
-            <Heading size="7">{carbonIntensity}</Heading>
-            <Text size="1">{t('scope-1-2-3')}</Text>
+            <Text size="2">Carbon Intensity</Text>
+            <Heading size="7">{(totalEmissions / 100).toFixed(2)} t/$K</Heading>
+            <Text size="1">Scope 1, 2 & 3</Text>
           </Flex>
-        </Card>
-      </Grid>
-
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('emission-breakdown')}</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={emissionData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              >
-                {emissionData.map((entry, index) => (
-                  <Cell key={index} fill={entry.color} />
-                ))}
-              </Pie>
-            </PieChart>
-          </div>
-        </Card>
-
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('reduction-initiatives')}</Heading>
-          {/* Timeline placeholder */}
         </Card>
       </Flex>
 
+      {/* Emission Breakdown Pie Chart and Table */}
+      <Flex gap="4" mb="5" style={{ flexWrap: 'wrap' }}>
+        <Card style={{ flex: 1, minWidth: 300 }}>
+          <Heading size="4" mb="3">Emission Breakdown</Heading>
+          <div style={{ width: '100%', height: 250 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={emissionDataWithPercent}
+                  dataKey="emissions"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={60}
+                  outerRadius={80}
+                  paddingAngle={5}
+                >
+                  {emissionDataWithPercent.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Legend */}
+          <Box mt="3">
+            {emissionDataWithPercent.map((entry, index) => (
+              <Flex key={entry.category} align="center" gap="2" mb="1">
+                <Box
+                  style={{
+                    width: 14,
+                    height: 14,
+                    backgroundColor: entry.color,
+                    borderRadius: 4
+                  }}
+                />
+                <Text size="2">
+                  {entry.category} ({entry.percentOfTotal}%)
+                </Text>
+              </Flex>
+            ))}
+          </Box>
+        </Card>
+
+        {/* Reduction Initiatives Bar Chart */}
+        <Card style={{ flex: 1, minWidth: 300 }}>
+          <Heading size="4" mb="3">Reduction Initiatives</Heading>
+          <div style={{ width: '100%', height: 250 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={reductionData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="reduction" name="CO₂e Reduced" fill="#8884d8">
+                  {reductionData.map((entry, index) => (
+                    <Cell key={`cell-bar-${index}`} fill={entry.color} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </Card>
+      </Flex>
+
+      {/* Emissions Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('emissions')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('target')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('progress')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('certification')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Emissions (tCO₂e)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Certification</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {emissionData.map((category) => (
-            <Table.Row key={category.category}>
-              <Table.Cell>{t(`emission-category.${category.category}`)}</Table.Cell>
-              <Table.Cell>{category.value}%</Table.Cell>
-              <Table.Cell>
-                {t('target-format', { value: Math.round(category.value * 0.8) })}
-              </Table.Cell>
-              <Table.
+          {emissionDataWithPercent.map((item, i) => {
+            const target = (item.emissions * 0.8).toFixed(1);
+            const progress = (item.emissions * 0.8 * 100) / (item.emissions || 1);
+            return (
+              <Table.Row key={i}>
+                <Table.Cell>{item.category}</Table.Cell>
+                <Table.Cell>{item.emissions.toFixed(1)}</Table.Cell>
+                <Table.Cell>{item.percentOfTotal}%</Table.Cell>
+                <Table.Cell>{target} tCO₂e</Table.Cell>
+                <Table.Cell>
+                  <Progress value={Number(progress)} />
+                </Table.Cell>
+                <Table.Cell>
+                  <Button variant="soft" disabled>
+                    ISO 14001
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table.Root>
+    </Box>
+  );
+}
