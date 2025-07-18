@@ -84,7 +84,7 @@ export default function CO2Footprint() {
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Sustainability Dashboard</Heading>
-        <Box css={{ width: 180 }}>
+        <Box style={{ width: 180 }}>
           <Select.Root
             value={selectedProduct}
             onValueChange={val => setSelectedProduct(val)}
@@ -179,7 +179,7 @@ export default function CO2Footprint() {
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="reduction" name="CO₂e Reduced" >
+                <Bar dataKey="reduction" name="CO₂e Reduced">
                   {reductionData.map((entry, index) => (
                     <Cell key={`cell-bar-${index}`} fill={entry.color} />
                   ))}
@@ -187,43 +187,4 @@ export default function CO2Footprint() {
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </Card>
-      </Flex>
-
-      <Table.Root variant="surface" style={{ marginTop: 20 }}>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Emissions (tCO₂e)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Certification</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {emissionDataWithPercent.map((item, i) => {
-            const target = (item.emissions * 0.8).toFixed(1);
-            const progress = (item.emissions * 0.8 * 100) / (item.emissions || 1);
-            return (
-              <Table.Row key={i}>
-                <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell>{item.emissions.toFixed(1)}</Table.Cell>
-                <Table.Cell>{item.percentOfTotal}%</Table.Cell>
-                <Table.Cell>{target} tCO₂e</Table.Cell>
-                <Table.Cell>
-                  <Progress value={Number(progress)} />
-                </Table.Cell>
-                <Table.Cell>
-                  <Button variant="soft" disabled>
-                    ISO 14001
-                  </Button>
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
-        </Table.Body>
-      </Table.Root>
-    </Box>
-  );
-}
+        </Card
