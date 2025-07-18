@@ -105,7 +105,7 @@ const CO2Footprint = () => {
           <Flex direction="column" gap="1" p="4">
             <Text size="2">RE100 Progress</Text>
             <Heading size="7">68%</Heading>
-            <Progress value="68" />
+            <Progress value={68} />
           </Flex>
         </Card>
 
@@ -190,7 +190,7 @@ const CO2Footprint = () => {
               </Table.Cell>
               <Table.Cell>{item.percentOfTotal}%</Table.Cell>
               <Table.Cell>{item.target} tCO₂e</Table.Cell>
-              <Table.Cell><Progress value="80" /></Table.Cell>
+              <Table.Cell><Progress value={80} /></Table.Cell>
               <Table.Cell>
                 <Select.Root value={certifications[i]} onValueChange={val => handleCertificationChange(i, val)}>
                   <Select.Trigger />
