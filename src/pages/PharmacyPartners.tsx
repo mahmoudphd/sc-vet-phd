@@ -10,44 +10,22 @@ import {
   Text,
   Box,
   Dialog,
+  Select,
 } from '@radix-ui/themes';
 import { useTranslation } from 'react-i18next';
-import HeatMapGrid from 'react-heatmap-grid';
 
-const stockOptions = ['optimal', 'low', 'critical'] as const;
-type StockOption = typeof stockOptions[number];
-
-interface Pharmacy {
-  id: string;
-  name: string;
-  location: string;
-  license: 'Active' | 'Inactive';
-  lastDelivery: string;
-  stock: StockOption;
-  recallCompliance: number;
-}
-
-const xLabels: string[] = new Array(7).fill(0).map((_, i) => `Day ${i + 1}`);
-const yLabels: string[] = ['Store A', 'Store B', 'Store C', 'Store D', 'Store E'];
-
-const heatmapData: number[][] = [
-  [12, 5, 7, 10, 8, 9, 4],
-  [6, 7, 3, 8, 10, 6, 7],
-  [10, 15, 12, 13, 14, 10, 8],
-  [5, 6, 7, 8, 9, 4, 6],
-  [7, 8, 6, 5, 4, 3, 2],
-];
+const stockOptions = ['optimal', 'low', 'critical'];
 
 const PharmacyPartners = () => {
   const { t, i18n } = useTranslation('pharmacy-partners');
   const [isStockMonitorOpen, setIsStockMonitorOpen] = useState(false);
   const [isRecallPortalOpen, setIsRecallPortalOpen] = useState(false);
 
-  const getLocationName = (): string => {
+  const getLocationName = () => {
     return i18n.language.startsWith('ar') ? 'مصر' : 'Egypt';
   };
 
-  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([
+  const [pharmacies, setPharmacies] = useState([
     {
       id: 'PHARM-045',
       name: 'CarePlus Pharmacy',
@@ -68,7 +46,7 @@ const PharmacyPartners = () => {
     },
   ]);
 
-  const handleStockChange = (id: string, newStock: StockOption) => {
+  const handleStockChange = (id, newStock) => {
     setPharmacies((prev) =>
       prev.map((pharmacy) =>
         pharmacy.id === id ? { ...pharmacy, stock: newStock } : pharmacy
@@ -79,7 +57,7 @@ const PharmacyPartners = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Retail Network Management</Heading>
+        <Heading size="6">{t('retail-network-management')}</Heading>
         <Flex gap="3">
           <Button variant="soft" onClick={() => setIsStockMonitorOpen(true)}>
             {t('stock-monitor')}
@@ -170,42 +148,9 @@ const PharmacyPartners = () => {
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">{t('sales-heatmap')}</Heading>
-          <div style={{ fontSize: 12 }}>
-            <HeatMapGrid
-              data={heatmapData}
-              xLabels={xLabels}
-              yLabels={yLabels}
-              cellHeight="30px"
-              cellWidth="40px"
-              xLabelsStyle={() => ({
-                color: '#777',
-                fontWeight: 'bold',
-              })}
-              yLabelsStyle={() => ({
-                fontWeight: 'bold',
-                color: '#777',
-              })}
-              cellRender={(x: number, y: number, value: number) => (
-                <div
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: value > 10 ? 'white' : 'black',
-                    fontWeight: 'bold',
-                  }}
-                >
-                  {value}
-                </div>
-              )}
-              cellStyle={(x: number, y: number, value: number) => ({
-                background: `rgba(255, 0, 0, ${value / 15})`,
-                border: '1px solid #ccc',
-              })}
-            />
-          </div>
+          {/* <div className="h-96">
+            <HeatMap data={pharmacySalesData} />
+          </div> */}
         </Card>
       </Flex>
 
@@ -232,31 +177,34 @@ const PharmacyPartners = () => {
               </Table.Cell>
               <Table.Cell>{pharmacy.lastDelivery}</Table.Cell>
               <Table.Cell>
-                <select
+                <Select
                   value={pharmacy.stock}
-                  onChange={(e) =>
-                    handleStockChange(pharmacy.id, e.target.value as StockOption)
-                  }
-                  style={{
-                    padding: '6px 10px',
-                    borderRadius: 4,
-                    border: '1px solid #ccc',
-                    cursor: 'pointer',
-                  }}
+                  onValueChange={(val) => handleStockChange(pharmacy.id, val)}
                 >
                   {stockOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {t(option)}
-                    </option>
+                    <Select.Item key={option} value={option}>
+                      <Badge
+                        variant="soft"
+                        color={
+                          option === 'optimal'
+                            ? 'green'
+                            : option === 'low'
+                            ? 'amber'
+                            : 'red'
+                        }
+                      >
+                        {t(option)}
+                      </Badge>
+                    </Select.Item>
                   ))}
-                </select>
+                </Select>
               </Table.Cell>
               <Table.Cell>{pharmacy.recallCompliance}%</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
-    </Box>  // هذا يغلق <Box> الرئيسي
+    </Box>
   );
 };
 
