@@ -63,7 +63,7 @@ const CO2Footprint = () => {
     }));
   }, [emissionData, totalEmissions]);
 
-  const revenue = currency === 'EGP' ? 55000 : 1800; // in thousands
+  const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
   const totalReduction = reductionData.reduce((sum, item) => sum + item.reduction, 0);
 
@@ -181,10 +181,10 @@ const CO2Footprint = () => {
             <Table.Row key={i}>
               <Table.Cell>{item.category}</Table.Cell>
               <Table.Cell>
-                <TextField.Input
+                <TextField
                   type="number"
-                  value={item.emissions}
-                  onChange={e => handleEmissionChange(i, e.target.value)}
+                  value={item.emissions.toString()}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleEmissionChange(i, e.target.value)}
                   style={{ width: 80 }}
                 />
               </Table.Cell>
