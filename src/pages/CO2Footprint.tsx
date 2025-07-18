@@ -181,14 +181,12 @@ const CO2Footprint = () => {
             <Table.Row key={i}>
               <Table.Cell>{item.category}</Table.Cell>
               <Table.Cell>
-                <TextField.Root>
-                  <TextField.Input
-                    type="number"
-                    value={item.emissions.toString()}
-                    onChange={(e) => handleEmissionChange(i, e.target.value)}
-                    style={{ width: 80 }}
-                  />
-                </TextField.Root>
+                <TextField
+                  type="number"
+                  value={item.emissions.toString()}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleEmissionChange(i, e.target.value)}
+                  style={{ width: 80 }}
+                />
               </Table.Cell>
               <Table.Cell>{item.percentOfTotal}%</Table.Cell>
               <Table.Cell>{item.target} tCO₂e</Table.Cell>
