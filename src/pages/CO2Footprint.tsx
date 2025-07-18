@@ -31,6 +31,7 @@ const CO2Footprint = () => {
     { category: 'End of Life', emissions: 2.3 }
   ]);
 
+  // تحديث قيمة الانبعاث من حقل الادخال العادي (input HTML)
   const handleEmissionChange = (index: number, value: string) => {
     const newValue = parseFloat(value);
     if (!isNaN(newValue)) {
@@ -128,7 +129,7 @@ const CO2Footprint = () => {
       <Grid columns="2" gap="4" mb="5">
         <Card>
           <Heading size="4" mb="3">Emissions Breakdown</Heading>
-          <Box height="250px">
+          <Box height="250">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -151,7 +152,7 @@ const CO2Footprint = () => {
 
         <Card>
           <Heading size="4" mb="3">Reduction Initiatives</Heading>
-          <Box height="250px">
+          <Box height="250">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={reductionData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                 <XAxis dataKey="initiative" />
