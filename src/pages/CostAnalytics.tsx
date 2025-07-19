@@ -1,18 +1,14 @@
-// Imports
+// CostAnalysis.tsx - IoT-Integrated Version
+import { useState, useEffect } from 'react';
 import {
-  Card,
-  Flex,
-  Heading,
-  Text,
-  Table,
-  Button,
-  Grid,
-  Progress,
-  Select,
-  Box
+  Card, Flex, Heading, Text, Table, Button, Grid, Progress,
+  Select, Box, TextField, Switch, Dialog
 } from '@radix-ui/themes';
-import { BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
-import { useState } from 'react';
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, PieChart, Pie, Cell,
+  Legend, ResponsiveContainer
+} from 'recharts';
+import { simulatedIoTCostData } from './simulateIoTCostData';
 
 const solutionOptions = [
   'Negotiating Better Prices With Supplier',
@@ -28,115 +24,46 @@ const solutionOptions = [
 const CostAnalysis = () => {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [solutions, setSolutions] = useState<Record<string, string>>({});
+  const [mode, setMode] = useState<'manual' | 'auto'>('manual');
+  const [costData, setCostData] = useState(simulatedIoTCostData.manual);
+  const [showMaterials, setShowMaterials] = useState(false);
 
-  const formatCurrency = (num: number | string | undefined) => {
-    const value = typeof num === 'string' ? parseFloat(num ?? '0') : num ?? 0;
-    return `${value.toLocaleString(undefined, { maximumFractionDigits: 0 })} ${currency}`;
-  };
+  useEffect(() => {
+    setCostData(mode === 'auto' ? simulatedIoTCostData.auto : simulatedIoTCostData.manual);
+  }, [mode]);
 
-  const costData = [
-    { category: 'Direct Cost', isGroup: true },
-    {
-      category: 'Direct Materials',
-      value: 45,
-      actual: '1350',
-      budget: '1300',
-      costAfter: '1250'
-    },
-    {
-      category: 'Packaging Materials',
-      value: 20,
-      actual: '600',
-      budget: '580',
-      costAfter: '570'
-    },
-    {
-      category: 'Direct Labor',
-      value: 15,
-      actual: '450',
-      budget: '420',
-      costAfter: '430'
-    },
-    { category: 'Overhead', isGroup: true },
-    {
-      category: 'Overhead',
-      value: 12,
-      actual: '360',
-      budget: '350',
-      costAfter: '345'
-    },
-    { category: 'Other Costs', isGroup: true },
-    {
-      category: 'Other Costs',
-      value: 8,
-      actual: '240',
-      budget: '230',
-      costAfter: '225'
-    }
-  ];
+  const formatCurrency = (val: number) => `${currency} ${val.toFixed(2)}`;
 
-  const totalActual = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.actual ?? '0'), 0);
-  const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
-  const totalCostAfter = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
+  const totalActual = costData.reduce((sum, i) => sum + i.actual, 0);
+  const totalBudget = costData.reduce((sum, i) => sum + i.budget, 0);
+  const totalCostAfter = costData.reduce((sum, i) => sum + i.costAfter, 0);
 
   return (
     <Box p="6">
-      {/* Header */}
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3">
-          <Select.Root defaultValue="product-1">
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="product-1">Product A</Select.Item>
-              <Select.Item value="product-2">Product B</Select.Item>
-            </Select.Content>
-          </Select.Root>
-
-          <Select.Root defaultValue="EGP" onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
+          <Box>
+            <Text size="1">Auto Mode</Text>
+            <Switch checked={mode === 'auto'} onCheckedChange={(val) => setMode(val ? 'auto' : 'manual')} />
+          </Box>
+          <Select.Root defaultValue={currency} onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="EGP">EGP</Select.Item>
               <Select.Item value="USD">USD</Select.Item>
             </Select.Content>
           </Select.Root>
-
           <Button variant="soft">Export Report</Button>
         </Flex>
       </Flex>
 
-      {/* KPI Cards */}
       <Grid columns="3" gap="4" mb="6">
-        <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Total Cost</Text><Heading size="6">{formatCurrency(totalBudget)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6">{formatCurrency(3200)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><Heading size="6">{formatCurrency(3450)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><Heading size="6">{formatCurrency(3150)}</Heading></Flex></Card>
+        <Card><Text>Actual Cost</Text><Heading>{formatCurrency(totalActual)}</Heading></Card>
+        <Card><Text>Target Cost</Text><Heading>{formatCurrency(totalBudget)}</Heading></Card>
+        <Card><Text>Post-Optimization</Text><Heading>{formatCurrency(totalCostAfter)}</Heading></Card>
       </Grid>
 
-      {/* Charts */}
-      <Flex gap="4" mb="6">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Composition</Heading>
-          <PieChart width={300} height={250}>
-            <Pie data={costData.filter(i => !i.isGroup)} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
-              {costData.filter(i => !i.isGroup).map((entry, index) => (
-                <Cell key={index} fill={["#3b82f6", "#f59e0b", "#ef4444", "#10b981", "#8b5cf6"][index % 5]} />
-              ))}
-            </Pie>
-          </PieChart>
-        </Card>
-
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Cost Trend Analysis</Heading>
-          <BarChart width={500} height={250} data={costData.filter(i => !i.isGroup)}>
-            <Bar dataKey="value" fill="#3b82f6" />
-          </BarChart>
-        </Card>
-      </Flex>
-
-      {/* Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -144,34 +71,26 @@ const CostAnalysis = () => {
             <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {costData.map((item, index) => {
-            if (item.isGroup) {
-              return (
-                <Table.Row key={`group-${index}`}>
-                  <Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell>
-                </Table.Row>
-              );
-            }
-
-            const actual = parseFloat(item.actual ?? '0');
-            const budget = parseFloat(item.budget ?? '0');
-            const variance = budget !== 0 ? ((actual - budget) / budget) * 100 : 0;
-            const varianceLabel = `${variance > 0 ? '+' : ''}${variance.toFixed(1)}%`;
-            const varianceColor = variance > 0 ? 'red' : 'green';
-
+          {costData.map((item, i) => {
+            const variance = item.actual - item.budget;
+            const color = variance > 0 ? 'red' : 'green';
             return (
               <Table.Row key={item.category}>
-                <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell>{formatCurrency(actual)}</Table.Cell>
-                <Table.Cell>{formatCurrency(budget)}</Table.Cell>
-                <Table.Cell><Text color={varianceColor}>{varianceLabel}</Text></Table.Cell>
-                <Table.Cell>{item.value}%</Table.Cell>
+                <Table.Cell>
+                  {item.category === 'Direct Materials' ? (
+                    <Button variant="ghost" onClick={() => setShowMaterials(true)}>
+                      {item.category}
+                    </Button>
+                  ) : item.category}
+                </Table.Cell>
+                <Table.Cell>{formatCurrency(item.actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(item.budget)}</Table.Cell>
+                <Table.Cell><Text color={color}>{variance.toFixed(2)}</Text></Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={solutions[item.category] || ''}
@@ -179,8 +98,8 @@ const CostAnalysis = () => {
                   >
                     <Select.Trigger placeholder="Select" />
                     <Select.Content>
-                      {solutionOptions.map((option) => (
-                        <Select.Item key={option} value={option}>{option}</Select.Item>
+                      {solutionOptions.map((s) => (
+                        <Select.Item key={s} value={s}>{s}</Select.Item>
                       ))}
                     </Select.Content>
                   </Select.Root>
@@ -189,18 +108,46 @@ const CostAnalysis = () => {
               </Table.Row>
             );
           })}
-
           <Table.Row>
             <Table.Cell><Text weight="bold">Total</Text></Table.Cell>
             <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
             <Table.Cell>{formatCurrency(totalBudget)}</Table.Cell>
-            <Table.Cell />
-            <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
-            <Table.Cell />
-            <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter)}</Text></Table.Cell>
+            <Table.Cell /><Table.Cell /><Table.Cell>{formatCurrency(totalCostAfter)}</Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
+
+      {/* Direct Materials Modal */}
+      <Dialog.Root open={showMaterials} onOpenChange={setShowMaterials}>
+        <Dialog.Content maxWidth="700px">
+          <Dialog.Title>Direct Materials Composition</Dialog.Title>
+          <Box style={{ maxHeight: 400, overflowY: 'auto', marginTop: '16px' }}>
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {simulatedIoTCostData.materials.map((mat, i) => (
+                  <Table.Row key={i}>
+                    <Table.Cell>{mat.name}</Table.Cell>
+                    <Table.Cell>{mat.weight}</Table.Cell>
+                    <Table.Cell>{formatCurrency(mat.pricePerKg)}</Table.Cell>
+                    <Table.Cell>{formatCurrency(mat.cost)}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Box>
+          <Flex justify="end" mt="4">
+            <Button onClick={() => setShowMaterials(false)}>Close</Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Box>
   );
 };
