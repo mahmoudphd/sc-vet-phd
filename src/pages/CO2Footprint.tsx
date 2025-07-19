@@ -1,4 +1,4 @@
-// CO2Footprint.tsx - UI supporting manual/auto input modes + Submit button
+// CO2Footprint.tsx - using co2SimulatedData for IoT auto mode
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch
@@ -6,7 +6,7 @@ import {
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { simulatedIoTData } from './simulateIoTData';
+import { co2SimulatedData } from './co2SimulatedData';
 
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
@@ -28,7 +28,7 @@ const CO2Footprint = () => {
 
   useEffect(() => {
     if (mode === 'auto') {
-      const mapped = simulatedIoTData.map((item: { category: string; emissions: number }) => ({
+      const mapped = co2SimulatedData.map((item: { category: string; emissions: number }) => ({
         category: item.category,
         emissions: item.emissions
       }));
@@ -159,7 +159,7 @@ const CO2Footprint = () => {
                 {mode === 'manual' ? (
                   <TextField.Root
                     size="1"
-                    value={String(item.emissions)}
+                    value={item.emissions.toString()}
                     onChange={(e) => handleEmissionChange(i, e.target.value)}
                   />
                 ) : (
