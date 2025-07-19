@@ -78,7 +78,6 @@ const CO2Footprint = () => {
 
   const handleSubmit = () => {
     console.log('Submitted emission data:', emissionData);
-    // Smart contract integration placeholder
   };
 
   return (
@@ -113,85 +112,129 @@ const CO2Footprint = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">Total Emissions</Text>
-            <Heading size="7">{totalEmissions.toFixed(1)} tCO₂e</Heading>
+            <Text size="2"><strong>Total Emissions</strong></Text>
+            <Heading size="7"><strong>{totalEmissions.toFixed(1)} tCO₂e</strong></Heading>
             <Text size="1" color="green">↓ 12% YoY</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">RE100 Progress</Text>
-            <Heading size="7">68%</Heading>
+            <Text size="2"><strong>RE100 Progress</strong></Text>
+            <Heading size="7"><strong>68%</strong></Heading>
             <Progress value={68} />
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">Carbon Intensity</Text>
-            <Heading size="7">{carbonIntensity.toFixed(2)} t/{currency === 'USD' ? '$K' : 'EGP K'}</Heading>
+            <Text size="2"><strong>Carbon Intensity</strong></Text>
+            <Heading size="7"><strong>{carbonIntensity.toFixed(2)} t/{currency === 'USD' ? '$K' : 'EGP K'}</strong></Heading>
             <Text size="1">Scope 1, 2 & 3</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">Emission Reduction Potential</Text>
-            <Heading size="7">{totalReduction.toFixed(1)} tCO₂e</Heading>
+            <Text size="2"><strong>Emission Reduction Potential</strong></Text>
+            <Heading size="7"><strong>{totalReduction.toFixed(1)} tCO₂e</strong></Heading>
             <Text size="1" color="gray">Estimated reduction from initiatives</Text>
           </Flex>
         </Card>
       </Grid>
 
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Emissions</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Certification</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {emissionDataWithPercent.map((item, i) => (
-            <Table.Row key={i}>
-              <Table.Cell>{item.category}</Table.Cell>
-              <Table.Cell>
-                {mode === 'manual' ? (
-                  <TextField.Root
-                    size="1"
-                    value={item.emissions.toString()}
-                    onChange={(e) => handleEmissionChange(i, e.target.value)}
-                  />
-                ) : (
-                  <Text>{item.emissions}</Text>
-                )}
-              </Table.Cell>
-              <Table.Cell>{item.percentOfTotal}%</Table.Cell>
-              <Table.Cell>{item.target} tCO₂e</Table.Cell>
-              <Table.Cell>
-                <Select.Root
-                  value={certifications[i]}
-                  onValueChange={(val) => handleCertificationChange(i, val)}
+      <Grid columns="2" gap="4" mb="5">
+        <Card>
+          <Heading size="4" mb="3">Emissions Breakdown</Heading>
+          <Box height="250">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={emissionDataWithPercent}
+                  dataKey="emissions"
+                  nameKey="category"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  label
                 >
-                  <Select.Trigger />
-                  <Select.Content>
-                    <Select.Item value="ISO 14001">ISO 14001</Select.Item>
-                    <Select.Item value="ISO 50001">ISO 50001</Select.Item>
-                    <Select.Item value="None">None</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
+                  {emissionDataWithPercent.map((entry, index) => (
+                    <Cell
+                      key={`cell-${index}`}
+                      fill={["#3b82f6","#10b981","#f59e0b","#ef4444","#6366f1","#22c55e","#a855f7"][index % 7]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </Box>
+        </Card>
+
+        <Card>
+          <Heading size="4" mb="3">Reduction Initiatives</Heading>
+          <Box height="250">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={reductionData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <XAxis dataKey="initiative" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="reduction" fill="#10b981" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+        </Card>
+      </Grid>
+
+      <Box mb="4" style={{ maxHeight: 400, overflowY: 'auto' }}>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell><strong>Category</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Emissions</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>% of Total</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Target</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Certification</strong></Table.ColumnHeaderCell>
             </Table.Row>
-          ))}
-          <Table.Row>
-            <Table.RowHeaderCell><strong>Total</strong></Table.RowHeaderCell>
-            <Table.Cell><strong>{totalEmissions.toFixed(1)}</strong></Table.Cell>
-            <Table.Cell><strong>100%</strong></Table.Cell>
-            <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(1)} tCO₂e</strong></Table.Cell>
-            <Table.Cell />
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
+          </Table.Header>
+          <Table.Body>
+            {emissionDataWithPercent.map((item, i) => (
+              <Table.Row key={i}>
+                <Table.Cell><strong>{item.category}</strong></Table.Cell>
+                <Table.Cell>
+                  {mode === 'manual' ? (
+                    <TextField.Root
+                      size="1"
+                      value={item.emissions.toString()}
+                      onChange={(e) => handleEmissionChange(i, e.target.value)}
+                    />
+                  ) : (
+                    <Text><strong>{item.emissions}</strong></Text>
+                  )}
+                </Table.Cell>
+                <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
+                <Table.Cell><strong>{item.target} tCO₂e</strong></Table.Cell>
+                <Table.Cell>
+                  <Select.Root
+                    value={certifications[i]}
+                    onValueChange={(val) => handleCertificationChange(i, val)}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="ISO 14001">ISO 14001</Select.Item>
+                      <Select.Item value="ISO 50001">ISO 50001</Select.Item>
+                      <Select.Item value="None">None</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+            <Table.Row>
+              <Table.RowHeaderCell><strong>Total</strong></Table.RowHeaderCell>
+              <Table.Cell><strong>{totalEmissions.toFixed(1)}</strong></Table.Cell>
+              <Table.Cell><strong>100%</strong></Table.Cell>
+              <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(1)} tCO₂e</strong></Table.Cell>
+              <Table.Cell />
+            </Table.Row>
+          </Table.Body>
+        </Table.Root>
+      </Box>
 
       <Flex mt="4" justify="between" align="center">
         <Text size="1" color="gray">Aligned with ISO Standards</Text>
