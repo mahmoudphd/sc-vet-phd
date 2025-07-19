@@ -1,4 +1,3 @@
-// CO2Footprint.tsx - using co2SimulatedData for IoT auto mode
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch
@@ -28,7 +27,7 @@ const CO2Footprint = () => {
 
   useEffect(() => {
     if (mode === 'auto') {
-      const mapped = co2SimulatedData.map((item: { category: string; emissions: number }) => ({
+      const mapped = co2SimulatedData.map(item => ({
         category: item.category,
         emissions: item.emissions
       }));
@@ -199,13 +198,16 @@ const CO2Footprint = () => {
                 <Table.Cell><strong>{item.category}</strong></Table.Cell>
                 <Table.Cell>
                   {mode === 'manual' ? (
-                    <TextField.Root
-                      size="1"
-                      value={item.emissions.toString()}
-                      onChange={(e) => handleEmissionChange(i, e.target.value)}
-                    />
+                    <Flex align="center" gap="2">
+                      <TextField.Root
+                        size="1"
+                        value={item.emissions.toString()}
+                        onChange={(e) => handleEmissionChange(i, e.target.value)}
+                      />
+                      <Text size="1" color="gray">tCO₂e</Text>
+                    </Flex>
                   ) : (
-                    <Text><strong>{item.emissions}</strong></Text>
+                    <Text weight="bold">{item.emissions} tCO₂e</Text>
                   )}
                 </Table.Cell>
                 <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
@@ -227,7 +229,7 @@ const CO2Footprint = () => {
             ))}
             <Table.Row>
               <Table.RowHeaderCell><strong>Total</strong></Table.RowHeaderCell>
-              <Table.Cell><strong>{totalEmissions.toFixed(1)}</strong></Table.Cell>
+              <Table.Cell><strong>{totalEmissions.toFixed(1)} tCO₂e</strong></Table.Cell>
               <Table.Cell><strong>100%</strong></Table.Cell>
               <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(1)} tCO₂e</strong></Table.Cell>
               <Table.Cell />
@@ -237,7 +239,7 @@ const CO2Footprint = () => {
       </Box>
 
       <Flex mt="4" justify="between" align="center">
-        <Text size="1" color="gray">Aligned with ISO Standards</Text>
+        <Text size="1" color="gray">Verified by Blockchain</Text>
         <Button variant="solid" color="green" onClick={handleSubmit}>
           Submit
         </Button>
