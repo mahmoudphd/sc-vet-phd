@@ -1,5 +1,3 @@
-// src/pages/simulateIoTCostData.ts
-
 export const simulatedIoTCostData = {
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, weightKg: 0.001, cost: 0.54 },
