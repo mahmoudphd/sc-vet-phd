@@ -1,10 +1,11 @@
-// CostAnalysis.tsx - مع تكامل إنترنت الأشياء وعرض تفاصيل المواد الخام
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch, Dialog
+  Box, Button, Card, Flex, Grid, Heading, Progress, Select,
+  Table, Text, TextField, Dialog
 } from '@radix-ui/themes';
 import {
-  PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer
+  PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip,
+  Legend, ResponsiveContainer
 } from 'recharts';
 import { simulatedIoTCostData } from './simulateIoTCostData';
 
@@ -124,20 +125,19 @@ const CostAnalysis = () => {
 
   const averageGap = benchmarkTrendDataWithGap.reduce((sum, d) => sum + d.gap, 0) / benchmarkTrendDataWithGap.length;
 
-  const handleSubmit = () => {
-    console.log('Submitted cost data:', costData);
-  };
-
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="4">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3">
-          <Box>
-            <Text size="1">Auto Mode</Text>
-            <Switch checked={mode === 'auto'} onCheckedChange={(val) => setMode(val ? 'auto' : 'manual')} />
-          </Box>
-          <Select.Root defaultValue={currency} onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
+          <Select.Root defaultValue="product-1">
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="product-1">Product A</Select.Item>
+              <Select.Item value="product-2">Product B</Select.Item>
+            </Select.Content>
+          </Select.Root>
+          <Select.Root value={currency} onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="EGP">EGP</Select.Item>
@@ -148,20 +148,29 @@ const CostAnalysis = () => {
         </Flex>
       </Flex>
 
-      <Grid columns="3" gap="4" mb="5">
-        <Card><Flex direction="column" gap="1"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Target Cost</Text><Heading size="6">{formatCurrency(totalBudget)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Benchmark Price</Text><TextField.Root value={benchmarkPrice.toString()} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Profit Margin (%)</Text><TextField.Root value={profitMargin.toString()} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Progress To Target</Text><Progress value={80} /></Flex></Card>
-        <Card><Flex direction="column" gap="1"><Text size="2">Post-Optimization Estimate</Text><Heading size="6">{formatCurrency(totalCostAfter)}</Heading></Flex></Card>
-      </Grid>
-
-      <Flex justify="end" mb="3">
-        <Button variant="solid" onClick={() => setShowGap(!showGap)}>{showGap ? 'Hide Gap Analysis' : 'Show Gap Analysis'}</Button>
+      <Flex justify="end" mb="3" gap="3">
+        <Text size="2">IoT Mode</Text>
+        <Select.Root value={mode} onValueChange={(val) => setMode(val as 'manual' | 'auto')}>
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="manual">Manual</Select.Item>
+            <Select.Item value="auto">Auto</Select.Item>
+          </Select.Content>
+        </Select.Root>
       </Flex>
 
-      <Flex gap="4" mb="5">
+      <Grid columns="3" gap="4" mb="6">
+        <Card><Flex direction="column"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
+        <Card><Flex direction="column"><Text size="2">Target Cost</Text><Heading size="6">{formatCurrency(totalBudget)}</Heading></Flex></Card>
+        <Card><Flex direction="column" gap="2"><Text size="2">Benchmark Price</Text><TextField.Root value={benchmarkPrice.toString()} onChange={(e) => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="2"><Text size="2">Profit Margin (%)</Text><TextField.Root value={profitMargin.toString()} onChange={(e) => setProfitMargin(Number(e.target.value))} /></Flex></Card>
+        <Card><Flex direction="column" gap="1"><Text size="2">Progress To Target</Text><Progress value={80} /><Text size="1">80% Achieved</Text></Flex></Card>
+        <Card><Flex direction="column"><Text size="2">Post-Optimization Estimate</Text><Heading size="6">{formatCurrency(totalCostAfter)}</Heading></Flex></Card>
+      </Grid>
+
+      <Flex justify="end" mb="4"><Button onClick={() => setShowGap(!showGap)}>{showGap ? 'Hide Gap Analysis' : 'Show Gap Analysis'}</Button></Flex>
+
+      <Flex gap="4" mb="6">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <PieChart width={300} height={250}>
@@ -173,19 +182,17 @@ const CostAnalysis = () => {
         </Card>
 
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Our Product Cost Analysis</Heading>
+          <Heading size="4" mb="3">Benchmark Price Analysis</Heading>
           <ResponsiveContainer width="100%" height={250}>
             <LineChart data={benchmarkTrendDataWithGap}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(v: number) => formatCurrency(v)} />
-              <Legend />
+              <XAxis dataKey="month" /><YAxis /><Tooltip formatter={(value: number) => formatCurrency(value)} /><Legend />
               <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Our Product Cost" />
               <Line type="monotone" dataKey="benchmark" stroke="#ef4444" name="Market Benchmark" />
               <Line type="monotone" dataKey="targetCost" stroke="#f97316" name="Target Cost" strokeDasharray="5 5" />
               {showGap && <Line type="monotone" dataKey="gap" stroke="#10b981" name="Cost Gap" dot={false} />}
             </LineChart>
           </ResponsiveContainer>
+          {showGap && <Text align="center" mt="3" size="2" color="gray">Average Gap: <strong>{formatCurrency(averageGap)}</strong></Text>}
         </Card>
       </Flex>
 
@@ -194,77 +201,85 @@ const CostAnalysis = () => {
           <Table.Row>
             <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% Of Total</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {costData.map((item, index) => {
             if (item.isGroup) {
-              return <Table.Row key={index}><Table.Cell colSpan={6}><Text weight="bold">{item.category}</Text></Table.Cell></Table.Row>;
+              return <Table.Row key={`group-${index}`}><Table.Cell colSpan={7}><Text weight="bold" size="3" color="gray" style={{ backgroundColor: '#f3f4f6', padding: '6px' }}>{item.category}</Text></Table.Cell></Table.Row>;
             }
+            const actual = parseFloat(item.actual ?? '0');
+            const budget = parseFloat(item.budget ?? '0');
+            const varianceValue = budget - actual;
+            const varianceColor = varianceValue > 0 ? 'red' : 'green';
+            const percentOfTotal = totalActual !== 0 ? (actual / totalActual) * 100 : 0;
             return (
-              <Table.Row key={index}>
-                <Table.Cell>{item.category}</Table.Cell>
-                <Table.Cell><TextField.Root value={item.actual ?? ''} onChange={(e) => updateCostField(index, 'actual', e.target.value)} /></Table.Cell>
-                <Table.Cell><TextField.Root value={item.budget ?? ''} onChange={(e) => updateCostField(index, 'budget', e.target.value)} /></Table.Cell>
-                <Table.Cell><TextField.Root value={item.costAfter ?? ''} onChange={(e) => updateCostField(index, 'costAfter', e.target.value)} /></Table.Cell>
-                <Table.Cell>
-                  <Select.Root
-                    value={solutions[item.category] || ''}
-                    onValueChange={(val) => setSolutions((prev) => ({ ...prev, [item.category]: val }))}>
-                    <Select.Trigger placeholder="Select" />
-                    <Select.Content>
-                      {solutionOptions.map(opt => <Select.Item key={opt} value={opt}>{opt}</Select.Item>)}
-                    </Select.Content>
-                  </Select.Root>
-                </Table.Cell>
+              <Table.Row key={item.category}>
+                <Table.Cell><Text weight="medium">{item.category}</Text></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.actual ?? ''} onChange={(e) => updateCostField(index, 'actual', e.target.value)} /></Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.budget ?? ''} onChange={(e) => updateCostField(index, 'budget', e.target.value)} /></Table.Cell>
+                <Table.Cell><Text color={varianceColor}>{varianceValue.toFixed(2)}</Text></Table.Cell>
+                <Table.Cell>{percentOfTotal.toFixed(1)}%</Table.Cell>
                 <Table.Cell>
                   {item.category === 'Direct Materials' ? (
-                    <Button variant="outline" size="1" onClick={() => setShowRawDialog(true)}>View</Button>
+                    <Button variant="outline" onClick={() => setShowRawDialog(true)}>View Raw Materials</Button>
                   ) : (
-                    <Text>-</Text>
+                    <Select.Root
+                      value={solutions[item.category] || ''}
+                      onValueChange={(val) => setSolutions((prev) => ({ ...prev, [item.category]: val }))}>
+                      <Select.Trigger placeholder="Select" />
+                      <Select.Content>
+                        {solutionOptions.map((option) => (
+                          <Select.Item key={option} value={option}>{option}</Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
                   )}
                 </Table.Cell>
+                <Table.Cell><TextField.Root size="1" value={item.costAfter ?? ''} onChange={(e) => updateCostField(index, 'costAfter', e.target.value)} /></Table.Cell>
               </Table.Row>
             );
           })}
+          <Table.Row>
+            <Table.Cell><Text weight="bold">Total</Text></Table.Cell>
+            <Table.Cell>{formatCurrency(totalActual)}</Table.Cell>
+            <Table.Cell>{formatCurrency(totalBudget)}</Table.Cell>
+            <Table.Cell /><Table.Cell><Text weight="bold">100%</Text></Table.Cell>
+            <Table.Cell /><Table.Cell>{formatCurrency(totalCostAfter)}</Table.Cell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
 
-      <Flex mt="4" justify="end">
-        <Button color="green" variant="solid" onClick={handleSubmit}>Submit</Button>
-      </Flex>
-
       <Dialog.Root open={showRawDialog} onOpenChange={setShowRawDialog}>
-        <Dialog.Content maxWidth="600px">
+        <Dialog.Content maxWidth="800px">
           <Dialog.Title>Raw Materials Breakdown</Dialog.Title>
-          <Box style={{ maxHeight: 400, overflowY: 'auto' }} mt="3">
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Total Cost</Table.ColumnHeaderCell>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Composition</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Concentration (kg)</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Price/Kg</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {rawMaterials.map((item, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.weight}</Table.Cell>
+                  <Table.Cell>{currency} {item.price}</Table.Cell>
+                  <Table.Cell>{currency} {item.total}</Table.Cell>
                 </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {rawMaterials.map((mat, i) => (
-                  <Table.Row key={i}>
-                    <Table.Cell>{mat.name}</Table.Cell>
-                    <Table.Cell>{mat.weight}</Table.Cell>
-                    <Table.Cell>{formatCurrency(mat.price)}</Table.Cell>
-                    <Table.Cell>{formatCurrency(mat.cost)}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </Box>
-          <Flex mt="3" justify="end">
-            <Button variant="solid" onClick={() => setShowRawDialog(false)}>Close</Button>
+              ))}
+            </Table.Body>
+          </Table.Root>
+          <Flex justify="end" mt="4">
+            <Button onClick={() => setShowRawDialog(false)}>Close</Button>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
