@@ -28,7 +28,10 @@ const CO2Footprint = () => {
 
   useEffect(() => {
     if (mode === 'auto') {
-      const mapped = simulatedIoTData.map((item) => ({ category: item.category, emissions: item.emissions }));
+      const mapped = simulatedIoTData.map((item: { category: string; emissions: number }) => ({
+        category: item.category,
+        emissions: item.emissions
+      }));
       setEmissionData(mapped);
     } else {
       setEmissionData(defaultManualData);
@@ -156,7 +159,7 @@ const CO2Footprint = () => {
                 {mode === 'manual' ? (
                   <TextField.Root
                     size="1"
-                    value={item.emissions.toString()}
+                    value={String(item.emissions)}
                     onChange={(e) => handleEmissionChange(i, e.target.value)}
                   />
                 ) : (
