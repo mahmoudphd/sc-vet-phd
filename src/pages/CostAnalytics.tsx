@@ -11,6 +11,22 @@ import { simulatedIoTCostData } from './simulateIoTCostData';
 
 type TotalsKey = keyof typeof simulatedIoTCostData.totals;
 
+type GroupRow = {
+  category: string;
+  isGroup: true;
+};
+
+type DataRow = {
+  category: string;
+  value: number;
+  actual: string;
+  budget: string;
+  costAfter: string;
+  isGroup?: false;
+};
+
+type CostRow = GroupRow | DataRow;
+
 const solutionOptions = [
   'Negotiating Better Prices With Supplier',
   'Reducing Waste In Material Usage',
@@ -33,7 +49,7 @@ const CostAnalysis = () => {
 
   const rawMaterials = simulatedIoTCostData.rawMaterials;
 
-  const defaultCostData = [
+  const defaultCostData: CostRow[] = [
     { category: 'Direct Cost', isGroup: true },
     { category: 'Direct Materials', value: 45, actual: '133.11', budget: '140', costAfter: '120' },
     { category: 'Packaging Materials', value: 20, actual: '45', budget: '50', costAfter: '43' },
@@ -44,13 +60,13 @@ const CostAnalysis = () => {
     { category: 'Other Costs', value: 8, actual: '20', budget: '25', costAfter: '19' }
   ];
 
-  const [costData, setCostData] = useState(defaultCostData);
+  const [costData, setCostData] = useState<CostRow[]>(defaultCostData);
 
   useEffect(() => {
     if (mode === 'auto') {
       const autoData = simulatedIoTCostData.totals;
-      const mapped = defaultCostData.map((item) => {
-        if (item.isGroup) return item;
+      const mapped: CostRow[] = defaultCostData.map((item) => {
+        if ('isGroup' in item && item.isGroup) return item;
         const key = item.category as TotalsKey;
         return {
           ...item,
@@ -67,8 +83,10 @@ const CostAnalysis = () => {
 
   const updateCostField = (index: number, field: 'actual' | 'budget' | 'costAfter', value: string) => {
     const updated = [...costData];
-    (updated[index] as any)[field] = value;
-    setCostData(updated);
+    if (!('isGroup' in updated[index])) {
+      (updated[index] as DataRow)[field] = value;
+      setCostData(updated);
+    }
   };
 
   const formatCurrency = (num: number | string | undefined) => {
@@ -76,9 +94,10 @@ const CostAnalysis = () => {
     return `${currency} ${value.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   };
 
-  const totalActual = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.actual ?? '0'), 0);
-  const totalBudget = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
-  const totalCostAfter = costData.filter(i => !i.isGroup).reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
+  const dataRows = costData.filter((i): i is DataRow => !('isGroup' in i));
+  const totalActual = dataRows.reduce((sum, i) => sum + parseFloat(i.actual ?? '0'), 0);
+  const totalBudget = dataRows.reduce((sum, i) => sum + parseFloat(i.budget ?? '0'), 0);
+  const totalCostAfter = dataRows.reduce((sum, i) => sum + parseFloat(i.costAfter ?? '0'), 0);
 
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
