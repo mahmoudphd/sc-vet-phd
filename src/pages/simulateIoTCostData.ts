@@ -7,67 +7,19 @@ export type CostCategory =
   | 'Overhead'
   | 'Other Costs';
 
-export interface RawMaterialItem {
+export interface Item {
   name: string;
-  concentrationKg: number;
-  pricePerKg: number;
-  weightKg: number;
-  cost: number;
+  qty?: number;
+  unitPrice?: number;
+  cost?: number;
+  concentrationKg?: number;
+  pricePerKg?: number;
+  weightKg?: number;
+  hours?: number;
+  hourlyRate?: number;
 }
 
-export interface PackagingMaterialItem {
-  name: string;
-  concentrationKg: number;
-  pricePerKg: number;
-  weightKg: number;
-  cost: number;
-}
-
-export interface DirectLaborItem {
-  name: string;
-  hourlyRate: number;
-  hours: number;
-  cost: number;
-}
-
-export interface OverheadItem {
-  name: string;
-  qty: number;
-  unitPrice: number;
-  cost: number;
-}
-
-export interface OtherCostItem {
-  name: string;
-  qty: number;
-  unitPrice: number;
-  cost: number;
-}
-
-export interface Item
-  extends Partial<RawMaterialItem>,
-    Partial<PackagingMaterialItem>,
-    Partial<DirectLaborItem>,
-    Partial<OverheadItem>,
-    Partial<OtherCostItem> {}
-
-export interface SimulatedData {
-  totals: Record<
-    CostCategory,
-    {
-      actual: number;
-      budget: number;
-      costAfter: number;
-    }
-  >;
-  rawMaterials: RawMaterialItem[];
-  packagingMaterials: PackagingMaterialItem[];
-  directLabor: DirectLaborItem[];
-  overheadItems: OverheadItem[];
-  otherCosts: OtherCostItem[];
-}
-
-export const simulatedIoTCostData: SimulatedData = {
+export const simulatedIoTCostData = {
   totals: {
     'Direct Materials': {
       actual: 133.11,
@@ -116,23 +68,22 @@ export const simulatedIoTCostData: SimulatedData = {
     { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, weightKg: 0.571, cost: 0.571 },
   ],
   packagingMaterials: [
-    { name: 'Plastic Bottle (1 L)', concentrationKg: 1, pricePerKg: 10, weightKg: 1, cost: 10 },
-    { name: 'Safety Seal', concentrationKg: 1, pricePerKg: 3, weightKg: 1, cost: 3 },
-    { name: 'Cap', concentrationKg: 1, pricePerKg: 5, weightKg: 1, cost: 5 },
+    { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10 },
+    { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5 },
   ],
   directLabor: [
-    { name: 'Operator', hourlyRate: 0.585, hours: 3, cost: 1.755 },
-    { name: 'Supervisor', hourlyRate: 0.1465, hours: 6, cost: 0.879 },
-    { name: 'Quality Control', hourlyRate: 0.0732, hours: 5, cost: 0.366 },
+    { name: 'Operator', hours: 3, hourlyRate: 0.585, cost: 1.755 },
+    { name: 'Supervisor', hours: 6, hourlyRate: 0.1465, cost: 0.879 },
+    { name: 'Quality Control', hours: 5, hourlyRate: 0.0732, cost: 0.366 },
   ],
   overheadItems: [
-    { name: 'Machine Depreciation', qty: 1, unitPrice: 10, cost: 10 },
-    { name: 'Electricity', qty: 1, unitPrice: 15, cost: 15 },
-    { name: 'Maintenance', qty: 1, unitPrice: 5, cost: 5 },
+    { name: 'Electricity', qty: 50, unitPrice: 0.5, cost: 25 },
+    { name: 'Rent', qty: 1, unitPrice: 1000, cost: 1000 },
   ],
   otherCosts: [
     { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67 },
     { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33 },
-    { name: 'Rework', qty: 1, unitPrice: 5, cost: 5 },
+    { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5 },
   ],
 };
