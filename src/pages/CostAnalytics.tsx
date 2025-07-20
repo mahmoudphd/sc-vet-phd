@@ -9,9 +9,8 @@ import {
   Grid,
   Heading,
   Progress,
-  Select,
   Table,
-  Text,
+  Text
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -23,23 +22,22 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
+  Legend
 } from 'recharts';
 import {
   simulatedIoTCostData,
   Item,
-  CostCategory,
+  CostCategory
 } from './simulateIoTCostData';
 
-const formatCurrency = (value: number, currency: string) =>
-  `${currency} ${value.toFixed(2)}`;
+const formatCurrency = (value: number, currency: string) => `${currency} ${value.toFixed(2)}`;
 
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
   'Direct Labor',
   'Overhead',
-  'Other Costs',
+  'Other Costs'
 ];
 
 const getDetailsByCategory = (category: CostCategory): Item[] => {
@@ -60,26 +58,15 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
 };
 
 export default function CostAnalytics() {
-  const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(
-    null
-  );
+  const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const totals = simulatedIoTCostData.totals;
 
-  const totalActual = categories.reduce(
-    (sum, category) => sum + totals[category].actual,
-    0
-  );
-  const totalBudget = categories.reduce(
-    (sum, category) => sum + totals[category].budget,
-    0
-  );
-  const totalCostAfter = categories.reduce(
-    (sum, category) => sum + totals[category].costAfter,
-    0
-  );
+  const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
+  const totalBudget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
+  const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
 
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
@@ -88,13 +75,13 @@ export default function CostAnalytics() {
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
     { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
     { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice }
   ];
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
     ...d,
     targetCost,
-    gap: d.actual - targetCost,
+    gap: d.actual - targetCost
   }));
 
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
@@ -103,19 +90,21 @@ export default function CostAnalytics() {
     <Box p="4">
       <Flex justify="between" align="center" mb="4">
         <Heading>Inter-Organizational Cost Management</Heading>
-        <Flex gap="3">
-          <Select
-            defaultValue={currency}
-            onValueChange={(value: string) =>
-              setCurrency(value as 'EGP' | 'USD')
-            }
+        <Flex gap="3" align="center">
+          <select
+            value={currency}
+            onChange={(e) => setCurrency(e.target.value as 'EGP' | 'USD')}
+            style={{
+              padding: '6px 8px',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
           >
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select>
+            <option value="EGP">EGP</option>
+            <option value="USD">USD</option>
+          </select>
           <Button>Export Report</Button>
         </Flex>
       </Flex>
@@ -135,7 +124,6 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          {/* Using plain input instead of TextField */}
           <input
             type="number"
             value={benchmarkPrice}
@@ -145,7 +133,7 @@ export default function CostAnalytics() {
               padding: '6px 8px',
               borderRadius: '4px',
               border: '1px solid #ccc',
-              fontSize: '14px',
+              fontSize: '14px'
             }}
           />
         </Box>
@@ -160,16 +148,14 @@ export default function CostAnalytics() {
               padding: '6px 8px',
               borderRadius: '4px',
               border: '1px solid #ccc',
-              fontSize: '14px',
+              fontSize: '14px'
             }}
           />
         </Box>
         <Box>
           <Text size="2">Progress to Target</Text>
           <Progress value={(targetCost / totalActual) * 100} />
-          <Text align="center" mt="1" size="2">
-            {Math.round((targetCost / totalActual) * 100)}%
-          </Text>
+          <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
         </Box>
       </Grid>
 
@@ -208,10 +194,10 @@ export default function CostAnalytics() {
                   value:
                     totals['Direct Materials'].actual +
                     totals['Packaging Materials'].actual +
-                    totals['Direct Labor'].actual,
+                    totals['Direct Labor'].actual
                 },
                 { name: 'Overhead', value: totals['Overhead'].actual },
-                { name: 'Other Costs', value: totals['Other Costs'].actual },
+                { name: 'Other Costs', value: totals['Other Costs'].actual }
               ]}
               dataKey="value"
               nameKey="name"
@@ -235,61 +221,9 @@ export default function CostAnalytics() {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Line
-              type="monotone"
-              dataKey="actual"
-              stroke="#3b82f6"
-              name="Actual Cost"
-            />
-            <Line
-              type="monotone"
-              dataKey="benchmark"
-              stroke="#f59e0b"
-              name="Benchmark Price"
-            />
-            <Line
-              type="monotone"
-              dataKey="targetCost"
-              stroke="#ef4444"
-              name="Target Cost"
-            />
+            <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
+            <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" />
+            <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" />
           </LineChart>
         </ResponsiveContainer>
       </Box>
-
-      {dialogCategory && (
-        <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content
-            maxWidth="600px"
-            style={{ padding: '16px' }} // replaced p="4" with style
-          >
-            <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {getDetailsByCategory(dialogCategory).map((item, index) => (
-                  <Table.Row key={index}>
-                    <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                    <Table.Cell>{item.qty}</Table.Cell>
-                    <Table.Cell>{formatCurrency(item.unitPrice, currency)}</Table.Cell>
-                    <Table.Cell>{formatCurrency(item.cost, currency)}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-            <Flex justify="end" mt="3">
-              <Button onClick={() => setDialogCategory(null)}>Close</Button>
-            </Flex>
-          </Dialog.Content>
-        </Dialog.Root>
-      )}
-    </Box>
-  );
-}
