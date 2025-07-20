@@ -1,64 +1,89 @@
+// src/pages/CostAnalytics.tsx
+
 import React, { useState } from 'react';
 import {
-  Box,
-  Button,
-  Dialog,
-  Flex,
-  Grid,
-  Heading,
-  Switch,
-  Table,
-  Text,
-  TextField,
+  Box, Heading, Flex, Text, Grid, Button, Dialog, Table, Switch,
 } from '@radix-ui/themes';
+import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip, Legend, LineChart, Line, XAxis, YAxis } from 'recharts';
+import { TextField } from '@radix-ui/themes';
 import * as RadixSelect from '@radix-ui/react-select';
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-} from 'recharts';
-import { exportToCSV } from '../utils/exportCSV';
-import { formatCurrency } from '../utils/formatCurrency';
-import { useCostAnalyticsData } from '../hooks/useCostAnalyticsData';
+
+interface Item {
+  name: string;
+  qty?: number;
+  unitPrice?: number;
+}
+
+type Category = 'Direct Materials' | 'Packaging Materials' | 'Direct Labor' | 'Overhead' | 'Other Costs';
 
 export default function CostAnalytics() {
-  const {
-    selectedProduct,
-    setSelectedProduct,
-    currency,
-    setCurrency,
-    benchmarkPrice,
-    setBenchmarkPrice,
-    profitMargin,
-    setProfitMargin,
-    totalActual,
-    totalTarget,
-    totalCostAfter,
-    postOptimizationEstimate,
-    totals,
-    benchmarkTrendDataWithGap,
-    showCostGap,
-    setShowCostGap,
-    categories,
-    dialogCategory,
-    setDialogCategory,
-    dialogData,
-    dialogAutoMode,
-    setDialogAutoMode,
-    updateDialogItem,
-    calculateTotalForCategory,
-    submitToBlockchain,
-    solutions,
-    solutionsOptions,
-    handleSolutionChange,
-  } = useCostAnalyticsData();
+  const [selectedProduct, setSelectedProduct] = useState('Product A');
+  const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
+  const [benchmarkPrice, setBenchmarkPrice] = useState(0);
+  const [profitMargin, setProfitMargin] = useState(0);
+  const [showCostGap, setShowCostGap] = useState(false);
+  const [dialogCategory, setDialogCategory] = useState<Category | null>(null);
+  const [dialogAutoMode, setDialogAutoMode] = useState<Record<Category, boolean>>({
+    'Direct Materials': false,
+    'Packaging Materials': false,
+    'Direct Labor': false,
+    'Overhead': false,
+    'Other Costs': false,
+  });
+
+  const products = ['Product A', 'Product B'];
+  const categories: Category[] = ['Direct Materials', 'Packaging Materials', 'Direct Labor', 'Overhead', 'Other Costs'];
+
+  const dialogData: Record<Category, Item[]> = {
+    'Direct Materials': [],
+    'Packaging Materials': [],
+    'Direct Labor': [],
+    'Overhead': [],
+    'Other Costs': []
+  };
+
+  const solutions: Record<Category, string[]> = {
+    'Direct Materials': [],
+    'Packaging Materials': [],
+    'Direct Labor': [],
+    'Overhead': [],
+    'Other Costs': []
+  };
+
+  const solutionsOptions = [
+    'Negotiating better prices with supplier',
+    'Reducing waste in material usage',
+    'Automation to reduce manual labor costs',
+    'Optimizing machine usage',
+    'Improving inventory management',
+    'Minimize transportation costs',
+    'Reduce rework costs',
+    'Other'
+  ];
+
+  const totals = {
+    'Direct Materials': { actual: 0 },
+    'Packaging Materials': { actual: 0 },
+    'Direct Labor': { actual: 0 },
+    'Overhead': { actual: 0 },
+    'Other Costs': { actual: 0 }
+  };
+
+  const totalActual = 0;
+  const totalTarget = 0;
+  const totalCostAfter = 0;
+  const postOptimizationEstimate = 0;
+  const benchmarkTrendDataWithGap = [];
+
+  const formatCurrency = (value: number, curr: string) => {
+    return curr === 'EGP' ? `EGP ${value.toFixed(2)}` : `$${value.toFixed(2)}`;
+  };
+
+  const exportToCSV = (data: any) => { };
+  const updateDialogItem = (cat: Category, index: number, field: keyof Item, value: number) => { };
+  const handleSolutionChange = (cat: Category, index: number, value: string) => { };
+  const calculateTotalForCategory = (cat: Category) => 0;
+  const submitToBlockchain = (cat: Category) => { };
 
   return (
     <Box p="4">
@@ -68,7 +93,7 @@ export default function CostAnalytics() {
         <RadixSelect.Root value={selectedProduct} onValueChange={setSelectedProduct}>
           <RadixSelect.Trigger />
           <RadixSelect.Content>
-            {['Product A', 'Product B', 'Product C'].map((p) => (
+            {products.map((p) => (
               <RadixSelect.Item key={p} value={p}>
                 {p}
               </RadixSelect.Item>
@@ -77,7 +102,7 @@ export default function CostAnalytics() {
         </RadixSelect.Root>
 
         <Text>Currency:</Text>
-        <RadixSelect.Root value={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
+        <RadixSelect.Root value={currency} onValueChange={(value: string) => setCurrency(value as 'EGP' | 'USD')}>
           <RadixSelect.Trigger />
           <RadixSelect.Content>
             <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
@@ -86,7 +111,7 @@ export default function CostAnalytics() {
         </RadixSelect.Root>
 
         <Button onClick={() => exportToCSV(dialogData)}>Export CSV</Button>
-        <Button variant="soft" onClick={() => setShowCostGap((prev) => !prev)}>
+        <Button variant="soft" onClick={() => setShowCostGap((prev: boolean) => !prev)}>
           {showCostGap ? 'Hide Cost Gap' : 'Show Cost Gap'}
         </Button>
       </Flex>
@@ -106,18 +131,18 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text>Benchmark Price</Text>
-          <TextField.Input
+          <TextField
             type="number"
             value={benchmarkPrice.toString()}
-            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
           />
         </Box>
         <Box>
           <Text>Profit Margin (%)</Text>
-          <TextField.Input
+          <TextField
             type="number"
             value={profitMargin.toString()}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(parseFloat(e.target.value) || 0)}
           />
         </Box>
         <Box>
@@ -133,17 +158,23 @@ export default function CostAnalytics() {
               <Pie
                 dataKey="value"
                 nameKey="name"
-                data={[{
-                  name: 'Direct Cost',
-                  value:
-                    totals['Direct Materials'].actual +
-                    totals['Packaging Materials'].actual +
-                    totals['Direct Labor'].actual,
-                }, {
-                  name: 'Overhead', value: totals['Overhead'].actual
-                }, {
-                  name: 'Other Costs', value: totals['Other Costs'].actual
-                }]}
+                data={[
+                  {
+                    name: 'Direct Cost',
+                    value:
+                      totals['Direct Materials'].actual +
+                      totals['Packaging Materials'].actual +
+                      totals['Direct Labor'].actual,
+                  },
+                  {
+                    name: 'Overhead',
+                    value: totals['Overhead'].actual,
+                  },
+                  {
+                    name: 'Other Costs',
+                    value: totals['Other Costs'].actual,
+                  },
+                ]}
                 outerRadius={100}
                 label
               >
@@ -186,59 +217,6 @@ export default function CostAnalytics() {
             <Heading size="4">{category}</Heading>
             <Button onClick={() => setDialogCategory(category)}>View Details</Button>
           </Flex>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {dialogData[category].map((item, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>
-                    <TextField.Input
-                      type="number"
-                      value={item.qty?.toString() ?? '0'}
-                      onChange={(e) => updateDialogItem(category, index, 'qty', parseFloat(e.target.value) || 0)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <TextField.Input
-                      type="number"
-                      value={item.unitPrice?.toString() ?? '0'}
-                      onChange={(e) => updateDialogItem(category, index, 'unitPrice', parseFloat(e.target.value) || 0)}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{formatCurrency((item.qty ?? 0) * (item.unitPrice ?? 0), currency)}</Table.Cell>
-                  <Table.Cell>
-                    <RadixSelect.Root
-                      value={solutions[category]?.[index] || ''}
-                      onValueChange={(value) => handleSolutionChange(category, index, value)}
-                    >
-                      <RadixSelect.Trigger />
-                      <RadixSelect.Content>
-                        {solutionsOptions.map((s) => (
-                          <RadixSelect.Item key={s} value={s}>
-                            {s}
-                          </RadixSelect.Item>
-                        ))}
-                      </RadixSelect.Content>
-                    </RadixSelect.Root>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-              <Table.Row>
-                <Table.Cell colSpan={3}><b>Total</b></Table.Cell>
-                <Table.Cell colSpan={2}><b>{formatCurrency(calculateTotalForCategory(category), currency)}</b></Table.Cell>
-              </Table.Row>
-            </Table.Body>
-          </Table.Root>
-
           <Dialog.Root open={dialogCategory === category} onOpenChange={() => setDialogCategory(null)}>
             <Dialog.Content style={{ maxWidth: 800 }}>
               <Dialog.Title>{category} Breakdown</Dialog.Title>
@@ -265,18 +243,18 @@ export default function CostAnalytics() {
                     <Table.Row key={idx}>
                       <Table.Cell>{item.name}</Table.Cell>
                       <Table.Cell>
-                        <TextField.Input
+                        <TextField
                           type="number"
                           value={item.qty?.toString() ?? '0'}
-                          onChange={(e) => updateDialogItem(category, idx, 'qty', parseFloat(e.target.value) || 0)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateDialogItem(category, idx, 'qty', parseFloat(e.target.value) || 0)}
                           disabled={dialogAutoMode[category]}
                         />
                       </Table.Cell>
                       <Table.Cell>
-                        <TextField.Input
+                        <TextField
                           type="number"
                           value={item.unitPrice?.toString() ?? '0'}
-                          onChange={(e) => updateDialogItem(category, idx, 'unitPrice', parseFloat(e.target.value) || 0)}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => updateDialogItem(category, idx, 'unitPrice', parseFloat(e.target.value) || 0)}
                           disabled={dialogAutoMode[category]}
                         />
                       </Table.Cell>
