@@ -1,4 +1,4 @@
-// src/pages/CostAnalysis.tsx
+// src/pages/CostAnalytics.tsx
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -50,7 +50,7 @@ const CostAnalysis = () => {
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
-  const [solutions, setSolutions] = useState<Record<string, string>>({});
+  const [solutions, setSolutions] = useState<Record<CostCategory, string>>({} as Record<CostCategory, string>);
   const [dialogOpen, setDialogOpen] = useState<CostCategory | null>(null);
 
   const defaultCostData: CostRow[] = [
@@ -68,9 +68,9 @@ const CostAnalysis = () => {
       const totals = simulatedIoTCostData.totals;
       const newData = costData.map(row => ({
         ...row,
-        actual: totals[row.category]?.actual.toString() || row.actual,
-        budget: totals[row.category]?.budget.toString() || row.budget,
-        costAfter: totals[row.category]?.costAfter.toString() || row.costAfter,
+        actual: totals[row.category as CostCategory]?.actual.toString() || row.actual,
+        budget: totals[row.category as CostCategory]?.budget.toString() || row.budget,
+        costAfter: totals[row.category as CostCategory]?.costAfter.toString() || row.costAfter,
       }));
       setCostData(newData);
     } else {
@@ -253,9 +253,10 @@ const CostAnalysis = () => {
               </Table.Cell>
               <Table.Cell>
                 <Select.Root
-                  value={solutions[row.category] || ''}
+                  value={solutions[row.category as CostCategory] || ''}
                   onValueChange={(val) =>
-                    setSolutions(prev => ({ ...prev, [row.category]: val }))}
+                    setSolutions(prev => ({ ...prev, [row.category as CostCategory]: val }))
+                  }
                 >
                   <Select.Trigger aria-label="Select Solution" />
                   <Select.Content>
@@ -267,7 +268,7 @@ const CostAnalysis = () => {
                 </Select.Root>
               </Table.Cell>
               <Table.Cell>
-                <Button size="2" variant="outline" onClick={() => setDialogOpen(row.category as CostCategory)}>
+                <Button size="2" variant="outline" onClick={() => setDialogOpen(row.category)}>
                   View Details
                 </Button>
               </Table.Cell>
