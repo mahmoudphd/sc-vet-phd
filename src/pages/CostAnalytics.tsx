@@ -33,10 +33,9 @@ import {
   CostCategory
 } from './simulateIoTCostData';
 
-// صيغة العملة
-const formatCurrency = (value: number, currency: string) => `${currency} ${value.toFixed(2)}`;
+const formatCurrency = (value: number, currency: string) =>
+  `${currency} ${value.toFixed(2)}`;
 
-// الفئات الثابتة
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
@@ -45,7 +44,6 @@ const categories: CostCategory[] = [
   'Other Costs'
 ];
 
-// جلب تفاصيل الفئة
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
     case 'Direct Materials':
@@ -68,26 +66,36 @@ export default function CostAnalytics() {
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
+  const [detailsData, setDetailsData] = useState<Item[]>([]);
+  const [isManual, setIsManual] = useState(false);
 
-  // لحسابات التكلفة
   const totals = simulatedIoTCostData.totals;
 
-  const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
-  const totalBudget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
-  const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
+  // Compute totals
+  const totalActual = categories.reduce(
+    (sum, category) => sum + totals[category].actual,
+    0
+  );
+  const totalBudget = categories.reduce(
+    (sum, category) => sum + totals[category].budget,
+    0
+  );
+  const totalCostAfter = categories.reduce(
+    (sum, category) => sum + totals[category].costAfter,
+    0
+  );
 
+  // Target cost calculation
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
-  // بيانات الشارت الزمني
+  // Benchmark trend data for line chart
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
     { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
     { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice }
-  ];
-
-  const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
+  ].map((d) => ({
     ...d,
     targetCost,
     gap: d.actual - targetCost
@@ -95,67 +103,64 @@ export default function CostAnalytics() {
 
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
 
-  // حالة بيانات تعديل التفاصيل داخل النافذة (نموذجية)
-  const [editDetails, setEditDetails] = useState<Item[]>([]);
-
-  // عند فتح النافذة، ننسخ البيانات لتعديلها
-  const openDialogWithData = (category: CostCategory) => {
-    const details = getDetailsByCategory(category);
-    // نسخ بيانات للتعديل محليًا
-    setEditDetails(details.map(item => ({ ...item })));
+  // When dialog opens, load details data for category
+  const openDialog = (category: CostCategory) => {
     setDialogCategory(category);
+    setDetailsData(getDetailsByCategory(category));
+    setIsManual(false); // default mode manual off
   };
 
-  // تحديث حقل محدد في التفاصيل
-  const handleDetailChange = (index: number, field: keyof Item, value: string | number) => {
-    setEditDetails((prev) => {
-      const updated = [...prev];
-      // تحديث الحقل مع حفظ النوع الصحيح
-      if (field === 'name') {
-        updated[index][field] = value as string;
-      } else {
-        updated[index][field] = Number(value);
-      }
-      // إعادة حساب التكلفة تلقائياً (qty * unitPrice)
-      if (field === 'qty' || field === 'unitPrice') {
-        updated[index].cost = updated[index].qty * updated[index].unitPrice;
-      }
-      return updated;
+  // Handle detail changes in dialog table
+  const handleDetailChange = (
+    index: number,
+    field: keyof Omit<Item, 'name' | 'cost'>,
+    value: string
+  ) => {
+    const parsedValue = parseFloat(value);
+    if (isNaN(parsedValue)) return;
+
+    setDetailsData((prev) => {
+      const newData = [...prev];
+      newData[index] = {
+        ...newData[index],
+        [field]: parsedValue,
+        cost:
+          field === 'qty'
+            ? parsedValue * newData[index].unitPrice
+            : newData[index].qty * parsedValue
+      };
+      return newData;
     });
   };
 
-  // زر submit dummy: هنا يمكن إضافة منطق الإرسال أو التحديث الحقيقي
+  // Submit updated details - this is a stub, implement saving logic as needed
   const handleSubmitDetails = () => {
-    alert(`Submitted changes for ${dialogCategory}`);
-    // إغلاق النافذة
+    // Here you can integrate updated details into your main data or backend
     setDialogCategory(null);
   };
 
   return (
-    <Box p="4">
-      {/* العنوان والاختيارات */}
-      <Flex justify="between" align="center" mb="4" wrap="wrap" gap="3">
+    <Box p="4" style={{ maxWidth: 1200, margin: 'auto' }}>
+      <Flex justify="between" align="center" mb="4">
         <Heading>Inter-Organizational Cost Management</Heading>
-
-        <Flex gap="3" align="center" wrap="wrap">
-          {/* Currency Select */}
-          <Select.Root
+        <Flex gap="3" align="center">
+          <Select
             defaultValue={currency}
-            onValueChange={(value: string) => setCurrency(value as 'EGP' | 'USD')}
+            onValueChange={(value: string) =>
+              setCurrency(value === 'USD' ? 'USD' : 'EGP')
+            }
           >
-            <Select.Trigger aria-label="Select currency" />
+            <Select.Trigger />
             <Select.Content>
               <Select.Item value="EGP">EGP</Select.Item>
               <Select.Item value="USD">USD</Select.Item>
             </Select.Content>
-          </Select.Root>
-
+          </Select>
           <Button>Export Report</Button>
         </Flex>
       </Flex>
 
-      {/* KPIs */}
-      <Grid columns={{ '@initial': 1, '@sm': 3 }} gap="4" mb="4">
+      <Grid columns={3} gap="4" mb="4">
         <Box>
           <Text size="2">Actual Cost</Text>
           <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
@@ -170,32 +175,32 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          <TextField.Root>
-            <TextField.Input
-              type="number"
-              value={benchmarkPrice}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(parseFloat(e.target.value))}
-            />
-          </TextField.Root>
+          <TextField
+            type="number"
+            value={benchmarkPrice}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setBenchmarkPrice(parseFloat(e.target.value))
+            }
+          />
         </Box>
         <Box>
           <Text size="2">Profit Margin (%)</Text>
-          <TextField.Root>
-            <TextField.Input
-              type="number"
-              value={profitMargin}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(parseFloat(e.target.value))}
-            />
-          </TextField.Root>
+          <TextField
+            type="number"
+            value={profitMargin}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setProfitMargin(parseFloat(e.target.value))
+            }
+          />
         </Box>
         <Box>
           <Text size="2">Progress to Target</Text>
-          <Progress value={(targetCost / totalActual) * 100} />
-          <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
+          <Progress value={(targetCost / totalActual) * 100}>
+            <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
+          </Progress>
         </Box>
       </Grid>
 
-      {/* جدول ملخص التكلفة */}
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -214,14 +219,13 @@ export default function CostAnalytics() {
               <Table.Cell>{formatCurrency(totals[category].budget, currency)}</Table.Cell>
               <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
               <Table.Cell>
-                <Button onClick={() => openDialogWithData(category)}>View Details</Button>
+                <Button onClick={() => openDialog(category)}>View Details</Button>
               </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
-      {/* PieChart لعرض التوزيع */}
       <Box mt="6" style={{ height: 300 }}>
         <ResponsiveContainer>
           <PieChart>
@@ -252,10 +256,9 @@ export default function CostAnalytics() {
         </ResponsiveContainer>
       </Box>
 
-      {/* LineChart للترند الشهري */}
       <Box mt="6" style={{ height: 300 }}>
         <ResponsiveContainer>
-          <LineChart data={benchmarkTrendDataWithGap}>
+          <LineChart data={benchmarkTrendData}>
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip />
@@ -267,11 +270,26 @@ export default function CostAnalytics() {
         </ResponsiveContainer>
       </Box>
 
-      {/* نافذة التفاصيل */}
+      {/* Dialog for details */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content maxWidth="700px">
+          <Dialog.Content maxWidth="700px" p="4">
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
+
+            <Flex align="center" gap="4" mb="3">
+              <Button
+                variant={isManual ? 'solid' : 'outline'}
+                onClick={() => setIsManual(true)}
+              >
+                Manual
+              </Button>
+              <Button
+                variant={!isManual ? 'solid' : 'outline'}
+                onClick={() => setIsManual(false)}
+              >
+                Auto
+              </Button>
+            </Flex>
 
             <Table.Root>
               <Table.Header>
@@ -283,30 +301,34 @@ export default function CostAnalytics() {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {editDetails.map((item, index) => (
+                {detailsData.map((item, index) => (
                   <Table.Row key={index}>
                     <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                     <Table.Cell>
-                      <TextField.Root>
-                        <TextField.Input
+                      {isManual ? (
+                        <TextField
                           type="number"
                           value={item.qty}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             handleDetailChange(index, 'qty', e.target.value)
                           }
                         />
-                      </TextField.Root>
+                      ) : (
+                        item.qty
+                      )}
                     </Table.Cell>
                     <Table.Cell>
-                      <TextField.Root>
-                        <TextField.Input
+                      {isManual ? (
+                        <TextField
                           type="number"
                           value={item.unitPrice}
                           onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                             handleDetailChange(index, 'unitPrice', e.target.value)
                           }
                         />
-                      </TextField.Root>
+                      ) : (
+                        formatCurrency(item.unitPrice, currency)
+                      )}
                     </Table.Cell>
                     <Table.Cell>{formatCurrency(item.cost, currency)}</Table.Cell>
                   </Table.Row>
@@ -315,10 +337,12 @@ export default function CostAnalytics() {
             </Table.Root>
 
             <Flex justify="end" mt="4" gap="3">
-              <Button variant="secondary" onClick={() => setDialogCategory(null)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSubmitDetails}>Submit</Button>
+              <Button onClick={() => setDialogCategory(null)}>Cancel</Button>
+              {isManual && (
+                <Button onClick={handleSubmitDetails} variant="solid">
+                  Submit
+                </Button>
+              )}
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
