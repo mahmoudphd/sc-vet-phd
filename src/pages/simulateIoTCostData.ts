@@ -1,3 +1,5 @@
+// src/pages/simulateIoTCostData.ts
+
 export type CostCategory =
   | 'Direct Materials'
   | 'Packaging Materials'
