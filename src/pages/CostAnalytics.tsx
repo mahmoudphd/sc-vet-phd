@@ -13,6 +13,7 @@ import {
   Table,
   Text,
   Select as RadixSelect,
+  TextField,
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -123,6 +124,10 @@ export default function CostAnalytics() {
     alert('Export Report functionality not implemented yet.');
   };
 
+  const handleSubmit = () => {
+    alert('Submit functionality not implemented yet.');
+  };
+
   const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
 
   return (
@@ -160,58 +165,66 @@ export default function CostAnalytics() {
         </Flex>
       </Flex>
 
+      {/* KPIs Grid with clear boxes */}
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="4">
-        <Box>
-          <Text size="2">Actual Cost</Text>
-          <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
-        </Box>
-        <Box>
-          <Text size="2">Budgeted Cost</Text>
-          <Heading size="6">{formatCurrency(totalBudget, currency)}</Heading>
-        </Box>
-        <Box>
-          <Text size="2">Cost After Optimization</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
-        </Box>
-        <Box>
-          <Text size="2">Benchmark Price</Text>
-          <input
-            type="number"
-            value={benchmarkPrice}
-            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
+        {[{
+          label: 'Actual Cost',
+          value: totalActual
+        }, {
+          label: 'Budgeted Cost',
+          value: totalBudget
+        }, {
+          label: 'Cost After Optimization',
+          value: totalCostAfter
+        }, {
+          label: 'Benchmark Price',
+          value: benchmarkPrice,
+          input: true,
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => setBenchmarkPrice(parseFloat(e.target.value) || 0),
+        }, {
+          label: 'Profit Margin (%)',
+          value: profitMargin,
+          input: true,
+          onChange: (e: React.ChangeEvent<HTMLInputElement>) => setProfitMargin(parseFloat(e.target.value) || 0),
+        }, {
+          label: 'Progress to Target',
+          progress: (targetCost / totalActual) * 100,
+          progressText: `${Math.round((targetCost / totalActual) * 100)}%`,
+        }, {
+          label: 'Post-Optimization Estimate',
+          value: postOptimizationEstimate,
+        }].map((card, i) => (
+          <Box
+            key={i}
             style={{
-              padding: '8px',
-              fontSize: '1rem',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              width: '100%',
+              border: '1px solid #ddd',
+              backgroundColor: '#f9fafb',
+              padding: '16px',
+              borderRadius: 4,
+              boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
             }}
-          />
-        </Box>
-        <Box>
-          <Text size="2">Profit Margin (%)</Text>
-          <input
-            type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{
-              padding: '8px',
-              fontSize: '1rem',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              width: '100%',
-            }}
-          />
-        </Box>
-        <Box>
-          <Text size="2">Progress to Target</Text>
-          <Progress value={Math.min((targetCost / totalActual) * 100, 100)} />
-          <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
-        </Box>
-        <Box>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
-        </Box>
+          >
+            <Text size="2" weight="semibold" style={{ marginBottom: 8 }}>
+              {card.label}
+            </Text>
+
+            {card.input ? (
+              <TextField
+                type="number"
+                value={card.value}
+                onChange={card.onChange}
+                style={{ width: '100%' }}
+              />
+            ) : card.progress !== undefined ? (
+              <>
+                <Progress value={Math.min(card.progress, 100)} />
+                <Text>{card.progressText}</Text>
+              </>
+            ) : (
+              <Heading size="6">{formatCurrency(card.value as number, currency)}</Heading>
+            )}
+          </Box>
+        ))}
       </Grid>
 
       <Flex gap="8" mb="6" style={{ height: 300 }}>
@@ -272,6 +285,7 @@ export default function CostAnalytics() {
           </Table.Row>
         </Table.Header>
         <Table.Body>
+          {categories.map
           {categories.map((category) => (
             <Table.Row key={category}>
               <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
@@ -296,9 +310,16 @@ export default function CostAnalytics() {
         </Table.Body>
       </Table.Root>
 
+      {/* Submit button at the bottom of main page */}
+      <Box mt="6" style={{ textAlign: 'right' }}>
+        <Button onClick={handleSubmit} variant="primary">
+          Submit
+        </Button>
+      </Box>
+
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content maxWidth="600px">
+          <Dialog.Content maxWidth="700px">
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
             <Flex justify="between" align="center" mb="3">
               <Text>Auto Mode</Text>
@@ -335,6 +356,7 @@ export default function CostAnalytics() {
                   return (
                     <Table.Row key={index}>
                       <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
+
                       <Table.Cell>
                         {dialogCategory === 'Direct Materials'
                           ? item.concentrationKg ?? '-'
@@ -342,20 +364,25 @@ export default function CostAnalytics() {
                           ? item.hours ?? '-'
                           : item.qty ?? '-'}
                       </Table.Cell>
+
                       <Table.Cell>
                         {dialogCategory === 'Direct Materials'
-                          ? item.pricePerKg !== undefined
+                          ? item.pricePerKg
                             ? formatCurrency(item.pricePerKg, currency)
                             : '-'
                           : dialogCategory === 'Direct Labor'
-                          ? item.hourlyRate !== undefined
+                          ? item.hourlyRate
                             ? formatCurrency(item.hourlyRate, currency)
                             : '-'
-                          : item.unitPrice !== undefined
+                          : item.unitPrice
                           ? formatCurrency(item.unitPrice, currency)
                           : '-'}
                       </Table.Cell>
+
+                      {/* Cost value */}
                       <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
+
+                      {/* Solutions Dropdown */}
                       <Table.Cell>
                         <RadixSelect.Root
                           value={solutions[dialogCategory]?.[index] || ''}
@@ -378,8 +405,15 @@ export default function CostAnalytics() {
                 })}
               </Table.Body>
             </Table.Root>
+
+            {/* Submit button inside dialog */}
             <Box mt="4" style={{ textAlign: 'right' }}>
-              <Button onClick={() => setDialogCategory(null)}>Close</Button>
+              <Button onClick={() => setDialogCategory(null)} variant="secondary" style={{ marginRight: 8 }}>
+                Close
+              </Button>
+              <Button onClick={handleSubmit} variant="primary">
+                Submit
+              </Button>
             </Box>
           </Dialog.Content>
         </Dialog.Root>
