@@ -4,16 +4,15 @@ import React, { useState } from 'react';
 import {
   Box,
   Button,
-  Dialog,
   Flex,
   Grid,
   Heading,
   Progress,
   Switch,
-  Table,
   Text,
-  Select as RadixSelect,
 } from '@radix-ui/themes';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as Select from '@radix-ui/react-select';
 import {
   PieChart,
   Pie,
@@ -127,25 +126,24 @@ export default function CostAnalytics() {
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
           <Text>Product:</Text>
-          <RadixSelect.Root value={selectedProduct} onValueChange={(value) => setSelectedProduct(value)}>
-            <RadixSelect.Trigger aria-label="Select product" />
-            <RadixSelect.Content>
-              {products.map((p) => <RadixSelect.Item key={p} value={p}>{p}</RadixSelect.Item>)}
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <RadixSelect.Root value={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
-            <RadixSelect.Trigger aria-label="Select currency" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
-              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
+          <Select.Root value={selectedProduct} onValueChange={(value) => setSelectedProduct(value)}>
+            <Select.Trigger aria-label="Select product" />
+            <Select.Content>
+              {products.map((p) => <Select.Item key={p} value={p}>{p}</Select.Item>)}
+            </Select.Content>
+          </Select.Root>
+          <Select.Root value={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
+            <Select.Trigger aria-label="Select currency" />
+            <Select.Content>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
+            </Select.Content>
+          </Select.Root>
           <Button onClick={handleSubmit}>Export Report</Button>
         </Flex>
       </Flex>
 
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        {/* KPIs */}
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
         </Box>
@@ -175,7 +173,6 @@ export default function CostAnalytics() {
       </Grid>
 
       <Flex gap="8" mb="6" style={{ height: 300 }}>
-        {/* Pie Chart */}
         <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -205,8 +202,6 @@ export default function CostAnalytics() {
             </PieChart>
           </ResponsiveContainer>
         </Box>
-
-        {/* Line Chart */}
         <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={benchmarkTrendDataWithGap}>
@@ -216,31 +211,17 @@ export default function CostAnalytics() {
               <Legend />
               <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
               <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" />
-              <Line
-                type="monotone"
-                dataKey="targetCost"
-                stroke="#ef4444"
-                name="Target Cost"
-                strokeDasharray="5 5"
-              />
-              <Line
-                type="monotone"
-                dataKey="gap"
-                stroke="#10b981"
-                name="Cost Gap"
-                dot={false}
-                isAnimationActive={false}
-              />
+              <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="gap" stroke="#10b981" name="Cost Gap" dot={false} isAnimationActive={false} />
             </LineChart>
           </ResponsiveContainer>
         </Box>
       </Flex>
 
-      {/* Main Cost Table */}
-      <Table style={{ backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden' }}>
+      <table style={{ backgroundColor: '#fff', borderRadius: 8, overflow: 'hidden', width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr>
-            <th>Category</th>
+            <th style={{ textAlign: 'left', padding: 10 }}>Category</th>
             <th>Actual</th>
             <th>Budget (Target)</th>
             <th>Cost After</th>
@@ -252,36 +233,31 @@ export default function CostAnalytics() {
         <tbody>
           {categories.map((category) => (
             <tr key={category}>
-              <td>{category}</td>
+              <td style={{ padding: 10 }}>{category}</td>
               <td>{formatCurrency(totals[category].actual, currency)}</td>
               <td>{formatCurrency(totals[category].budget, currency)}</td>
               <td>{formatCurrency(totals[category].costAfter, currency)}</td>
               <td>{percentOfTotal(category)}%</td>
               <td>
-                <RadixSelect.Root
+                <Select.Root
                   value={solutions[category]?.[0] || ''}
                   onValueChange={(value) => handleSolutionChange(category, 0, value)}
                 >
-                  <RadixSelect.Trigger aria-label="Select solution" style={{ minWidth: 150 }} />
-                  <RadixSelect.Content>
+                  <Select.Trigger aria-label="Select solution" style={{ minWidth: 150 }} />
+                  <Select.Content>
                     {solutionsOptions.map((option) => (
-                      <RadixSelect.Item key={option} value={option}>
-                        {option}
-                      </RadixSelect.Item>
+                      <Select.Item key={option} value={option}>{option}</Select.Item>
                     ))}
-                  </RadixSelect.Content>
-                </RadixSelect.Root>
+                  </Select.Content>
+                </Select.Root>
               </td>
               <td>
-                <Button size="sm" onClick={() => setDialogCategory(category)}>
-                  View Details
-                </Button>
+                <Button size="sm" onClick={() => setDialogCategory(category)}>View Details</Button>
               </td>
             </tr>
           ))}
-          {/* Total Row */}
           <tr style={{ fontWeight: 'bold' }}>
-            <td>Total</td>
+            <td style={{ padding: 10 }}>Total</td>
             <td>{formatCurrency(totalActual, currency)}</td>
             <td>{formatCurrency(totalBudget, currency)}</td>
             <td>{formatCurrency(totalCostAfter, currency)}</td>
@@ -290,86 +266,47 @@ export default function CostAnalytics() {
             <td></td>
           </tr>
         </tbody>
-      </Table>
+      </table>
 
-      {/* Details Dialog */}
-      <Dialog open={dialogCategory !== null} onOpenChange={(open) => !open && setDialogCategory(null)}>
-        <Dialog.Overlay />
-        <Dialog.Content
-          style={{
-            backgroundColor: '#fff',
-            padding: 20,
-            borderRadius: 8,
-            maxWidth: 700,
-            maxHeight: '80vh',
-            overflowY: 'auto',
-            margin: 'auto',
-          }}
-        >
-          <Heading size="5" mb="4">{dialogCategory} Details</Heading>
-          <Flex align="center" gap="3" mb="3">
-            <Text>Auto Mode:</Text>
-            <Switch checked={autoMode} onCheckedChange={setAutoMode} />
-          </Flex>
-
-          <Table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Qty</th>
-                <th>Unit Price</th>
-                <th>Cost</th>
-                <th>Solution</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dialogCategory &&
-                getDetailsByCategory(dialogCategory).map((item, idx) => (
+      {/* Dialog Section */}
+      <Dialog.Root open={dialogCategory !== null} onOpenChange={(open) => !open && setDialogCategory(null)}>
+        <Dialog.Portal>
+          <Dialog.Overlay style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', position: 'fixed', inset: 0 }} />
+          <Dialog.Content style={{ backgroundColor: 'white', padding: 20, borderRadius: 8, position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <Heading size="5" mb="4">{dialogCategory} Details</Heading>
+            <Flex align="center" gap="3" mb="3">
+              <Text>Auto Mode:</Text>
+              <Switch checked={autoMode} onCheckedChange={setAutoMode} />
+            </Flex>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: 'left' }}>Name</th>
+                  <th>Qty</th>
+                  <th>Unit Price</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                {dialogCategory && getDetailsByCategory(dialogCategory).map((item, idx) => (
                   <tr key={item.name}>
                     <td>{item.name}</td>
-                    <td>{autoMode ? (item.qty ?? '-') : (
-                      <input
-                        type="number"
-                        defaultValue={item.qty ?? 0}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value) || 0;
-                          item.qty = val;
-                        }}
-                        style={{ width: 60 }}
-                      />
-                    )}</td>
-                    <td>{formatCurrency(item.unitPrice, currency)}</td>
-                    <td>{formatCurrency(item.cost, currency)}</td>
-                    <td>
-                      <RadixSelect.Root
-                        value={solutions[dialogCategory]?.[idx] || ''}
-                        onValueChange={(value) => handleSolutionChange(dialogCategory, idx, value)}
-                      >
-                        <RadixSelect.Trigger aria-label="Select solution" style={{ minWidth: 150 }} />
-                        <RadixSelect.Content>
-                          {solutionsOptions.map((option) => (
-                            <RadixSelect.Item key={option} value={option}>
-                              {option}
-                            </RadixSelect.Item>
-                          ))}
-                        </RadixSelect.Content>
-                      </RadixSelect.Root>
-                    </td>
+                    <td>{item.qty ?? '-'}</td>
+                    <td>{formatCurrency(item.unitPrice ?? 0, currency)}</td>
+                    <td>{formatCurrency(item.cost ?? 0, currency)}</td>
                   </tr>
                 ))}
-            </tbody>
-          </Table>
-
-          <Flex justify="end" mt="4">
-            <Button onClick={() => setDialogCategory(null)}>Close</Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog>
+              </tbody>
+            </table>
+            <Flex justify="end" mt="4">
+              <Button onClick={() => setDialogCategory(null)}>Close</Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog.Root>
 
       <Flex justify="end" mt="5">
-        <Button variant="solid" onClick={handleSubmit}>
-          Submit All
-        </Button>
+        <Button variant="solid" onClick={handleSubmit}>Submit All</Button>
       </Flex>
     </Box>
   );
