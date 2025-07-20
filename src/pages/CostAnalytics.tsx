@@ -164,7 +164,7 @@ export default function CostAnalytics() {
       </Grid>
 
       <Flex gap="6" mb="6">
-        <Box flex="1">
+        <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -187,7 +187,7 @@ export default function CostAnalytics() {
             </PieChart>
           </ResponsiveContainer>
         </Box>
-        <Box flex="1">
+        <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={benchmarkTrendDataWithGap}>
               <XAxis dataKey="month" />
