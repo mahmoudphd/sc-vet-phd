@@ -6,7 +6,7 @@ import {
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { simulatedIoTData } from './simulateIoTData';
+import { simulatedIoTCostData } from './simulateIoTCostData'; //
 
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
