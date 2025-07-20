@@ -1,3 +1,5 @@
+// src/pages/CostAnalytics.tsx
+
 import { useState } from 'react';
 import {
   Box,
@@ -332,109 +334,45 @@ export default function CostAnalytics() {
 
                   return (
                     <Table.Row key={index}>
-                      {dialogCategory === 'Direct Materials' && (
-                        <>
-                          <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                          <Table.Cell>{item.concentrationKg ?? '-'}</Table.Cell>
-                          <Table.Cell>{item.pricePerKg ? formatCurrency(item.pricePerKg, currency) : '-'}</Table.Cell>
-                          <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
-                          <Table.Cell>
-                            <RadixSelect.Root
-                              value={solutions[dialogCategory]?.[index] || ''}
-                              onValueChange={(value) =>
-                                handleSolutionChange(dialogCategory, index, value)
-                              }
-                            >
-                              <RadixSelect.Trigger aria-label="Select solution" />
-                              <RadixSelect.Content>
-                                {solutionsOptions.map((sol) => (
-                                  <RadixSelect.Item key={sol} value={sol}>
-                                    {sol}
-                                  </RadixSelect.Item>
-                                ))}
-                              </RadixSelect.Content>
-                            </RadixSelect.Root>
-                          </Table.Cell>
-                        </>
-                      )}
-
-                      {dialogCategory === 'Packaging Materials' && (
-                        <>
-                          <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                          <Table.Cell>{item.qty ?? '-'}</Table.Cell>
-                          <Table.Cell>{item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}</Table.Cell>
-                          <Table.Cell>{formatCurrency(costValue, currency)}</TableCell>
-                          <Table.Cell>
-                            <RadixSelect.Root
-                              value={solutions[dialogCategory]?.[index] || ''}
-                              onValueChange={(value) =>
-                                handleSolutionChange(dialogCategory, index, value)
-                              }
-                            >
-                              <RadixSelect.Trigger aria-label="Select solution" />
-                              <RadixSelect.Content>
-                                {solutionsOptions.map((sol) => (
-                                  <RadixSelect.Item key={sol} value={sol}>
-                                    {sol}
-                                  </RadixSelect.Item>
-                                ))}
-                              </RadixSelect.Content>
-                            </RadixSelect.Root>
-                          </Table.Cell>
-                        </>
-                      )}
-
-                      {dialogCategory === 'Direct Labor' && (
-                        <>
-                          <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                          <Table.Cell>{item.hours ?? '-'}</Table.Cell>
-                          <Table.Cell>{item.hourlyRate ? formatCurrency(item.hourlyRate, currency) : '-'}</Table.Cell>
-                          <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
-                          <Table.Cell>
-                            <RadixSelect.Root
-                              value={solutions[dialogCategory]?.[index] || ''}
-                              onValueChange={(value) =>
-                                handleSolutionChange(dialogCategory, index, value)
-                              }
-                            >
-                              <RadixSelect.Trigger aria-label="Select solution" />
-                              <RadixSelect.Content>
-                                {solutionsOptions.map((sol) => (
-                                  <RadixSelect.Item key={sol} value={sol}>
-                                    {sol}
-                                  </RadixSelect.Item>
-                                ))}
-                              </RadixSelect.Content>
-                            </RadixSelect.Root>
-                          </Table.Cell>
-                        </>
-                      )}
-
-                      {(dialogCategory === 'Overhead' || dialogCategory === 'Other Costs') && (
-                        <>
-                          <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                          <Table.Cell>{item.qty ?? '-'}</Table.Cell>
-                          <Table.Cell>{item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}</Table.Cell>
-                          <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
-                          <Table.Cell>
-                            <RadixSelect.Root
-                              value={solutions[dialogCategory]?.[index] || ''}
-                              onValueChange={(value) =>
-                                handleSolutionChange(dialogCategory, index, value)
-                              }
-                            >
-                              <RadixSelect.Trigger aria-label="Select solution" />
-                              <RadixSelect.Content>
-                                {solutionsOptions.map((sol) => (
-                                  <RadixSelect.Item key={sol} value={sol}>
-                                    {sol}
-                                  </RadixSelect.Item>
-                                ))}
-                              </RadixSelect.Content>
-                            </RadixSelect.Root>
-                          </Table.Cell>
-                        </>
-                      )}
+                      <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
+                      <Table.Cell>
+                        {dialogCategory === 'Direct Materials'
+                          ? item.concentrationKg ?? '-'
+                          : dialogCategory === 'Direct Labor'
+                          ? item.hours ?? '-'
+                          : item.qty ?? '-'}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {dialogCategory === 'Direct Materials'
+                          ? item.pricePerKg !== undefined
+                            ? formatCurrency(item.pricePerKg, currency)
+                            : '-'
+                          : dialogCategory === 'Direct Labor'
+                          ? item.hourlyRate !== undefined
+                            ? formatCurrency(item.hourlyRate, currency)
+                            : '-'
+                          : item.unitPrice !== undefined
+                          ? formatCurrency(item.unitPrice, currency)
+                          : '-'}
+                      </Table.Cell>
+                      <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
+                      <Table.Cell>
+                        <RadixSelect.Root
+                          value={solutions[dialogCategory]?.[index] || ''}
+                          onValueChange={(value) =>
+                            handleSolutionChange(dialogCategory, index, value)
+                          }
+                        >
+                          <RadixSelect.Trigger aria-label="Select solution" />
+                          <RadixSelect.Content>
+                            {solutionsOptions.map((sol) => (
+                              <RadixSelect.Item key={sol} value={sol}>
+                                {sol}
+                              </RadixSelect.Item>
+                            ))}
+                          </RadixSelect.Content>
+                        </RadixSelect.Root>
+                      </Table.Cell>
                     </Table.Row>
                   );
                 })}
