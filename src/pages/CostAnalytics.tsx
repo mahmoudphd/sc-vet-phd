@@ -1,5 +1,3 @@
-// src/pages/CostAnalytics.tsx
-
 import { useState } from 'react';
 import {
   Box,
@@ -215,7 +213,7 @@ export default function CostAnalytics() {
       </Grid>
 
       <Flex gap="8" mb="6" style={{ height: 300 }}>
-        <Box flex={1}>
+        <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -245,7 +243,7 @@ export default function CostAnalytics() {
           </ResponsiveContainer>
         </Box>
 
-        <Box flex={1}>
+        <Box style={{ flex: 1 }}>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={benchmarkTrendDataWithGap}>
               <XAxis dataKey="month" />
@@ -322,7 +320,6 @@ export default function CostAnalytics() {
               <Table.Body>
                 {getDetailsByCategory(dialogCategory).map((item: Item, index: number) => {
                   let costValue = item.cost ?? 0;
-                  // Auto calculation if autoMode
                   if (autoMode) {
                     if (dialogCategory === 'Direct Materials') {
                       costValue = (item.weightKg ?? 0) * (item.pricePerKg ?? 0);
@@ -366,7 +363,7 @@ export default function CostAnalytics() {
                           <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                           <Table.Cell>{item.qty ?? '-'}</Table.Cell>
                           <Table.Cell>{item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}</Table.Cell>
-                          <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
+                          <Table.Cell>{formatCurrency(costValue, currency)}</TableCell>
                           <Table.Cell>
                             <RadixSelect.Root
                               value={solutions[dialogCategory]?.[index] || ''}
