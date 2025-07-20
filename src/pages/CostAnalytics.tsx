@@ -9,58 +9,7 @@ import {
   PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip,
   Legend, ResponsiveContainer
 } from 'recharts';
-
-// ----------- Simulated IoT Data -----------
-
-const simulatedIoTCostData = {
-  totals: {
-    'Direct Materials': { actual: 133.11, budget: 140, costAfter: 120 },
-    'Packaging Materials': { actual: 18, budget: 20, costAfter: 16 },
-    'Direct Labor': { actual: 3, budget: 4, costAfter: 3.2 },
-    'Overhead': { actual: 0.5, budget: 1, costAfter: 0.4 },
-    'Other Costs': { actual: 10, budget: 12, costAfter: 9 },
-  },
-  rawMaterials: [
-    { name: 'Vitamin B1', qty: 0.001, unitPrice: 540, cost: 0.54 },
-    { name: 'Vitamin B2', qty: 0.006, unitPrice: 600, cost: 3.6 },
-    { name: 'Vitamin B12', qty: 0.001, unitPrice: 2300, cost: 2.3 },
-    { name: 'Nicotinamide B3', qty: 0.01, unitPrice: 400, cost: 4 },
-    { name: 'Pantothenic Acid', qty: 0.004, unitPrice: 1700, cost: 6.8 },
-    { name: 'Vitamin B6', qty: 0.0015, unitPrice: 900, cost: 1.35 },
-    { name: 'Leucine', qty: 0.03, unitPrice: 200, cost: 6 },
-    { name: 'Threonine', qty: 0.01, unitPrice: 950, cost: 9.5 },
-    { name: 'Taurine', qty: 0.0025, unitPrice: 3000, cost: 7.5 },
-    { name: 'Glycine', qty: 0.0025, unitPrice: 4200, cost: 10.5 },
-    { name: 'Arginine', qty: 0.0025, unitPrice: 5000, cost: 12.5 },
-    { name: 'Cynarin', qty: 0.0025, unitPrice: 3900, cost: 9.75 },
-    { name: 'Silymarin', qty: 0.025, unitPrice: 700, cost: 17.5 },
-    { name: 'Sorbitol', qty: 0.01, unitPrice: 360, cost: 3.6 },
-    { name: 'Carnitine', qty: 0.005, unitPrice: 1070, cost: 5.35 },
-    { name: 'Betaine', qty: 0.02, unitPrice: 1250, cost: 25 },
-    { name: 'Tween-80', qty: 0.075, unitPrice: 90, cost: 6.75 },
-    { name: 'Water', qty: 0.571, unitPrice: 1, cost: 0.571 },
-  ],
-  packagingMaterials: [
-    { name: 'Plastic Bottle 1L', qty: 1, unitPrice: 2.5, cost: 2.5 },
-    { name: 'Cap with Safety Seal', qty: 1, unitPrice: 0.75, cost: 0.75 },
-    { name: 'Label Sticker', qty: 1, unitPrice: 0.3, cost: 0.3 },
-    { name: 'Box Carton', qty: 1, unitPrice: 1.5, cost: 1.5 },
-  ],
-  directLabor: [
-    { name: 'Operator', hours: 2, ratePerHour: 5, cost: 10 },
-    { name: 'Supervisor', hours: 1, ratePerHour: 8, cost: 8 },
-  ],
-  overheadItems: [
-    { name: 'Electricity', type: 'Utility', cost: 0.3 },
-    { name: 'Water', type: 'Utility', cost: 0.1 },
-    { name: 'Maintenance', type: 'Service', cost: 0.1 },
-  ],
-  otherCosts: [
-    { name: 'Transportation', type: 'Logistics', cost: 5 },
-    { name: 'Quality Inspection', type: 'Service', cost: 2 },
-    { name: 'Miscellaneous', type: 'Other', cost: 3 },
-  ],
-};
+import { simulatedIoTCostData } from './simulateIoTCostData';
 
 // ----------- Types -----------
 
@@ -104,7 +53,6 @@ const CostAnalysis = () => {
   const [solutions, setSolutions] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState<CostCategory | null>(null);
 
-  // Data state
   const defaultCostData: CostRow[] = [
     { category: 'Direct Materials', actual: '133.11', budget: '140', costAfter: '120' },
     { category: 'Packaging Materials', actual: '18', budget: '20', costAfter: '16' },
@@ -112,6 +60,7 @@ const CostAnalysis = () => {
     { category: 'Overhead', actual: '0.5', budget: '1', costAfter: '0.4' },
     { category: 'Other Costs', actual: '10', budget: '12', costAfter: '9' },
   ];
+
   const [costData, setCostData] = useState<CostRow[]>(defaultCostData);
 
   useEffect(() => {
@@ -135,20 +84,16 @@ const CostAnalysis = () => {
     setCostData(newCostData);
   };
 
-  // Helper: Format currency
   const formatCurrency = (val: string | number) => {
     const num = typeof val === 'string' ? parseFloat(val) : val;
     return `${currency} ${num.toLocaleString(undefined, { maximumFractionDigits: 2 })}`;
   };
 
-  // Compute totals
   const totalActual = costData.reduce((sum, row) => sum + parseFloat(row.actual), 0);
   const totalBudget = costData.reduce((sum, row) => sum + parseFloat(row.budget), 0);
   const totalCostAfter = costData.reduce((sum, row) => sum + parseFloat(row.costAfter), 0);
-
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
-  // Benchmark trend data (sample)
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
@@ -165,7 +110,6 @@ const CostAnalysis = () => {
 
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
 
-  // Render dialog content by category
   const renderDialogContent = (category: CostCategory) => {
     let items: Item[] = [];
     switch (category) {
@@ -193,17 +137,8 @@ const CostAnalysis = () => {
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              {category === 'Direct Labor' ? (
-                <>
-                  <Table.ColumnHeaderCell>Hours</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Rate/Hour</Table.ColumnHeaderCell>
-                </>
-              ) : (
-                <>
-                  <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
-                </>
-              )}
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -211,17 +146,8 @@ const CostAnalysis = () => {
             {items.map((item, idx) => (
               <Table.Row key={idx}>
                 <Table.Cell>{item.name}</Table.Cell>
-                {category === 'Direct Labor' ? (
-                  <>
-                    <Table.Cell>{item.hours ?? '-'}</Table.Cell>
-                    <Table.Cell>{currency} {item.ratePerHour ?? '-'}</Table.Cell>
-                  </>
-                ) : (
-                  <>
-                    <Table.Cell>{item.qty ?? '-'}</Table.Cell>
-                    <Table.Cell>{currency} {item.unitPrice ?? '-'}</Table.Cell>
-                  </>
-                )}
+                <Table.Cell>{item.qty ?? '-'}</Table.Cell>
+                <Table.Cell>{currency} {item.unitPrice ?? '-'}</Table.Cell>
                 <Table.Cell>{currency} {item.cost}</Table.Cell>
               </Table.Row>
             ))}
@@ -341,7 +267,7 @@ const CostAnalysis = () => {
                 </Select.Root>
               </Table.Cell>
               <Table.Cell>
-                <Button size="2" variant="outline" onClick={() => setDialogOpen(row.category)}>
+                <Button size="2" variant="outline" onClick={() => setDialogOpen(row.category as CostCategory)}>
                   View Details
                 </Button>
               </Table.Cell>
