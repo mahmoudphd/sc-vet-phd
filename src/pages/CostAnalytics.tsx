@@ -180,27 +180,23 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          <RadixTextField.Root>
-            <RadixTextField.Input
-              type="number"
-              value={benchmarkPrice}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setBenchmarkPrice(parseFloat(e.target.value))
-              }
-            />
-          </RadixTextField.Root>
+          <RadixTextField
+            type="number"
+            value={benchmarkPrice}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setBenchmarkPrice(parseFloat(e.target.value))
+            }
+          />
         </Box>
         <Box>
           <Text size="2">Profit Margin (%)</Text>
-          <RadixTextField.Root>
-            <RadixTextField.Input
-              type="number"
-              value={profitMargin}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setProfitMargin(parseFloat(e.target.value))
-              }
-            />
-          </RadixTextField.Root>
+          <RadixTextField
+            type="number"
+            value={profitMargin}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setProfitMargin(parseFloat(e.target.value))
+            }
+          />
         </Box>
         <Box>
           <Text size="2">Progress to Target</Text>
@@ -359,4 +355,3 @@ export default function CostAnalytics() {
     </Box>
   );
 }
-
