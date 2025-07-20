@@ -9,8 +9,11 @@ import {
   Grid,
   Heading,
   Progress,
+  Select,
+  Switch,
   Table,
-  Text
+  Text,
+  TextField
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -62,6 +65,8 @@ export default function CostAnalytics() {
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
+  const [autoMode, setAutoMode] = useState(true);
+
   const totals = simulatedIoTCostData.totals;
 
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
@@ -90,21 +95,14 @@ export default function CostAnalytics() {
     <Box p="4">
       <Flex justify="between" align="center" mb="4">
         <Heading>Inter-Organizational Cost Management</Heading>
-        <Flex gap="3" align="center">
-          <select
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value as 'EGP' | 'USD')}
-            style={{
-              padding: '6px 8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px',
-              cursor: 'pointer'
-            }}
-          >
-            <option value="EGP">EGP</option>
-            <option value="USD">USD</option>
-          </select>
+        <Flex gap="3">
+          <Select defaultValue={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
+            <Select.Trigger />
+            <Select.Content>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
+            </Select.Content>
+          </Select>
           <Button>Export Report</Button>
         </Flex>
       </Flex>
@@ -124,32 +122,18 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          <input
+          <TextField
             type="number"
             value={benchmarkPrice}
             onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '6px 8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px'
-            }}
           />
         </Box>
         <Box>
           <Text size="2">Profit Margin (%)</Text>
-          <input
+          <TextField
             type="number"
             value={profitMargin}
             onChange={(e) => setProfitMargin(parseFloat(e.target.value))}
-            style={{
-              width: '100%',
-              padding: '6px 8px',
-              borderRadius: '4px',
-              border: '1px solid #ccc',
-              fontSize: '14px'
-            }}
           />
         </Box>
         <Box>
@@ -227,3 +211,45 @@ export default function CostAnalytics() {
           </LineChart>
         </ResponsiveContainer>
       </Box>
+
+      {dialogCategory && (
+        <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
+          <Dialog.Content maxWidth="600px">
+            <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
+            <Flex justify="between" align="center" mb="3">
+              <Text>Auto Mode</Text>
+              <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
+            </Flex>
+            {!autoMode && (
+              <Text color="gray">Manual input mode enabled. Add manual input logic here.</Text>
+            )}
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {getDetailsByCategory(dialogCategory).map((item, index) => (
+                  <Table.Row key={index}>
+                    <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
+                    <Table.Cell>{item.qty}</Table.Cell>
+                    <Table.Cell>{formatCurrency(item.unitPrice, currency)}</Table.Cell>
+                    <Table.Cell>{formatCurrency(item.cost, currency)}</Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+            <Flex justify="end" gap="3" mt="3">
+              <Button onClick={() => setDialogCategory(null)}>Close</Button>
+              <Button color="green">Submit</Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      )}
+    </Box>
+  );
+}
