@@ -1,6 +1,6 @@
 // src/pages/CostAnalytics.tsx
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -9,11 +9,11 @@ import {
   Grid,
   Heading,
   Progress,
-  Select,
   Switch,
   Table,
   Text,
-  TextField
+  Select as RadixSelect,
+  TextField as RadixTextField,
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -43,6 +43,19 @@ const categories: CostCategory[] = [
   'Other Costs'
 ];
 
+const products = ['Product A', 'Product B', 'Product C'];
+
+const solutionsOptions = [
+  'Negotiating better prices with supplier',
+  'Reducing waste in material usage',
+  'Automation to reduce manual labor costs',
+  'Optimizing machine usage',
+  'Improving inventory management',
+  'Minimize transportation costs',
+  'Reduce rework costs',
+  'Other'
+];
+
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
     case 'Direct Materials':
@@ -66,15 +79,21 @@ export default function CostAnalytics() {
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [autoMode, setAutoMode] = useState(true);
+  const [selectedProduct, setSelectedProduct] = useState(products[0]);
+
+  // For storing selected solution per category item index
+  const [solutions, setSolutions] = useState<Record<string, Record<number, string>>>({});
 
   const totals = simulatedIoTCostData.totals;
 
+  // حساب الإجماليات
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalBudget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
 
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
+  // بيانات الشارت الزمني
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
@@ -89,21 +108,60 @@ export default function CostAnalytics() {
     gap: d.actual - targetCost
   }));
 
+  // ألوان البي تشارت
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
+
+  // نسبة كل بند من الإجمالي (نسبة Actual)
+  const percentOfTotal = (category: CostCategory) =>
+    ((totals[category].actual / totalActual) * 100).toFixed(2);
+
+  // تحديث الحل المختار لكل عنصر
+  const handleSolutionChange = (category: CostCategory, index: number, value: string) => {
+    setSolutions(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [index]: value
+      }
+    }));
+  };
+
+  // وظيفة تصدير (Placeholder)
+  const handleExportReport = () => {
+    alert('Export Report functionality not implemented yet.');
+  };
+
+  // حساب Post-Optimization Estimate (كمثال حسابي)
+  const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
 
   return (
     <Box p="4">
       <Flex justify="between" align="center" mb="4">
         <Heading>Inter-Organizational Cost Management</Heading>
-        <Flex gap="3">
-          <Select defaultValue={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select>
-          <Button>Export Report</Button>
+        <Flex gap="3" align="center">
+          <Text>Product:</Text>
+          <RadixSelect.Root
+            value={selectedProduct}
+            onValueChange={(value) => setSelectedProduct(value)}
+          >
+            <RadixSelect.Trigger aria-label="Select product" />
+            <RadixSelect.Content>
+              {products.map((p) => (
+                <RadixSelect.Item key={p} value={p}>
+                  {p}
+                </RadixSelect.Item>
+              ))}
+            </RadixSelect.Content>
+          </RadixSelect.Root>
+
+          <RadixSelect.Root value={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
+            <RadixSelect.Trigger aria-label="Select currency" />
+            <RadixSelect.Content>
+              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
+              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
+            </RadixSelect.Content>
+          </RadixSelect.Root>
+          <Button onClick={handleExportReport}>Export Report</Button>
         </Flex>
       </Flex>
 
@@ -122,24 +180,36 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          <TextField
-            type="number"
-            value={benchmarkPrice}
-            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value))}
-          />
+          <RadixTextField.Root>
+            <RadixTextField.Input
+              type="number"
+              value={benchmarkPrice}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setBenchmarkPrice(parseFloat(e.target.value))
+              }
+            />
+          </RadixTextField.Root>
         </Box>
         <Box>
           <Text size="2">Profit Margin (%)</Text>
-          <TextField
-            type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value))}
-          />
+          <RadixTextField.Root>
+            <RadixTextField.Input
+              type="number"
+              value={profitMargin}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setProfitMargin(parseFloat(e.target.value))
+              }
+            />
+          </RadixTextField.Root>
         </Box>
         <Box>
           <Text size="2">Progress to Target</Text>
           <Progress value={(targetCost / totalActual) * 100} />
           <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
+        </Box>
+        <Box>
+          <Text size="2">Post-Optimization Estimate</Text>
+          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
         </Box>
       </Grid>
 
@@ -150,6 +220,7 @@ export default function CostAnalytics() {
             <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>View Details</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
@@ -160,14 +231,26 @@ export default function CostAnalytics() {
               <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
               <Table.Cell>{formatCurrency(totals[category].budget, currency)}</Table.Cell>
               <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+              <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
               <Table.Cell>
                 <Button onClick={() => setDialogCategory(category)}>View Details</Button>
               </Table.Cell>
             </Table.Row>
           ))}
+
+          {/* صف الإجمالي */}
+          <Table.Row>
+            <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
+            <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalBudget, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
+            <Table.Cell><b>100%</b></Table.Cell>
+            <Table.Cell></Table.Cell>
+          </Table.Row>
         </Table.Body>
       </Table.Root>
 
+      {/* Pie Chart */}
       <Box mt="6" style={{ height: 300 }}>
         <ResponsiveContainer>
           <PieChart>
@@ -198,6 +281,7 @@ export default function CostAnalytics() {
         </ResponsiveContainer>
       </Box>
 
+      {/* Line Chart */}
       <Box mt="6" style={{ height: 300 }}>
         <ResponsiveContainer>
           <LineChart data={benchmarkTrendDataWithGap}>
@@ -212,6 +296,7 @@ export default function CostAnalytics() {
         </ResponsiveContainer>
       </Box>
 
+      {/* Dialog for category details */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="600px">
@@ -221,7 +306,9 @@ export default function CostAnalytics() {
               <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
             </Flex>
             {!autoMode && (
-              <Text color="gray">Manual input mode enabled. Add manual input logic here.</Text>
+              <Text color="gray" mb="3">
+                Manual input mode enabled. You can modify the cost data here.
+              </Text>
             )}
             <Table.Root>
               <Table.Header>
@@ -230,6 +317,7 @@ export default function CostAnalytics() {
                   <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
@@ -239,10 +327,28 @@ export default function CostAnalytics() {
                     <Table.Cell>{item.qty}</Table.Cell>
                     <Table.Cell>{formatCurrency(item.unitPrice, currency)}</Table.Cell>
                     <Table.Cell>{formatCurrency(item.cost, currency)}</Table.Cell>
+                    <Table.Cell>
+                      <RadixSelect.Root
+                        value={solutions[dialogCategory]?.[index] || ''}
+                        onValueChange={(value) =>
+                          handleSolutionChange(dialogCategory, index, value)
+                        }
+                      >
+                        <RadixSelect.Trigger aria-label="Select solution" />
+                        <RadixSelect.Content>
+                          {solutionsOptions.map((sol) => (
+                            <RadixSelect.Item key={sol} value={sol}>
+                              {sol}
+                            </RadixSelect.Item>
+                          ))}
+                        </RadixSelect.Content>
+                      </RadixSelect.Root>
+                    </Table.Cell>
                   </Table.Row>
                 ))}
               </Table.Body>
             </Table.Root>
+
             <Flex justify="end" gap="3" mt="3">
               <Button onClick={() => setDialogCategory(null)}>Close</Button>
               <Button color="green">Submit</Button>
@@ -253,3 +359,4 @@ export default function CostAnalytics() {
     </Box>
   );
 }
+
