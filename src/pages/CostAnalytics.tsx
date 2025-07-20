@@ -10,6 +10,7 @@ import {
   Heading,
   Progress,
   Select,
+  Switch,
   Table,
   Text,
   TextField
@@ -64,6 +65,8 @@ export default function CostAnalytics() {
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
+  const [autoMode, setAutoMode] = useState(true);
+
   const totals = simulatedIoTCostData.totals;
 
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
@@ -206,6 +209,13 @@ export default function CostAnalytics() {
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="600px">
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
+            <Flex justify="between" align="center" mb="3">
+              <Text>Auto Mode</Text>
+              <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
+            </Flex>
+            {!autoMode && (
+              <Text color="gray">Manual input mode enabled. Add manual input logic here.</Text>
+            )}
             <Table.Root>
               <Table.Header>
                 <Table.Row>
@@ -226,8 +236,9 @@ export default function CostAnalytics() {
                 ))}
               </Table.Body>
             </Table.Root>
-            <Flex justify="end" mt="3">
+            <Flex justify="end" gap="3" mt="3">
               <Button onClick={() => setDialogCategory(null)}>Close</Button>
+              <Button color="green">Submit</Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
