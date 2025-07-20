@@ -50,7 +50,7 @@ const CostAnalysis = () => {
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
-  const [solutions, setSolutions] = useState<Record<CostCategory, string>>({} as Record<CostCategory, string>);
+  const [solutions, setSolutions] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState<CostCategory | null>(null);
 
   const defaultCostData: CostRow[] = [
@@ -60,18 +60,21 @@ const CostAnalysis = () => {
     { category: 'Overhead', actual: '0.5', budget: '1', costAfter: '0.4' },
     { category: 'Other Costs', actual: '10', budget: '12', costAfter: '9' },
   ];
-
   const [costData, setCostData] = useState<CostRow[]>(defaultCostData);
 
   useEffect(() => {
     if (mode === 'auto') {
       const totals = simulatedIoTCostData.totals;
-      const newData = costData.map(row => ({
-        ...row,
-        actual: totals[row.category as CostCategory]?.actual.toString() || row.actual,
-        budget: totals[row.category as CostCategory]?.budget.toString() || row.budget,
-        costAfter: totals[row.category as CostCategory]?.costAfter.toString() || row.costAfter,
-      }));
+      const newData = costData.map(row => {
+        const category = row.category as CostCategory;
+        const totalEntry = totals[category];
+        return {
+          ...row,
+          actual: totalEntry?.actual.toString() || row.actual,
+          budget: totalEntry?.budget.toString() || row.budget,
+          costAfter: totalEntry?.costAfter.toString() || row.costAfter,
+        };
+      });
       setCostData(newData);
     } else {
       setCostData(defaultCostData);
@@ -92,6 +95,7 @@ const CostAnalysis = () => {
   const totalActual = costData.reduce((sum, row) => sum + parseFloat(row.actual), 0);
   const totalBudget = costData.reduce((sum, row) => sum + parseFloat(row.budget), 0);
   const totalCostAfter = costData.reduce((sum, row) => sum + parseFloat(row.costAfter), 0);
+
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
   const benchmarkTrendData = [
@@ -123,7 +127,7 @@ const CostAnalysis = () => {
         items = simulatedIoTCostData.directLabor;
         break;
       case 'Overhead':
-        items = simulatedIoTCostData.overheadItems;
+        items = simulatedIoTCostData.overhead;
         break;
       case 'Other Costs':
         items = simulatedIoTCostData.otherCosts;
@@ -162,171 +166,6 @@ const CostAnalysis = () => {
 
   return (
     <Box p="6">
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
-        <Flex gap="3">
-          <Select.Root defaultValue="product-1">
-            <Select.Trigger aria-label="Select Product" />
-            <Select.Content>
-              <Select.Item value="product-1">Product A</Select.Item>
-              <Select.Item value="product-2">Product B</Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <Select.Root value={currency} onValueChange={(val) => setCurrency(val as 'EGP' | 'USD')}>
-            <Select.Trigger aria-label="Select Currency" />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <Button variant="soft">Export Report</Button>
-        </Flex>
-      </Flex>
-
-      <Flex justify="end" mb="3" gap="3" align="center">
-        <Text size="2">IoT Mode</Text>
-        <Select.Root value={mode} onValueChange={(val) => setMode(val as 'manual' | 'auto')}>
-          <Select.Trigger aria-label="Select Mode" />
-          <Select.Content>
-            <Select.Item value="manual">Manual</Select.Item>
-            <Select.Item value="auto">Auto</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </Flex>
-
-      <Grid columns="3" gap="4" mb="6">
-        <Card><Flex direction="column"><Text size="2">Actual Cost</Text><Heading size="6">{formatCurrency(totalActual)}</Heading></Flex></Card>
-        <Card><Flex direction="column"><Text size="2">Target Cost</Text><Heading size="6">{formatCurrency(totalBudget)}</Heading></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2">Benchmark Price</Text><TextField.Root type="number" value={benchmarkPrice.toString()} onChange={e => setBenchmarkPrice(Number(e.target.value))} /></Flex></Card>
-        <Card><Flex direction="column" gap="2"><Text size="2">Profit Margin (%)</Text><TextField.Root type="number" value={profitMargin.toString()} onChange={e => setProfitMargin(Number(e.target.value))} /></Flex></Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Progress To Target</Text>
-            <Progress value={Math.min(100, (totalActual / targetCost) * 100)} max={100} />
-            <Text size="1" align="center">{Math.min(100, (totalActual / targetCost) * 100).toFixed(1)}%</Text>
-          </Flex>
-        </Card>
-        <Card><Flex direction="column"><Text size="2">Post-Optimization Estimate</Text><Heading size="6">{formatCurrency(totalCostAfter)}</Heading></Flex></Card>
-      </Grid>
-
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {costData.map((row, idx) => (
-            <Table.Row key={row.category}>
-              <Table.Cell>{row.category}</Table.Cell>
-              <Table.Cell>
-                {mode === 'manual' ? (
-                  <TextField.Root
-                    type="number"
-                    value={row.actual}
-                    onChange={(e) => updateCostField(idx, 'actual', e.target.value)}
-                  />
-                ) : formatCurrency(row.actual)}
-              </Table.Cell>
-              <Table.Cell>
-                {mode === 'manual' ? (
-                  <TextField.Root
-                    type="number"
-                    value={row.budget}
-                    onChange={(e) => updateCostField(idx, 'budget', e.target.value)}
-                  />
-                ) : formatCurrency(row.budget)}
-              </Table.Cell>
-              <Table.Cell>
-                {mode === 'manual' ? (
-                  <TextField.Root
-                    type="number"
-                    value={row.costAfter}
-                    onChange={(e) => updateCostField(idx, 'costAfter', e.target.value)}
-                  />
-                ) : formatCurrency(row.costAfter)}
-              </Table.Cell>
-              <Table.Cell>
-                <Select.Root
-                  value={solutions[row.category as CostCategory] || ''}
-                  onValueChange={(val) =>
-                    setSolutions(prev => ({ ...prev, [row.category as CostCategory]: val }))
-                  }
-                >
-                  <Select.Trigger aria-label="Select Solution" />
-                  <Select.Content>
-                    <Select.Item value="">None</Select.Item>
-                    {solutionOptions.map(sol => (
-                      <Select.Item key={sol} value={sol}>{sol}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
-              <Table.Cell>
-                <Button size="2" variant="outline" onClick={() => setDialogOpen(row.category)}>
-                  View Details
-                </Button>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-
-      <Box mt="6" style={{ height: 300 }}>
-        <ResponsiveContainer>
-          <PieChart>
-            <Pie
-              data={[
-                {
-                  name: 'Direct Cost',
-                  value:
-                    parseFloat(costData.find(r => r.category === 'Direct Materials')?.actual || '0') +
-                    parseFloat(costData.find(r => r.category === 'Packaging Materials')?.actual || '0') +
-                    parseFloat(costData.find(r => r.category === 'Direct Labor')?.actual || '0'),
-                },
-                {
-                  name: 'Overhead',
-                  value: parseFloat(costData.find(r => r.category === 'Overhead')?.actual || '0'),
-                },
-                {
-                  name: 'Other Costs',
-                  value: parseFloat(costData.find(r => r.category === 'Other Costs')?.actual || '0'),
-                },
-              ]}
-              dataKey="value"
-              nameKey="name"
-              outerRadius={100}
-              label
-            >
-              <Cell fill={pieColors[0]} />
-              <Cell fill={pieColors[1]} />
-              <Cell fill={pieColors[2]} />
-            </Pie>
-            <Tooltip />
-            <Legend />
-          </PieChart>
-        </ResponsiveContainer>
-      </Box>
-
-      <Box mt="6" style={{ height: 300 }}>
-        <ResponsiveContainer>
-          <LineChart data={benchmarkTrendDataWithGap}>
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
-            <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" />
-            <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-
       <Dialog.Root open={dialogOpen !== null} onOpenChange={open => !open && setDialogOpen(null)}>
         <Dialog.Content style={{ maxWidth: 700 }}>
           {dialogOpen && renderDialogContent(dialogOpen)}
