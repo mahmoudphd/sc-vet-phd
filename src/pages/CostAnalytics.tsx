@@ -13,7 +13,6 @@ import {
   Table,
   Text,
   Select as RadixSelect,
-  TextField as RadixTextField,
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -180,22 +179,32 @@ export default function CostAnalytics() {
         </Box>
         <Box>
           <Text size="2">Benchmark Price</Text>
-          <RadixTextField
+          <input
             type="number"
             value={benchmarkPrice}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setBenchmarkPrice(parseFloat(e.target.value))
-            }
+            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value))}
+            style={{
+              padding: '8px',
+              fontSize: '1rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              width: '100%'
+            }}
           />
         </Box>
         <Box>
           <Text size="2">Profit Margin (%)</Text>
-          <RadixTextField
+          <input
             type="number"
             value={profitMargin}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setProfitMargin(parseFloat(e.target.value))
-            }
+            onChange={(e) => setProfitMargin(parseFloat(e.target.value))}
+            style={{
+              padding: '8px',
+              fontSize: '1rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+              width: '100%'
+            }}
           />
         </Box>
         <Box>
