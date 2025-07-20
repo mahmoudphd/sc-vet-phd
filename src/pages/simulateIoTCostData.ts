@@ -7,50 +7,93 @@ export type CostCategory =
   | 'Overhead'
   | 'Other Costs';
 
-export interface Item {
-  // For Direct Materials
+export interface RawMaterialItem {
   name: string;
-  concentrationKg?: number;
-  pricePerKg?: number;
-  weightKg?: number;
+  concentrationKg: number;
+  pricePerKg: number;
+  weightKg: number;
   cost: number;
-
-  // For Direct Labor
-  hourlyRate?: number;
-  hours?: number;
-
-  // For Packaging Materials, Overhead, Other Costs
-  qty?: number;
-  unitPrice?: number;
 }
 
-export const simulatedIoTCostData = {
+export interface PackagingMaterialItem {
+  name: string;
+  concentrationKg: number;
+  pricePerKg: number;
+  weightKg: number;
+  cost: number;
+}
+
+export interface DirectLaborItem {
+  name: string;
+  hourlyRate: number;
+  hours: number;
+  cost: number;
+}
+
+export interface OverheadItem {
+  name: string;
+  qty: number;
+  unitPrice: number;
+  cost: number;
+}
+
+export interface OtherCostItem {
+  name: string;
+  qty: number;
+  unitPrice: number;
+  cost: number;
+}
+
+export interface Item
+  extends Partial<RawMaterialItem>,
+    Partial<PackagingMaterialItem>,
+    Partial<DirectLaborItem>,
+    Partial<OverheadItem>,
+    Partial<OtherCostItem> {}
+
+export interface SimulatedData {
+  totals: Record<
+    CostCategory,
+    {
+      actual: number;
+      budget: number;
+      costAfter: number;
+    }
+  >;
+  rawMaterials: RawMaterialItem[];
+  packagingMaterials: PackagingMaterialItem[];
+  directLabor: DirectLaborItem[];
+  overheadItems: OverheadItem[];
+  otherCosts: OtherCostItem[];
+}
+
+export const simulatedIoTCostData: SimulatedData = {
   totals: {
     'Direct Materials': {
       actual: 133.11,
       budget: 140,
-      costAfter: 120
+      costAfter: 120,
     },
     'Packaging Materials': {
       actual: 45,
       budget: 50,
-      costAfter: 43
+      costAfter: 43,
     },
     'Direct Labor': {
       actual: 38,
       budget: 40,
-      costAfter: 37
+      costAfter: 37,
     },
-    'Overhead': {
+    Overhead: {
       actual: 30,
       budget: 32,
-      costAfter: 29
+      costAfter: 29,
     },
     'Other Costs': {
       actual: 20,
       budget: 25,
-      costAfter: 19
-    }
+      costAfter: 19,
+    },
   },
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, weightKg: 0.001, cost: 0.54 },
@@ -70,24 +113,26 @@ export const simulatedIoTCostData = {
     { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, weightKg: 0.005, cost: 5.35 },
     { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, weightKg: 0.02, cost: 25 },
     { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, weightKg: 0.075, cost: 6.75 },
-    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, weightKg: 0.571, cost: 0.571 }
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, weightKg: 0.571, cost: 0.571 },
   ],
   packagingMaterials: [
-    { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10 },
-    { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3 },
-    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5 }
+    { name: 'Plastic Bottle (1 L)', concentrationKg: 1, pricePerKg: 10, weightKg: 1, cost: 10 },
+    { name: 'Safety Seal', concentrationKg: 1, pricePerKg: 3, weightKg: 1, cost: 3 },
+    { name: 'Cap', concentrationKg: 1, pricePerKg: 5, weightKg: 1, cost: 5 },
   ],
   directLabor: [
     { name: 'Operator', hourlyRate: 0.585, hours: 3, cost: 1.755 },
     { name: 'Supervisor', hourlyRate: 0.1465, hours: 6, cost: 0.879 },
-    { name: 'Quality Control', hourlyRate: 0.0732, hours: 5, cost: 0.366 }
+    { name: 'Quality Control', hourlyRate: 0.0732, hours: 5, cost: 0.366 },
   ],
   overheadItems: [
-    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67 },
-    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33 },
-    { name: 'Rework', qty: 1, unitPrice: 5.00, cost: 5.00 }
+    { name: 'Machine Depreciation', qty: 1, unitPrice: 10, cost: 10 },
+    { name: 'Electricity', qty: 1, unitPrice: 15, cost: 15 },
+    { name: 'Maintenance', qty: 1, unitPrice: 5, cost: 5 },
   ],
   otherCosts: [
-    { name: 'Miscellaneous', qty: 1, unitPrice: 15, cost: 15 }
-  ]
+    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67 },
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33 },
+    { name: 'Rework', qty: 1, unitPrice: 5, cost: 5 },
+  ],
 };
