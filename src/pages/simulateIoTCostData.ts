@@ -19,14 +19,14 @@ export const simulatedIoTCostData: {
   rawMaterials: Item[];
   packagingMaterials: Item[];
   directLabor: Item[];
-  overhead: Item[];
+  overheadItems: Item[];
   otherCosts: Item[];
 } = {
   totals: {
     'Direct Materials': { actual: 133.11, budget: 140, costAfter: 120 },
     'Packaging Materials': { actual: 18, budget: 20, costAfter: 17 },
     'Direct Labor': { actual: 3, budget: 3.5, costAfter: 2.8 },
-    Overhead: { actual: 0.5, budget: 0.7, costAfter: 0.45 },
+    'Overhead': { actual: 0.5, budget: 0.7, costAfter: 0.45 },
     'Other Costs': { actual: 20, budget: 25, costAfter: 19 }
   },
   rawMaterials: [
@@ -59,7 +59,7 @@ export const simulatedIoTCostData: {
     { name: 'Supervisor', qty: 10, unitPrice: 6, cost: 60 },
     { name: 'Quality Control', qty: 5, unitPrice: 5, cost: 25 }
   ],
-  overhead: [
+  overheadItems: [
     { name: 'Electricity', qty: 1, unitPrice: 500, cost: 500 },
     { name: 'Rent', qty: 1, unitPrice: 2000, cost: 2000 },
     { name: 'Maintenance', qty: 1, unitPrice: 300, cost: 300 }
