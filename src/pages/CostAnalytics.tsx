@@ -1,5 +1,3 @@
-// src/pages/CostAnalytics.tsx
-
 import { useState } from 'react';
 import {
   Box,
@@ -125,10 +123,6 @@ export default function CostAnalytics() {
 
   const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
 
-  const handleSubmit = () => {
-    alert('Submit functionality not implemented yet.');
-  };
-
   return (
     <Box p="4">
       <Flex justify="between" align="center" mb="4">
@@ -160,26 +154,53 @@ export default function CostAnalytics() {
             </RadixSelect.Content>
           </RadixSelect.Root>
 
-          <Button onClick={handleExportReport} variant="solid">
-            Export Report
-          </Button>
+          <Button onClick={handleExportReport}>Export Report</Button>
         </Flex>
       </Flex>
 
+      {/* KPI Cards with styled Box */}
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="4">
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Actual Cost</Text>
           <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Budgeted Cost</Text>
           <Heading size="6">{formatCurrency(totalBudget, currency)}</Heading>
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Cost After Optimization</Text>
           <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Benchmark Price</Text>
           <input
             type="number"
@@ -194,7 +215,14 @@ export default function CostAnalytics() {
             }}
           />
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Profit Margin (%)</Text>
           <input
             type="number"
@@ -209,12 +237,26 @@ export default function CostAnalytics() {
             }}
           />
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Progress to Target</Text>
           <Progress value={Math.min((targetCost / totalActual) * 100, 100)} />
           <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
         </Box>
-        <Box border="1px solid #ccc" borderRadius="8px" padding="12px" backgroundColor="#fff">
+        <Box
+          style={{
+            border: '1px solid #ccc',
+            borderRadius: 8,
+            padding: 12,
+            backgroundColor: '#fff',
+          }}
+        >
           <Text size="2">Post-Optimization Estimate</Text>
           <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
         </Box>
@@ -286,29 +328,17 @@ export default function CostAnalytics() {
               <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
               <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
               <Table.Cell>
-                <Button variant="solid" onClick={() => setDialogCategory(category)}>
-                  View Details
-                </Button>
+                <Button onClick={() => setDialogCategory(category)}>View Details</Button>
               </Table.Cell>
             </Table.Row>
           ))}
 
           <Table.Row>
-            <Table.RowHeaderCell>
-              <b>Total</b>
-            </Table.RowHeaderCell>
-            <Table.Cell>
-              <b>{formatCurrency(totalActual, currency)}</b>
-            </Table.Cell>
-            <Table.Cell>
-              <b>{formatCurrency(totalBudget, currency)}</b>
-            </Table.Cell>
-            <Table.Cell>
-              <b>{formatCurrency(totalCostAfter, currency)}</b>
-            </Table.Cell>
-            <Table.Cell>
-              <b>100%</b>
-            </Table.Cell>
+            <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
+            <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalBudget, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
+            <Table.Cell><b>100%</b></Table.Cell>
             <Table.Cell></Table.Cell>
           </Table.Row>
         </Table.Body>
@@ -357,9 +387,7 @@ export default function CostAnalytics() {
                         <>
                           <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                           <Table.Cell>{item.concentrationKg ?? '-'}</Table.Cell>
-                          <Table.Cell>
-                            {item.pricePerKg ? formatCurrency(item.pricePerKg, currency) : '-'}
-                          </Table.Cell>
+                          <Table.Cell>{item.pricePerKg ? formatCurrency(item.pricePerKg, currency) : '-'}</Table.Cell>
                           <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
                           <Table.Cell>
                             <RadixSelect.Root
@@ -385,9 +413,7 @@ export default function CostAnalytics() {
                         <>
                           <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                           <Table.Cell>{item.qty ?? '-'}</Table.Cell>
-                          <Table.Cell>
-                            {item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}
-                          </Table.Cell>
+                          <Table.Cell>{item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}</Table.Cell>
                           <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
                           <Table.Cell>
                             <RadixSelect.Root
@@ -413,9 +439,7 @@ export default function CostAnalytics() {
                         <>
                           <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                           <Table.Cell>{item.hours ?? '-'}</Table.Cell>
-                          <Table.Cell>
-                            {item.hourlyRate ? formatCurrency(item.hourlyRate, currency) : '-'}
-                          </Table.Cell>
+                          <Table.Cell>{item.hourlyRate ? formatCurrency(item.hourlyRate, currency) : '-'}</Table.Cell>
                           <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
                           <Table.Cell>
                             <RadixSelect.Root
@@ -441,9 +465,7 @@ export default function CostAnalytics() {
                         <>
                           <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                           <Table.Cell>{item.qty ?? '-'}</Table.Cell>
-                          <Table.Cell>
-                            {item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}
-                          </Table.Cell>
+                          <Table.Cell>{item.unitPrice ? formatCurrency(item.unitPrice, currency) : '-'}</Table.Cell>
                           <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
                           <Table.Cell>
                             <RadixSelect.Root
@@ -470,23 +492,19 @@ export default function CostAnalytics() {
               </Table.Body>
             </Table.Root>
 
-            <Box mt="4" style={{ textAlign: 'right' }}>
-              <Button onClick={() => setDialogCategory(null)} variant="outline" style={{ marginRight: 8 }}>
-                Close
-              </Button>
-              <Button onClick={handleSubmit} variant="solid">
+            {/* Submit Button */}
+            <Box style={{ marginTop: 16, textAlign: 'right' }}>
+              <Button onClick={() => alert('Submit functionality not implemented yet.')}>
                 Submit
               </Button>
+            </Box>
+
+            <Box mt="4" style={{ textAlign: 'right' }}>
+              <Button onClick={() => setDialogCategory(null)}>Close</Button>
             </Box>
           </Dialog.Content>
         </Dialog.Root>
       )}
-
-      <Box mt="6" style={{ textAlign: 'right' }}>
-        <Button onClick={handleSubmit} variant="solid">
-          Submit
-        </Button>
-      </Box>
     </Box>
   );
 }
