@@ -12,13 +12,14 @@ export interface Item {
   qty?: number;
   unitPrice?: number;
   cost?: number;
-  hours?: number;
-  compositionKg?: number;
   concentrationKg?: number;
   pricePerKg?: number;
   weightKg?: number;
+  hours?: number;
+  hourlyRate?: number; // ✨ أضف هذا السطر
+  totalCost?: number;
+  basis?: number;
 }
-
 export const simulatedIoTCostData: Record<string, any> = {
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, weightKg: 0.001, cost: 0.54 },
