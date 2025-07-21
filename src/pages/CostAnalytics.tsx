@@ -74,7 +74,7 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
   }
 };
 
-export default function CostAnalytics() {
+function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
@@ -117,6 +117,7 @@ export default function CostAnalytics() {
 
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
+
   const handleSolutionChange = (category: CostCategory, index: number, value: string) => {
     setSolutions((prev) => ({
       ...prev,
@@ -135,7 +136,6 @@ export default function CostAnalytics() {
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
-
         <Flex gap="3" align="center" wrap="wrap">
           <Text>Product:</Text>
           <RadixSelect.Root
@@ -151,7 +151,6 @@ export default function CostAnalytics() {
               ))}
             </RadixSelect.Content>
           </RadixSelect.Root>
-
           <RadixSelect.Root
             value={currency}
             onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
@@ -162,7 +161,6 @@ export default function CostAnalytics() {
               <RadixSelect.Item value="USD">USD</RadixSelect.Item>
             </RadixSelect.Content>
           </RadixSelect.Root>
-
           <Button onClick={handleExportReport}>Export Report</Button>
         </Flex>
       </Flex>
@@ -211,6 +209,7 @@ export default function CostAnalytics() {
           <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
         </Box>
       </Grid>
+
       <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff', marginBottom: '1rem' }}>
         <Button
           style={{ backgroundColor: showCostGap ? '#10b981' : '#10b981', color: '#fff' }}
@@ -218,9 +217,7 @@ export default function CostAnalytics() {
         >
           {showCostGap ? 'Hide Cost Gap' : 'Show Cost Gap'}
         </Button>
-      </Box>
-
-      <Flex gap="8" mb="6" style={{ height: 300 }}>
+      </Box>      <Flex gap="8" mb="6" style={{ height: 300 }}>
         <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -310,12 +307,11 @@ export default function CostAnalytics() {
           </Table.Row>
         </Table.Body>
       </Table.Root>
-      {/* Dialog */}
+
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
-
             <Flex justify="between" align="center" mb="3" mt="3">
               <Text>Auto Mode</Text>
               <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
@@ -466,4 +462,5 @@ export default function CostAnalytics() {
     </Box>
   );
 }
+
 export default CostAnalytics;
