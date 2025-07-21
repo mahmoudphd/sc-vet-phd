@@ -33,6 +33,9 @@ import {
   CostCategory,
 } from './simulateIoTCostData';
 
+const formatCurrency = (value: number, currency: string) =>
+  `${currency} ${value.toFixed(2)}`;
+
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
@@ -54,9 +57,6 @@ const solutionsOptions = [
   'Other',
 ];
 
-const formatCurrency = (value: number, currency: string) =>
-  `${currency} ${value.toFixed(2)}`;
-
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
     case 'Direct Materials':
@@ -74,32 +74,37 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
   }
 };
 
-const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
 export default function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
-  const [budgetTarget, setBudgetTarget] = useState(220);
+  const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [autoMode, setAutoMode] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
-  const [solutions, setSolutions] = useState<Record<string, Record<number, string>>>({});
   const [showCostGap, setShowCostGap] = useState(true);
+  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
+    'Direct Materials': {},
+    'Packaging Materials': {},
+    'Direct Labor': {},
+    'Overhead': {},
+    'Other Costs': {},
+  });
 
   const totals = simulatedIoTCostData.totals;
 
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
-  const totalBudget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
+  const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
 
-  const targetCost = budgetTarget * (1 - profitMargin / 100);
+  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
   const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
 
   const benchmarkTrendData = [
-    { month: 'Jan', actual: 169.61, benchmark: budgetTarget },
-    { month: 'Feb', actual: 170.5, benchmark: budgetTarget },
-    { month: 'Mar', actual: 168.0, benchmark: budgetTarget },
-    { month: 'Apr', actual: 171.2, benchmark: budgetTarget },
-    { month: 'May', actual: totalActual, benchmark: budgetTarget },
+    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
+    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
+    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
+    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice },
   ];
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
@@ -108,11 +113,10 @@ export default function CostAnalytics() {
     gap: d.actual - targetCost,
   }));
 
-  const percentOfTotal = (category: CostCategory) =>
-    totalActual === 0
-      ? '0.00'
-      : ((totals[category].actual / totalActual) * 100).toFixed(2);
+  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
 
+  const percentOfTotal = (category: CostCategory) =>
+    totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
   const handleSolutionChange = (category: CostCategory, index: number, value: string) => {
     setSolutions((prev) => ({
       ...prev,
@@ -126,9 +130,9 @@ export default function CostAnalytics() {
   const handleExportReport = () => {
     alert('Export Report functionality not implemented yet.');
   };
+
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      {/* Header: Product, Currency, Export */}
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
 
@@ -163,18 +167,25 @@ export default function CostAnalytics() {
         </Flex>
       </Flex>
 
-      {/* KPI Cards */}
-      <Grid columns={{ initial: '3', md: '4' }} gap="4" mb="6">
+      <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Actual Cost</Text>
           <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Budget Target</Text>
+          <Text size="2">Target Cost</Text>
+          <Heading size="6">{formatCurrency(totalTarget, currency)}</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Cost After Optimization</Text>
+          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Benchmark Price</Text>
           <input
             type="number"
-            value={budgetTarget}
-            onChange={(e) => setBudgetTarget(parseFloat(e.target.value) || 0)}
+            value={benchmarkPrice}
+            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
             style={{ padding: '8px', fontSize: '1rem', borderRadius: '4px', border: '1px solid #ccc', width: '100%' }}
             min={0}
           />
@@ -196,24 +207,21 @@ export default function CostAnalytics() {
           <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Cost After Optimization</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Post-Optimization Estimate</Text>
           <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
         </Box>
       </Grid>
-
-      {/* Submit to Blockchain button */}
-      <Flex justify="center" mt="6">
-        <Button color="green" size="3" onClick={() => alert('Submit to Blockchain not implemented yet.')}>
-          Submit to Blockchain
+      <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff', marginBottom: '1rem' }}>
+        <Button
+          style={{ backgroundColor: showCostGap ? '#10b981' : '#10b981', color: '#fff' }}
+          onClick={() => setShowCostGap(!showCostGap)}
+        >
+          {showCostGap ? 'Hide Cost Gap' : 'Show Cost Gap'}
         </Button>
-      </Flex>
-      {/* Charts */}
-      <Flex gap="8" mb="6" style={{ height: 350 }}>
-        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+      </Box>
+
+      <Flex gap="8" mb="6" style={{ height: 300 }}>
+        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -243,24 +251,15 @@ export default function CostAnalytics() {
           </ResponsiveContainer>
         </Box>
 
-        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Flex justify="end" mb="2">
-            <Button
-              color="green"
-              size="2"
-              onClick={() => setShowCostGap(!showCostGap)}
-            >
-              {showCostGap ? 'Hide Cost Gap' : 'Show Cost Gap'}
-            </Button>
-          </Flex>
-          <ResponsiveContainer width="100%" height="90%">
+        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
+          <ResponsiveContainer width="100%" height="100%">
             <LineChart data={benchmarkTrendDataWithGap}>
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip formatter={(value: number) => formatCurrency(value, currency)} />
               <Legend />
               <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
-              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Budget Target" />
+              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" />
               <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" strokeDasharray="5 5" />
               {showCostGap && (
                 <Line
@@ -276,47 +275,45 @@ export default function CostAnalytics() {
           </ResponsiveContainer>
         </Box>
       </Flex>
-      {/* Main Cost Table */}
-      <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Budget</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>View Details</Table.ColumnHeaderCell>
+
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>View Details</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {categories.map((category) => (
+            <Table.Row key={category}>
+              <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
+              <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totals[category].budget, currency)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+              <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+              <Table.Cell>
+                <Button onClick={() => setDialogCategory(category)}>View Details</Button>
+              </Table.Cell>
             </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {categories.map((category) => (
-              <Table.Row key={category}>
-                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
-                <Table.Cell>{formatCurrency(totals[category].budget, currency)}</Table.Cell>
-                <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
-                <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
-                <Table.Cell>
-                  <Button onClick={() => setDialogCategory(category)}>View Details</Button>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-            <Table.Row>
-              <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
-              <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
-              <Table.Cell><b>{formatCurrency(totalBudget, currency)}</b></Table.Cell>
-              <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
-              <Table.Cell><b>100%</b></Table.Cell>
-              <Table.Cell></Table.Cell>
-            </Table.Row>
-          </Table.Body>
-        </Table.Root>
-      </Box>
-      {/* Dialog for detailed view */}
+          ))}
+          <Table.Row>
+            <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
+            <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalTarget, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
+            <Table.Cell><b>100%</b></Table.Cell>
+            <Table.Cell></Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+      {/* Dialog */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content maxWidth="800px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
+          <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
 
             <Flex justify="between" align="center" mb="3" mt="3">
@@ -353,7 +350,7 @@ export default function CostAnalytics() {
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {getDetailsByCategory(dialogCategory).map((item, index) => {
+                {getDetailsByCategory(dialogCategory).map((item: Item, index: number) => {
                   let costValue = item.cost ?? 0;
 
                   if (autoMode) {
@@ -365,10 +362,6 @@ export default function CostAnalytics() {
                       costValue = (item.unitPrice ?? 0) * (item.qty ?? 0);
                     }
                   }
-
-                  const handleNumberChange = (field: keyof Item, value: number) => {
-                    item[field] = value;
-                  };
 
                   return (
                     <Table.Row key={index}>
@@ -383,23 +376,19 @@ export default function CostAnalytics() {
                         ) : (
                           <input
                             type="number"
-                            defaultValue={
+                            value={
                               dialogCategory === 'Direct Materials'
-                                ? item.concentrationKg
+                                ? item.concentrationKg ?? 0
                                 : dialogCategory === 'Direct Labor'
-                                ? item.hours
-                                : item.qty
+                                ? item.hours ?? 0
+                                : item.qty ?? 0
                             }
-                            onChange={(e) =>
-                              handleNumberChange(
-                                dialogCategory === 'Direct Materials'
-                                  ? 'concentrationKg'
-                                  : dialogCategory === 'Direct Labor'
-                                  ? 'hours'
-                                  : 'qty',
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              item.concentrationKg = dialogCategory === 'Direct Materials' ? value : item.concentrationKg;
+                              item.hours = dialogCategory === 'Direct Labor' ? value : item.hours;
+                              item.qty = dialogCategory !== 'Direct Materials' && dialogCategory !== 'Direct Labor' ? value : item.qty;
+                            }}
                             style={{ width: '80px' }}
                           />
                         )}
@@ -420,23 +409,19 @@ export default function CostAnalytics() {
                         ) : (
                           <input
                             type="number"
-                            defaultValue={
+                            value={
                               dialogCategory === 'Direct Materials'
-                                ? item.pricePerKg
+                                ? item.pricePerKg ?? 0
                                 : dialogCategory === 'Direct Labor'
-                                ? item.hourlyRate
-                                : item.unitPrice
+                                ? item.hourlyRate ?? 0
+                                : item.unitPrice ?? 0
                             }
-                            onChange={(e) =>
-                              handleNumberChange(
-                                dialogCategory === 'Direct Materials'
-                                  ? 'pricePerKg'
-                                  : dialogCategory === 'Direct Labor'
-                                  ? 'hourlyRate'
-                                  : 'unitPrice',
-                                parseFloat(e.target.value) || 0
-                              )
-                            }
+                            onChange={(e) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              item.pricePerKg = dialogCategory === 'Direct Materials' ? value : item.pricePerKg;
+                              item.hourlyRate = dialogCategory === 'Direct Labor' ? value : item.hourlyRate;
+                              item.unitPrice = dialogCategory !== 'Direct Materials' && dialogCategory !== 'Direct Labor' ? value : item.unitPrice;
+                            }}
                             style={{ width: '80px' }}
                           />
                         )}
@@ -445,7 +430,9 @@ export default function CostAnalytics() {
                       <Table.Cell>
                         <RadixSelect.Root
                           value={solutions[dialogCategory]?.[index] || ''}
-                          onValueChange={(value) => handleSolutionChange(dialogCategory, index, value)}
+                          onValueChange={(value) =>
+                            handleSolutionChange(dialogCategory, index, value)
+                          }
                         >
                           <RadixSelect.Trigger aria-label="Select solution" />
                           <RadixSelect.Content>
@@ -464,16 +451,19 @@ export default function CostAnalytics() {
             </Table.Root>
 
             <Flex justify="end" gap="3" mt="4">
-              <Button color="green" onClick={() => alert('Submit functionality not implemented yet.')}>
-                Submit
-              </Button>
-              <Button color="blue" variant="ghost" onClick={() => setDialogCategory(null)}>
-                Close
-              </Button>
+              <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>Submit</Button>
+              <Button variant="ghost" style={{ backgroundColor: '#3b82f6', color: '#fff' }} onClick={() => setDialogCategory(null)}>Close</Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
       )}
+
+      <Flex justify="center" mt="6">
+        <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>
+          Submit to Blockchain
+        </Button>
+      </Flex>
     </Box>
   );
 }
+export default CostAnalytics;
