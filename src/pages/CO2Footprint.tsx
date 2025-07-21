@@ -1,1 +1,1 @@
-empty file to fix build
+empty CO2Footprint.tsx to fix build
