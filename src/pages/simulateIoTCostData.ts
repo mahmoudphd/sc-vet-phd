@@ -20,6 +20,7 @@ export interface Item {
   totalCost?: number;
   basis?: number;
 }
+
 export const simulatedIoTCostData = {
   totals: {
     'Direct Materials': {
@@ -73,3 +74,19 @@ export const simulatedIoTCostData = {
     { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3 },
     { name: 'Cap', qty: 1, unitPrice: 5, cost: 5 },
   ],
+  directLabor: [
+    { name: 'Operator', hours: 3, hourlyRate: 0.585, cost: 1.755 },
+    { name: 'Supervisor', hours: 6, hourlyRate: 0.1465, cost: 0.879 },
+    { name: 'Quality Control', hours: 5, hourlyRate: 0.0732, cost: 0.366 },
+  ],
+  overheadItems: [
+    { name: 'Rent', totalCost: 1000, basis: 1000, cost: 1 },
+    { name: 'Electricity', totalCost: 500, basis: 1000, cost: 0.5 },
+    { name: 'Maintenance', totalCost: 1500, basis: 1000, cost: 1.5 },
+  ],
+  otherCosts: [
+    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67 },
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33 },
+    { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5 },
+  ],
+};
