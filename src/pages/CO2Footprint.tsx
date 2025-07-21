@@ -1,4 +1,5 @@
 // CO2Footprint.tsx - UI supporting manual/auto input modes + Submit button
+import { simulatedIoTData } from './simulatedIoTData';
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch
