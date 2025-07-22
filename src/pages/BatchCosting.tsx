@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Card,
@@ -20,10 +21,12 @@ import {
   MixerHorizontalIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
-// import { DialogClose, , DialogDescription, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
 
-const BatchCosting = () => {
-  const { t } = useTranslation('batch-costing');
+const OpenBookAccounting = () => {
+  const { t } = useTranslation('open-book-accounting');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedSupplier, setSelectedSupplier] = useState('');
+  
   const batches = [
     {
       id: 'VC23001',
@@ -33,45 +36,55 @@ const BatchCosting = () => {
       overhead: 8500,
       totalCost: 45000,
       costPerUnit: 3.15,
-      variance: '-2.5%'
+      variance: '-2.5%',
+      supplier: 'PharmaSource Inc.'
     },
+  ];
+
+  const products = [
+    { id: 'p1', name: 'Anthelmintic Oral Suspension' },
+    { id: 'p2', name: 'Antibiotic Injection' },
+  ];
+
+  const suppliers = [
+    { id: 's1', name: 'PharmaSource Inc.' },
+    { id: 's2', name: 'Global Pharma Supplies' },
   ];
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('batchCostAccounting')}</Heading>
+        <Heading size="6">{t('openBookAccounting')}</Heading>
         <Flex gap="3">
           <Dialog.Root>
             <Dialog.Trigger>
               <Button variant="soft">
-                <MixerHorizontalIcon /> {t('newCostRun')}
+                <MixerHorizontalIcon /> {t('costAnalysis')}
               </Button>
             </Dialog.Trigger>
 
             <Dialog.Content>
-              <Dialog.Title>{t('newCostRun')}</Dialog.Title>
+              <Dialog.Title>{t('costAnalysis')}</Dialog.Title>
               <Dialog.Description>
-                {t('createNewCostDesc')}
+                {t('costAnalysisDesc')}
               </Dialog.Description>
 
               <Flex direction="column" gap="3">
                 <label>
                   <Text as="div" size="2" mb="1" weight="bold">
-                    {t('costRunName')}
+                    {t('selectProduct')}
                   </Text>
-                  <TextField.Root placeholder={t('enterRunName')} />
-                </label>
-
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('selectBatch')}
-                  </Text>
-                  <Select.Root>
-                    <Select.Trigger />
+                  <Select.Root 
+                    value={selectedProduct}
+                    onValueChange={setSelectedProduct}
+                  >
+                    <Select.Trigger placeholder={t('selectProduct')} />
                     <Select.Content>
-                      <Select.Item value="vc23001">VC23001</Select.Item>
-                      <Select.Item value="vc23002">VC23002</Select.Item>
+                      {products.map(product => (
+                        <Select.Item key={product.id} value={product.id}>
+                          {product.name}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
                 </label>
@@ -82,7 +95,7 @@ const BatchCosting = () => {
                       {t('cancel')}
                     </Button>
                   </Dialog.Close>
-                  <Button>{t('submit')}</Button>
+                  <Button>{t('analyze')}</Button>
                 </Flex>
               </Flex>
             </Dialog.Content>
@@ -90,41 +103,52 @@ const BatchCosting = () => {
           <Dialog.Root>
             <Dialog.Trigger>
               <Button variant="soft">
-                {t('compareStandards')}
+                {t('supplierReport')}
               </Button>
             </Dialog.Trigger>
 
             <Dialog.Content maxWidth="600px">
-              <Dialog.Title>{t('compareBatchStandards')}</Dialog.Title>
+              <Dialog.Title>{t('supplierReport')}</Dialog.Title>
 
               <Grid columns="2" gap="4" mb="4">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch1')} />
+                <Select.Root 
+                  value={selectedSupplier}
+                  onValueChange={setSelectedSupplier}
+                >
+                  <Select.Trigger placeholder={t('selectSupplier')} />
                   <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
+                    {suppliers.map(supplier => (
+                      <Select.Item key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </Select.Item>
+                    ))}
                   </Select.Content>
                 </Select.Root>
 
                 <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch2')} />
+                  <Select.Trigger placeholder={t('selectTimeframe')} />
                   <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
+                    <Select.Item value="last-month">Last Month</Select.Item>
+                    <Select.Item value="last-quarter">Last Quarter</Select.Item>
+                    <Select.Item value="last-year">Last Year</Select.Item>
                   </Select.Content>
                 </Select.Root>
               </Grid>
 
               <Flex direction="column" gap="2">
-                <Text size="4" weight="bold">{t('comparisonResults')}</Text>
+                <Text size="4" weight="bold">{t('supplierPerformance')}</Text>
                 <Card variant="classic">
                   <Flex justify="between">
-                    <Text>{t('totalCostDiff')}</Text>
-                    <Badge color="ruby">+$1,200</Badge>
+                    <Text>{t('deliveryTimeliness')}</Text>
+                    <Badge color="jade">94%</Badge>
                   </Flex>
                   <Flex justify="between">
-                    <Text>{t('materialVariance')}</Text>
-                    <Badge color="jade">-4.2%</Badge>
+                    <Text>{t('qualityCompliance')}</Text>
+                    <Badge color="jade">98.5%</Badge>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text>{t('costVariance')}</Text>
+                    <Badge color="ruby">+2.1%</Badge>
                   </Flex>
                 </Card>
 
@@ -144,26 +168,26 @@ const BatchCosting = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avgCostUnit')}</Text>
-            <Heading size="7">$3.45</Heading>
+            <Text size="2">{t('openTransactions')}</Text>
+            <Heading size="7">24</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('yieldVariance')}</Text>
-            <Heading size="7" className="text-green-500">-1.8%</Heading>
+            <Text size="2">{t('pendingReconciliations')}</Text>
+            <Heading size="7">8</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('materialWaste')}</Text>
-            <Heading size="7">4.5%</Heading>
+            <Text size="2">{t('avgPaymentTerms')}</Text>
+            <Heading size="7">30 days</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('batchEfficiency')}</Text>
-            <Progress value={88} />
+            <Text size="2">{t('accountHealth')}</Text>
+            <Progress value={92} />
           </Flex>
         </Card>
       </Grid>
@@ -172,27 +196,25 @@ const BatchCosting = () => {
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>{t('batchID')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('materialCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('conversionCost')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('product')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('supplier')}</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>{t('totalCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('costPerUnit')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('paymentStatus')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>{t('reconciliation')}</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {batches.map((batch) => (
             <Table.Row key={batch.id}>
               <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>${batch.materialCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>
-                ${(batch.laborCost + batch.overhead).toLocaleString()}
-              </Table.Cell>
+              <Table.Cell>{batch.product}</Table.Cell>
+              <Table.Cell>{batch.supplier}</Table.Cell>
               <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>${batch.costPerUnit}</Table.Cell>
               <Table.Cell>
-                <Badge color={batch.variance.startsWith('-') ? 'green' : 'red'}>
-                  {batch.variance}
-                </Badge>
+                <Badge color="green">Paid</Badge>
+              </Table.Cell>
+              <Table.Cell>
+                <Badge color="blue">Reconciled</Badge>
               </Table.Cell>
             </Table.Row>
           ))}
@@ -211,14 +233,14 @@ const BatchCosting = () => {
           </div>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('varianceAnalysis')}</Heading>
+          <Heading size="4" mb="3">{t('supplierDistribution')}</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
-                  { name: t('material'), value: 65 },
-                  { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 }
+                  { name: 'PharmaSource Inc.', value: 65 },
+                  { name: 'Global Pharma', value: 25 },
+                  { name: 'Others', value: 10 }
                 ]}
                 cx="50%"
                 cy="50%"
@@ -235,4 +257,4 @@ const BatchCosting = () => {
   );
 };
 
-export default BatchCosting;
+export default OpenBookAccounting;
