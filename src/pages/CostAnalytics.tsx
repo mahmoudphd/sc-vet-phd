@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -6,7 +6,6 @@ import {
   Flex,
   Grid,
   Heading,
-  Progress,
   Table,
   Text,
   Select,
@@ -27,7 +26,6 @@ import {
   Legend,
 } from 'recharts';
 
-// أنواع البيانات
 type CostCategory = 'Direct Materials' | 'Packaging Materials' | 'Direct Labor' | 'Overhead' | 'Other Costs';
 
 type CostRow = {
@@ -48,11 +46,12 @@ type ItemDetail = {
   hours?: number;
   hourlyRate?: number;
   cost: number;
+  totalCost?: number;
+  basis?: number;
 };
 
 type DetailViewMode = 'actual' | 'target';
 
-// خيارات الحلول
 const SOLUTION_OPTIONS = [
   'Negotiating Better Prices With Supplier',
   'Reducing Waste In Material Usage',
@@ -66,7 +65,6 @@ const SOLUTION_OPTIONS = [
 
 type SolutionOption = typeof SOLUTION_OPTIONS[number];
 
-// بيانات عينة
 const SAMPLE_DATA: CostRow[] = [
   { id: '1', category: 'Direct Materials', actual: 133.11, budget: 140, costAfter: 120 },
   { id: '2', category: 'Packaging Materials', actual: 45, budget: 50, costAfter: 43 },
@@ -104,10 +102,10 @@ const DETAIL_DATA: Record<CostCategory, {actual: ItemDetail[], target: ItemDetai
   },
   'Overhead': {
     actual: [
-      { id: 'oh1', name: 'Electricity', cost: 30 }
+      { id: 'oh1', name: 'Electricity', cost: 30, totalCost: 5000, basis: 1000 }
     ],
     target: [
-      { id: 'oh1', name: 'Electricity', cost: 28 }
+      { id: 'oh1', name: 'Electricity', cost: 28, totalCost: 4500, basis: 1000 }
     ]
   },
   'Other Costs': {
@@ -121,7 +119,6 @@ const DETAIL_DATA: Record<CostCategory, {actual: ItemDetail[], target: ItemDetai
 };
 
 const CostAnalysisDashboard = () => {
-  // حالات التطبيق
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [autoMode, setAutoMode] = useState(true);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -132,19 +129,16 @@ const CostAnalysisDashboard = () => {
   const [solutions, setSolutions] = useState<Record<string, SolutionOption>>({});
   const [costData, setCostData] = useState<CostRow[]>(SAMPLE_DATA);
 
-  // الحسابات
-  const totalActual = costData.reduce((sum, item) => sum + item.actual, 0);
-  const totalBudget = costData.reduce((sum, item) => sum + item.budget, 0);
-  const totalCostAfter = costData.reduce((sum, item) => sum + item.costAfter, 0);
-  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
-  const averageGap = totalActual - targetCost;
+  const totalActual = useMemo(() => costData.reduce((sum, item) => sum + item.actual, 0), [costData]);
+  const totalBudget = useMemo(() => costData.reduce((sum, item) => sum + item.budget, 0), [costData]);
+  const totalCostAfter = useMemo(() => costData.reduce((sum, item) => sum + item.costAfter, 0), [costData]);
+  const targetCost = useMemo(() => benchmarkPrice * (1 - profitMargin / 100), [benchmarkPrice, profitMargin]);
+  const averageGap = useMemo(() => totalActual - targetCost, [totalActual, targetCost]);
 
-  // تنسيق العملة
   const formatCurrency = (value: number) => {
     return `${currency} ${value.toFixed(2)}`;
   };
 
-  // معالجة تغيير الحلول
   const handleSolutionChange = (category: CostCategory, itemId: string, value: SolutionOption) => {
     setSolutions(prev => ({
       ...prev,
@@ -152,27 +146,24 @@ const CostAnalysisDashboard = () => {
     }));
   };
 
-  // معالجة تغيير الميزانية
-  const handleBudgetChange = (id: string, value: number) => {
+  const handleBudgetChange = (id: string, value: string) => {
+    const numValue = parseFloat(value) || 0;
     setCostData(prev => 
       prev.map(item => 
-        item.id === id ? { ...item, budget: value } : item
+        item.id === id ? { ...item, budget: numValue } : item
       )
     );
   };
 
-  // فتح تفاصيل الفئة
   const handleDetailOpen = (category: CostCategory) => {
     setDetailCategory(category);
     setDetailMode('actual');
   };
 
-  // تبديل وضع التفاصيل
   const toggleDetailMode = () => {
     setDetailMode(prev => prev === 'actual' ? 'target' : 'actual');
   };
 
-  // تقديم التقرير
   const handleSubmitReport = () => {
     const report = {
       costData,
@@ -192,7 +183,6 @@ const CostAnalysisDashboard = () => {
 
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      {/* رأس الصفحة */}
       <Flex justify="between" align="center" mb="4">
         <Heading size="6">Cost Analysis Dashboard</Heading>
         <Flex gap="3">
@@ -209,7 +199,6 @@ const CostAnalysisDashboard = () => {
         </Flex>
       </Flex>
 
-      {/* بطاقات الملخص */}
       <Grid columns="3" gap="4" mb="6">
         <Box style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, backgroundColor: 'white' }}>
           <Text size="2" color="gray">Actual Cost</Text>
@@ -227,7 +216,6 @@ const CostAnalysisDashboard = () => {
         </Box>
       </Grid>
 
-      {/* الجدول الرئيسي */}
       <Table.Root variant="surface" mb="6">
         <Table.Header>
           <Table.Row>
@@ -253,7 +241,7 @@ const CostAnalysisDashboard = () => {
                   <TextField.Root
                     type="number"
                     value={item.budget}
-                    onChange={(e) => handleBudgetChange(item.id, parseFloat(e.target.value) || 0)}
+                    onChange={(e) => handleBudgetChange(item.id, e.target.value)}
                   />
                 </Table.Cell>
                 <Table.Cell>
@@ -287,7 +275,6 @@ const CostAnalysisDashboard = () => {
         </Table.Body>
       </Table.Root>
 
-      {/* تفاصيل الفئة */}
       <Dialog.Root open={!!detailCategory} onOpenChange={(open) => !open && setDetailCategory(null)}>
         <Dialog.Content style={{ maxWidth: 800 }}>
           <Flex justify="between" align="center" mb="4">
@@ -330,9 +317,6 @@ const CostAnalysisDashboard = () => {
                           item.hours ? item.hours :
                           item.qty ? item.qty : 0
                         }
-                        onChange={(e) => {
-                          // تحديث القيمة يدوياً
-                        }}
                       />
                     )}
                   </Table.Cell>
@@ -351,9 +335,6 @@ const CostAnalysisDashboard = () => {
                           item.hourlyRate ? item.hourlyRate :
                           item.unitPrice ? item.unitPrice : 0
                         }
-                        onChange={(e) => {
-                          // تحديث القيمة يدوياً
-                        }}
                       />
                     )}
                   </Table.Cell>
@@ -391,9 +372,7 @@ const CostAnalysisDashboard = () => {
         </Dialog.Content>
       </Dialog.Root>
 
-      {/* المخططات */}
       <Flex gap="4" mt="6">
-        {/* مخطط دائري */}
         <Box style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, backgroundColor: 'white' }}>
           <Heading size="4" mb="3">Cost Composition</Heading>
           <ResponsiveContainer width="100%" height={300}>
@@ -403,6 +382,7 @@ const CostAnalysisDashboard = () => {
                   name: item.category,
                   value: item.actual
                 }))}
+                dataKey="value"
                 cx="50%"
                 cy="50%"
                 outerRadius={80}
@@ -418,7 +398,6 @@ const CostAnalysisDashboard = () => {
           </ResponsiveContainer>
         </Box>
 
-        {/* مخطط خطي */}
         <Box style={{ flex: 1, border: '1px solid #e2e8f0', borderRadius: 8, padding: 16, backgroundColor: 'white' }}>
           <Heading size="4" mb="3">Cost Trend Analysis</Heading>
           <ResponsiveContainer width="100%" height={300}>
@@ -449,7 +428,6 @@ const CostAnalysisDashboard = () => {
         </Box>
       </Flex>
 
-      {/* تقديم التقرير */}
       <Flex justify="end" mt="6">
         <Button onClick={handleSubmitReport} style={{ backgroundColor: '#10b981', color: 'white' }}>
           Submit Final Report
