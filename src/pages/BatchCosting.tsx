@@ -11,6 +11,8 @@ import {
   Select,
   Table,
   Text,
+  Card,
+  Progress,
 } from '@radix-ui/themes';
 
 interface MaterialItem {
@@ -34,76 +36,60 @@ const rawMaterials: MaterialItem[] = [
   { name: 'Biotin', composition: 0.00005, pricePerKg: 12500, cost: 0.625 },
   { name: 'Sodium Selenite', composition: 0.00015, pricePerKg: 2600, cost: 0.39 },
 ];
-      <Flex justify="between" align="center" mb="4">
-        <Heading as="h2" size="4">
-          Open Book Accounting Analysis Overview
-        </Heading>
-        <Flex gap="3">
-          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
-            <Select.Trigger placeholder="Select Product" />
-            <Select.Content>
-              <Select.Item value="Poultry Feed">Poultry Feed</Select.Item>
-              <Select.Item value="Cattle Feed">Cattle Feed</Select.Item>
-              <Select.Item value="Fish Feed">Fish Feed</Select.Item>
-            </Select.Content>
-          </Select.Root>
 
-          <Select.Root value={selectedCurrency} onValueChange={setSelectedCurrency}>
-            <Select.Trigger placeholder="Currency" />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select.Root>
+const BatchCosting = () => {
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState('EGP');
 
-          <Button onClick={exportReport}>Export Report</Button>
-        </Flex>
-      </Flex>
+  const actualCost = rawMaterials.reduce((acc, item) => acc + item.cost, 0);
+  const targetCost = 40; // example
+  const benchmarkPrice = 42;
+  const optimizedCost = 36;
+  const profitMargin = 20;
+  const progressToTarget = Math.min(100, Math.round((targetCost / actualCost) * 100));
 
-      <Grid columns="3" gap="4" mb="5">
-        <Card>
-          <Text size="2">Actual Cost</Text>
-          <Text weight="bold">{formatCurrency(actualCost)}</Text>
-        </Card>
-        <Card>
-          <Text size="2">Target Cost</Text>
-          <Text weight="bold">{formatCurrency(targetCost)}</Text>
-        </Card>
-        <Card>
-          <Text size="2">Benchmark Price</Text>
-          <Text weight="bold">{formatCurrency(benchmarkPrice)}</Text>
-        </Card>
-      </Grid>
+  const formatCurrency = (value: number) => {
+    const currency = selectedCurrency === 'USD' ? '$' : 'EGP ';
+    return `${currency}${value.toFixed(2)}`;
+  };
 
-      <Grid columns="3" gap="4" mb="5">
-        <Card>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Text weight="bold">{formatCurrency(optimizedCost)}</Text>
-        </Card>
-        <Card>
-          <Text size="2">Progress to Target</Text>
-          <Progress value={progressToTarget} />
-          <Text size="1">{progressToTarget}%</Text>
-        </Card>
-        <Card>
-          <Text size="2">Profit Margin</Text>
-          <Text weight="bold">{profitMargin}%</Text>
-        </Card>
-      </Grid>
-                  </Select.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-        <Box mt="3" style={{ textAlign: 'right' }}>
-          <Text weight="bold">
-            Total: {formatCurrency(data.reduce((acc, item) => acc + item.cost, 0))}
+  const exportReport = () => {
+    console.log('Exporting report...');
+  };
+          <Text as="span" color="gray">
+            {item.solution || 'No solution selected'}
           </Text>
-        </Box>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
+        </Table.Cell>
+        <Table.Cell>
+          <Button onClick={() => handleViewDetails(category)}>View Details</Button>
+        </Table.Cell>
+      </Table.Row>
+    ))}
+  </Table.Body>
+</Table>
 
-export default BatchCosting;
+{selectedCategory && (
+  <CostBreakdownDialog
+    category={selectedCategory}
+    open={dialogOpen}
+    onClose={() => {
+      setDialogOpen(false);
+      setSelectedCategory(null);
+    }}
+    onSave={(updatedItems) => handleBreakdownSave(selectedCategory, updatedItems)}
+    autoMode={autoModes[selectedCategory]}
+    setAutoMode={(value) =>
+      setAutoModes((prev) => ({
+        ...prev,
+        [selectedCategory]: value,
+      }))
+    }
+  />
+)}
+
+<Button mt="4" onClick={handleSubmitAll} size="3">
+  Submit All
+</Button>
+</Box>
+);
+}
