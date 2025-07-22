@@ -10,17 +10,39 @@ import {
   Progress,
   Box,
   Select,
-  Button
 } from '@radix-ui/themes';
-import { PieChart, Pie, BarChart, Bar } from 'recharts';
+import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cell } from 'recharts';
+
+interface Transaction {
+  id: string;
+  date: string;
+  product: string;
+  supplier: string;
+  amount: number;
+  status: 'paid' | 'pending';
+  dueDate: string;
+  iotVerified: boolean;
+  incentives: number;
+}
+
+interface SupplierData {
+  name: string;
+  value: number;
+  trustScore: number;
+}
+
+interface PieData {
+  name: string;
+  value: number;
+}
 
 const OpenBookAccounting = () => {
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [currency, setCurrency] = useState('USD');
+  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('');
+  const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const exchangeRate = 30.9; // 1 USD = 30.9 EGP
 
-  const transactions = [
+  const transactions: Transaction[] = [
     {
       id: 'TX-23001',
       date: '2023-05-15',
@@ -56,26 +78,40 @@ const OpenBookAccounting = () => {
     },
   ];
 
-  // Format currency based on selection
-  const formatCurrency = (amount) => {
+  const formatCurrency = (amount: number): string => {
     if (currency === 'EGP') {
       return `${(amount * exchangeRate).toLocaleString('en-EG')} EGP`;
     }
     return `$${amount.toLocaleString('en-US')}`;
   };
 
-  // Calculate metrics
-  const totalActualCost = transactions.reduce((sum, tx) => sum + tx.amount, 0);
+  const totalActualCost = transactions.reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
   const iotVerifiedCost = transactions
-    .filter(tx => tx.iotVerified)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalIncentives = transactions.reduce((sum, tx) => sum + tx.incentives, 0);
-  const trustScores = {
+    .filter((tx: Transaction) => tx.iotVerified)
+    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
+  const totalIncentives = transactions.reduce((sum: number, tx: Transaction) => sum + tx.incentives, 0);
+  
+  const trustScores: Record<string, number> = {
     'Supplier X': 88,
     'Supplier Y': 72,
     'Supplier Z': 95
   };
-  const avgTrustScore = Object.values(trustScores).reduce((a, b) => a + b, 0) / Object.keys(trustScores).length;
+  
+  const avgTrustScore = Object.values(trustScores).reduce((a: number, b: number) => a + b, 0) / Object.keys(trustScores).length;
+
+  const supplierData: SupplierData[] = [
+    { name: 'Supplier X', value: 24500, trustScore: 88 },
+    { name: 'Supplier Y', value: 18700, trustScore: 72 },
+    { name: 'Supplier Z', value: 32000, trustScore: 95 }
+  ];
+
+  const pieData: PieData[] = [
+    { name: 'Supplier X (88)', value: 88 },
+    { name: 'Supplier Y (72)', value: 72 },
+    { name: 'Supplier Z (95)', value: 95 }
+  ];
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
 
   return (
     <Box p="6">
@@ -83,10 +119,9 @@ const OpenBookAccounting = () => {
         <Heading size="6">Open Book Accounting Dashboard</Heading>
         
         <Flex gap="3" align="center">
-          {/* Supplier Dropdown */}
           <Select.Root 
             value={selectedSupplier}
-            onValueChange={setSelectedSupplier}
+            onValueChange={(value: string) => setSelectedSupplier(value)}
           >
             <Select.Trigger 
               placeholder="Select Supplier" 
@@ -99,10 +134,9 @@ const OpenBookAccounting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Product Dropdown */}
           <Select.Root 
             value={selectedProduct}
-            onValueChange={setSelectedProduct}
+            onValueChange={(value: string) => setSelectedProduct(value)}
           >
             <Select.Trigger 
               placeholder="Select Product" 
@@ -115,10 +149,9 @@ const OpenBookAccounting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Currency Dropdown */}
           <Select.Root 
             value={currency}
-            onValueChange={setCurrency}
+            onValueChange={(value: 'USD' | 'EGP') => setCurrency(value)}
           >
             <Select.Trigger 
               placeholder="Currency" 
@@ -206,24 +239,19 @@ const OpenBookAccounting = () => {
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">Spending by Supplier</Heading>
           <div className="h-64">
-            <BarChart width={500} height={250} data={[
-              { 
-                name: 'Supplier X', 
-                value: currency === 'EGP' ? 24500 * exchangeRate : 24500,
-                trustScore: 88 
-              },
-              { 
-                name: 'Supplier Y', 
-                value: currency === 'EGP' ? 18700 * exchangeRate : 18700,
-                trustScore: 72 
-              },
-              { 
-                name: 'Supplier Z', 
-                value: currency === 'EGP' ? 32000 * exchangeRate : 32000,
-                trustScore: 95 
-              }
-            ]}>
-              <Bar dataKey="value" fill="#3b82f6" />
+            <BarChart 
+              width={500} 
+              height={250} 
+              data={supplierData.map(item => ({
+                ...item,
+                value: currency === 'EGP' ? item.value * exchangeRate : item.value
+              }))}
+            >
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Amount']} />
+              <Legend />
+              <Bar dataKey="value" fill="#3b82f6" name="Amount" />
             </BarChart>
           </div>
         </Card>
@@ -232,18 +260,21 @@ const OpenBookAccounting = () => {
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
-                data={[
-                  { name: 'Supplier X (88)', value: 88 },
-                  { name: 'Supplier Y (72)', value: 72 },
-                  { name: 'Supplier Z (95)', value: 95 }
-                ]}
+                data={pieData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
                 outerRadius={80}
                 paddingAngle={5}
                 dataKey="value"
-              />
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
             </PieChart>
           </div>
         </Card>
