@@ -1,3 +1,5 @@
+// src/pages/CostAnalytics.tsx
+
 import React, { useState } from 'react';
 import {
   Box,
@@ -12,6 +14,7 @@ import {
   Text,
   Select as RadixSelect,
 } from '@radix-ui/themes';
+
 import {
   PieChart,
   Pie,
@@ -71,7 +74,6 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
       return [];
   }
 };
-
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -81,7 +83,7 @@ function CostAnalytics() {
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
   const [showCostGap, setShowCostGap] = useState(true);
   const [data, setData] = useState(simulatedIoTCostData);
-  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>( {
+  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
     'Direct Materials': {},
     'Packaging Materials': {},
     'Direct Labor': {},
@@ -93,7 +95,6 @@ function CostAnalytics() {
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
-
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
   const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
 
@@ -111,7 +112,7 @@ function CostAnalytics() {
     gap: d.actual - targetCost,
   }));
 
-  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
+  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
 
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
@@ -125,6 +126,7 @@ function CostAnalytics() {
       },
     }));
   };
+
   const handleExportReport = () => {
     alert('Export Report functionality not implemented yet.');
   };
@@ -141,7 +143,6 @@ function CostAnalytics() {
       },
     }));
   };
-
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
@@ -174,6 +175,7 @@ function CostAnalytics() {
           <Button onClick={handleExportReport}>Export Report</Button>
         </Flex>
       </Flex>
+
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Actual Cost</Text>
@@ -189,71 +191,70 @@ function CostAnalytics() {
         </Box>
       </Grid>
 
+      <Grid columns={{ initial: '4', md: '4' }} gap="4" mb="6">
+        {categories.map((category, index) => (
+          <Box
+            key={category}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: 8,
+              padding: 12,
+              backgroundColor: '#fff',
+            }}
+          >
+            <Text size="2">{category}</Text>
+            <Heading size="6" style={{ color: pieColors[index] }}>
+              {formatCurrency(totals[category].actual, currency)}
+            </Heading>
+            <Progress
+              value={(totals[category].actual / totalActual) * 100}
+              color={index === 0 ? 'blue' : index === 1 ? 'amber' : index === 2 ? 'red' : 'green'}
+              size="small"
+            />
+          </Box>
+        ))}
+      </Grid>
       <Table.Root>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target (Editable)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target (Editable)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>View Details</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {categories.map((category) => {
-            const actual = totals[category].actual;
-            const target = totals[category].budget;
-            const costAfter = totals[category].costAfter;
-            const variance = target - actual;
-            const percent = totalActual === 0 ? 0 : (actual / totalActual) * 100;
-
-            return (
-              <Table.Row key={category}>
-                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(actual, currency)}</Table.Cell>
-                <Table.Cell>
-                  <input
-                    type="number"
-                    value={target}
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                    style={{ width: '80px' }}
-                  />
-                </Table.Cell>
-                <Table.Cell>{formatCurrency(variance, currency)}</Table.Cell>
-                <Table.Cell>{percent.toFixed(2)}%</Table.Cell>
-                <Table.Cell>
-                  <RadixSelect.Root
-                    value={solutions[category]?.[0] || ''}
-                    onValueChange={(value) => handleSolutionChange(category, 0, value)}
-                  >
-                    <RadixSelect.Trigger aria-label="Select solution" />
-                    <RadixSelect.Content>
-                      {solutionsOptions.map((sol) => (
-                        <RadixSelect.Item key={sol} value={sol}>
-                          {sol}
-                        </RadixSelect.Item>
-                      ))}
-                    </RadixSelect.Content>
-                  </RadixSelect.Root>
-                </Table.Cell>
-                <Table.Cell>{formatCurrency(costAfter, currency)}</Table.Cell>
-              </Table.Row>
-            );
-          })}
+          {categories.map((category) => (
+            <Table.Row key={category}>
+              <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
+              <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+              <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+              <Table.Cell>
+                <input
+                  type="number"
+                  value={totals[category].budget}
+                  onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                  style={{ width: '80px' }}
+                />
+              </Table.Cell>
+              <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+              <Table.Cell>
+                <Button onClick={() => setDialogCategory(category)}>View Details</Button>
+              </Table.Cell>
+            </Table.Row>
+          ))}
           <Table.Row>
             <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
             <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
             <Table.Cell><b>{formatCurrency(totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalTarget - totalActual, currency)}</b></Table.Cell>
             <Table.Cell><b>100%</b></Table.Cell>
             <Table.Cell></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
           </Table.Row>
         </Table.Body>
       </Table.Root>
-
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -371,9 +372,9 @@ function CostAnalytics() {
             <Flex justify="end" gap="3" mt="4">
               <Button
                 style={{ backgroundColor: '#10b981', color: '#fff' }}
-                onClick={() => alert('Submit to Blockchain clicked')}
+                onClick={() => alert('Submit detailed solutions functionality not implemented yet')}
               >
-                Submit to Blockchain
+                Submit
               </Button>
               <Button
                 variant="ghost"
@@ -386,78 +387,68 @@ function CostAnalytics() {
           </Dialog.Content>
         </Dialog.Root>
       )}
-      <Flex align="center" gap="2" mt="6" mb="4">
-        <Switch checked={showCostGap} onCheckedChange={setShowCostGap} />
-        <Text>Show Cost Gap Analysis and Charts</Text>
-      </Flex>
-
       {showCostGap && (
-        <>
-          <Box mb="6" p="4" style={{ backgroundColor: '#fff', borderRadius: 8, border: '1px solid #ccc' }}>
-            <Heading size="5" mb="3">Cost Gap Analysis</Heading>
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Month</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Target Cost</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Gap</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {benchmarkTrendDataWithGap.map(({ month, actual, targetCost, gap }) => (
-                  <Table.Row key={month}>
-                    <Table.RowHeaderCell>{month}</Table.RowHeaderCell>
-                    <Table.Cell>{formatCurrency(actual, currency)}</Table.Cell>
-                    <Table.Cell>{formatCurrency(targetCost, currency)}</Table.Cell>
-                    <Table.Cell>{formatCurrency(gap, currency)}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </Box>
-
-          <Flex gap="6" wrap="wrap" justify="center">
-            <Box style={{ backgroundColor: '#fff', padding: 16, borderRadius: 8, border: '1px solid #ccc', width: 350, height: 350 }}>
-              <Heading size="5" mb="3">Cost Distribution</Heading>
-              <ResponsiveContainer width="100%" height="80%">
+        <Box mt="8" style={{ backgroundColor: '#fff', padding: 16, borderRadius: 8 }}>
+          <Heading size="5" mb="4" style={{ textAlign: 'center' }}>
+            Cost Gap Analysis & Trends
+          </Heading>
+          <Flex direction={{ initial: 'column', md: 'row' }} gap="6" justify="center" align="center">
+            <Box style={{ width: '100%', maxWidth: 400, height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={categories.map((category) => ({
+                    data={categories.map((category, i) => ({
                       name: category,
                       value: totals[category].actual,
                     }))}
+                    dataKey="value"
+                    nameKey="name"
                     cx="50%"
                     cy="50%"
-                    outerRadius={80}
+                    outerRadius={100}
                     fill="#8884d8"
-                    dataKey="value"
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(1)}%`
+                    }
+                    labelLine={false}
+                    paddingAngle={3}
+                    stroke="#f0f0f0"
                   >
                     {categories.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
                     ))}
                   </Pie>
-                  <Legend />
+                  <Legend verticalAlign="bottom" height={36} />
                 </PieChart>
               </ResponsiveContainer>
             </Box>
 
-            <Box style={{ backgroundColor: '#fff', padding: 16, borderRadius: 8, border: '1px solid #ccc', width: 600, height: 350 }}>
-              <Heading size="5" mb="3">Benchmark vs Actual Cost Trend</Heading>
-              <ResponsiveContainer width="100%" height="80%">
-                <LineChart data={benchmarkTrendData}>
+            <Box style={{ width: '100%', maxWidth: 600, height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={benchmarkTrendDataWithGap} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <XAxis dataKey="month" />
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="actual" stroke="#3b82f6" />
-                  <Line type="monotone" dataKey="benchmark" stroke="#10b981" />
+                  <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual" />
+                  <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark" />
+                  {showCostGap && <Line type="monotone" dataKey="targetCost" stroke="#10b981" name="Target Cost" />}
                 </LineChart>
               </ResponsiveContainer>
             </Box>
           </Flex>
-        </>
+          <Text mt="4" size="2" style={{ textAlign: 'center' }}>
+            Post-Optimization Estimate: {formatCurrency(totalCostAfter, currency)}
+          </Text>
+          <Flex justify="center" mt="6">
+            <Button
+              style={{ backgroundColor: '#10b981', color: '#fff' }}
+              onClick={() => alert('Submit All to Blockchain functionality not implemented yet')}
+            >
+              Submit to Blockchain
+            </Button>
+          </Flex>
+        </Box>
       )}
     </Box>
   );
