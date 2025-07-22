@@ -8,88 +8,123 @@ import {
   Flex,
   Grid,
   Heading,
-  Select,
   Table,
   Text,
-  Card,
-  Progress,
+  TextField,
 } from '@radix-ui/themes';
 
-interface MaterialItem {
+interface CostItem {
   name: string;
-  composition: number;
-  pricePerKg: number;
+  value: number;
+}
+
+interface ComponentItem {
+  name: string;
+  qty: number;
+  unit: string;
+  unitPrice: number;
   cost: number;
 }
 
-const rawMaterials: MaterialItem[] = [
-  { name: 'Vitamin B1', composition: 0.001, pricePerKg: 540, cost: 0.54 },
-  { name: 'Vitamin B2', composition: 0.006, pricePerKg: 600, cost: 3.6 },
-  { name: 'Vitamin B12', composition: 0.001, pricePerKg: 2300, cost: 2.3 },
-  { name: 'Nicotinamide B3', composition: 0.04, pricePerKg: 300, cost: 12 },
-  { name: 'Vitamin B6', composition: 0.003, pricePerKg: 650, cost: 1.95 },
-  { name: 'Vitamin E', composition: 0.001, pricePerKg: 900, cost: 0.9 },
-  { name: 'Vitamin A', composition: 0.001, pricePerKg: 820, cost: 0.82 },
-  { name: 'Vitamin D3', composition: 0.00025, pricePerKg: 2500, cost: 0.625 },
-  { name: 'Vitamin K3', composition: 0.0015, pricePerKg: 450, cost: 0.675 },
-  { name: 'Folic Acid', composition: 0.0002, pricePerKg: 1600, cost: 0.32 },
-  { name: 'Biotin', composition: 0.00005, pricePerKg: 12500, cost: 0.625 },
-  { name: 'Sodium Selenite', composition: 0.00015, pricePerKg: 2600, cost: 0.39 },
-];
-
-const BatchCosting = () => {
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [selectedCurrency, setSelectedCurrency] = useState('EGP');
-
-  const actualCost = rawMaterials.reduce((acc, item) => acc + item.cost, 0);
-  const targetCost = 40; // example
-  const benchmarkPrice = 42;
-  const optimizedCost = 36;
-  const profitMargin = 20;
-  const progressToTarget = Math.min(100, Math.round((targetCost / actualCost) * 100));
-
-  const formatCurrency = (value: number) => {
-    const currency = selectedCurrency === 'USD' ? '$' : 'EGP ';
-    return `${currency}${value.toFixed(2)}`;
+const BatchCosting: React.FC = () => {
+  const [open, setOpen] = useState(false);
+  const [components, setComponents] = useState<ComponentItem[]>([
+    { name: 'Vitamin A', qty: 2, unit: 'kg', unitPrice: 100, cost: 200 },
+    { name: 'Vitamin B1', qty: 1, unit: 'kg', unitPrice: 540, cost: 540 },
+  ]);
+  const calculateTotalCost = () => {
+    return components.reduce((sum, item) => sum + item.cost, 0);
   };
 
-  const exportReport = () => {
-    console.log('Exporting report...');
-  };
-          <Text as="span" color="gray">
-            {item.solution || 'No solution selected'}
-          </Text>
-        </Table.Cell>
-        <Table.Cell>
-          <Button onClick={() => handleViewDetails(category)}>View Details</Button>
-        </Table.Cell>
-      </Table.Row>
-    ))}
-  </Table.Body>
-</Table>
+  const handleComponentChange = (
+    index: number,
+    field: keyof ComponentItem,
+    value: string
+  ) => {
+    const updatedComponents = [...components];
+    const updatedItem = { ...updatedComponents[index] };
 
-{selectedCategory && (
-  <CostBreakdownDialog
-    category={selectedCategory}
-    open={dialogOpen}
-    onClose={() => {
-      setDialogOpen(false);
-      setSelectedCategory(null);
-    }}
-    onSave={(updatedItems) => handleBreakdownSave(selectedCategory, updatedItems)}
-    autoMode={autoModes[selectedCategory]}
-    setAutoMode={(value) =>
-      setAutoModes((prev) => ({
-        ...prev,
-        [selectedCategory]: value,
-      }))
+    if (field === 'qty' || field === 'unitPrice') {
+      updatedItem[field] = parseFloat(value) || 0;
+    } else {
+      (updatedItem[field] as any) = value;
     }
-  />
-)}
 
-<Button mt="4" onClick={handleSubmitAll} size="3">
-  Submit All
-</Button>
-</Box>
-);
-}
+    updatedItem.cost = updatedItem.qty * updatedItem.unitPrice;
+    updatedComponents[index] = updatedItem;
+    setComponents(updatedComponents);
+  };
+
+  const addComponent = () => {
+    setComponents([
+      ...components,
+      { name: '', qty: 0, unit: 'kg', unitPrice: 0, cost: 0 },
+    ]);
+  };
+  return (
+    <Box p="4">
+      <Heading size="6" mb="4">Batch Costing</Heading>
+
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {components.map((item, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>
+                <TextField.Root
+                  value={item.name}
+                  onChange={(e) =>
+                    handleComponentChange(index, 'name', e.target.value)
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  value={item.qty}
+                  onChange={(e) =>
+                    handleComponentChange(index, 'qty', e.target.value)
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Root
+                  value={item.unit}
+                  onChange={(e) =>
+                    handleComponentChange(index, 'unit', e.target.value)
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  value={item.unitPrice}
+                  onChange={(e) =>
+                    handleComponentChange(index, 'unitPrice', e.target.value)
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <Text>{item.cost.toFixed(2)}</Text>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+      <Flex mt="3" gap="3">
+        <Button onClick={addComponent}>Add Component</Button>
+        <Text>Total Cost: {calculateTotalCost().toFixed(2)}</Text>
+      </Flex>
+    </Box>
+  );
+};
+
+export default BatchCosting;
