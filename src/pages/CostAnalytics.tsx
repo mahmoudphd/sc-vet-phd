@@ -8,7 +8,6 @@ import {
   Flex,
   Grid,
   Heading,
-  Progress,
   Switch,
   Table,
   Text,
@@ -56,7 +55,7 @@ const solutionsOptions = [
   'Other',
 ];
 
-const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
+const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#6366f1'];
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -64,6 +63,7 @@ function CostAnalytics() {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [autoMode, setAutoMode] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
+  const [showCostGap, setShowCostGap] = useState(false);
   const [data, setData] = useState(simulatedIoTCostData);
   const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
     'Direct Materials': {},
@@ -74,9 +74,9 @@ function CostAnalytics() {
   });
 
   const totals = data.totals;
-  const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
-  const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
-  const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
+  const totalActual = categories.reduce((sum, cat) => sum + totals[cat].actual, 0);
+  const totalTarget = categories.reduce((sum, cat) => sum + totals[cat].budget, 0);
+  const totalCostAfter = categories.reduce((sum, cat) => sum + totals[cat].costAfter, 0);
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
   const benchmarkTrendData = [
@@ -121,233 +121,202 @@ function CostAnalytics() {
 
   const getDetailsByCategory = (category: CostCategory): Item[] => {
     switch (category) {
-      case 'Direct Materials':
-        return data.rawMaterials;
-      case 'Packaging Materials':
-        return data.packagingMaterials;
-      case 'Direct Labor':
-        return data.directLabor;
-      case 'Overhead':
-        return data.overheadItems;
-      case 'Other Costs':
-        return data.otherCosts;
-      default:
-        return [];
+      case 'Direct Materials': return data.rawMaterials;
+      case 'Packaging Materials': return data.packagingMaterials;
+      case 'Direct Labor': return data.directLabor;
+      case 'Overhead': return data.overheadItems;
+      case 'Other Costs': return data.otherCosts;
+      default: return [];
     }
   };
-
-  const handleExportReport = () => {
-    alert('Export Report functionality not implemented yet.');
-  };
   return (
-    <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
-        <Flex gap="3" align="center" wrap="wrap">
-          <Text>Product:</Text>
-          <RadixSelect.Root
-            value={selectedProduct}
-            onValueChange={(value) => setSelectedProduct(value)}
-          >
-            <RadixSelect.Trigger aria-label="Select product" />
-            <RadixSelect.Content>
-              {products.map((p) => (
-                <RadixSelect.Item key={p} value={p}>
-                  {p}
-                </RadixSelect.Item>
-              ))}
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <RadixSelect.Root
-            value={currency}
-            onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
-          >
-            <RadixSelect.Trigger aria-label="Select currency" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
-              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <Button onClick={handleExportReport}>Export Report</Button>
-        </Flex>
+    <Box p="4">
+      <Heading size="6">Cost Analytics Dashboard</Heading>
+      <Flex gap="3" mt="3">
+        <RadixSelect.Root value={selectedProduct} onValueChange={(v) => setSelectedProduct(v)}>
+          <RadixSelect.Trigger placeholder="Select Product" />
+          <RadixSelect.Content>
+            {products.map((p) => (
+              <RadixSelect.Item key={p} value={p}>{p}</RadixSelect.Item>
+            ))}
+          </RadixSelect.Content>
+        </RadixSelect.Root>
+        <RadixSelect.Root value={currency} onValueChange={(v) => setCurrency(v as 'EGP' | 'USD')}>
+          <RadixSelect.Trigger placeholder="Select Currency" />
+          <RadixSelect.Content>
+            <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
+            <RadixSelect.Item value="USD">USD</RadixSelect.Item>
+          </RadixSelect.Content>
+        </RadixSelect.Root>
       </Flex>
-      <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Actual Cost</Text>
-          <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
+
+      <Grid columns="3" gap="3" mt="4">
+        <Box>
+          <Text>Actual Cost</Text>
+          <Text>{formatCurrency(totalActual, currency)}</Text>
         </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Target Cost</Text>
-          <Heading size="6">{formatCurrency(totalTarget, currency)}</Heading>
+        <Box>
+          <Text>Target Cost</Text>
+          <Text>{formatCurrency(totalTarget, currency)}</Text>
         </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Benchmark Price</Text>
+        <Box>
+          <Text>Benchmark Price</Text>
           <input
             type="number"
             value={benchmarkPrice}
-            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px' }}
+            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value))}
           />
         </Box>
       </Grid>
 
-      <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Profit Margin (%)</Text>
+      <Grid columns="3" gap="3" mt="2">
+        <Box>
+          <Text>Profit Margin (%)</Text>
           <input
             type="number"
             value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px' }}
+            onChange={(e) => setProfitMargin(parseFloat(e.target.value))}
           />
         </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Progress To Target</Text>
-          <Progress value={(totalActual / totalTarget) * 100} />
+        <Box>
+          <Text>Progress To Target</Text>
+          <Text>{((totalActual / totalTarget) * 100).toFixed(1)}%</Text>
         </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
+        <Box>
+          <Text>Post-Optimization Estimate</Text>
+          <Text>{formatCurrency(totalCostAfter, currency)}</Text>
         </Box>
       </Grid>
 
-      <Flex justify="center" gap="4" mb="6">
-        <Button style={{ backgroundColor: '#3b82f6', color: '#fff' }}>
-          Show Gap Analysis
-        </Button>
-        <Button variant="ghost" style={{ color: '#3b82f6' }}>
-          Insights
-        </Button>
-      </Flex>
-      <Table.Root variant="surface" mb="6">
+      <Dialog.Root>
+        <Dialog.Trigger>
+          <Button mt="3">Insights</Button>
+        </Dialog.Trigger>
+        <Dialog.Content>
+          <Dialog.Title>Cost Insights</Dialog.Title>
+          <Text>
+            Your current actual cost is higher than the benchmark price.
+            Consider negotiating better prices or reducing waste to close the gap.
+          </Text>
+          <Dialog.Close>
+            <Button>Close</Button>
+          </Dialog.Close>
+        </Dialog.Content>
+      </Dialog.Root>
+      <Table.Root mt="4">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Benchmark</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {categories.map((category) => (
-            <Table.Row key={category}>
-              <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-              <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+          {categories.map((cat) => (
+            <Table.Row key={cat}>
+              <Table.Cell>{cat}</Table.Cell>
+              <Table.Cell>{formatCurrency(totals[cat].actual, currency)}</Table.Cell>
               <Table.Cell>
                 <input
                   type="number"
-                  value={totals[category].budget}
-                  onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                  style={{ width: '80px' }}
+                  value={totals[cat].budget}
+                  onChange={(e) => handleTargetChange(cat, parseFloat(e.target.value))}
                 />
               </Table.Cell>
-              <Table.Cell>{formatCurrency(benchmarkPrice, currency)}</Table.Cell>
-              <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
-              <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+              <Table.Cell>{formatCurrency(totals[cat].costAfter, currency)}</Table.Cell>
+              <Table.Cell>{percentOfTotal(cat)}%</Table.Cell>
               <Table.Cell>
-                <Button size="1" onClick={() => setDialogCategory(category)}>
-                  View
-                </Button>
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <Button>Details</Button>
+                  </Dialog.Trigger>
+                  <Dialog.Content>
+                    <Dialog.Title>{cat} Breakdown</Dialog.Title>
+                    <Table.Root>
+                      <Table.Header>
+                        <Table.Row>
+                          <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+                          <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                          <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+                        </Table.Row>
+                      </Table.Header>
+                      <Table.Body>
+                        {getDetailsByCategory(cat).map((item, idx) => (
+                          <Table.Row key={idx}>
+                            <Table.Cell>{item.name}</Table.Cell>
+                            <Table.Cell>{formatCurrency(item.cost || 0, currency)}</Table.Cell>
+                            <Table.Cell>
+                              <RadixSelect.Root
+                                value={solutions[cat][idx] || ''}
+                                onValueChange={(v) => handleSolutionChange(cat, idx, v)}
+                              >
+                                <RadixSelect.Trigger placeholder="Select" />
+                                <RadixSelect.Content>
+                                  {solutionsOptions.map((opt) => (
+                                    <RadixSelect.Item key={opt} value={opt}>{opt}</RadixSelect.Item>
+                                  ))}
+                                </RadixSelect.Content>
+                              </RadixSelect.Root>
+                            </Table.Cell>
+                          </Table.Row>
+                        ))}
+                      </Table.Body>
+                    </Table.Root>
+                    <Dialog.Close>
+                      <Button>Close</Button>
+                    </Dialog.Close>
+                  </Dialog.Content>
+                </Dialog.Root>
               </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
-      <Dialog.Root open={!!dialogCategory} onOpenChange={() => setDialogCategory(null)}>
-        <Dialog.Content style={{ maxWidth: 800 }}>
-          <Dialog.Title>
-            {dialogCategory} Details
-            <Button variant="ghost" size="1" style={{ marginLeft: 8 }}>
-              Improve Tips
-            </Button>
-          </Dialog.Title>
-          <Switch checked={autoMode} onCheckedChange={setAutoMode}>
-            Auto Mode
-          </Switch>
-          <Table.Root variant="surface" mt="4">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {getDetailsByCategory(dialogCategory as CostCategory).map((item, index) => (
-                <Table.Row key={index}>
-                  <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                  <Table.Cell>{formatCurrency(item.cost || 0, currency)}</Table.Cell>
-                  <Table.Cell>
-                    <RadixSelect.Root
-                      value={solutions[dialogCategory as CostCategory]?.[index] || ''}
-                      onValueChange={(value) =>
-                        handleSolutionChange(dialogCategory as CostCategory, index, value)
-                      }
-                    >
-                      <RadixSelect.Trigger aria-label="Select solution" />
-                      <RadixSelect.Content>
-                        {solutionsOptions.map((option) => (
-                          <RadixSelect.Item key={option} value={option}>
-                            {option}
-                          </RadixSelect.Item>
-                        ))}
-                      </RadixSelect.Content>
-                    </RadixSelect.Root>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-          <Flex justify="end" mt="4">
-            <Button style={{ backgroundColor: '#22c55e', color: '#fff' }}>
-              Submit to Blockchain
-            </Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
-      <Flex gap="6" mt="6" wrap="wrap">
-        <Box style={{ flex: '1', minWidth: '300px', height: '300px', backgroundColor: '#fff', borderRadius: 8, padding: 8 }}>
-          <ResponsiveContainer>
+      <Flex mt="4" gap="4" wrap="wrap">
+        <Box style={{ minWidth: "300px", height: "300px" }}>
+          <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
-                data={categories.map((category) => ({
-                  name: category,
-                  value: totals[category].actual,
+                data={categories.map((cat) => ({
+                  name: cat,
+                  value: totals[cat].actual,
                 }))}
                 cx="50%"
                 cy="50%"
-                outerRadius={80}
+                outerRadius={100}
                 fill="#8884d8"
                 label
+                dataKey="value"
               >
-                {categories.map((category, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                {categories.map((_, idx) => (
+                  <Cell key={idx} fill={pieColors[idx % pieColors.length]} />
                 ))}
               </Pie>
-              <Tooltip />
-              <Legend />
             </PieChart>
           </ResponsiveContainer>
         </Box>
-        <Box style={{ flex: '1', minWidth: '300px', height: '300px', backgroundColor: '#fff', borderRadius: 8, padding: 8 }}>
-          <ResponsiveContainer>
-            <LineChart data={benchmarkTrendDataWithGap}>
+
+        <Box style={{ minWidth: "300px", height: "300px" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={benchmarkTrendData}>
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
-              <Line type="monotone" dataKey="benchmark" stroke="#22c55e" name="Benchmark Price" />
-              <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" />
+              <Line type="monotone" dataKey="cost" stroke="#82ca9d" />
             </LineChart>
           </ResponsiveContainer>
         </Box>
       </Flex>
+
+      <Flex gap="3" mt="4">
+        <Button color="blue" onClick={showGapAnalysis}>Show Cost Gap Analysis</Button>
+        <Button color="green" onClick={handleSubmitAll}>Submit to Blockchain</Button>
+      </Flex>
     </Box>
   );
-}
+};
 
 export default CostAnalytics;
