@@ -113,7 +113,7 @@ const BatchCostAnalysis = ({
     : products;
 
   // Get unique suppliers for filter
-  const uniqueSuppliers = [...new Set(products.map(p => p.supplier))].filter(Boolean);
+  const uniqueSuppliers = [...new Set(products.map(p => p.supplier).filter((s): s is string => !!s)];
 
   return (
     <div className="container-fluid p-4">
