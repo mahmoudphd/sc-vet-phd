@@ -1,4 +1,4 @@
-// src/pages/simulatedIoTCostData.ts
+// src/pages/simulateIoTCostData.ts
 
 export type CostCategory =
   | 'Direct Materials'
@@ -25,27 +25,27 @@ export const simulatedIoTCostData = {
   totals: {
     'Direct Materials': {
       actual: 133.11,
-      target: 129,
+      budget: 129,
       costAfter: 130,
     },
     'Packaging Materials': {
       actual: 18,
-      target: 16,
+      budget: 16,
       costAfter: 16,
     },
     'Direct Labor': {
       actual: 3,
-      target: 2,
+      budget: 2,
       costAfter: 2,
     },
     Overhead: {
       actual: 2,
-      target: 1.5,
-      costAfter: 1.8,
+      budget: 2,
+      costAfter: 2,
     },
     'Other Costs': {
       actual: 15,
-      target: 13,
+      budget: 13,
       costAfter: 14,
     },
   },
@@ -75,9 +75,9 @@ export const simulatedIoTCostData = {
     { name: 'Cap', qty: 1, unitPrice: 5, cost: 5 },
   ],
   directLabor: [
-    { name: 'Operator', hours: 1, hourlyRate: 1.75, cost: 1.75 },
-    { name: 'Supervisor', hours: 1, hourlyRate: 0.88, cost: 0.88 },
-    { name: 'Quality Control', hours: 1, hourlyRate: 0.37, cost: 0.37 },
+    { name: 'Operator', hours: 3, hourlyRate: 0.585, cost: 1.755 },
+    { name: 'Supervisor', hours: 6, hourlyRate: 0.1465, cost: 0.879 },
+    { name: 'Quality Control', hours: 5, hourlyRate: 0.0732, cost: 0.366 },
   ],
   overheadItems: [
     { name: 'Rent', totalCost: 1000, basis: 1000, cost: 1 },
