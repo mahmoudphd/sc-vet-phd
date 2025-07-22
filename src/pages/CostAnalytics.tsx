@@ -1,40 +1,40 @@
-const categories: CostCategory[] = [
-  'Direct Materials',
-  'Packaging Materials',
-  'Direct Labor',
-  'Overhead',
-  'Other Costs',
-];
+// src/pages/CostAnalytics.tsx
 
-const products = ['Product A', 'Product B', 'Product C'];
+import React, { useState } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  Flex,
+  Grid,
+  Heading,
+  Progress,
+  Switch,
+  Table,
+  Text,
+  Select as RadixSelect,
+} from '@radix-ui/themes';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Legend,
+} from 'recharts';
 
-const solutionsOptions = [
-  'Negotiating better prices with supplier',
-  'Reducing waste in material usage',
-  'Automation to reduce manual labor costs',
-  'Optimizing machine usage',
-  'Improving inventory management',
-  'Minimize transportation costs',
-  'Reduce rework costs',
-  'Other',
-];
+import {
+  simulatedIoTCostData,
+  Item,
+  CostCategory,
+} from './simulateIoTCostData';
 
-const getDetailsByCategory = (category: CostCategory): Item[] => {
-  switch (category) {
-    case 'Direct Materials':
-      return simulatedIoTCostData.rawMaterials;
-    case 'Packaging Materials':
-      return simulatedIoTCostData.packagingMaterials;
-    case 'Direct Labor':
-      return simulatedIoTCostData.directLabor;
-    case 'Overhead':
-      return simulatedIoTCostData.overheadItems;
-    case 'Other Costs':
-      return simulatedIoTCostData.otherCosts;
-    default:
-      return [];
-  }
-};
+const formatCurrency = (value: number, currency: string) =>
+  `${currency} ${value.toFixed(2)}`;
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
