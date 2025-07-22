@@ -1,5 +1,3 @@
-// src/pages/CostAnalytics.tsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -14,7 +12,6 @@ import {
   Text,
   Select as RadixSelect,
 } from '@radix-ui/themes';
-
 import {
   PieChart,
   Pie,
@@ -74,6 +71,7 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
       return [];
   }
 };
+
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -83,7 +81,7 @@ function CostAnalytics() {
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
   const [showCostGap, setShowCostGap] = useState(true);
   const [data, setData] = useState(simulatedIoTCostData);
-  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
+  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>( {
     'Direct Materials': {},
     'Packaging Materials': {},
     'Direct Labor': {},
@@ -112,7 +110,7 @@ function CostAnalytics() {
     gap: d.actual - targetCost,
   }));
 
-  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
+  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
 
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
@@ -189,31 +187,26 @@ function CostAnalytics() {
           <Text size="2">Cost After Optimization</Text>
           <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
         </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Post-Optimization Estimate</Text>
+          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Benchmark Price</Text>
+          <Heading size="6">{formatCurrency(benchmarkPrice, currency)}</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Profit Margin (%)</Text>
+          <Heading size="6">{profitMargin}%</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Cost Gap</Text>
+          <Heading size="6">
+            {formatCurrency(totalActual - targetCost, currency)}
+          </Heading>
+        </Box>
       </Grid>
 
-      <Grid columns={{ initial: '4', md: '4' }} gap="4" mb="6">
-        {categories.map((category, index) => (
-          <Box
-            key={category}
-            style={{
-              border: '1px solid #ccc',
-              borderRadius: 8,
-              padding: 12,
-              backgroundColor: '#fff',
-            }}
-          >
-            <Text size="2">{category}</Text>
-            <Heading size="6" style={{ color: pieColors[index] }}>
-              {formatCurrency(totals[category].actual, currency)}
-            </Heading>
-            <Progress
-              value={(totals[category].actual / totalActual) * 100}
-              color={index === 0 ? 'blue' : index === 1 ? 'amber' : index === 2 ? 'red' : 'green'}
-              size="small"
-            />
-          </Box>
-        ))}
-      </Grid>
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -370,10 +363,7 @@ function CostAnalytics() {
               </Table.Body>
             </Table.Root>
             <Flex justify="end" gap="3" mt="4">
-              <Button
-                style={{ backgroundColor: '#10b981', color: '#fff' }}
-                onClick={() => alert('Submit detailed solutions functionality not implemented yet')}
-              >
+              <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>
                 Submit
               </Button>
               <Button
@@ -387,69 +377,142 @@ function CostAnalytics() {
           </Dialog.Content>
         </Dialog.Root>
       )}
-      {showCostGap && (
-        <Box mt="8" style={{ backgroundColor: '#fff', padding: 16, borderRadius: 8 }}>
-          <Heading size="5" mb="4" style={{ textAlign: 'center' }}>
-            Cost Gap Analysis & Trends
+      <Flex mt="8" gap="6" wrap="wrap" justify="center">
+        <Box
+          style={{
+            backgroundColor: '#fff',
+            padding: 20,
+            borderRadius: 10,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            minWidth: 300,
+            flex: '1 1 300px',
+          }}
+        >
+          <Heading size="4" mb="3" align="center">
+            Cost Gap Analysis
           </Heading>
-          <Flex direction={{ initial: 'column', md: 'row' }} gap="6" justify="center" align="center">
-            <Box style={{ width: '100%', maxWidth: 400, height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={categories.map((category, i) => ({
-                      name: category,
-                      value: totals[category].actual,
-                    }))}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={100}
-                    fill="#8884d8"
-                    label={({ name, percent }) =>
-                      `${name}: ${(percent * 100).toFixed(1)}%`
-                    }
-                    labelLine={false}
-                    paddingAngle={3}
-                    stroke="#f0f0f0"
-                  >
-                    {categories.map((_, index) => (
-                      <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                    ))}
-                  </Pie>
-                  <Legend verticalAlign="bottom" height={36} />
-                </PieChart>
-              </ResponsiveContainer>
-            </Box>
-
-            <Box style={{ width: '100%', maxWidth: 600, height: 300 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={benchmarkTrendDataWithGap} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <Tooltip />
-                  <Legend />
-                  <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual" />
-                  <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark" />
-                  {showCostGap && <Line type="monotone" dataKey="targetCost" stroke="#10b981" name="Target Cost" />}
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          </Flex>
-          <Text mt="4" size="2" style={{ textAlign: 'center' }}>
-            Post-Optimization Estimate: {formatCurrency(totalCostAfter, currency)}
+          <Text align="center" mb="4" size="2">
+            Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
           </Text>
-          <Flex justify="center" mt="6">
-            <Button
-              style={{ backgroundColor: '#10b981', color: '#fff' }}
-              onClick={() => alert('Submit All to Blockchain functionality not implemented yet')}
-            >
-              Submit to Blockchain
-            </Button>
-          </Flex>
+          <Grid columns={{ initial: '3' }} gap="2">
+            {categories.map((category, index) => (
+              <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
+                <Text weight="bold" size="2" mb="2">
+                  {category}
+                </Text>
+                <Progress
+                  value={(totals[category].actual / totalActual) * 100}
+                  color={
+                    index === 0
+                      ? 'blue'
+                      : index === 1
+                      ? 'amber'
+                      : index === 2
+                      ? 'red'
+                      : index === 3
+                      ? 'green'
+                      : 'purple'
+                  }
+                  size="2"
+                />
+                <Text mt="2" size="2">
+                  {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
+                </Text>
+              </Box>
+            ))}
+          </Grid>
         </Box>
-      )}
+
+        <Box
+          style={{
+            backgroundColor: '#fff',
+            padding: 20,
+            borderRadius: 10,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            minWidth: 300,
+            flex: '1 1 300px',
+          }}
+        >
+          <Heading size="4" mb="3" align="center">
+            Cost Breakdown Pie Chart
+          </Heading>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={categories.map((category) => ({
+                  name: category,
+                  value: totals[category].actual,
+                }))}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {categories.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Box>
+
+        <Box
+          style={{
+            backgroundColor: '#fff',
+            padding: 20,
+            borderRadius: 10,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            minWidth: 300,
+            flex: '1 1 300px',
+          }}
+        >
+          <Heading size="4" mb="3" align="center">
+            Benchmark Trend Line Chart
+          </Heading>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={benchmarkTrendDataWithGap}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line
+                type="monotone"
+                dataKey="actual"
+                stroke="#3b82f6"
+                activeDot={{ r: 8 }}
+                name="Actual Cost"
+              />
+              <Line
+                type="monotone"
+                dataKey="benchmark"
+                stroke="#f59e0b"
+                name="Benchmark Price"
+                strokeDasharray="5 5"
+              />
+              <Line
+                type="monotone"
+                dataKey="targetCost"
+                stroke="#10b981"
+                name="Target Cost"
+                strokeDasharray="3 4 5 2"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+      </Flex>
+
+      <Flex justify="end" mt="6">
+        <Button
+          style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
+          onClick={() => alert('Submit All clicked')}
+        >
+          Submit to Blockchain
+        </Button>
+      </Flex>
     </Box>
   );
 }
