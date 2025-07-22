@@ -203,7 +203,7 @@ function CostAnalytics() {
         </Table.Header>
         <Table.Body>
           {categories.map((category) => {
-            const variance = totals[category].actual - totals[category].budget;
+            const variance = totals[category].actual - totals[category].target
             return (
               <Table.Row key={category}>
                 <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
@@ -211,7 +211,7 @@ function CostAnalytics() {
                 <Table.Cell>
                   <input
                     type="number"
-                    value={totals[category].budget}
+                    value={totals[category].target
                     onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
                     style={{ width: '80px' }}
                   />
