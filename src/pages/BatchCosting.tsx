@@ -1,6 +1,29 @@
 import React, { useState } from 'react';
 import { Dropdown, Button, Table, Card, Row, Col } from 'react-bootstrap';
-import { LineChart, BarChart, PieChart } from 'react-chartjs-2';
+import { Chart } from 'react-chartjs-2';
+import { 
+  Chart as ChartJS, 
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Legend,
+  Tooltip
+} from 'chart.js';
+
+// Register ChartJS components
+ChartJS.register(
+  LinearScale,
+  CategoryScale,
+  BarElement,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Legend,
+  Tooltip
+);
 
 // Types
 type Product = {
@@ -158,14 +181,37 @@ const DropdownSelector = ({
   </Dropdown>
 );
 
+// Chart Components
+const LineChartComponent = ({ data }: { data: any }) => (
+  <Chart 
+    type="line" 
+    data={data} 
+    options={{ responsive: true, maintainAspectRatio: false }}
+  />
+);
+
+const BarChartComponent = ({ data }: { data: any }) => (
+  <Chart 
+    type="bar" 
+    data={data} 
+    options={{ responsive: true, maintainAspectRatio: false }}
+  />
+);
+
+const PieChartComponent = ({ data }: { data: any }) => (
+  <Chart 
+    type="pie" 
+    data={data} 
+    options={{ responsive: true, maintainAspectRatio: false }}
+  />
+);
+
 // Main Component
 const OpenBookAccountingAnalysis = () => {
-  // State
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [showDetails, setShowDetails] = useState<number | null>(null);
 
-  // Derived values
   const filteredSuppliers = selectedProduct
     ? SUPPLIERS.filter(supplier => supplier.productId === selectedProduct.id)
     : [];
@@ -283,21 +329,230 @@ const OpenBookAccountingAnalysis = () => {
       </Row>
 
       {/* Cost Analysis Table */}
-      <CostAnalysisTable 
-        data={COST_ANALYSIS_DATA} 
-        showDetails={showDetails} 
-        setShowDetails={setShowDetails} 
-      />
+      <div className="mb-4">
+        <h4>Cost Analysis</h4>
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Supplier Declared Cost (EGP)</th>
+              <th>Buyer Target (EGP)</th>
+              <th>Actual Cost (EGP)</th>
+              <th>Variance</th>
+              <th>Status</th>
+              <th>Solution</th>
+              <th>Packaging Type</th>
+              <th>Cap Type</th>
+              <th>Package Shape</th>
+              <th>Machine Type</th>
+              <th>Data Type</th>
+              <th>Disclosure</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {COST_ANALYSIS_DATA.map(item => (
+              <React.Fragment key={item.id}>
+                <tr>
+                  <td>{item.item}</td>
+                  <td>{item.supplierDeclaredCost}</td>
+                  <td>{item.buyerTarget}</td>
+                  <td>{item.actualCost}</td>
+                  <td className={item.variance > 0 ? 'text-danger' : 'text-success'}>
+                    {item.variance > 0 ? `+${item.variance}` : item.variance}
+                  </td>
+                  <td>{item.status}</td>
+                  <td>{item.solution}</td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="light" size="sm">
+                        {item.packagingType}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {PACKAGING_TYPES.map(type => (
+                          <Dropdown.Item key={type}>{type}</Dropdown.Item>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="light" size="sm">
+                        {item.capType}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {CAP_TYPES.map(type => (
+                          <Dropdown.Item key={type}>{type}</Dropdown.Item>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="light" size="sm">
+                        {item.packageShape}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {PACKAGE_SHAPES.map(shape => (
+                          <Dropdown.Item key={shape}>{shape}</Dropdown.Item>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                  <td>
+                    <Dropdown>
+                      <Dropdown.Toggle variant="light" size="sm">
+                        {item.machineType}
+                      </Dropdown.Toggle>
+                      <Dropdown.Menu>
+                        {MACHINE_TYPES.map(type => (
+                          <Dropdown.Item key={type}>{type}</Dropdown.Item>
+                        ))}
+                      </Dropdown.Menu>
+                    </Dropdown>
+                  </td>
+                  <td>{item.dataType}</td>
+                  <td>{item.disclosure}</td>
+                  <td>
+                    <Button
+                      variant="info"
+                      size="sm"
+                      onClick={() => setShowDetails(showDetails === item.id ? null : item.id)}
+                    >
+                      {showDetails === item.id ? 'Hide Details' : 'View Details'}
+                    </Button>
+                  </td>
+                </tr>
+                {showDetails === item.id && (
+                  <tr>
+                    <td colSpan={14}>
+                      <div className="p-3 bg-light">
+                        <h5>Detailed Information for {item.item}</h5>
+                        <Row>
+                          <Col md={6}>
+                            <h6>Raw Materials Composition</h6>
+                            <Table striped bordered size="sm">
+                              <thead>
+                                <tr>
+                                  <th>Material</th>
+                                  <th>Composition</th>
+                                  <th>Concentration</th>
+                                  <th>Price/kg</th>
+                                  <th>Cost</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Vitamin B1</td>
+                                  <td>Thiamine</td>
+                                  <td>0.001 kg</td>
+                                  <td>EGP 540</td>
+                                  <td>EGP 0.54</td>
+                                </tr>
+                                <tr>
+                                  <td>Vitamin B2</td>
+                                  <td>Riboflavin</td>
+                                  <td>0.006 kg</td>
+                                  <td>EGP 600</td>
+                                  <td>EGP 3.6</td>
+                                </tr>
+                              </tbody>
+                            </Table>
+                          </Col>
+                          <Col md={6}>
+                            <h6>Packaging Information</h6>
+                            <Table striped bordered size="sm">
+                              <thead>
+                                <tr>
+                                  <th>Package Type</th>
+                                  <th>Shape</th>
+                                  <th>Sealing Method</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                <tr>
+                                  <td>Pump</td>
+                                  <td>دائري</td>
+                                  <td>Safety Seal</td>
+                                </tr>
+                              </tbody>
+                            </Table>
+                          </Col>
+                        </Row>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
+            ))}
+          </tbody>
+        </Table>
+      </div>
 
       {/* Machine Maintenance Table */}
-      <MachineMaintenanceTable data={MAINTENANCE_DATA} />
+      <div className="mb-4">
+        <h4>Machine Maintenance Schedule</h4>
+        <Table striped bordered hover responsive>
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th>Function</th>
+              <th>Maintenance Task</th>
+              <th>Frequency</th>
+              <th>Status</th>
+              <th>Disclosure</th>
+              <th>Info Type</th>
+            </tr>
+          </thead>
+          <tbody>
+            {MAINTENANCE_DATA.map(item => (
+              <tr key={item.id}>
+                <td>{item.component}</td>
+                <td>{item.function}</td>
+                <td>{item.maintenanceTask}</td>
+                <td>{item.frequency}</td>
+                <td>{item.status}</td>
+                <td>{item.disclosure}</td>
+                <td>{item.infoType}</td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </div>
 
       {/* Charts Section */}
-      <ChartsSection 
-        lineChartData={lineChartData} 
-        barChartData={barChartData} 
-        pieChartData={pieChartData} 
-      />
+      <Row className="mb-4">
+        <Col md={4}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Cost Trend</Card.Title>
+              <div style={{ height: '300px' }}>
+                <LineChartComponent data={lineChartData} />
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Cost Comparison</Card.Title>
+              <div style={{ height: '300px' }}>
+                <BarChartComponent data={barChartData} />
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card>
+            <Card.Body>
+              <Card.Title>Cost Distribution</Card.Title>
+              <div style={{ height: '300px' }}>
+                <PieChartComponent data={pieChartData} />
+              </div>
+            </Card.Body>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Submit to Blockchain Button */}
       <div className="text-center mb-4">
@@ -308,251 +563,5 @@ const OpenBookAccountingAnalysis = () => {
     </div>
   );
 };
-
-// Sub-components
-const CostAnalysisTable = ({
-  data,
-  showDetails,
-  setShowDetails,
-}: {
-  data: CostItem[];
-  showDetails: number | null;
-  setShowDetails: (id: number | null) => void;
-}) => (
-  <div className="mb-4">
-    <h4>Cost Analysis</h4>
-    <Table striped bordered hover responsive>
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Supplier Declared Cost (EGP)</th>
-          <th>Buyer Target (EGP)</th>
-          <th>Actual Cost (EGP)</th>
-          <th>Variance</th>
-          <th>Status</th>
-          <th>Solution</th>
-          <th>Packaging Type</th>
-          <th>Cap Type</th>
-          <th>Package Shape</th>
-          <th>Machine Type</th>
-          <th>Data Type</th>
-          <th>Disclosure</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map(item => (
-          <React.Fragment key={item.id}>
-            <tr>
-              <td>{item.item}</td>
-              <td>{item.supplierDeclaredCost}</td>
-              <td>{item.buyerTarget}</td>
-              <td>{item.actualCost}</td>
-              <td className={item.variance > 0 ? 'text-danger' : 'text-success'}>
-                {item.variance > 0 ? `+${item.variance}` : item.variance}
-              </td>
-              <td>{item.status}</td>
-              <td>{item.solution}</td>
-              <td>
-                <Dropdown>
-                  <Dropdown.Toggle variant="light" size="sm">
-                    {item.packagingType}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {PACKAGING_TYPES.map(type => (
-                      <Dropdown.Item key={type}>{type}</Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </td>
-              <td>
-                <Dropdown>
-                  <Dropdown.Toggle variant="light" size="sm">
-                    {item.capType}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {CAP_TYPES.map(type => (
-                      <Dropdown.Item key={type}>{type}</Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </td>
-              <td>
-                <Dropdown>
-                  <Dropdown.Toggle variant="light" size="sm">
-                    {item.packageShape}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {PACKAGE_SHAPES.map(shape => (
-                      <Dropdown.Item key={shape}>{shape}</Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </td>
-              <td>
-                <Dropdown>
-                  <Dropdown.Toggle variant="light" size="sm">
-                    {item.machineType}
-                  </Dropdown.Toggle>
-                  <Dropdown.Menu>
-                    {MACHINE_TYPES.map(type => (
-                      <Dropdown.Item key={type}>{type}</Dropdown.Item>
-                    ))}
-                  </Dropdown.Menu>
-                </Dropdown>
-              </td>
-              <td>{item.dataType}</td>
-              <td>{item.disclosure}</td>
-              <td>
-                <Button
-                  variant="info"
-                  size="sm"
-                  onClick={() => setShowDetails(showDetails === item.id ? null : item.id)}
-                >
-                  {showDetails === item.id ? 'Hide Details' : 'View Details'}
-                </Button>
-              </td>
-            </tr>
-            {showDetails === item.id && (
-              <tr>
-                <td colSpan="14">
-                  <div className="p-3 bg-light">
-                    <h5>Detailed Information for {item.item}</h5>
-                    <Row>
-                      <Col md={6}>
-                        <h6>Raw Materials Composition</h6>
-                        <Table striped bordered size="sm">
-                          <thead>
-                            <tr>
-                              <th>Material</th>
-                              <th>Composition</th>
-                              <th>Concentration</th>
-                              <th>Price/kg</th>
-                              <th>Cost</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Vitamin B1</td>
-                              <td>Thiamine</td>
-                              <td>0.001 kg</td>
-                              <td>EGP 540</td>
-                              <td>EGP 0.54</td>
-                            </tr>
-                            <tr>
-                              <td>Vitamin B2</td>
-                              <td>Riboflavin</td>
-                              <td>0.006 kg</td>
-                              <td>EGP 600</td>
-                              <td>EGP 3.6</td>
-                            </tr>
-                          </tbody>
-                        </Table>
-                      </Col>
-                      <Col md={6}>
-                        <h6>Packaging Information</h6>
-                        <Table striped bordered size="sm">
-                          <thead>
-                            <tr>
-                              <th>Package Type</th>
-                              <th>Shape</th>
-                              <th>Sealing Method</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            <tr>
-                              <td>Pump</td>
-                              <td>دائري</td>
-                              <td>Safety Seal</td>
-                            </tr>
-                          </tbody>
-                        </Table>
-                      </Col>
-                    </Row>
-                  </div>
-                </td>
-              </tr>
-            )}
-          </React.Fragment>
-        ))}
-      </tbody>
-    </Table>
-  </div>
-);
-
-const MachineMaintenanceTable = ({ data }: { data: MaintenanceItem[] }) => (
-  <div className="mb-4">
-    <h4>Machine Maintenance Schedule</h4>
-    <Table striped bordered hover responsive>
-      <thead>
-        <tr>
-          <th>Component</th>
-          <th>Function</th>
-          <th>Maintenance Task</th>
-          <th>Frequency</th>
-          <th>Status</th>
-          <th>Disclosure</th>
-          <th>Info Type</th>
-        </tr>
-      </thead>
-      <tbody>
-        {data.map(item => (
-          <tr key={item.id}>
-            <td>{item.component}</td>
-            <td>{item.function}</td>
-            <td>{item.maintenanceTask}</td>
-            <td>{item.frequency}</td>
-            <td>{item.status}</td>
-            <td>{item.disclosure}</td>
-            <td>{item.infoType}</td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
-  </div>
-);
-
-const ChartsSection = ({
-  lineChartData,
-  barChartData,
-  pieChartData,
-}: {
-  lineChartData: any;
-  barChartData: any;
-  pieChartData: any;
-}) => (
-  <Row className="mb-4">
-    <Col md={4}>
-      <Card>
-        <Card.Body>
-          <Card.Title>Cost Trend</Card.Title>
-          <div style={{ height: '300px' }}>
-            <LineChart data={lineChartData} />
-          </div>
-        </Card.Body>
-      </Card>
-    </Col>
-    <Col md={4}>
-      <Card>
-        <Card.Body>
-          <Card.Title>Cost Comparison</Card.Title>
-          <div style={{ height: '300px' }}>
-            <BarChart data={barChartData} />
-          </div>
-        </Card.Body>
-      </Card>
-    </Col>
-    <Col md={4}>
-      <Card>
-        <Card.Body>
-          <Card.Title>Cost Distribution</Card.Title>
-          <div style={{ height: '300px' }}>
-            <PieChart data={pieChartData} />
-          </div>
-        </Card.Body>
-      </Card>
-    </Col>
-  </Row>
-);
 
 export default OpenBookAccountingAnalysis;
