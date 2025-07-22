@@ -208,13 +208,14 @@ function CostAnalytics() {
               <Table.Row key={category}>
                 <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
                 <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
-                <Table.Cell>
-                  <input
-                    type="number"
-                    value={totals[category].target
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                    style={{ width: '80px' }}
-                  />
+                <<Table.Cell>
+  <input
+    type="number"
+    value={totals[category].target}
+    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+    style={{ width: '80px' }}
+  />
+</Table.Cell>
                 </Table.Cell>
                 <Table.Cell>{formatCurrency(variance, currency)}</Table.Cell>
                 <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
