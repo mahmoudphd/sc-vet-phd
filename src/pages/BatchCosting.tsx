@@ -25,9 +25,7 @@ const OpenBookAccounting = () => {
       supplier: 'Supplier X',
       amount: 24500,
       status: 'paid',
-      dueDate: '2023-06-14',
-      iotVerified: true,
-      incentives: 3
+      dueDate: '2023-06-14'
     },
     {
       id: 'TX-23002',
@@ -36,9 +34,7 @@ const OpenBookAccounting = () => {
       supplier: 'Supplier Y',
       amount: 18700,
       status: 'pending',
-      dueDate: '2023-06-17',
-      iotVerified: false,
-      incentives: 1
+      dueDate: '2023-06-17'
     },
     {
       id: 'TX-23003',
@@ -47,24 +43,9 @@ const OpenBookAccounting = () => {
       supplier: 'Supplier Z',
       amount: 32000,
       status: 'paid',
-      dueDate: '2023-06-19',
-      iotVerified: true,
-      incentives: 5
+      dueDate: '2023-06-19'
     },
   ];
-
-  // Calculate metrics
-  const totalActualCost = transactions.reduce((sum, tx) => sum + tx.amount, 0);
-  const iotVerifiedCost = transactions
-    .filter(tx => tx.iotVerified)
-    .reduce((sum, tx) => sum + tx.amount, 0);
-  const totalIncentives = transactions.reduce((sum, tx) => sum + tx.incentives, 0);
-  const trustScores = {
-    'Supplier X': 88,
-    'Supplier Y': 72,
-    'Supplier Z': 95
-  };
-  const avgTrustScore = Object.values(trustScores).reduce((a, b) => a + b, 0) / Object.keys(trustScores).length;
 
   return (
     <Box p="6">
@@ -101,30 +82,29 @@ const OpenBookAccounting = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Total Actual Cost</Text>
-            <Heading size="7">${totalActualCost.toLocaleString()}</Heading>
-            <Text size="1" color="gray">Across all transactions</Text>
+            <Text size="2">Total Open Transactions</Text>
+            <Heading size="7">$75,200</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Supplier Trust Score</Text>
-            <Heading size="7">{Math.round(avgTrustScore)}/100</Heading>
-            <Text size="1" color="gray">Average across suppliers</Text>
+            <Text size="2">Upcoming Payments</Text>
+            <Heading size="7">$18,700</Heading>
+            <Text size="1" color="gray">Due in 7 days</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">IoT Verified Cost</Text>
-            <Heading size="7">${iotVerifiedCost.toLocaleString()}</Heading>
-            <Text size="1" color="gray">Verified by IoT devices</Text>
+            <Text size="2">Avg Payment Terms</Text>
+            <Heading size="7">30 days</Heading>
+            <Text size="1" color="gray">Net 30 standard</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Supplier Incentives Offered</Text>
-            <Heading size="7">{totalIncentives}</Heading>
-            <Text size="1" color="gray">Total incentives across suppliers</Text>
+            <Text size="2">Supplier Health</Text>
+            <Progress value={92} />
+            <Text size="1" color="gray">3 active suppliers</Text>
           </Flex>
         </Card>
       </Grid>
@@ -139,8 +119,6 @@ const OpenBookAccounting = () => {
             <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Due Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>IoT Verified</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -157,12 +135,6 @@ const OpenBookAccounting = () => {
                 </Badge>
               </Table.Cell>
               <Table.Cell>{tx.dueDate}</Table.Cell>
-              <Table.Cell>
-                <Badge color={tx.iotVerified ? 'green' : 'red'}>
-                  {tx.iotVerified ? 'Yes' : 'No'}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>{tx.incentives}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
@@ -173,23 +145,23 @@ const OpenBookAccounting = () => {
           <Heading size="4" mb="3">Spending by Supplier</Heading>
           <div className="h-64">
             <BarChart width={500} height={250} data={[
-              { name: 'Supplier X', value: 24500, trustScore: 88 },
-              { name: 'Supplier Y', value: 18700, trustScore: 72 },
-              { name: 'Supplier Z', value: 32000, trustScore: 95 }
+              { name: 'Supplier X', value: 24500 },
+              { name: 'Supplier Y', value: 18700 },
+              { name: 'Supplier Z', value: 32000 }
             ]}>
               <Bar dataKey="value" fill="#3b82f6" />
             </BarChart>
           </div>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Supplier Trust Scores</Heading>
+          <Heading size="4" mb="3">Payment Status</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
-                  { name: 'Supplier X (88)', value: 88 },
-                  { name: 'Supplier Y (72)', value: 72 },
-                  { name: 'Supplier Z (95)', value: 95 }
+                  { name: 'Paid', value: 65 },
+                  { name: 'Pending', value: 25 },
+                  { name: 'Overdue', value: 10 }
                 ]}
                 cx="50%"
                 cy="50%"
