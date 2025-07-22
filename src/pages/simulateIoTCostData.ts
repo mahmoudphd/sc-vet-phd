@@ -17,6 +17,7 @@ export interface Item {
   hours?: number;
   hourlyRate?: number;
   basis?: number;
+  totalCost?: number;
 }
 
 interface CostTotals {
@@ -109,9 +110,7 @@ export const simulatedIoTCostData: IoTCostData = {
   ],
 };
 
-// دالة مساعدة لإنشاء بيانات محاكاة ديناميكية
 export const generateSimulatedData = (productId: string): IoTCostData => {
-  // يمكن تعديل هذه الدالة لإنشاء بيانات مختلفة حسب المنتج
   return {
     ...simulatedIoTCostData,
     totals: {
