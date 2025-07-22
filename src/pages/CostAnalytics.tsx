@@ -4,277 +4,272 @@ import {
   Box,
   Button,
   Card,
-  Dialog,
   Flex,
   Grid,
   Heading,
+  Progress,
   Switch,
   Table,
   Text,
+  Dialog
 } from '@radix-ui/themes';
-import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { simulatedIoTCostData } from './simulateIoTCostData';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 
-const pieColors = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042', '#8dd1e1'];
+// ألوان المخطط الدائري
+const pieColors = ['#4f46e5', '#0ea5e9', '#10b981', '#f97316', '#f43f5e'];
 
+// البيانات المحاكاة
+export const simulatedIoTCostData = {
+  totals: {
+    'Direct Materials': { actual: 133.11, target: 129, costAfter: 130 },
+    'Packaging Materials': { actual: 18, target: 16, costAfter: 16 },
+    'Direct Labor': { actual: 3, target: 2, costAfter: 2 },
+    Overhead: { actual: 2, target: 2, costAfter: 2 },
+    'Other Costs': { actual: 15, target: 13, costAfter: 14 },
+  },
+  benchmarkPrice: 140,
+  costAfter: 164,
+};
+
+// الحالات
 const CostAnalytics = () => {
+  const [totals, setTotals] = useState(simulatedIoTCostData.totals);
+  const [benchmarkPrice, setBenchmarkPrice] = useState(simulatedIoTCostData.benchmarkPrice);
+  const [costAfter, setCostAfter] = useState(simulatedIoTCostData.costAfter);
+  const [showGapAnalysis, setShowGapAnalysis] = useState(false);
+  const [solutions, setSolutions] = useState<{ [key: string]: string }>({});
   const [autoMode, setAutoMode] = useState(true);
-  const [showGap, setShowGap] = useState(false);
-  const [insightOpen, setInsightOpen] = useState(false);
-  const [detailsOpen, setDetailsOpen] = useState<null | string>(null);
-
-  const handleTargetChange = (category: string, value: number) => {
-    // Update logic here
-  };
-  const handleSolutionChange = (category: string, solution: string) => {
-    // Update logic here
-  };
-  const handleSubmitAll = () => {
-    // Submit all logic
-  };
-  const showGapAnalysis = () => {
-    setShowGap(!showGap);
-  };
   return (
     <Box p="4">
-      <Heading size="6" mb="4">Cost Analytics Dashboard</Heading>
-      
-      <Grid columns="3" gap="4" mb="4">
-        <Card>
-          <Text>Actual Cost</Text>
-          <Text size="5" weight="bold">EGP {simulatedIoTCostData.totals['Direct Materials'].actual + simulatedIoTCostData.totals['Packaging Materials'].actual + simulatedIoTCostData.totals['Direct Labor'].actual + simulatedIoTCostData.totals['Overhead'].actual + simulatedIoTCostData.totals['Other Costs'].actual}</Text>
-        </Card>
-        <Card>
-          <Text>Target Cost</Text>
-          <Text size="5" weight="bold">EGP {simulatedIoTCostData.totals['Direct Materials'].budget + simulatedIoTCostData.totals['Packaging Materials'].budget + simulatedIoTCostData.totals['Direct Labor'].budget + simulatedIoTCostData.totals['Overhead'].budget + simulatedIoTCostData.totals['Other Costs'].budget}</Text>
-        </Card>
-        <Card>
-          <Flex justify="between" align="center">
-            <Text>Benchmark Price</Text>
-            <Button size="1" onClick={() => setInsightOpen(true)}>Insight</Button>
-          </Flex>
-          <Text size="5" weight="bold">EGP 123.00</Text>
-        </Card>
-      </Grid>
+      <Heading mb="4">Cost Analytics Dashboard</Heading>
 
-      <Grid columns="3" gap="4" mb="4">
+      <Grid columns="3" gap="3" mb="3">
+        <Card><Text>Actual Cost: EGP {Object.values(totals).reduce((a, b) => a + b.actual, 0).toFixed(2)}</Text></Card>
+        <Card><Text>Target Cost: EGP {Object.values(totals).reduce((a, b) => a + b.target, 0).toFixed(2)}</Text></Card>
         <Card>
-          <Text>Profit Margin (%)</Text>
-          <Text size="5" weight="bold">18%</Text>
-        </Card>
-        <Card>
-          <Text>Progress To Target</Text>
-          <Text size="5" weight="bold">75%</Text>
-        </Card>
-        <Card>
-          <Text>Post-Optimization Estimate</Text>
-          <Text size="5" weight="bold">EGP {simulatedIoTCostData.totals['Direct Materials'].costAfter + simulatedIoTCostData.totals['Packaging Materials'].costAfter + simulatedIoTCostData.totals['Direct Labor'].costAfter + simulatedIoTCostData.totals['Overhead'].costAfter + simulatedIoTCostData.totals['Other Costs'].costAfter}</Text>
-        </Card>
-      </Grid>
-      <Box mb="4" style={{ border: '1px solid #ccc', padding: 12, borderRadius: 8 }}>
-        <Flex justify="end" mb="2">
-          <Button variant="blue" size="2" onClick={() => setShowGapAnalysis(!showGapAnalysis)}>
-            Show Gap Analysis
-          </Button>
-        </Flex>
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={benchmarkTrendData}>
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="actual" stroke="#8884d8" />
-            <Line type="monotone" dataKey="benchmark" stroke="#82ca9d" />
-          </LineChart>
-        </ResponsiveContainer>
-      </Box>
-
-      {showGapAnalysis && (
-        <Box mb="4" style={{ border: '1px solid #ccc', padding: 12, borderRadius: 8 }}>
-          <ResponsiveContainer width="100%" height={200}>
-            <PieChart>
-              <Pie
-                data={gapData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                label
-              >
-                {gapData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Box>
-      )}
-      <Box mb="4">
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Benchmark Price</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Varience</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost After</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {Object.entries(costData.totals).map(([category, data]) => (
-              <Table.Row key={category}>
-                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-                <Table.Cell>{data.actual.toFixed(2)}</Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    value={data.target}
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value))}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    value={data.benchmark}
-                    onChange={(e) => handleBenchmarkChange(category, parseFloat(e.target.value))}
-                  />
-                </Table.Cell>
-                <Table.Cell>{(data.actual - data.target).toFixed(2)}</Table.Cell>
-                <Table.Cell>{data.costAfter.toFixed(2)}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </Box>
-      {Object.entries(costData.details).map(([category, details]) => (
-        <Dialog.Root key={category}>
-          <Dialog.Trigger asChild>
-            <Button variant="outline" size="small">
-              View {category} Details
+          <Flex justify="between">
+            <Text>Benchmark Price: EGP {benchmarkPrice}</Text>
+            <Button variant="outline" size="xs" onClick={() => alert('Benchmark insight: External market avg etc.')}>
+              Insight
             </Button>
-          </Dialog.Trigger>
-          <Dialog.Content>
-            <Flex justify="between" align="center" mb="2">
-              <Heading size="4">{category} Details</Heading>
-              <Button size="xs" variant="ghost" onClick={() => handleShowImproveTips(category)}>
-                Improve Tips
-              </Button>
-            </Flex>
-            <Table.Root>
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Quantity / Hours / Basis</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Unit Price / Hourly Rate / Total</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {details.map((item, idx) => (
-                  <Table.Row key={idx}>
-                    <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                    <Table.Cell>{item.qty ?? item.hours ?? item.basis ?? '-'}</Table.Cell>
-                    <Table.Cell>{item.unitPrice ?? item.hourlyRate ?? item.totalCost ?? '-'}</Table.Cell>
-                    <Table.Cell>{item.cost?.toFixed(2)}</Table.Cell>
-                    <Table.Cell>
-                      <RadixSelect.Root
-                        value={item.solution ?? ''}
-                        onValueChange={(value) => handleSolutionChange(category, idx, value)}
-                      >
-                        <RadixSelect.Trigger />
-                        <RadixSelect.Content>
-                          <RadixSelect.Item value="">None</RadixSelect.Item>
-                          <RadixSelect.Item value="Reduce Usage">Reduce Usage</RadixSelect.Item>
-                          <RadixSelect.Item value="Change Supplier">Change Supplier</RadixSelect.Item>
-                          <RadixSelect.Item value="Re-Negotiate Price">Re-Negotiate Price</RadixSelect.Item>
-                        </RadixSelect.Content>
-                      </RadixSelect.Root>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </Dialog.Content>
-        </Dialog.Root>
-      ))}
-      <Flex gap="4" mt="4">
-        <Box p="3" style={{ border: '1px solid #ccc', borderRadius: '12px', width: '50%' }}>
-          <Heading size="4" mb="2">Cost Distribution</Heading>
-          <PieChart width={300} height={300}>
+          </Flex>
+        </Card>
+      </Grid>
+
+      <Grid columns="3" gap="3" mb="4">
+        <Card><Text>Profit Margin (%): {(((benchmarkPrice - Object.values(totals).reduce((a, b) => a + b.actual, 0)) / benchmarkPrice) * 100).toFixed(1)}%</Text></Card>
+        <Card>
+          <Text>Progress To Target: </Text>
+          <Progress value={70} />
+        </Card>
+        <Card><Text>Post-Optimization Estimate: EGP {costAfter}</Text></Card>
+      </Grid>
+      <Heading size="3" mb="2">Cost Breakdown</Heading>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeader>Cost Category</Table.ColumnHeader>
+            <Table.ColumnHeader>Actual</Table.ColumnHeader>
+            <Table.ColumnHeader>Target</Table.ColumnHeader>
+            <Table.ColumnHeader>Variance</Table.ColumnHeader>
+            <Table.ColumnHeader>% Of Total</Table.ColumnHeader>
+            <Table.ColumnHeader>Cost After</Table.ColumnHeader>
+            <Table.ColumnHeader>View Details</Table.ColumnHeader>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {Object.entries(totals).map(([category, data], index) => {
+            const variance = (data.actual - data.target).toFixed(2);
+            const percent = ((data.actual / Object.values(totals).reduce((a, b) => a + b.actual, 0)) * 100).toFixed(1);
+            return (
+              <Table.Row key={index}>
+                <Table.Cell>{category}</Table.Cell>
+                <Table.Cell>{data.actual}</Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={data.target}
+                    onChange={(e) => handleTargetChange(category, +e.target.value)}
+                    style={{ width: '60px' }}
+                  />
+                </Table.Cell>
+                <Table.Cell>{variance}</Table.Cell>
+                <Table.Cell>{percent}%</Table.Cell>
+                <Table.Cell>{data.costAfter}</Table.Cell>
+                <Table.Cell>
+                  <Dialog.Root>
+                    <Dialog.Trigger>
+                      <Button size="xs" variant="outline">View Details</Button>
+                    </Dialog.Trigger>
+                    <Dialog.Content>
+                      <Dialog.Title>{category} Details</Dialog.Title>
+                      <Text>Improve Tips: Consider process optimization, supplier negotiation, etc.</Text>
+                      <Button onClick={() => handleSolutionChange(category, 'New Solution')}>
+                        Apply Solution
+                      </Button>
+                    </Dialog.Content>
+                  </Dialog.Root>
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+        </Table.Body>
+      </Table.Root>
+      <Box mb="4" style={{ border: '1px solid #ddd', padding: '16px', borderRadius: '8px' }}>
+        <Heading size="3" mb="2">Cost Distribution</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
             <Pie
-              data={pieData}
-              dataKey="value"
-              nameKey="name"
+              data={Object.entries(totals).map(([category, data]) => ({
+                name: category,
+                value: data.actual,
+              }))}
               cx="50%"
               cy="50%"
               outerRadius={100}
               fill="#8884d8"
               label
+              dataKey="value"
             >
-              {pieData.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+              {Object.entries(totals).map((_, index) => (
+                <Cell key={index} fill={pieColors[index % pieColors.length]} />
               ))}
             </Pie>
+            <Tooltip />
           </PieChart>
-        </Box>
-        <Box p="3" style={{ border: '1px solid #ccc', borderRadius: '12px', width: '50%' }}>
-          <Flex justify="between" align="center" mb="2">
-            <Heading size="4">Benchmark Price Trend</Heading>
-            <Button size="xs" onClick={handleShowGapAnalysis} variant="blue">Show Gap Analysis</Button>
-          </Flex>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={benchmarkTrendData}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="benchmarkPrice" stroke="#8884d8" />
-              {showGapAnalysis && (
-                <Line type="monotone" dataKey="gap" stroke="#82ca9d" strokeDasharray="3 3" />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Flex>
-      <Box mt="6" style={{ textAlign: 'center' }}>
-        <Button color="green" size="3" onClick={handleSubmitAll}>
-          Submit To Blockchain
-        </Button>
+        </ResponsiveContainer>
       </Box>
 
-    </Box>
+      <Box mb="4" style={{ border: '1px solid #ddd', padding: '16px', borderRadius: '8px' }}>
+        <Flex justify="between" mb="2">
+          <Heading size="3">Benchmark Trend</Heading>
+          <Button size="xs" variant="outline" onClick={() => setShowGapAnalysis(!showGapAnalysis)}>
+            Show Gap Analysis
+          </Button>
+        </Flex>
+        <ResponsiveContainer width="100%" height={300}>
+          <LineChart data={[
+            { name: 'Jan', benchmark: 120 },
+            { name: 'Feb', benchmark: 125 },
+            { name: 'Mar', benchmark: 130 },
+            { name: 'Apr', benchmark: 135 },
+          ]}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Line type="monotone" dataKey="benchmark" stroke="#4f46e5" strokeWidth={2} />
+          </LineChart>
+        </ResponsiveContainer>
+      </Box>
+  );
+
+  // تعديل الهدف
+  function handleTargetChange(category: string, newTarget: number) {
+    setTotals(prev => ({
+      ...prev,
+      [category]: { ...prev[category], target: newTarget },
+    }));
+  }
+
+  // تحديث الحلول
+  function handleSolutionChange(category: string, solution: string) {
+    setSolutions(prev => ({ ...prev, [category]: solution }));
+  }
+
+  // زر Submit All
+  function handleSubmitAll() {
+    alert('All data submitted to blockchain!');
+  }
+  return (
+    <>
+      {/* باقي الكروت والرسومات والجدول كما فوق */}
+
+      <Flex justify="center" mt="4">
+        <Button size="md" variant="solid" color="green" onClick={handleSubmitAll}>
+          Submit To Blockchain
+        </Button>
+      </Flex>
+    </>
   );
 };
 
 export default CostAnalytics;
+// ألوان القطاعات في PieChart
+const pieColors = ['#4f46e5', '#22c55e', '#ec4899', '#f97316', '#0ea5e9'];
 
-// 🔧 Helper functions & state handlers
-
-const handleTargetChange = (category: CostCategory, newTarget: number) => {
-  setTotals(prev => ({
-    ...prev,
-    [category]: {
-      ...prev[category],
-      target: newTarget,
-    },
-  }));
+// بيانات الحلول المقترَحة (Solutions)
+const solutions = {
+  'Direct Materials': 'Use alternative supplier',
+  'Packaging Materials': 'Reduce packaging weight',
+  'Direct Labor': 'Optimize scheduling',
+  Overhead: 'Improve energy efficiency',
+  'Other Costs': 'Negotiate better transport rates',
 };
 
-const handleSolutionChange = (index: number, newSolution: string) => {
-  const updated = [...solutions];
-  updated[index] = newSolution;
-  setSolutions(updated);
-};
-
-const handleShowGapAnalysis = () => {
-  setShowGapAnalysis(!showGapAnalysis);
-};
-
-const pieColors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AA336A'];
-
+// بيانات trend للخطّي
 const benchmarkTrendData = [
-  { month: 'Jan', benchmarkPrice: 120, gap: 10 },
-  { month: 'Feb', benchmarkPrice: 125, gap: 8 },
-  { month: 'Mar', benchmarkPrice: 123, gap: 9 },
+  { name: 'Jan', benchmark: 120 },
+  { name: 'Feb', benchmark: 125 },
+  { name: 'Mar', benchmark: 130 },
+  { name: 'Apr', benchmark: 135 },
 ];
+const [totals, setTotals] = useState(simulatedIoTCostData.totals);
+const [showGapAnalysis, setShowGapAnalysis] = useState(false);
+const [insightOpen, setInsightOpen] = useState(false);
+const [dialogCategory, setDialogCategory] = useState<string | null>(null);
+{dialogCategory && (
+  <Dialog.Root open={!!dialogCategory} onOpenChange={() => setDialogCategory(null)}>
+    <Dialog.Content style={{ maxWidth: 600 }}>
+      <Flex justify="between" align="center" mb="2">
+        <Heading size="4">{dialogCategory} Details</Heading>
+        <Button size="xs" variant="outline" onClick={() => setInsightOpen(true)}>
+          Improve Tips
+        </Button>
+      </Flex>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {getDetailsByCategory(dialogCategory).map((item, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>{item.name}</Table.Cell>
+              <Table.Cell>{item.cost}</Table.Cell>
+              <Table.Cell>{solutions[dialogCategory as CostCategory]}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+      <Flex justify="end" mt="3">
+        <Button onClick={() => setDialogCategory(null)}>Close</Button>
+      </Flex>
+    </Dialog.Content>
+  </Dialog.Root>
+)}
+
+<Dialog.Root open={insightOpen} onOpenChange={setInsightOpen}>
+  <Dialog.Content style={{ maxWidth: 400 }}>
+    <Heading size="4">Improve Tips</Heading>
+    <Text size="2">
+      This benchmark price is derived from market trends and internal optimization.
+      You can manually adjust it to reflect expected supplier negotiations or process improvements.
+    </Text>
+    <Flex justify="end" mt="3">
+      <Button onClick={() => setInsightOpen(false)}>Close</Button>
+    </Flex>
+  </Dialog.Content>
+</Dialog.Root>
