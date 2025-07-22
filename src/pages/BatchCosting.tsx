@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Card,
   Flex,
@@ -15,7 +14,6 @@ import {
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
 const OpenBookAccounting = () => {
-  const { t } = useTranslation('open-book-accounting');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState('');
   
@@ -23,54 +21,47 @@ const OpenBookAccounting = () => {
     {
       id: 'TX-23001',
       date: '2023-05-15',
-      product: 'Anthelmintic Oral Suspension',
-      supplier: 'PharmaSource Inc.',
+      product: 'Product A',
+      supplier: 'Supplier X',
       amount: 24500,
       status: 'paid',
-      reconciliation: 'completed',
       dueDate: '2023-06-14'
     },
     {
       id: 'TX-23002',
       date: '2023-05-18',
-      product: 'Antibiotic Injection',
-      supplier: 'Global Pharma Supplies',
+      product: 'Product B',
+      supplier: 'Supplier Y',
       amount: 18700,
       status: 'pending',
-      reconciliation: 'in-progress',
       dueDate: '2023-06-17'
     },
-  ];
-
-  const products = [
-    { id: 'p1', name: 'Anthelmintic Oral Suspension' },
-    { id: 'p2', name: 'Antibiotic Injection' },
-    { id: 'p3', name: 'Pain Relief Tablets' },
-  ];
-
-  const suppliers = [
-    { id: 's1', name: 'PharmaSource Inc.' },
-    { id: 's2', name: 'Global Pharma Supplies' },
-    { id: 's3', name: 'MediCorp International' },
+    {
+      id: 'TX-23003',
+      date: '2023-05-20',
+      product: 'Product C',
+      supplier: 'Supplier Z',
+      amount: 32000,
+      status: 'paid',
+      dueDate: '2023-06-19'
+    },
   ];
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">المحاسبة المفتوحة - نظرة عامة</Heading>
+        <Heading size="6">Open Book Accounting Dashboard</Heading>
         
         <Flex gap="3" align="center">
           <Select.Root 
             value={selectedSupplier}
             onValueChange={setSelectedSupplier}
           >
-            <Select.Trigger placeholder="اختر المورد" />
+            <Select.Trigger placeholder="Select Supplier" />
             <Select.Content>
-              {suppliers.map(supplier => (
-                <Select.Item key={supplier.id} value={supplier.id}>
-                  {supplier.name}
-                </Select.Item>
-              ))}
+              <Select.Item value="x">Supplier X</Select.Item>
+              <Select.Item value="y">Supplier Y</Select.Item>
+              <Select.Item value="z">Supplier Z</Select.Item>
             </Select.Content>
           </Select.Root>
 
@@ -78,13 +69,11 @@ const OpenBookAccounting = () => {
             value={selectedProduct}
             onValueChange={setSelectedProduct}
           >
-            <Select.Trigger placeholder="اختر المنتج" />
+            <Select.Trigger placeholder="Select Product" />
             <Select.Content>
-              {products.map(product => (
-                <Select.Item key={product.id} value={product.id}>
-                  {product.name}
-                </Select.Item>
-              ))}
+              <Select.Item value="a">Product A</Select.Item>
+              <Select.Item value="b">Product B</Select.Item>
+              <Select.Item value="c">Product C</Select.Item>
             </Select.Content>
           </Select.Root>
         </Flex>
@@ -93,29 +82,29 @@ const OpenBookAccounting = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">إجمالي المعاملات المفتوحة</Text>
-            <Heading size="7">$43,200</Heading>
+            <Text size="2">Total Open Transactions</Text>
+            <Heading size="7">$75,200</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">المدفوعات القادمة</Text>
+            <Text size="2">Upcoming Payments</Text>
             <Heading size="7">$18,700</Heading>
-            <Text size="1" color="gray">مستحقة خلال 7 أيام</Text>
+            <Text size="1" color="gray">Due in 7 days</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">متوسط شروط الدفع</Text>
-            <Heading size="7">30 يوم</Heading>
-            <Text size="1" color="gray">صافي 30 يوم</Text>
+            <Text size="2">Avg Payment Terms</Text>
+            <Heading size="7">30 days</Heading>
+            <Text size="1" color="gray">Net 30 standard</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">علاقات الموردين</Text>
-            <Progress value={88} />
-            <Text size="1" color="gray">12 مورد نشط</Text>
+            <Text size="2">Supplier Health</Text>
+            <Progress value={92} />
+            <Text size="1" color="gray">3 active suppliers</Text>
           </Flex>
         </Card>
       </Grid>
@@ -123,13 +112,13 @@ const OpenBookAccounting = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>رقم المعاملة</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>التاريخ</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>المنتج</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>المورد</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>المبلغ</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>الحالة</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>تاريخ الاستحقاق</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Transaction ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Due Date</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -142,7 +131,7 @@ const OpenBookAccounting = () => {
               <Table.Cell>${tx.amount.toLocaleString()}</Table.Cell>
               <Table.Cell>
                 <Badge color={tx.status === 'paid' ? 'green' : 'orange'}>
-                  {tx.status === 'paid' ? 'تم الدفع' : 'قيد الانتظار'}
+                  {tx.status}
                 </Badge>
               </Table.Cell>
               <Table.Cell>{tx.dueDate}</Table.Cell>
@@ -153,26 +142,26 @@ const OpenBookAccounting = () => {
 
       <Flex mt="5" gap="4">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">الإنفاق حسب المورد</Heading>
+          <Heading size="4" mb="3">Spending by Supplier</Heading>
           <div className="h-64">
             <BarChart width={500} height={250} data={[
-              { name: 'PharmaSource', value: 24500 },
-              { name: 'Global Pharma', value: 18700 },
-              { name: 'BioSolutions', value: 9200 }
+              { name: 'Supplier X', value: 24500 },
+              { name: 'Supplier Y', value: 18700 },
+              { name: 'Supplier Z', value: 32000 }
             ]}>
               <Bar dataKey="value" fill="#3b82f6" />
             </BarChart>
           </div>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">توزيع حالة الدفع</Heading>
+          <Heading size="4" mb="3">Payment Status</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
-                  { name: 'تم الدفع', value: 65 },
-                  { name: 'قيد الانتظار', value: 25 },
-                  { name: 'متأخر', value: 10 }
+                  { name: 'Paid', value: 65 },
+                  { name: 'Pending', value: 25 },
+                  { name: 'Overdue', value: 10 }
                 ]}
                 cx="50%"
                 cy="50%"
