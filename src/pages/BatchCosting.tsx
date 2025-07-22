@@ -7,19 +7,11 @@ import {
   Text,
   Table,
   Badge,
-  Button,
   Grid,
   Progress,
   Box,
-  Dialog,
-  TextField,
   Select,
 } from '@radix-ui/themes';
-import {
-  PieChartIcon,
-  BarChartIcon,
-  MixerHorizontalIcon
-} from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
 const OpenBookAccounting = () => {
@@ -27,167 +19,103 @@ const OpenBookAccounting = () => {
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedSupplier, setSelectedSupplier] = useState('');
   
-  const batches = [
+  const transactions = [
     {
-      id: 'VC23001',
+      id: 'TX-23001',
+      date: '2023-05-15',
       product: 'Anthelmintic Oral Suspension',
-      materialCost: 24500,
-      laborCost: 12000,
-      overhead: 8500,
-      totalCost: 45000,
-      costPerUnit: 3.15,
-      variance: '-2.5%',
-      supplier: 'PharmaSource Inc.'
+      supplier: 'PharmaSource Inc.',
+      amount: 24500,
+      status: 'paid',
+      reconciliation: 'completed',
+      dueDate: '2023-06-14'
+    },
+    {
+      id: 'TX-23002',
+      date: '2023-05-18',
+      product: 'Antibiotic Injection',
+      supplier: 'Global Pharma Supplies',
+      amount: 18700,
+      status: 'pending',
+      reconciliation: 'in-progress',
+      dueDate: '2023-06-17'
     },
   ];
 
   const products = [
     { id: 'p1', name: 'Anthelmintic Oral Suspension' },
     { id: 'p2', name: 'Antibiotic Injection' },
+    { id: 'p3', name: 'Pain Relief Tablets' },
   ];
 
   const suppliers = [
     { id: 's1', name: 'PharmaSource Inc.' },
     { id: 's2', name: 'Global Pharma Supplies' },
+    { id: 's3', name: 'MediCorp International' },
   ];
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('openBookAccounting')}</Heading>
-        <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                <MixerHorizontalIcon /> {t('costAnalysis')}
-              </Button>
-            </Dialog.Trigger>
+        <Heading size="6">المحاسبة المفتوحة - نظرة عامة</Heading>
+        
+        <Flex gap="3" align="center">
+          <Select.Root 
+            value={selectedSupplier}
+            onValueChange={setSelectedSupplier}
+          >
+            <Select.Trigger placeholder="اختر المورد" />
+            <Select.Content>
+              {suppliers.map(supplier => (
+                <Select.Item key={supplier.id} value={supplier.id}>
+                  {supplier.name}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
 
-            <Dialog.Content>
-              <Dialog.Title>{t('costAnalysis')}</Dialog.Title>
-              <Dialog.Description>
-                {t('costAnalysisDesc')}
-              </Dialog.Description>
-
-              <Flex direction="column" gap="3">
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('selectProduct')}
-                  </Text>
-                  <Select.Root 
-                    value={selectedProduct}
-                    onValueChange={setSelectedProduct}
-                  >
-                    <Select.Trigger placeholder={t('selectProduct')} />
-                    <Select.Content>
-                      {products.map(product => (
-                        <Select.Item key={product.id} value={product.id}>
-                          {product.name}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </label>
-
-                <Flex gap="3" mt="2" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('cancel')}
-                    </Button>
-                  </Dialog.Close>
-                  <Button>{t('analyze')}</Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                {t('supplierReport')}
-              </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content maxWidth="600px">
-              <Dialog.Title>{t('supplierReport')}</Dialog.Title>
-
-              <Grid columns="2" gap="4" mb="4">
-                <Select.Root 
-                  value={selectedSupplier}
-                  onValueChange={setSelectedSupplier}
-                >
-                  <Select.Trigger placeholder={t('selectSupplier')} />
-                  <Select.Content>
-                    {suppliers.map(supplier => (
-                      <Select.Item key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectTimeframe')} />
-                  <Select.Content>
-                    <Select.Item value="last-month">Last Month</Select.Item>
-                    <Select.Item value="last-quarter">Last Quarter</Select.Item>
-                    <Select.Item value="last-year">Last Year</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Grid>
-
-              <Flex direction="column" gap="2">
-                <Text size="4" weight="bold">{t('supplierPerformance')}</Text>
-                <Card variant="classic">
-                  <Flex justify="between">
-                    <Text>{t('deliveryTimeliness')}</Text>
-                    <Badge color="jade">94%</Badge>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text>{t('qualityCompliance')}</Text>
-                    <Badge color="jade">98.5%</Badge>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text>{t('costVariance')}</Text>
-                    <Badge color="ruby">+2.1%</Badge>
-                  </Flex>
-                </Card>
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('close')}
-                    </Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
+          <Select.Root 
+            value={selectedProduct}
+            onValueChange={setSelectedProduct}
+          >
+            <Select.Trigger placeholder="اختر المنتج" />
+            <Select.Content>
+              {products.map(product => (
+                <Select.Item key={product.id} value={product.id}>
+                  {product.name}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
         </Flex>
       </Flex>
 
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('openTransactions')}</Text>
-            <Heading size="7">24</Heading>
+            <Text size="2">إجمالي المعاملات المفتوحة</Text>
+            <Heading size="7">$43,200</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('pendingReconciliations')}</Text>
-            <Heading size="7">8</Heading>
+            <Text size="2">المدفوعات القادمة</Text>
+            <Heading size="7">$18,700</Heading>
+            <Text size="1" color="gray">مستحقة خلال 7 أيام</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avgPaymentTerms')}</Text>
-            <Heading size="7">30 days</Heading>
+            <Text size="2">متوسط شروط الدفع</Text>
+            <Heading size="7">30 يوم</Heading>
+            <Text size="1" color="gray">صافي 30 يوم</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('accountHealth')}</Text>
-            <Progress value={92} />
+            <Text size="2">علاقات الموردين</Text>
+            <Progress value={88} />
+            <Text size="1" color="gray">12 مورد نشط</Text>
           </Flex>
         </Card>
       </Grid>
@@ -195,27 +123,29 @@ const OpenBookAccounting = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('batchID')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('product')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('supplier')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('totalCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('paymentStatus')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('reconciliation')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>رقم المعاملة</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>التاريخ</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>المنتج</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>المورد</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>المبلغ</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>الحالة</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>تاريخ الاستحقاق</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {batches.map((batch) => (
-            <Table.Row key={batch.id}>
-              <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>{batch.product}</Table.Cell>
-              <Table.Cell>{batch.supplier}</Table.Cell>
-              <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
+          {transactions.map((tx) => (
+            <Table.Row key={tx.id}>
+              <Table.Cell>{tx.id}</Table.Cell>
+              <Table.Cell>{tx.date}</Table.Cell>
+              <Table.Cell>{tx.product}</Table.Cell>
+              <Table.Cell>{tx.supplier}</Table.Cell>
+              <Table.Cell>${tx.amount.toLocaleString()}</Table.Cell>
               <Table.Cell>
-                <Badge color="green">Paid</Badge>
+                <Badge color={tx.status === 'paid' ? 'green' : 'orange'}>
+                  {tx.status === 'paid' ? 'تم الدفع' : 'قيد الانتظار'}
+                </Badge>
               </Table.Cell>
-              <Table.Cell>
-                <Badge color="blue">Reconciled</Badge>
-              </Table.Cell>
+              <Table.Cell>{tx.dueDate}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
@@ -223,24 +153,26 @@ const OpenBookAccounting = () => {
 
       <Flex mt="5" gap="4">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('costBreakdown')}</Heading>
+          <Heading size="4" mb="3">الإنفاق حسب المورد</Heading>
           <div className="h-64">
-            <BarChart width={500} height={250} data={batches}>
-              <Bar dataKey="materialCost" fill="#3b82f6" name={t('material')} />
-              <Bar dataKey="laborCost" fill="#ef4444" name={t('labor')} />
-              <Bar dataKey="overhead" fill="#10b981" name={t('overhead')} />
+            <BarChart width={500} height={250} data={[
+              { name: 'PharmaSource', value: 24500 },
+              { name: 'Global Pharma', value: 18700 },
+              { name: 'BioSolutions', value: 9200 }
+            ]}>
+              <Bar dataKey="value" fill="#3b82f6" />
             </BarChart>
           </div>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('supplierDistribution')}</Heading>
+          <Heading size="4" mb="3">توزيع حالة الدفع</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
-                  { name: 'PharmaSource Inc.', value: 65 },
-                  { name: 'Global Pharma', value: 25 },
-                  { name: 'Others', value: 10 }
+                  { name: 'تم الدفع', value: 65 },
+                  { name: 'قيد الانتظار', value: 25 },
+                  { name: 'متأخر', value: 10 }
                 ]}
                 cx="50%"
                 cy="50%"
