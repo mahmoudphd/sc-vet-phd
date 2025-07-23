@@ -1,207 +1,209 @@
-// src/pages/BatchCosting.tsx
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from "@/components/ui/table";
+// src/pages/OpenBookAccountingOverview.tsx
+import React, { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 
-const vitaminData = [
-  "Vitamin B1",
-  "Vitamin B2",
-  "Vitamin B6",
-  "Vitamin B12",
-  "Pantothenic Acid",
-  "Leucine",
-  "Taurine",
-  "Glycine",
+const suppliers = ['Supplier A', 'Supplier B', 'Supplier C'];
+const products = ['Product X', 'Product Y', 'Product Z'];
+const currencies = ['USD', 'EGP'];
+const tiers = ['Tier 1', 'Tier 2', 'Tier 3'];
+
+const incentives = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
 ];
 
-const BatchCosting = () => {
-  const [supplier, setSupplier] = useState("");
-  const [product, setProduct] = useState("");
-  const [currency, setCurrency] = useState("USD");
+export default function OpenBookAccountingOverview() {
+  const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [supplierTier, setSupplierTier] = useState('Tier 1');
+  const [transactionVolume, setTransactionVolume] = useState('');
+  const [componentCriticality, setComponentCriticality] = useState('');
+  const [selectedIncentives, setSelectedIncentives] = useState<string[]>([]);
 
-  const [supplierTier, setSupplierTier] = useState("Tier 1");
-  const [transactionVolume, setTransactionVolume] = useState("");
-  const [criticality, setCriticality] = useState("High");
-  const [incentives, setIncentives] = useState<string[]>([]);
-
-  const [vitaminCosts, setVitaminCosts] = useState(
-    vitaminData.map((name) => ({
-      name,
-      quantity: 0,
-      unitCost: 0,
-    }))
-  );
-
-  const handleCostChange = (index: number, field: "quantity" | "unitCost", value: number) => {
-    const updated = [...vitaminCosts];
-    updated[index][field] = value;
-    setVitaminCosts(updated);
+  const handleIncentiveToggle = (incentive: string) => {
+    if (selectedIncentives.includes(incentive)) {
+      setSelectedIncentives(selectedIncentives.filter(i => i !== incentive));
+    } else {
+      setSelectedIncentives([...selectedIncentives, incentive]);
+    }
   };
 
-  const getTotal = () =>
-    vitaminCosts.reduce((sum, item) => sum + item.quantity * item.unitCost, 0).toFixed(2);
+  const rows = [
+    { category: 'Raw Materials', cost: 10000 },
+    { category: 'Labor', cost: 5000 },
+    { category: 'Overhead', cost: 3000 },
+    { category: 'Logistics', cost: 2000 },
+  ];
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-3xl font-bold">Open Book Accounting Overview</h1>
+      <h1 className="text-2xl font-bold">Open Book Accounting Overview</h1>
 
       {/* Dropdowns */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Select onValueChange={setSupplier}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Supplier" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Supplier A">Supplier A</SelectItem>
-            <SelectItem value="Supplier B">Supplier B</SelectItem>
-            <SelectItem value="Supplier C">Supplier C</SelectItem>
-          </SelectContent>
-        </Select>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium">Select Supplier</label>
+          <Select onValueChange={setSelectedSupplier}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose Supplier" />
+            </SelectTrigger>
+            <SelectContent>
+              {suppliers.map(s => (
+                <SelectItem key={s} value={s}>{s}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select onValueChange={setProduct}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Product" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="Product X">Product X</SelectItem>
-            <SelectItem value="Product Y">Product Y</SelectItem>
-          </SelectContent>
-        </Select>
+        <div>
+          <label className="block text-sm font-medium">Select Product</label>
+          <Select onValueChange={setSelectedProduct}>
+            <SelectTrigger>
+              <SelectValue placeholder="Choose Product" />
+            </SelectTrigger>
+            <SelectContent>
+              {products.map(p => (
+                <SelectItem key={p} value={p}>{p}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select value={currency} onValueChange={setCurrency}>
-          <SelectTrigger>
-            <SelectValue placeholder="Select Currency" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="USD">USD</SelectItem>
-            <SelectItem value="EGP">EGP</SelectItem>
-          </SelectContent>
-        </Select>
+        <div>
+          <label className="block text-sm font-medium">Select Currency</label>
+          <Select value={currency} onValueChange={setCurrency}>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {currencies.map(c => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+      {/* Editable Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
-          <CardContent className="space-y-2 pt-4">
-            <label className="font-semibold">Supplier Tier</label>
+          <CardHeader>
+            <CardTitle>Supplier Tier</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Select value={supplierTier} onValueChange={setSupplierTier}>
               <SelectTrigger>
-                <SelectValue placeholder="Tier" />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Tier 1">Tier 1</SelectItem>
-                <SelectItem value="Tier 2">Tier 2</SelectItem>
-                <SelectItem value="Tier 3">Tier 3</SelectItem>
+                {tiers.map(t => (
+                  <SelectItem key={t} value={t}>{t}</SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="space-y-2 pt-4">
-            <label className="font-semibold">Transaction Volume</label>
+          <CardHeader>
+            <CardTitle>Transaction Volume</CardTitle>
+          </CardHeader>
+          <CardContent>
             <Input
               type="number"
               value={transactionVolume}
-              onChange={(e) => setTransactionVolume(e.target.value)}
-              placeholder="Enter volume"
+              onChange={e => setTransactionVolume(e.target.value)}
+              placeholder="Enter amount"
             />
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="space-y-2 pt-4">
-            <label className="font-semibold">Component Criticality</label>
-            <Select value={criticality} onValueChange={setCriticality}>
-              <SelectTrigger>
-                <SelectValue placeholder="Criticality" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="High">High</SelectItem>
-                <SelectItem value="Medium">Medium</SelectItem>
-                <SelectItem value="Low">Low</SelectItem>
-              </SelectContent>
-            </Select>
+          <CardHeader>
+            <CardTitle>Component Criticality</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="text"
+              value={componentCriticality}
+              onChange={e => setComponentCriticality(e.target.value)}
+              placeholder="e.g. High / Medium / Low"
+            />
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="space-y-2 pt-4">
-            <label className="font-semibold">Supplier Incentives Offered</label>
-            <Select
-              multiple
-              value={incentives}
-              onValueChange={(val) => setIncentives(val as string[])}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select incentives" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Greater volumes">Greater volumes</SelectItem>
-                <SelectItem value="Longer contracts">Longer contracts</SelectItem>
-                <SelectItem value="Technical support">Technical support</SelectItem>
-                <SelectItem value="Marketing support">Marketing support</SelectItem>
-              </SelectContent>
-            </Select>
+          <CardHeader>
+            <CardTitle>Supplier Incentives Offered</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {incentives.map(inc => (
+              <label key={inc} className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  checked={selectedIncentives.includes(inc)}
+                  onChange={() => handleIncentiveToggle(inc)}
+                />
+                <span>{inc}</span>
+              </label>
+            ))}
           </CardContent>
         </Card>
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Component</TableHead>
-              <TableHead>Quantity</TableHead>
-              <TableHead>Unit Cost ({currency})</TableHead>
-              <TableHead>Total Cost</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {vitaminCosts.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell>{item.name}</TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      handleCostChange(index, "quantity", parseFloat(e.target.value) || 0)
-                    }
-                  />
-                </TableCell>
-                <TableCell>
-                  <Input
-                    type="number"
-                    value={item.unitCost}
-                    onChange={(e) =>
-                      handleCostChange(index, "unitCost", parseFloat(e.target.value) || 0)
-                    }
-                  />
-                </TableCell>
-                <TableCell>{(item.quantity * item.unitCost).toFixed(2)} {currency}</TableCell>
+      <Card>
+        <CardHeader>
+          <CardTitle>Cost Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Category</TableHead>
+                <TableHead>Cost ({currency})</TableHead>
               </TableRow>
-            ))}
-            <TableRow>
-              <TableCell colSpan={3} className="font-bold text-right">
-                Total
-              </TableCell>
-              <TableCell className="font-bold">{getTotal()} {currency}</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.category}</TableCell>
+                  <TableCell>{row.cost.toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      {/* Export Button */}
-      <div className="text-right">
-        <Button onClick={() => alert("Exporting report...")}>Export Report</Button>
+      <div className="flex justify-end">
+        <Button>Export Report</Button>
       </div>
     </div>
   );
-};
-
-export default BatchCosting;
+}
