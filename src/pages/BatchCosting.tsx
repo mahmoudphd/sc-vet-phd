@@ -79,19 +79,19 @@ const OpenBookAccountingDashboard = () => {
 
         <Card>
           <Text size="2" mb="2">Transaction Volume</Text>
-          <TextField.Input
+          <TextField
             placeholder="Enter volume"
             value={transactionVolume}
-            onChange={(e) => setTransactionVolume(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTransactionVolume(e.target.value)}
           />
         </Card>
 
         <Card>
           <Text size="2" mb="2">Component Criticality</Text>
-          <TextField.Input
+          <TextField
             placeholder="Enter criticality"
             value={componentCriticality}
-            onChange={(e) => setComponentCriticality(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setComponentCriticality(e.target.value)}
           />
         </Card>
 
