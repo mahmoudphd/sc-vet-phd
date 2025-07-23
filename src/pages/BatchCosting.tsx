@@ -21,11 +21,15 @@ const Select = ({
   onChange,
   children,
 }: {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   children: React.ReactNode;
 }) => (
-  <select value={value} onChange={onChange} style={{ padding: 8, borderRadius: 4, border: "1px solid #ccc" }}>
+  <select
+    value={value}
+    onChange={onChange}
+    style={{ padding: 8, borderRadius: 4, border: "1px solid #ccc", width: "100%" }}
+  >
     {children}
   </select>
 );
@@ -93,6 +97,7 @@ const BatchCosting = () => {
     { item: "Glycine", declaredPrice: 3, actualCost: 15 },
   ];
 
+  // تفعيل أو إلغاء التحفيزات (checkbox)
   const handleIncentiveToggle = (val: string) => {
     setIncentives((prev) =>
       prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
@@ -100,7 +105,7 @@ const BatchCosting = () => {
   };
 
   return (
-    <div style={{ padding: 24, fontFamily: "Arial, sans-serif" }}>
+    <div style={{ padding: 24, fontFamily: "Arial, sans-serif", maxWidth: 800, margin: "auto" }}>
       <h1 style={{ marginBottom: 24 }}>Open Book Accounting Overview</h1>
 
       <Card>
@@ -153,7 +158,7 @@ const BatchCosting = () => {
             <Input
               placeholder="Enter volume"
               value={volume}
-              onChange={(e) => setVolume(e)}
+              onChange={(e) => setVolume(e.target.value)}
             />
           </label>
         </div>
