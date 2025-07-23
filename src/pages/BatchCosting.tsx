@@ -81,7 +81,7 @@ const OpenBookAccounting = () => {
         </Select.Root>
 
         <Select.Root value={currency} onValueChange={setCurrency}>
-          <Select.Trigger />
+          <Select.Trigger placeholder="Select Currency" />
           <Select.Content>
             <Select.Item value="USD">USD</Select.Item>
             <Select.Item value="EGP">EGP</Select.Item>
@@ -91,7 +91,7 @@ const OpenBookAccounting = () => {
 
       <Flex gap="3" mb="4">
         <Select.Root value={tier} onValueChange={setTier}>
-          <Select.Trigger />
+          <Select.Trigger placeholder="Select Tier" />
           <Select.Content>
             <Select.Item value="Tier 1">Tier 1</Select.Item>
             <Select.Item value="Tier 2">Tier 2</Select.Item>
@@ -131,11 +131,11 @@ const OpenBookAccounting = () => {
       <Table.Root variant="surface" mb="4">
         <Table.Header>
           <Table.Row>
-            <Table.Column>Item</Table.Column>
-            <Table.Column>Qty</Table.Column>
-            <Table.Column>Unit Price ({currency})</Table.Column>
-            <Table.Column>Cost ({currency})</Table.Column>
-            <Table.Column>Solution</Table.Column>
+            <Table.Cell as="th">Item</Table.Cell>
+            <Table.Cell as="th">Qty</Table.Cell>
+            <Table.Cell as="th">Unit Price ({currency})</Table.Cell>
+            <Table.Cell as="th">Cost ({currency})</Table.Cell>
+            <Table.Cell as="th">Solution</Table.Cell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -164,13 +164,13 @@ const OpenBookAccounting = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.Column>Date</Table.Column>
-            <Table.Column>Item</Table.Column>
-            <Table.Column>Material</Table.Column>
-            <Table.Column>Declared Cost</Table.Column>
-            <Table.Column>Actual Cost</Table.Column>
-            <Table.Column>Variance</Table.Column>
-            <Table.Column>Incentives Offered</Table.Column>
+            <Table.Cell as="th">Date</Table.Cell>
+            <Table.Cell as="th">Item</Table.Cell>
+            <Table.Cell as="th">Material</Table.Cell>
+            <Table.Cell as="th">Declared Cost</Table.Cell>
+            <Table.Cell as="th">Actual Cost</Table.Cell>
+            <Table.Cell as="th">Variance</Table.Cell>
+            <Table.Cell as="th">Incentives Offered</Table.Cell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
