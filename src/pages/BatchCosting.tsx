@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 
-// بدائل مكونات UI مؤقتة
-const Card = ({ children }: { children: React.ReactNode }) => (
+// Temporary UI components with style prop for Card
+const Card = ({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) => (
   <div
     style={{
       border: "1px solid #ccc",
@@ -12,6 +18,7 @@ const Card = ({ children }: { children: React.ReactNode }) => (
       backgroundColor: "#fff",
       minWidth: 280,
       flex: "1 1 250px",
+      ...style,
     }}
   >
     {children}
@@ -25,15 +32,13 @@ const Button = ({
   <button
     {...props}
     style={{
-      padding: "10px 24px",
+      padding: "10px 20px",
       backgroundColor: "#007bff",
       color: "#fff",
       border: "none",
       borderRadius: 6,
       cursor: "pointer",
-      fontWeight: "600",
-      fontSize: 16,
-      marginTop: 12,
+      fontWeight: "bold",
     }}
   >
     {children}
@@ -46,8 +51,8 @@ const Select = ({
   children,
   style,
 }: {
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   children: React.ReactNode;
   style?: React.CSSProperties;
 }) => (
@@ -58,7 +63,6 @@ const Select = ({
       padding: 8,
       borderRadius: 6,
       border: "1px solid #ccc",
-      fontSize: 14,
       width: "100%",
       ...style,
     }}
@@ -71,10 +75,12 @@ const Input = ({
   value,
   onChange,
   placeholder,
+  style,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
+  style?: React.CSSProperties;
 }) => (
   <input
     type="text"
@@ -86,7 +92,7 @@ const Input = ({
       borderRadius: 6,
       border: "1px solid #ccc",
       width: "100%",
-      fontSize: 14,
+      ...style,
     }}
   />
 );
@@ -109,8 +115,7 @@ const Th = ({ children }: { children: React.ReactNode }) => (
     style={{
       border: "1px solid #ddd",
       padding: 10,
-      backgroundColor: "#f9f9f9",
-      fontWeight: "600",
+      backgroundColor: "#f5f5f5",
       textAlign: "left",
     }}
   >
@@ -123,7 +128,7 @@ const Td = ({ children }: { children: React.ReactNode }) => (
 );
 
 const BatchCosting = () => {
-  // States
+  // State hooks
   const [supplier, setSupplier] = useState("");
   const [product, setProduct] = useState("");
   const [currency, setCurrency] = useState("USD");
@@ -131,8 +136,8 @@ const BatchCosting = () => {
   const [volume, setVolume] = useState("");
   const [criticality, setCriticality] = useState("");
   const [incentives, setIncentives] = useState<string[]>([]);
+  const [incentivesMap, setIncentivesMap] = useState<Record<number, string>>({});
 
-  // Incentive options
   const incentiveOptions = [
     "Greater volumes",
     "Longer contracts",
@@ -153,10 +158,22 @@ const BatchCosting = () => {
     { item: "Glycine", declaredPrice: 3, actualCost: 15 },
   ];
 
+  // Toggle incentives checkboxes for the whole supplier (checkbox list)
   const handleIncentiveToggle = (val: string) => {
     setIncentives((prev) =>
       prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
     );
+  };
+
+  // Handle incentive select change for each raw material row
+  const handleIncentiveSelect = (
+    idx: number,
+    val: string
+  ) => {
+    setIncentivesMap((prev) => ({
+      ...prev,
+      [idx]: val,
+    }));
   };
 
   return (
@@ -164,26 +181,18 @@ const BatchCosting = () => {
       style={{
         padding: 24,
         fontFamily: "Arial, sans-serif",
-        backgroundColor: "#f5f7fa",
+        backgroundColor: "#f0f2f5",
         minHeight: "100vh",
       }}
     >
-      <h1 style={{ marginBottom: 32, fontWeight: "700", fontSize: 28, color: "#222" }}>
+      <h1 style={{ marginBottom: 32, fontWeight: "bold" }}>
         Open Book Accounting Overview
       </h1>
 
-      {/* Controls cards in flex row */}
-      <div
-        style={{
-          display: "flex",
-          gap: 24,
-          flexWrap: "wrap",
-          marginBottom: 32,
-          justifyContent: "flex-end",
-        }}
-      >
-        <Card>
-          <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+      {/* Filters and supplier info cards row */}
+      <div style={{ display: "flex", gap: 24, marginBottom: 32, flexWrap: "wrap" }}>
+        <Card style={{ maxWidth: 280 }}>
+          <label style={{ fontWeight: "bold", marginBottom: 8, display: "block" }}>
             Supplier
           </label>
           <Select value={supplier} onChange={(e) => setSupplier(e.target.value)}>
@@ -193,8 +202,8 @@ const BatchCosting = () => {
           </Select>
         </Card>
 
-        <Card>
-          <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+        <Card style={{ maxWidth: 280 }}>
+          <label style={{ fontWeight: "bold", marginBottom: 8, display: "block" }}>
             Product
           </label>
           <Select value={product} onChange={(e) => setProduct(e.target.value)}>
@@ -204,8 +213,8 @@ const BatchCosting = () => {
           </Select>
         </Card>
 
-        <Card>
-          <label style={{ fontWeight: 600, marginBottom: 8, display: "block" }}>
+        <Card style={{ maxWidth: 280 }}>
+          <label style={{ fontWeight: "bold", marginBottom: 8, display: "block" }}>
             Currency
           </label>
           <Select value={currency} onChange={(e) => setCurrency(e.target.value)}>
@@ -215,20 +224,10 @@ const BatchCosting = () => {
         </Card>
       </div>
 
-      {/* KPI Cards */}
-      <div
-        style={{
-          display: "flex",
-          gap: 24,
-          flexWrap: "wrap",
-          marginBottom: 32,
-          justifyContent: "space-between",
-        }}
-      >
+      {/* Info cards */}
+      <div style={{ display: "flex", gap: 24, marginBottom: 32, flexWrap: "wrap" }}>
         <Card>
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 4 }}>
-            Supplier Tier
-          </div>
+          <div style={{ fontWeight: "bold", marginBottom: 12 }}>Supplier Tier</div>
           <Select value={tier} onChange={(e) => setTier(e.target.value)}>
             <option value="Tier 1">Tier 1</option>
             <option value="Tier 2">Tier 2</option>
@@ -237,9 +236,7 @@ const BatchCosting = () => {
         </Card>
 
         <Card>
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 4 }}>
-            Transaction Volume
-          </div>
+          <div style={{ fontWeight: "bold", marginBottom: 12 }}>Transaction Volume</div>
           <Input
             placeholder="Enter volume"
             value={volume}
@@ -248,9 +245,7 @@ const BatchCosting = () => {
         </Card>
 
         <Card>
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 4 }}>
-            Component Criticality
-          </div>
+          <div style={{ fontWeight: "bold", marginBottom: 12 }}>Component Criticality</div>
           <Select
             value={criticality}
             onChange={(e) => setCriticality(e.target.value)}
@@ -263,32 +258,15 @@ const BatchCosting = () => {
         </Card>
 
         <Card style={{ flex: "1 1 100%" }}>
-          <div style={{ fontSize: 14, color: "#666", marginBottom: 8 }}>
-            Supplier Incentives Offered
-          </div>
+          <div style={{ fontWeight: "bold", marginBottom: 12 }}>Supplier Incentives Offered</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
             {incentiveOptions.map((inc) => (
-              <label
-                key={inc}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  backgroundColor: incentives.includes(inc) ? "#007bff" : "#e0e0e0",
-                  color: incentives.includes(inc) ? "#fff" : "#333",
-                  padding: "6px 12px",
-                  borderRadius: 6,
-                  cursor: "pointer",
-                  userSelect: "none",
-                  fontSize: 14,
-                }}
-              >
+              <label key={inc} style={{ userSelect: "none" }}>
                 <input
                   type="checkbox"
                   checked={incentives.includes(inc)}
                   onChange={() => handleIncentiveToggle(inc)}
-                  style={{ cursor: "pointer" }}
-                />
+                />{" "}
                 {inc}
               </label>
             ))}
@@ -296,11 +274,9 @@ const BatchCosting = () => {
         </Card>
       </div>
 
-      {/* Raw Materials Table */}
+      {/* Raw materials table */}
       <Card style={{ flex: "1 1 100%", overflowX: "auto" }}>
-        <h2 style={{ marginBottom: 16, fontWeight: "700", fontSize: 20 }}>
-          Raw Materials Breakdown
-        </h2>
+        <h2 style={{ marginBottom: 16 }}>Raw Materials Breakdown</h2>
         <Table>
           <thead>
             <tr>
@@ -315,11 +291,14 @@ const BatchCosting = () => {
             {rawMaterials.map(({ item, declaredPrice, actualCost }, idx) => (
               <tr key={idx}>
                 <Td>{item}</Td>
-                <Td>{declaredPrice.toFixed(2)}</Td>
-                <Td>{actualCost.toFixed(2)}</Td>
-                <Td>{(actualCost - declaredPrice).toFixed(2)}</Td>
+                <Td>{declaredPrice}</Td>
+                <Td>{actualCost}</Td>
+                <Td>{actualCost - declaredPrice}</Td>
                 <Td>
-                  <Select>
+                  <Select
+                    value={incentivesMap[idx] || ""}
+                    onChange={(e) => handleIncentiveSelect(idx, e.target.value)}
+                  >
                     <option value="">Select Incentive</option>
                     {incentiveOptions.map((inc, i) => (
                       <option key={i} value={inc}>
