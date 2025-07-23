@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 
-// كروت مربعة بأبعاد ثابتة
-const Card = ({ children }: { children: React.ReactNode }) => (
+// Card يقبل خاصية style الآن
+const Card = ({
+  children,
+  style,
+}: {
+  children: React.ReactNode;
+  style?: React.CSSProperties;
+}) => (
   <div
     style={{
       border: "1px solid #ddd",
@@ -10,12 +16,13 @@ const Card = ({ children }: { children: React.ReactNode }) => (
       marginBottom: 24,
       boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       backgroundColor: "#fff",
-      width: 200,
-      height: 200,
+      width: 220,
+      height: 220,
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
       gap: 12,
+      ...style,
     }}
   >
     {children}
@@ -29,18 +36,17 @@ const Button = ({
   <button
     {...props}
     style={{
-      padding: "12px 28px",
-      backgroundColor: "#2563EB",
+      padding: "10px 20px",
+      backgroundColor: "#007bff",
       color: "#fff",
       border: "none",
-      borderRadius: 8,
+      borderRadius: 6,
       cursor: "pointer",
-      fontWeight: "600",
+      fontWeight: "bold",
       fontSize: 16,
-      transition: "background-color 0.3s ease",
+      marginTop: 12,
+      alignSelf: "flex-start",
     }}
-    onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#1D4ED8")}
-    onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "#2563EB")}
   >
     {children}
   </button>
@@ -50,79 +56,54 @@ const Select = ({
   value,
   onChange,
   children,
-  label,
+  style,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   children: React.ReactNode;
-  label?: string;
+  style?: React.CSSProperties;
 }) => (
-  <label
+  <select
+    value={value}
+    onChange={onChange}
     style={{
-      display: "flex",
-      flexDirection: "column",
+      padding: 8,
+      borderRadius: 6,
+      border: "1px solid #ccc",
       fontSize: 14,
-      fontWeight: 600,
-      color: "#374151",
-      marginBottom: 12,
+      width: "100%",
+      ...style,
     }}
   >
-    {label && <span style={{ marginBottom: 6 }}>{label}</span>}
-    <select
-      value={value}
-      onChange={onChange}
-      style={{
-        padding: 10,
-        borderRadius: 8,
-        border: "1px solid #ccc",
-        fontSize: 16,
-        outline: "none",
-        cursor: "pointer",
-        backgroundColor: "#f9fafb",
-      }}
-    >
-      {children}
-    </select>
-  </label>
+    {children}
+  </select>
 );
 
 const Input = ({
   value,
   onChange,
   placeholder,
-  label,
+  style,
 }: {
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   placeholder?: string;
-  label?: string;
+  style?: React.CSSProperties;
 }) => (
-  <label
+  <input
+    type="text"
+    value={value}
+    onChange={onChange}
+    placeholder={placeholder}
     style={{
-      display: "flex",
-      flexDirection: "column",
+      padding: 8,
+      borderRadius: 6,
+      border: "1px solid #ccc",
       fontSize: 14,
-      fontWeight: 600,
-      color: "#374151",
-      marginBottom: 12,
+      width: "100%",
+      ...style,
     }}
-  >
-    {label && <span style={{ marginBottom: 6 }}>{label}</span>}
-    <input
-      type="text"
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      style={{
-        padding: 10,
-        borderRadius: 8,
-        border: "1px solid #ccc",
-        fontSize: 16,
-        outline: "none",
-        backgroundColor: "#f9fafb",
-      }}
-    />
-  </label>
+  />
 );
 
 const Table = ({ children }: { children: React.ReactNode }) => (
@@ -130,9 +111,7 @@ const Table = ({ children }: { children: React.ReactNode }) => (
     style={{
       width: "100%",
       borderCollapse: "collapse",
-      marginTop: 12,
-      fontSize: 15,
-      color: "#374151",
+      marginTop: 16,
     }}
   >
     {children}
@@ -142,12 +121,10 @@ const Table = ({ children }: { children: React.ReactNode }) => (
 const Th = ({ children }: { children: React.ReactNode }) => (
   <th
     style={{
-      borderBottom: "2px solid #e5e7eb",
-      padding: "12px 16px",
+      border: "1px solid #ddd",
+      padding: 10,
+      backgroundColor: "#f5f5f5",
       textAlign: "left",
-      backgroundColor: "#f3f4f6",
-      color: "#111827",
-      fontWeight: 700,
     }}
   >
     {children}
@@ -155,9 +132,7 @@ const Th = ({ children }: { children: React.ReactNode }) => (
 );
 
 const Td = ({ children }: { children: React.ReactNode }) => (
-  <td style={{ padding: "10px 16px", borderBottom: "1px solid #e5e7eb" }}>
-    {children}
-  </td>
+  <td style={{ border: "1px solid #ddd", padding: 10 }}>{children}</td>
 );
 
 const BatchCosting = () => {
@@ -199,20 +174,12 @@ const BatchCosting = () => {
     <div
       style={{
         padding: 32,
-        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#f9fafb",
+        fontFamily: "Arial, sans-serif",
+        backgroundColor: "#f0f2f5",
         minHeight: "100vh",
       }}
     >
-      <h1
-        style={{
-          marginBottom: 32,
-          color: "#1f2937",
-          fontWeight: "800",
-          fontSize: 28,
-          textAlign: "center",
-        }}
-      >
+      <h1 style={{ marginBottom: 32, color: "#222" }}>
         Open Book Accounting Overview
       </h1>
 
@@ -220,119 +187,125 @@ const BatchCosting = () => {
         style={{
           display: "flex",
           gap: 24,
+          marginBottom: 32,
           flexWrap: "wrap",
-          justifyContent: "center",
-          marginBottom: 40,
+          justifyContent: "flex-start",
         }}
       >
-        <Card>
-          <Select
-            label="Supplier"
-            value={supplier}
-            onChange={(e) => setSupplier(e.target.value)}
-          >
-            <option value="">Select Supplier</option>
-            <option value="Supplier A">Supplier A</option>
-            <option value="Supplier B">Supplier B</option>
-          </Select>
-          <Select
-            label="Product"
-            value={product}
-            onChange={(e) => setProduct(e.target.value)}
-          >
-            <option value="">Select Product</option>
-            <option value="Product X">Product X</option>
-            <option value="Product Y">Product Y</option>
-          </Select>
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Supplier:
+            <Select
+              value={supplier}
+              onChange={(e) => setSupplier(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="">Select Supplier</option>
+              <option value="Supplier A">Supplier A</option>
+              <option value="Supplier B">Supplier B</option>
+            </Select>
+          </label>
         </Card>
 
-        <Card>
-          <Select
-            label="Currency"
-            value={currency}
-            onChange={(e) => setCurrency(e.target.value)}
-          >
-            <option value="USD">USD</option>
-            <option value="EGP">EGP</option>
-          </Select>
-          <Select
-            label="Supplier Tier"
-            value={tier}
-            onChange={(e) => setTier(e.target.value)}
-          >
-            <option value="Tier 1">Tier 1</option>
-            <option value="Tier 2">Tier 2</option>
-            <option value="Tier 3">Tier 3</option>
-          </Select>
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Product:
+            <Select
+              value={product}
+              onChange={(e) => setProduct(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="">Select Product</option>
+              <option value="Product X">Product X</option>
+              <option value="Product Y">Product Y</option>
+            </Select>
+          </label>
         </Card>
 
-        <Card>
-          <Input
-            label="Transaction Volume"
-            placeholder="Enter volume"
-            value={volume}
-            onChange={(e) => setVolume(e.target.value)}
-          />
-          <Select
-            label="Component Criticality"
-            value={criticality}
-            onChange={(e) => setCriticality(e.target.value)}
-          >
-            <option value="">Select criticality</option>
-            <option value="High">High</option>
-            <option value="Medium">Medium</option>
-            <option value="Low">Low</option>
-          </Select>
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Currency:
+            <Select
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="USD">USD</option>
+              <option value="EGP">EGP</option>
+            </Select>
+          </label>
+        </Card>
+
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Supplier Tier:
+            <Select
+              value={tier}
+              onChange={(e) => setTier(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="Tier 1">Tier 1</option>
+              <option value="Tier 2">Tier 2</option>
+              <option value="Tier 3">Tier 3</option>
+            </Select>
+          </label>
+        </Card>
+
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Transaction Volume:
+            <Input
+              placeholder="Enter volume"
+              value={volume}
+              onChange={(e) => setVolume(e.target.value)}
+              style={{ marginTop: 8 }}
+            />
+          </label>
+        </Card>
+
+        <Card style={{ width: 220, height: 220 }}>
+          <label style={{ marginBottom: 8, fontWeight: "bold" }}>
+            Component Criticality:
+            <Select
+              value={criticality}
+              onChange={(e) => setCriticality(e.target.value)}
+              style={{ marginTop: 8 }}
+            >
+              <option value="">Select criticality</option>
+              <option value="High">High</option>
+              <option value="Medium">Medium</option>
+              <option value="Low">Low</option>
+            </Select>
+          </label>
         </Card>
 
         <Card
           style={{
-            overflowY: "auto",
+            width: "100%",
+            maxWidth: 960,
+            minHeight: 140,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            padding: 20,
           }}
         >
-          <p
-            style={{
-              fontWeight: 600,
-              fontSize: 16,
-              marginBottom: 12,
-              color: "#374151",
-            }}
-          >
-            Supplier Incentives Offered:
-          </p>
+          <strong>Supplier Incentives Offered:</strong>
           <div
             style={{
               display: "flex",
-              flexDirection: "column",
-              gap: 8,
-              maxHeight: 140,
-              overflowY: "auto",
+              gap: 20,
+              flexWrap: "wrap",
+              marginTop: 12,
             }}
           >
             {incentiveOptions.map((inc) => (
-              <label
-                key={inc}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 8,
-                  fontSize: 14,
-                  backgroundColor: incentives.includes(inc)
-                    ? "#2563EB"
-                    : "#e5e7eb",
-                  color: incentives.includes(inc) ? "#fff" : "#374151",
-                  padding: "6px 12px",
-                  borderRadius: 20,
-                  cursor: "pointer",
-                  userSelect: "none",
-                  border: incentives.includes(inc) ? "none" : "1px solid #ccc",
-                }}
-              >
+              <label key={inc} style={{ display: "flex", alignItems: "center" }}>
                 <input
                   type="checkbox"
                   checked={incentives.includes(inc)}
                   onChange={() => handleIncentiveToggle(inc)}
-                  style={{ display: "none" }}
+                  style={{ marginRight: 6 }}
                 />
                 {inc}
               </label>
@@ -341,55 +314,11 @@ const BatchCosting = () => {
         </Card>
       </div>
 
-      <Card
-        style={{
-          width: "100%",
-          height: "auto",
-          padding: 20,
-          overflowX: "auto",
-        }}
-      >
-        <h2 style={{ marginBottom: 16, color: "#1f2937" }}>
-          Raw Materials Breakdown
-        </h2>
+      <Card style={{ maxWidth: 960, padding: 24 }}>
+        <h2 style={{ marginBottom: 20 }}>Raw Materials Breakdown</h2>
         <Table>
           <thead>
             <tr>
               <Th>Item</Th>
               <Th>Declared Price ({currency})</Th>
-              <Th>Actual Cost ({currency})</Th>
-              <Th>Variance ({currency})</Th>
-              <Th>Incentives</Th>
-            </tr>
-          </thead>
-          <tbody>
-            {rawMaterials.map(({ item, declaredPrice, actualCost }, idx) => (
-              <tr key={idx}>
-                <Td>{item}</Td>
-                <Td>{declaredPrice}</Td>
-                <Td>{actualCost}</Td>
-                <Td>{(actualCost - declaredPrice).toFixed(2)}</Td>
-                <Td>
-                  <Select value="" onChange={() => {}}>
-                    <option value="">Select Incentive</option>
-                    {incentiveOptions.map((inc, i) => (
-                      <option key={i} value={inc}>
-                        {inc}
-                      </option>
-                    ))}
-                  </Select>
-                </Td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      </Card>
-
-      <div style={{ textAlign: "center", marginTop: 32 }}>
-        <Button onClick={() => alert("Submit clicked!")}>Submit</Button>
-      </div>
-    </div>
-  );
-};
-
-export default BatchCosting;
+              <Th>Actual Cost ({curre
