@@ -3,7 +3,6 @@ import {
   Box,
   Button,
   Card,
-  Dialog,
   Flex,
   Grid,
   Heading,
@@ -12,6 +11,9 @@ import {
   Text,
   TextField,
   TextArea,
+  Badge,
+  Container,
+  ScrollArea
 } from '@radix-ui/themes';
 import {
   LineChart,
@@ -22,274 +24,303 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
+  BarChart,
+  Bar
 } from 'recharts';
 
-const supplierIncentiveOptions = [
-  'Greater volumes',
-  'Longer contracts',
-  'Technical support',
-  'Marketing support',
-  'Negotiation support',
-  'Joint problem solving teams',
-];
+const BatchCosting = () => {
+  // States for form inputs
+  const [batchSize, setBatchSize] = useState<string>('1000');
+  const [materialCost, setMaterialCost] = useState<string>('5000');
+  const [laborCost, setLaborCost] = useState<string>('2000');
+  const [overhead, setOverhead] = useState<string>('1500');
+  const [productionTime, setProductionTime] = useState<string>('48');
+  const [currency, setCurrency] = useState<string>('USD');
+  const [notes, setNotes] = useState<string>('');
 
-const OpenBookAccountingDashboard = () => {
-  const [supplier, setSupplier] = useState('');
-  const [product, setProduct] = useState('');
-  const [currency, setCurrency] = useState('EGP');
-  const [cards, setCards] = useState({
-    tier: 'Tier 1',
-    volume: '12000',
-    criticality: 'High',
-    incentives: 'Longer contracts',
-  });
-  const [productionDesign, setProductionDesign] = useState('');
-  const [transactions, setTransactions] = useState([
-    { 
-      date: '', 
-      item: '', 
-      material: '', 
-      declaredCost: '', 
-      actualCost: '', 
-      incentive: '' 
-    }
+  // Production stages data
+  const [stages, setStages] = useState([
+    { name: 'Weighing', time: '2', cost: '200' },
+    { name: 'Mixing', time: '4', cost: '400' },
+    { name: 'Granulation', time: '6', cost: '600' },
+    { name: 'Compression', time: '8', cost: '800' },
+    { name: 'Coating', time: '10', cost: '1000' },
+    { name: 'Packaging', time: '5', cost: '500' }
   ]);
 
-  const relationshipMetrics = [
-    { metric: 'Transparency', score: 85 },
-    { metric: 'Cost Accuracy', score: 78 },
-    { metric: 'Delivery', score: 92 },
-    { metric: 'Communication', score: 88 },
-    { metric: 'Innovation', score: 75 },
+  // Cost breakdown data for charts
+  const costData = [
+    { name: 'Materials', value: parseFloat(materialCost) || 0 },
+    { name: 'Labor', value: parseFloat(laborCost) || 0 },
+    { name: 'Overhead', value: parseFloat(overhead) || 0 }
   ];
 
-  const handleCardChange = (key: string, value: string) => {
-    setCards({ ...cards, [key]: value });
+  // Calculate total cost
+  const totalCost = costData.reduce((sum, item) => sum + item.value, 0);
+  const unitCost = totalCost / (parseFloat(batchSize) || 1);
+
+  // Handle stage changes
+  const handleStageChange = (index: number, field: string, value: string) => {
+    const updatedStages = [...stages];
+    updatedStages[index] = { ...updatedStages[index], [field]: value };
+    setStages(updatedStages);
   };
 
-  const handleTransactionChange = (index: number, field: string, value: string) => {
-    const updatedTransactions = [...transactions];
-    updatedTransactions[index] = { ...updatedTransactions[index], [field]: value };
-    setTransactions(updatedTransactions);
-  };
-
-  const addTransactionRow = () => {
-    setTransactions([...transactions, { 
-      date: '', 
-      item: '', 
-      material: '', 
-      declaredCost: '', 
-      actualCost: '', 
-      incentive: '' 
-    }]);
-  };
-
-  const calculateVariance = (declared: string, actual: string) => {
-    const dec = parseFloat(declared) || 0;
-    const act = parseFloat(actual) || 0;
-    return (act - dec).toFixed(2);
-  };
-
-  const handleSubmitAll = () => {
-    // Submit logic here
-    console.log('Submitting all data', { supplier, product, cards, transactions });
+  // Add new production stage
+  const addNewStage = () => {
+    setStages([...stages, { name: '', time: '', cost: '' }]);
   };
 
   return (
-    <Box p="4">
-      {/* Header Section */}
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="7">Open Book Accounting Dashboard</Heading>
-        <Flex gap="3">
-          <Select.Root value={supplier} onValueChange={setSupplier}>
-            <Select.Trigger placeholder="Select Supplier" />
-            <Select.Content>
-              <Select.Item value="Supplier A">Supplier A</Select.Item>
-              <Select.Item value="Supplier B">Supplier B</Select.Item>
-              <Select.Item value="Supplier C">Supplier C</Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <Select.Root value={product} onValueChange={setProduct}>
-            <Select.Trigger placeholder="Select Product" />
-            <Select.Content>
-              <Select.Item value="Product X">Product X</Select.Item>
-              <Select.Item value="Product Y">Product Y</Select.Item>
-            </Select.Content>
-          </Select.Root>
-          <Select.Root value={currency} onValueChange={setCurrency}>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="EGP">EGP</Select.Item>
-              <Select.Item value="USD">USD</Select.Item>
-            </Select.Content>
-          </Select.Root>
+    <Container size="3" px="4" py="6">
+      <Flex direction="column" gap="6">
+        {/* Header Section */}
+        <Flex justify="between" align="center">
+          <Heading size="8" weight="bold">Batch Costing Calculator</Heading>
+          <Flex align="center" gap="3">
+            <Text size="2" weight="bold">Currency:</Text>
+            <Select.Root value={currency} onValueChange={setCurrency}>
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value="USD">USD</Select.Item>
+                <Select.Item value="EUR">EUR</Select.Item>
+                <Select.Item value="EGP">EGP</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Flex>
         </Flex>
-      </Flex>
 
-      {/* KPI Cards */}
-      <Grid columns={{ initial: '1', md: '4' }} gap="3" mb="4">
-        <Card>
-          <Text size="2" weight="bold">Supplier Tier</Text>
-          <TextField.Root>
-            <TextField.Input 
-              value={cards.tier} 
-              onChange={(e) => handleCardChange('tier', e.target.value)} 
-            />
-          </TextField.Root>
-        </Card>
-        <Card>
-          <Text size="2" weight="bold">Transaction Volume</Text>
-          <TextField.Root>
-            <TextField.Input 
-              value={cards.volume} 
-              onChange={(e) => handleCardChange('volume', e.target.value)} 
-            />
-          </TextField.Root>
-        </Card>
-        <Card>
-          <Text size="2" weight="bold">Component Criticality</Text>
-          <TextField.Root>
-            <TextField.Input 
-              value={cards.criticality} 
-              onChange={(e) => handleCardChange('criticality', e.target.value)} 
-            />
-          </TextField.Root>
-        </Card>
-        <Card>
-          <Text size="2" weight="bold">Supplier Incentives Offered</Text>
-          <Select.Root 
-            value={cards.incentives} 
-            onValueChange={(val) => handleCardChange('incentives', val)}
-          >
-            <Select.Trigger />
-            <Select.Content>
-              {supplierIncentiveOptions.map((option) => (
-                <Select.Item key={option} value={option}>{option}</Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </Card>
-      </Grid>
+        {/* Main Input Cards */}
+        <Grid columns={{ initial: '1', md: '2' }} gap="4">
+          {/* Batch Information Card */}
+          <Card>
+            <Flex direction="column" gap="4">
+              <Heading size="5">Batch Information</Heading>
+              
+              <Flex direction="column" gap="2">
+                <Text as="label" size="2" weight="bold">
+                  Batch Size (units)
+                </Text>
+                <TextField.Root>
+                  <TextField.Input 
+                    type="number" 
+                    value={batchSize}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBatchSize(e.target.value)}
+                    placeholder="Enter batch size"
+                  />
+                </TextField.Root>
+              </Flex>
 
-      {/* Production Design Info Section */}
-      <Box mt="5">
-        <Heading size="4" mb="3">Production Design Info</Heading>
-        <Text as="p" mb="2">
-          Please describe or update key production parameters or processes.
-        </Text>
-        <TextArea
-          placeholder="e.g., Batch Size: 5000 units, Sterile Processing, etc."
-          rows={3}
-          value={productionDesign}
-          onChange={(e) => setProductionDesign(e.target.value)}
-        />
-      </Box>
-
-      {/* Transactions Table */}
-      <Box mt="6">
-        <Heading size="4" mb="3">Detailed Transactions</Heading>
-        <Table.Root variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Declared Cost</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {transactions.map((tx, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>
-                  <TextField.Input
-                    type="date"
-                    value={tx.date}
-                    onChange={(e) => handleTransactionChange(index, 'date', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Input
-                    value={tx.item}
-                    onChange={(e) => handleTransactionChange(index, 'item', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Input
-                    value={tx.material}
-                    onChange={(e) => handleTransactionChange(index, 'material', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
+              <Flex direction="column" gap="2">
+                <Text as="label" size="2" weight="bold">
+                  Production Time (hours)
+                </Text>
+                <TextField.Root>
                   <TextField.Input
                     type="number"
-                    value={tx.declaredCost}
-                    onChange={(e) => handleTransactionChange(index, 'declaredCost', e.target.value)}
+                    value={productionTime}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductionTime(e.target.value)}
+                    placeholder="Enter production time"
                   />
-                </Table.Cell>
-                <Table.Cell>
+                </TextField.Root>
+              </Flex>
+            </Flex>
+          </Card>
+
+          {/* Cost Summary Card */}
+          <Card>
+            <Flex direction="column" gap="4">
+              <Heading size="5">Cost Summary</Heading>
+              
+              <Flex direction="column" gap="3">
+                <Flex justify="between">
+                  <Text size="2">Total Batch Cost:</Text>
+                  <Badge color="green" size="2">
+                    {currency} {totalCost.toFixed(2)}
+                  </Badge>
+                </Flex>
+                
+                <Flex justify="between">
+                  <Text size="2">Unit Cost:</Text>
+                  <Badge color="blue" size="2">
+                    {currency} {unitCost.toFixed(2)}
+                  </Badge>
+                </Flex>
+              </Flex>
+
+              <ResponsiveContainer width="100%" height={200}>
+                <BarChart data={costData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="value" fill="#3b82f6" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Flex>
+          </Card>
+        </Grid>
+
+        {/* Cost Breakdown Section */}
+        <Card>
+          <Flex direction="column" gap="4">
+            <Heading size="5">Cost Breakdown</Heading>
+            
+            <Grid columns={{ initial: '1', md: '3' }} gap="4">
+              <Flex direction="column" gap="2">
+                <Text as="label" size="2" weight="bold">
+                  Material Cost ({currency})
+                </Text>
+                <TextField.Root>
                   <TextField.Input
                     type="number"
-                    value={tx.actualCost}
-                    onChange={(e) => handleTransactionChange(index, 'actualCost', e.target.value)}
+                    value={materialCost}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaterialCost(e.target.value)}
+                    placeholder="Material cost"
                   />
-                </Table.Cell>
-                <Table.Cell>
-                  {calculateVariance(tx.declaredCost, tx.actualCost)}
-                </Table.Cell>
-                <Table.Cell>
-                  <Select.Root
-                    value={tx.incentive}
-                    onValueChange={(value) => handleTransactionChange(index, 'incentive', value)}
-                  >
-                    <Select.Trigger />
-                    <Select.Content>
-                      {supplierIncentiveOptions.map((option) => (
-                        <Select.Item key={option} value={option}>{option}</Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-        <Button mt="3" onClick={addTransactionRow}>+ Add Transaction</Button>
-      </Box>
+                </TextField.Root>
+              </Flex>
 
-      {/* Relationship Chart */}
-      <Box mt="6">
-        <Heading size="4">Supplier Relationship Quality</Heading>
-        <ResponsiveContainer width="100%" height={300}>
-          <RadarChart data={relationshipMetrics}>
-            <PolarGrid />
-            <PolarAngleAxis dataKey="metric" />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} />
-            <Radar 
-              name="Supplier" 
-              dataKey="score" 
-              stroke="#8884d8" 
-              fill="#8884d8" 
-              fillOpacity={0.6} 
+              <Flex direction="column" gap="2">
+                <Text as="label" size="2" weight="bold">
+                  Labor Cost ({currency})
+                </Text>
+                <TextField.Root>
+                  <TextField.Input
+                    type="number"
+                    value={laborCost}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLaborCost(e.target.value)}
+                    placeholder="Labor cost"
+                  />
+                </TextField.Root>
+              </Flex>
+
+              <Flex direction="column" gap="2">
+                <Text as="label" size="2" weight="bold">
+                  Overhead ({currency})
+                </Text>
+                <TextField.Root>
+                  <TextField.Input
+                    type="number"
+                    value={overhead}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOverhead(e.target.value)}
+                    placeholder="Overhead cost"
+                  />
+                </TextField.Root>
+              </Flex>
+            </Grid>
+          </Flex>
+        </Card>
+
+        {/* Production Stages Section */}
+        <Card>
+          <Flex direction="column" gap="4">
+            <Flex justify="between" align="center">
+              <Heading size="5">Production Stages</Heading>
+              <Button variant="soft" onClick={addNewStage}>
+                + Add Stage
+              </Button>
+            </Flex>
+
+            <ScrollArea type="always" scrollbars="horizontal" style={{ maxHeight: 440 }}>
+              <Table.Root variant="surface">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Stage Name</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Time (hours)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+
+                <Table.Body>
+                  {stages.map((stage, index) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>
+                        <TextField.Root>
+                          <TextField.Input
+                            value={stage.name}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleStageChange(index, 'name', e.target.value)
+                            }
+                            placeholder="Stage name"
+                          />
+                        </TextField.Root>
+                      </Table.Cell>
+                      
+                      <Table.Cell>
+                        <TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            value={stage.time}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleStageChange(index, 'time', e.target.value)
+                            }
+                            placeholder="Time"
+                          />
+                        </TextField.Root>
+                      </Table.Cell>
+                      
+                      <Table.Cell>
+                        <TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            value={stage.cost}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleStageChange(index, 'cost', e.target.value)
+                            }
+                            placeholder="Cost"
+                          />
+                        </TextField.Root>
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </ScrollArea>
+          </Flex>
+        </Card>
+
+        {/* Notes Section */}
+        <Card>
+          <Flex direction="column" gap="3">
+            <Heading size="5">Additional Notes</Heading>
+            <TextArea
+              rows={4}
+              value={notes}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
+              placeholder="Enter any additional notes or comments..."
             />
-            <Tooltip />
-          </RadarChart>
-        </ResponsiveContainer>
-      </Box>
+          </Flex>
+        </Card>
 
-      {/* Submit Button */}
-      <Flex justify="end" mt="6">
-        <Button onClick={handleSubmitAll}>Submit All</Button>
+        {/* Time Series Chart */}
+        <Card>
+          <Flex direction="column" gap="3">
+            <Heading size="5">Cost Over Time</Heading>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart
+                data={[
+                  { name: 'Jan', cost: 4000 },
+                  { name: 'Feb', cost: 4200 },
+                  { name: 'Mar', cost: 3800 },
+                  { name: 'Apr', cost: 4500 },
+                  { name: 'May', cost: 4100 },
+                  { name: 'Jun', cost: 5000 }
+                ]}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="cost" stroke="#3b82f6" activeDot={{ r: 8 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
       </Flex>
-    </Box>
+    </Container>
   );
 };
 
-export default OpenBookAccountingDashboard;
+export default BatchCosting;
