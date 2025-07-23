@@ -8,7 +8,6 @@ import {
   Text,
   Card,
   Select,
-  TextField,
   Grid,
 } from '@radix-ui/themes';
 
@@ -79,28 +78,36 @@ const OpenBookAccountingDashboard = () => {
 
         <Card>
           <Text size="2" mb="2">Transaction Volume</Text>
-          <TextField.Root>
-            <TextField.Input
-              placeholder="Enter volume"
-              value={transactionVolume}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setTransactionVolume(e.target.value)
-              }
-            />
-          </TextField.Root>
+          <input
+            type="text"
+            placeholder="Enter volume"
+            value={transactionVolume}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTransactionVolume(e.target.value)}
+            style={{
+              padding: '8px',
+              width: '100%',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              fontSize: '14px'
+            }}
+          />
         </Card>
 
         <Card>
           <Text size="2" mb="2">Component Criticality</Text>
-          <TextField.Root>
-            <TextField.Input
-              placeholder="Enter criticality"
-              value={componentCriticality}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setComponentCriticality(e.target.value)
-              }
-            />
-          </TextField.Root>
+          <input
+            type="text"
+            placeholder="Enter criticality"
+            value={componentCriticality}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setComponentCriticality(e.target.value)}
+            style={{
+              padding: '8px',
+              width: '100%',
+              borderRadius: '6px',
+              border: '1px solid #ccc',
+              fontSize: '14px'
+            }}
+          />
         </Card>
 
         <Card>
