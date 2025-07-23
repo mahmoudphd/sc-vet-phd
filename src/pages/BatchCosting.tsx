@@ -1,238 +1,194 @@
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
 import {
-  Card,
-  Flex,
-  Heading,
-  Text,
-  Table,
-  Badge,
-  Button,
-  Grid,
-  Progress,
   Box,
-  Dialog,
-  TextField,
+  Heading,
+  Flex,
+  Text,
   Select,
+  TextField,
+  Checkbox,
+  Table,
+  Button,
 } from '@radix-ui/themes';
-import {
-  PieChartIcon,
-  BarChartIcon,
-  MixerHorizontalIcon
-} from '@radix-ui/react-icons';
-import { PieChart, Pie, BarChart, Bar } from 'recharts';
-// import { DialogClose, , DialogDescription, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
 
-const BatchCosting = () => {
-  const { t } = useTranslation('batch-costing');
-  const batches = [
+const OpenBookAccounting = () => {
+  const [supplier, setSupplier] = useState('');
+  const [product, setProduct] = useState('');
+  const [currency, setCurrency] = useState('USD');
+  const [tier, setTier] = useState('Tier 1');
+  const [volume, setVolume] = useState('');
+  const [criticality, setCriticality] = useState('');
+  const [incentives, setIncentives] = useState<string[]>([]);
+
+  const handleIncentiveChange = (value: string) => {
+    setIncentives((prev) =>
+      prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]
+    );
+  };
+
+  const incentiveOptions = [
+    'Greater volumes',
+    'Longer contracts',
+    'Technical support',
+    'Marketing support',
+    'Negotiation support',
+    'Joint problem solving teams',
+  ];
+
+  const rawMaterials = [
+    { item: 'Vitamin B1', qty: 10, unitPrice: 5 },
+    { item: 'Vitamin B2', qty: 8, unitPrice: 6 },
+  ];
+
+  const supplierTransactions = [
     {
-      id: 'VC23001',
-      product: 'Anthelmintic Oral Suspension',
-      materialCost: 24500,
-      laborCost: 12000,
-      overhead: 8500,
-      totalCost: 45000,
-      costPerUnit: 3.15,
-      variance: '-2.5%'
+      date: '2025-07-01',
+      item: 'Vitamin B1',
+      material: 'Vitamin B1',
+      declared: 50,
+      actual: 48,
+      incentive: 'Technical support',
+    },
+    {
+      date: '2025-07-05',
+      item: 'Vitamin B2',
+      material: 'Vitamin B2',
+      declared: 48,
+      actual: 51,
+      incentive: 'Negotiation support',
     },
   ];
 
   return (
-    <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('batchCostAccounting')}</Heading>
-        <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                <MixerHorizontalIcon /> {t('newCostRun')}
-              </Button>
-            </Dialog.Trigger>
+    <Box p="4">
+      <Heading mb="4">Open Book Accounting Dashboard</Heading>
 
-            <Dialog.Content>
-              <Dialog.Title>{t('newCostRun')}</Dialog.Title>
-              <Dialog.Description>
-                {t('createNewCostDesc')}
-              </Dialog.Description>
+      <Flex gap="3" mb="4">
+        <Select.Root value={supplier} onValueChange={setSupplier}>
+          <Select.Trigger placeholder="Select Supplier" />
+          <Select.Content>
+            <Select.Item value="Supplier A">Supplier A</Select.Item>
+            <Select.Item value="Supplier B">Supplier B</Select.Item>
+          </Select.Content>
+        </Select.Root>
 
-              <Flex direction="column" gap="3">
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('costRunName')}
-                  </Text>
-                  <TextField.Root placeholder={t('enterRunName')} />
-                </label>
+        <Select.Root value={product} onValueChange={setProduct}>
+          <Select.Trigger placeholder="Select Product" />
+          <Select.Content>
+            <Select.Item value="Product X">Product X</Select.Item>
+            <Select.Item value="Product Y">Product Y</Select.Item>
+          </Select.Content>
+        </Select.Root>
 
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('selectBatch')}
-                  </Text>
-                  <Select.Root>
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="vc23001">VC23001</Select.Item>
-                      <Select.Item value="vc23002">VC23002</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-                </label>
-
-                <Flex gap="3" mt="2" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('cancel')}
-                    </Button>
-                  </Dialog.Close>
-                  <Button>{t('submit')}</Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                {t('compareStandards')}
-              </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content maxWidth="600px">
-              <Dialog.Title>{t('compareBatchStandards')}</Dialog.Title>
-
-              <Grid columns="2" gap="4" mb="4">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch1')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch2')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Grid>
-
-              <Flex direction="column" gap="2">
-                <Text size="4" weight="bold">{t('comparisonResults')}</Text>
-                <Card variant="classic">
-                  <Flex justify="between">
-                    <Text>{t('totalCostDiff')}</Text>
-                    <Badge color="ruby">+$1,200</Badge>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text>{t('materialVariance')}</Text>
-                    <Badge color="jade">-4.2%</Badge>
-                  </Flex>
-                </Card>
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('close')}
-                    </Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-        </Flex>
+        <Select.Root value={currency} onValueChange={setCurrency}>
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="USD">USD</Select.Item>
+            <Select.Item value="EGP">EGP</Select.Item>
+          </Select.Content>
+        </Select.Root>
       </Flex>
 
-      <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('avgCostUnit')}</Text>
-            <Heading size="7">$3.45</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('yieldVariance')}</Text>
-            <Heading size="7" className="text-green-500">-1.8%</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('materialWaste')}</Text>
-            <Heading size="7">4.5%</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('batchEfficiency')}</Text>
-            <Progress value={88} />
-          </Flex>
-        </Card>
-      </Grid>
+      <Flex gap="3" mb="4">
+        <Select.Root value={tier} onValueChange={setTier}>
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="Tier 1">Tier 1</Select.Item>
+            <Select.Item value="Tier 2">Tier 2</Select.Item>
+            <Select.Item value="Tier 3">Tier 3</Select.Item>
+          </Select.Content>
+        </Select.Root>
 
-      <Table.Root variant="surface">
+        <TextField.Input
+          placeholder="Transaction Volume"
+          value={volume}
+          onChange={(e) => setVolume(e.target.value)}
+        />
+
+        <TextField.Input
+          placeholder="Component Criticality"
+          value={criticality}
+          onChange={(e) => setCriticality(e.target.value)}
+        />
+      </Flex>
+
+      <Box mb="4">
+        <Text mb="2">Supplier Incentives Offered:</Text>
+        <Flex gap="3" wrap="wrap">
+          {incentiveOptions.map((label) => (
+            <Checkbox
+              key={label}
+              checked={incentives.includes(label)}
+              onCheckedChange={() => handleIncentiveChange(label)}
+            >
+              {label}
+            </Checkbox>
+          ))}
+        </Flex>
+      </Box>
+
+      <Heading size="3" mb="2">Raw Material Breakdown</Heading>
+      <Table.Root variant="surface" mb="4">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('batchID')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('materialCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('conversionCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('totalCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('costPerUnit')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.Column>Item</Table.Column>
+            <Table.Column>Qty</Table.Column>
+            <Table.Column>Unit Price ({currency})</Table.Column>
+            <Table.Column>Cost ({currency})</Table.Column>
+            <Table.Column>Solution</Table.Column>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {batches.map((batch) => (
-            <Table.Row key={batch.id}>
-              <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>${batch.materialCost.toLocaleString()}</Table.Cell>
+          {rawMaterials.map((row, i) => (
+            <Table.Row key={i}>
+              <Table.Cell>{row.item}</Table.Cell>
+              <Table.Cell>{row.qty}</Table.Cell>
+              <Table.Cell>{row.unitPrice}</Table.Cell>
+              <Table.Cell>{row.qty * row.unitPrice}</Table.Cell>
               <Table.Cell>
-                ${(batch.laborCost + batch.overhead).toLocaleString()}
-              </Table.Cell>
-              <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>${batch.costPerUnit}</Table.Cell>
-              <Table.Cell>
-                <Badge color={batch.variance.startsWith('-') ? 'green' : 'red'}>
-                  {batch.variance}
-                </Badge>
+                <Select.Root>
+                  <Select.Trigger placeholder="Solution" />
+                  <Select.Content>
+                    {incentiveOptions.map((s, idx) => (
+                      <Select.Item key={idx} value={s}>{s}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
-      <Flex mt="5" gap="4">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('costBreakdown')}</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={batches}>
-              <Bar dataKey="materialCost" fill="#3b82f6" name={t('material')} />
-              <Bar dataKey="laborCost" fill="#ef4444" name={t('labor')} />
-              <Bar dataKey="overhead" fill="#10b981" name={t('overhead')} />
-            </BarChart>
-          </div>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('varianceAnalysis')}</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={[
-                  { name: t('material'), value: 65 },
-                  { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 }
-                ]}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              />
-            </PieChart>
-          </div>
-        </Card>
-      </Flex>
+      <Heading size="3" mb="2">Supplier Transactions</Heading>
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.Column>Date</Table.Column>
+            <Table.Column>Item</Table.Column>
+            <Table.Column>Material</Table.Column>
+            <Table.Column>Declared Cost</Table.Column>
+            <Table.Column>Actual Cost</Table.Column>
+            <Table.Column>Variance</Table.Column>
+            <Table.Column>Incentives Offered</Table.Column>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {supplierTransactions.map((row, i) => (
+            <Table.Row key={i}>
+              <Table.Cell>{row.date}</Table.Cell>
+              <Table.Cell>{row.item}</Table.Cell>
+              <Table.Cell>{row.material}</Table.Cell>
+              <Table.Cell>{row.declared}</Table.Cell>
+              <Table.Cell>{row.actual}</Table.Cell>
+              <Table.Cell>{row.actual - row.declared}</Table.Cell>
+              <Table.Cell>{row.incentive}</Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
     </Box>
   );
 };
 
-export default BatchCosting;
+export default OpenBookAccounting;
