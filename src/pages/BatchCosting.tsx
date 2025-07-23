@@ -107,7 +107,8 @@ export default function BatchCosting() {
           <Text size="2" weight="bold">
             Transaction Volume
           </Text>
-          <TextField.Root
+          <input
+            className="rt-TextFieldInput"
             placeholder="Enter volume"
             value={transactionVolume}
             onChange={(e) => setTransactionVolume(e.target.value)}
@@ -118,7 +119,8 @@ export default function BatchCosting() {
           <Text size="2" weight="bold">
             Component Criticality
           </Text>
-          <TextField.Root
+          <input
+            className="rt-TextFieldInput"
             placeholder="Enter criticality"
             value={componentCriticality}
             onChange={(e) => setComponentCriticality(e.target.value)}
@@ -144,11 +146,11 @@ export default function BatchCosting() {
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.Cell as="th">Item</Table.Cell>
-              <Table.Cell as="th">Qty</Table.Cell>
-              <Table.Cell as="th">Unit Price ({currency})</Table.Cell>
-              <Table.Cell as="th">Cost ({currency})</Table.Cell>
-              <Table.Cell as="th">Solution</Table.Cell>
+              <th className="rt-TableCell">Item</th>
+              <th className="rt-TableCell">Qty</th>
+              <th className="rt-TableCell">Unit Price ({currency})</th>
+              <th className="rt-TableCell">Cost ({currency})</th>
+              <th className="rt-TableCell">Solution</th>
             </Table.Row>
           </Table.Header>
           <Table.Body>
