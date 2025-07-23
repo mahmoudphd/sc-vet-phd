@@ -29,16 +29,16 @@ import {
 } from 'recharts';
 
 const BatchCosting = () => {
-  // States for form inputs
-  const [batchSize, setBatchSize] = useState<string>('1000');
-  const [materialCost, setMaterialCost] = useState<string>('5000');
-  const [laborCost, setLaborCost] = useState<string>('2000');
-  const [overhead, setOverhead] = useState<string>('1500');
-  const [productionTime, setProductionTime] = useState<string>('48');
-  const [currency, setCurrency] = useState<string>('USD');
-  const [notes, setNotes] = useState<string>('');
+  // States
+  const [batchSize, setBatchSize] = useState('1000');
+  const [materialCost, setMaterialCost] = useState('5000');
+  const [laborCost, setLaborCost] = useState('2000');
+  const [overhead, setOverhead] = useState('1500');
+  const [productionTime, setProductionTime] = useState('48');
+  const [currency, setCurrency] = useState('USD');
+  const [notes, setNotes] = useState('');
 
-  // Production stages data
+  // Production stages
   const [stages, setStages] = useState([
     { name: 'Weighing', time: '2', cost: '200' },
     { name: 'Mixing', time: '4', cost: '400' },
@@ -48,25 +48,17 @@ const BatchCosting = () => {
     { name: 'Packaging', time: '5', cost: '500' }
   ]);
 
-  // Cost breakdown data for charts
-  const costData = [
-    { name: 'Materials', value: parseFloat(materialCost) || 0 },
-    { name: 'Labor', value: parseFloat(laborCost) || 0 },
-    { name: 'Overhead', value: parseFloat(overhead) || 0 }
-  ];
-
-  // Calculate total cost
-  const totalCost = costData.reduce((sum, item) => sum + item.value, 0);
+  // Calculations
+  const totalCost = parseFloat(materialCost) + parseFloat(laborCost) + parseFloat(overhead);
   const unitCost = totalCost / (parseFloat(batchSize) || 1);
 
-  // Handle stage changes
+  // Handlers
   const handleStageChange = (index: number, field: string, value: string) => {
-    const updatedStages = [...stages];
-    updatedStages[index] = { ...updatedStages[index], [field]: value };
-    setStages(updatedStages);
+    const updated = [...stages];
+    updated[index] = { ...updated[index], [field]: value };
+    setStages(updated);
   };
 
-  // Add new production stage
   const addNewStage = () => {
     setStages([...stages, { name: '', time: '', cost: '' }]);
   };
@@ -74,11 +66,11 @@ const BatchCosting = () => {
   return (
     <Container size="3" px="4" py="6">
       <Flex direction="column" gap="6">
-        {/* Header Section */}
+        {/* Header */}
         <Flex justify="between" align="center">
-          <Heading size="8" weight="bold">Batch Costing Calculator</Heading>
+          <Heading size="8">Batch Cost Calculator</Heading>
           <Flex align="center" gap="3">
-            <Text size="2" weight="bold">Currency:</Text>
+            <Text>Currency:</Text>
             <Select.Root value={currency} onValueChange={setCurrency}>
               <Select.Trigger />
               <Select.Content>
@@ -90,66 +82,64 @@ const BatchCosting = () => {
           </Flex>
         </Flex>
 
-        {/* Main Input Cards */}
+        {/* Main Grid */}
         <Grid columns={{ initial: '1', md: '2' }} gap="4">
-          {/* Batch Information Card */}
+          {/* Batch Info */}
           <Card>
             <Flex direction="column" gap="4">
-              <Heading size="5">Batch Information</Heading>
+              <Heading size="5">Batch Details</Heading>
               
               <Flex direction="column" gap="2">
-                <Text as="label" size="2" weight="bold">
-                  Batch Size (units)
-                </Text>
+                <Text as="label" size="2">Batch Size</Text>
                 <TextField.Root>
-                  <TextField.Input 
-                    type="number" 
+                  <TextField.Input
+                    type="number"
                     value={batchSize}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setBatchSize(e.target.value)}
-                    placeholder="Enter batch size"
+                    onChange={(e) => setBatchSize(e.target.value)}
                   />
                 </TextField.Root>
               </Flex>
 
               <Flex direction="column" gap="2">
-                <Text as="label" size="2" weight="bold">
-                  Production Time (hours)
-                </Text>
+                <Text as="label" size="2">Production Time</Text>
                 <TextField.Root>
                   <TextField.Input
                     type="number"
                     value={productionTime}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProductionTime(e.target.value)}
-                    placeholder="Enter production time"
+                    onChange={(e) => setProductionTime(e.target.value)}
                   />
                 </TextField.Root>
               </Flex>
             </Flex>
           </Card>
 
-          {/* Cost Summary Card */}
+          {/* Cost Summary */}
           <Card>
             <Flex direction="column" gap="4">
               <Heading size="5">Cost Summary</Heading>
               
               <Flex direction="column" gap="3">
                 <Flex justify="between">
-                  <Text size="2">Total Batch Cost:</Text>
-                  <Badge color="green" size="2">
+                  <Text>Total Cost:</Text>
+                  <Badge color="green">
                     {currency} {totalCost.toFixed(2)}
                   </Badge>
                 </Flex>
                 
                 <Flex justify="between">
-                  <Text size="2">Unit Cost:</Text>
-                  <Badge color="blue" size="2">
+                  <Text>Unit Cost:</Text>
+                  <Badge color="blue">
                     {currency} {unitCost.toFixed(2)}
                   </Badge>
                 </Flex>
               </Flex>
 
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={costData}>
+                <BarChart data={[
+                  { name: 'Materials', value: parseFloat(materialCost) },
+                  { name: 'Labor', value: parseFloat(laborCost) },
+                  { name: 'Overhead', value: parseFloat(overhead) }
+                ]}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="name" />
                   <YAxis />
@@ -161,50 +151,41 @@ const BatchCosting = () => {
           </Card>
         </Grid>
 
-        {/* Cost Breakdown Section */}
+        {/* Cost Breakdown */}
         <Card>
           <Flex direction="column" gap="4">
             <Heading size="5">Cost Breakdown</Heading>
             
             <Grid columns={{ initial: '1', md: '3' }} gap="4">
               <Flex direction="column" gap="2">
-                <Text as="label" size="2" weight="bold">
-                  Material Cost ({currency})
-                </Text>
+                <Text as="label" size="2">Material Cost</Text>
                 <TextField.Root>
                   <TextField.Input
                     type="number"
                     value={materialCost}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setMaterialCost(e.target.value)}
-                    placeholder="Material cost"
+                    onChange={(e) => setMaterialCost(e.target.value)}
                   />
                 </TextField.Root>
               </Flex>
 
               <Flex direction="column" gap="2">
-                <Text as="label" size="2" weight="bold">
-                  Labor Cost ({currency})
-                </Text>
+                <Text as="label" size="2">Labor Cost</Text>
                 <TextField.Root>
                   <TextField.Input
                     type="number"
                     value={laborCost}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLaborCost(e.target.value)}
-                    placeholder="Labor cost"
+                    onChange={(e) => setLaborCost(e.target.value)}
                   />
                 </TextField.Root>
               </Flex>
 
               <Flex direction="column" gap="2">
-                <Text as="label" size="2" weight="bold">
-                  Overhead ({currency})
-                </Text>
+                <Text as="label" size="2">Overhead</Text>
                 <TextField.Root>
                   <TextField.Input
                     type="number"
                     value={overhead}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setOverhead(e.target.value)}
-                    placeholder="Overhead cost"
+                    onChange={(e) => setOverhead(e.target.value)}
                   />
                 </TextField.Root>
               </Flex>
@@ -212,23 +193,21 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Production Stages Section */}
+        {/* Production Stages */}
         <Card>
           <Flex direction="column" gap="4">
             <Flex justify="between" align="center">
               <Heading size="5">Production Stages</Heading>
-              <Button variant="soft" onClick={addNewStage}>
-                + Add Stage
-              </Button>
+              <Button onClick={addNewStage}>+ Add Stage</Button>
             </Flex>
 
-            <ScrollArea type="always" scrollbars="horizontal" style={{ maxHeight: 440 }}>
+            <ScrollArea scrollbars="horizontal">
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Stage Name</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Time (hours)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Stage</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Time (hrs)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
 
@@ -239,10 +218,7 @@ const BatchCosting = () => {
                         <TextField.Root>
                           <TextField.Input
                             value={stage.name}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleStageChange(index, 'name', e.target.value)
-                            }
-                            placeholder="Stage name"
+                            onChange={(e) => handleStageChange(index, 'name', e.target.value)}
                           />
                         </TextField.Root>
                       </Table.Cell>
@@ -252,10 +228,7 @@ const BatchCosting = () => {
                           <TextField.Input
                             type="number"
                             value={stage.time}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleStageChange(index, 'time', e.target.value)
-                            }
-                            placeholder="Time"
+                            onChange={(e) => handleStageChange(index, 'time', e.target.value)}
                           />
                         </TextField.Root>
                       </Table.Cell>
@@ -265,10 +238,7 @@ const BatchCosting = () => {
                           <TextField.Input
                             type="number"
                             value={stage.cost}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleStageChange(index, 'cost', e.target.value)
-                            }
-                            placeholder="Cost"
+                            onChange={(e) => handleStageChange(index, 'cost', e.target.value)}
                           />
                         </TextField.Root>
                       </Table.Cell>
@@ -280,42 +250,16 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Notes Section */}
+        {/* Notes */}
         <Card>
           <Flex direction="column" gap="3">
-            <Heading size="5">Additional Notes</Heading>
+            <Heading size="5">Notes</Heading>
             <TextArea
               rows={4}
               value={notes}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
-              placeholder="Enter any additional notes or comments..."
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Additional notes..."
             />
-          </Flex>
-        </Card>
-
-        {/* Time Series Chart */}
-        <Card>
-          <Flex direction="column" gap="3">
-            <Heading size="5">Cost Over Time</Heading>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart
-                data={[
-                  { name: 'Jan', cost: 4000 },
-                  { name: 'Feb', cost: 4200 },
-                  { name: 'Mar', cost: 3800 },
-                  { name: 'Apr', cost: 4500 },
-                  { name: 'May', cost: 4100 },
-                  { name: 'Jun', cost: 5000 }
-                ]}
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Legend />
-                <Line type="monotone" dataKey="cost" stroke="#3b82f6" activeDot={{ r: 8 }} />
-              </LineChart>
-            </ResponsiveContainer>
           </Flex>
         </Card>
       </Flex>
