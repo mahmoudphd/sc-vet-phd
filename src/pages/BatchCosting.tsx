@@ -321,4 +321,37 @@ const BatchCosting = () => {
             <tr>
               <Th>Item</Th>
               <Th>Declared Price ({currency})</Th>
-              <Th>Actual Cost ({curre
+              <Th>Actual Cost ({currency})</Th>
+              <Th>Variance ({currency})</Th>
+              <Th>Incentives</Th>
+            </tr>
+          </thead>
+          <tbody>
+            {rawMaterials.map(({ item, declaredPrice, actualCost }, idx) => (
+              <tr key={idx}>
+                <Td>{item}</Td>
+                <Td>{declaredPrice}</Td>
+                <Td>{actualCost}</Td>
+                <Td>{actualCost - declaredPrice}</Td>
+                <Td>
+                  <Select>
+                    <option value="">Select Incentive</option>
+                    {incentiveOptions.map((inc, i) => (
+                      <option key={i} value={inc}>
+                        {inc}
+                      </option>
+                    ))}
+                  </Select>
+                </Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+
+      <Button onClick={() => alert("Submit clicked!")}>Submit</Button>
+    </div>
+  );
+};
+
+export default BatchCosting;
