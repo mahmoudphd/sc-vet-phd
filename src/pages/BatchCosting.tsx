@@ -1,187 +1,172 @@
-import React, { useState } from "react";
-import {
-  Box,
-  Card,
-  Flex,
-  Heading,
-  Select,
-  Table,
-  Text,
-  TextField,
-  Button,
-} from "@radix-ui/themes";
+import React from 'react';
+import { Card, CardContent } from '@/components/ui/card';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/components/ui/select';
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 
-const incentiveOptions = [
-  "Greater volumes",
-  "Longer contracts",
-  "Technical support",
-  "Marketing support",
+const ingredients = [
+  'Vitamin B1',
+  'Vitamin B2',
+  'Vitamin B12',
+  'Pantothenic Acid',
+  'Vitamin B6',
+  'Leucine',
+  'Taurine',
+  'Glycine',
 ];
 
-type RawMaterial = {
-  item: string;
-  qty: number;
-  unitPrice: number;
-  cost: number;
-  solution: string;
-};
+const incentivesOptions = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
+];
 
-export default function BatchCosting() {
-  const [supplierTier, setSupplierTier] = useState("Tier 1");
-  const [transactionVolume, setTransactionVolume] = useState("");
-  const [componentCriticality, setComponentCriticality] = useState("");
-  const [currency, setCurrency] = useState("USD");
-  const [product, setProduct] = useState("Product A");
-  const [supplier, setSupplier] = useState("Supplier X");
+const criticalityLevels = ['Low', 'Medium', 'High'];
 
-  const [rawMaterials, setRawMaterials] = useState<RawMaterial[]>([
-    {
-      item: "Material A",
-      qty: 100,
-      unitPrice: 2.5,
-      cost: 250,
-      solution: "",
-    },
-    {
-      item: "Material B",
-      qty: 200,
-      unitPrice: 1.2,
-      cost: 240,
-      solution: "",
-    },
-  ]);
-
-  const handleSolutionChange = (index: number, value: string) => {
-    const updated = [...rawMaterials];
-    updated[index].solution = value;
-    setRawMaterials(updated);
-  };
-
+export default function OpenBookAccounting() {
   return (
-    <Box p="4">
-      <Heading mb="4">Open Book Accounting Dashboard</Heading>
+    <div className="p-4 space-y-6">
+      <h1 className="text-2xl font-bold">Open Book Accounting Dashboard</h1>
 
-      <Flex gap="4" mb="4" wrap="wrap">
-        <Select.Root value={supplier} onValueChange={setSupplier}>
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="Supplier X">Supplier X</Select.Item>
-            <Select.Item value="Supplier Y">Supplier Y</Select.Item>
-            <Select.Item value="Supplier Z">Supplier Z</Select.Item>
-          </Select.Content>
-        </Select.Root>
+      {/* Tabs on the right */}
+      <div className="flex justify-end gap-4">
+        <Select>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Supplier" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="supplier1">Supplier 1</SelectItem>
+            <SelectItem value="supplier2">Supplier 2</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <Select.Root value={product} onValueChange={setProduct}>
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="Product A">Product A</Select.Item>
-            <Select.Item value="Product B">Product B</Select.Item>
-          </Select.Content>
-        </Select.Root>
+        <Select>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select Product" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="product1">Product A</SelectItem>
+            <SelectItem value="product2">Product B</SelectItem>
+          </SelectContent>
+        </Select>
 
-        <Select.Root value={currency} onValueChange={setCurrency}>
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="USD">USD</Select.Item>
-            <Select.Item value="EGP">EGP</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </Flex>
+        <Select>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Select Currency" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="usd">USD</SelectItem>
+            <SelectItem value="egp">EGP</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
 
-      <Flex gap="4" mb="4" wrap="wrap">
-        <Card>
-          <Text size="2" weight="bold">
-            Supplier Tier
-          </Text>
-          <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="Tier 1">Tier 1</Select.Item>
-              <Select.Item value="Tier 2">Tier 2</Select.Item>
-              <Select.Item value="Tier 3">Tier 3</Select.Item>
-            </Select.Content>
-          </Select.Root>
+      {/* Header Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-blue-100 border-blue-300 shadow">
+          <CardContent className="p-4">
+            <p className="text-sm text-gray-600">Supplier Tier</p>
+            <p className="font-semibold">Tier 1</p>
+          </CardContent>
         </Card>
-
-        <Card>
-          <Text size="2" weight="bold">
-            Transaction Volume
-          </Text>
-          <input
-            className="rt-TextFieldInput"
-            placeholder="Enter volume"
-            value={transactionVolume}
-            onChange={(e) => setTransactionVolume(e.target.value)}
-          />
+        <Card className="bg-green-100 border-green-300 shadow">
+          <CardContent className="p-4">
+            <p className="text-sm text-gray-600">Transaction Volume</p>
+            <p className="font-semibold">250,000 EGP</p>
+          </CardContent>
         </Card>
-
-        <Card>
-          <Text size="2" weight="bold">
-            Component Criticality
-          </Text>
-          <input
-            className="rt-TextFieldInput"
-            placeholder="Enter criticality"
-            value={componentCriticality}
-            onChange={(e) => setComponentCriticality(e.target.value)}
-          />
+        <Card className="bg-yellow-100 border-yellow-300 shadow">
+          <CardContent className="p-4">
+            <p className="text-sm text-gray-600">Component Criticality</p>
+            <Select>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder="Select Criticality" />
+              </SelectTrigger>
+              <SelectContent>
+                {criticalityLevels.map((level) => (
+                  <SelectItem key={level} value={level.toLowerCase()}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
         </Card>
-
-        <Card>
-          <Text size="2" weight="bold">
-            Supplier Incentives Offered
-          </Text>
-          <ul>
-            {incentiveOptions.map((option, i) => (
-              <li key={i}>• {option}</li>
-            ))}
-          </ul>
+        <Card className="bg-purple-100 border-purple-300 shadow">
+          <CardContent className="p-4">
+            <p className="text-sm text-gray-600">Supplier Incentives Offered</p>
+            <Select>
+              <SelectTrigger className="w-full mt-1">
+                <SelectValue placeholder="Select Incentive" />
+              </SelectTrigger>
+              <SelectContent>
+                {incentivesOptions.map((option) => (
+                  <SelectItem key={option} value={option.toLowerCase().replace(/\s+/g, '-')}>
+                    {option}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </CardContent>
         </Card>
-      </Flex>
+      </div>
 
-      <Box mb="4">
-        <Text weight="bold" mb="2">
-          🧱 Editable Table: Raw Materials
-        </Text>
-        <Table.Root variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <th className="rt-TableCell">Item</th>
-              <th className="rt-TableCell">Qty</th>
-              <th className="rt-TableCell">Unit Price ({currency})</th>
-              <th className="rt-TableCell">Cost ({currency})</th>
-              <th className="rt-TableCell">Solution</th>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rawMaterials.map((row, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>{row.item}</Table.Cell>
-                <Table.Cell>{row.qty}</Table.Cell>
-                <Table.Cell>{row.unitPrice}</Table.Cell>
-                <Table.Cell>{row.qty * row.unitPrice}</Table.Cell>
-                <Table.Cell>
-                  <Select.Root
-                    value={row.solution}
-                    onValueChange={(value) => handleSolutionChange(index, value)}
-                  >
-                    <Select.Trigger placeholder="Select..." />
-                    <Select.Content>
-                      {incentiveOptions.map((option, i) => (
-                        <Select.Item key={i} value={option}>
-                          {option}
-                        </Select.Item>
+      {/* Editable Table */}
+      <div className="overflow-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Component</TableHead>
+              <TableHead>Declared Price</TableHead>
+              <TableHead>Actual Cost</TableHead>
+              <TableHead>Variance</TableHead>
+              <TableHead>Incentives</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {ingredients.map((ingredient, index) => (
+              <TableRow key={index}>
+                <TableCell>{ingredient}</TableCell>
+                <TableCell>
+                  <input
+                    type="number"
+                    className="border p-1 w-24 rounded"
+                    placeholder="EGP"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="number"
+                    className="border p-1 w-24 rounded"
+                    placeholder="EGP"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="number"
+                    className="border p-1 w-24 rounded"
+                    placeholder="EGP"
+                  />
+                </TableCell>
+                <TableCell>
+                  <Select>
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {incentivesOptions.map((opt) => (
+                        <SelectItem key={opt} value={opt}>
+                          {opt}
+                        </SelectItem>
                       ))}
-                    </Select.Content>
-                  </Select.Root>
-                </Table.Cell>
-              </Table.Row>
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              </TableRow>
             ))}
-          </Table.Body>
-        </Table.Root>
-      </Box>
-
-      <Button>Submit</Button>
-    </Box>
+          </TableBody>
+        </Table>
+      </div>
+    </div>
   );
 }
