@@ -1,286 +1,295 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
-  Card,
-  Flex,
-  Heading,
-  Text,
-  Table,
-  Badge,
-  Grid,
-  Progress,
   Box,
+  Button,
+  Card,
+  Dialog,
+  Flex,
+  Grid,
+  Heading,
   Select,
+  Table,
+  Text,
+  TextField,
+  TextArea,
 } from '@radix-ui/themes';
-import { PieChart, Pie, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Cell } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  RadarChart,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  Radar,
+} from 'recharts';
 
-interface Transaction {
-  id: string;
-  date: string;
-  product: string;
-  supplier: string;
-  amount: number;
-  status: 'paid' | 'pending';
-  dueDate: string;
-  iotVerified: boolean;
-  incentives: number;
-}
+const supplierIncentiveOptions = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
+  'Negotiation support',
+  'Joint problem solving teams',
+];
 
-interface SupplierData {
-  name: string;
-  value: number;
-  trustScore: number;
-}
-
-interface PieData {
-  name: string;
-  value: number;
-}
-
-const OpenBookAccounting = () => {
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
-  const [selectedSupplier, setSelectedSupplier] = useState<string>('');
-  const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
-  const exchangeRate = 30.9; // 1 USD = 30.9 EGP
-
-  const transactions: Transaction[] = [
-    {
-      id: 'TX-23001',
-      date: '2023-05-15',
-      product: 'Product A',
-      supplier: 'Supplier X',
-      amount: 24500,
-      status: 'paid',
-      dueDate: '2023-06-14',
-      iotVerified: true,
-      incentives: 3
-    },
-    {
-      id: 'TX-23002',
-      date: '2023-05-18',
-      product: 'Product B',
-      supplier: 'Supplier Y',
-      amount: 18700,
-      status: 'pending',
-      dueDate: '2023-06-17',
-      iotVerified: false,
-      incentives: 1
-    },
-    {
-      id: 'TX-23003',
-      date: '2023-05-20',
-      product: 'Product C',
-      supplier: 'Supplier Z',
-      amount: 32000,
-      status: 'paid',
-      dueDate: '2023-06-19',
-      iotVerified: true,
-      incentives: 5
-    },
-  ];
-
-  const formatCurrency = (amount: number): string => {
-    if (currency === 'EGP') {
-      return `${(amount * exchangeRate).toLocaleString('en-EG')} EGP`;
+const OpenBookAccountingDashboard = () => {
+  const [supplier, setSupplier] = useState('');
+  const [product, setProduct] = useState('');
+  const [currency, setCurrency] = useState('EGP');
+  const [cards, setCards] = useState({
+    tier: 'Tier 1',
+    volume: '12000',
+    criticality: 'High',
+    incentives: 'Longer contracts',
+  });
+  const [productionDesign, setProductionDesign] = useState('');
+  const [transactions, setTransactions] = useState([
+    { 
+      date: '', 
+      item: '', 
+      material: '', 
+      declaredCost: '', 
+      actualCost: '', 
+      incentive: '' 
     }
-    return `$${amount.toLocaleString('en-US')}`;
-  };
+  ]);
 
-  const totalActualCost = transactions.reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
-  const iotVerifiedCost = transactions
-    .filter((tx: Transaction) => tx.iotVerified)
-    .reduce((sum: number, tx: Transaction) => sum + tx.amount, 0);
-  const totalIncentives = transactions.reduce((sum: number, tx: Transaction) => sum + tx.incentives, 0);
-  
-  const trustScores: Record<string, number> = {
-    'Supplier X': 88,
-    'Supplier Y': 72,
-    'Supplier Z': 95
-  };
-  
-  const avgTrustScore = Object.values(trustScores).reduce((a: number, b: number) => a + b, 0) / Object.keys(trustScores).length;
-
-  const supplierData: SupplierData[] = [
-    { name: 'Supplier X', value: 24500, trustScore: 88 },
-    { name: 'Supplier Y', value: 18700, trustScore: 72 },
-    { name: 'Supplier Z', value: 32000, trustScore: 95 }
+  const relationshipMetrics = [
+    { metric: 'Transparency', score: 85 },
+    { metric: 'Cost Accuracy', score: 78 },
+    { metric: 'Delivery', score: 92 },
+    { metric: 'Communication', score: 88 },
+    { metric: 'Innovation', score: 75 },
   ];
 
-  const pieData: PieData[] = [
-    { name: 'Supplier X (88)', value: 88 },
-    { name: 'Supplier Y (72)', value: 72 },
-    { name: 'Supplier Z (95)', value: 95 }
-  ];
+  const handleCardChange = (key: string, value: string) => {
+    setCards({ ...cards, [key]: value });
+  };
 
-  const COLORS = ['#0088FE', '#00C49F', '#FFBB28'];
+  const handleTransactionChange = (index: number, field: string, value: string) => {
+    const updatedTransactions = [...transactions];
+    updatedTransactions[index] = { ...updatedTransactions[index], [field]: value };
+    setTransactions(updatedTransactions);
+  };
+
+  const addTransactionRow = () => {
+    setTransactions([...transactions, { 
+      date: '', 
+      item: '', 
+      material: '', 
+      declaredCost: '', 
+      actualCost: '', 
+      incentive: '' 
+    }]);
+  };
+
+  const calculateVariance = (declared: string, actual: string) => {
+    const dec = parseFloat(declared) || 0;
+    const act = parseFloat(actual) || 0;
+    return (act - dec).toFixed(2);
+  };
+
+  const handleSubmitAll = () => {
+    // Submit logic here
+    console.log('Submitting all data', { supplier, product, cards, transactions });
+  };
 
   return (
-    <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Open Book Accounting Dashboard</Heading>
-        
-        <Flex gap="3" align="center">
-          <Select.Root 
-            value={selectedSupplier}
-            onValueChange={(value: string) => setSelectedSupplier(value)}
-          >
-            <Select.Trigger 
-              placeholder="Select Supplier" 
-              style={{ backgroundColor: '#2563eb', color: 'white' }} 
-            />
+    <Box p="4">
+      {/* Header Section */}
+      <Flex justify="between" align="center" mb="4">
+        <Heading size="7">Open Book Accounting Dashboard</Heading>
+        <Flex gap="3">
+          <Select.Root value={supplier} onValueChange={setSupplier}>
+            <Select.Trigger placeholder="Select Supplier" />
             <Select.Content>
-              <Select.Item value="x">Supplier X</Select.Item>
-              <Select.Item value="y">Supplier Y</Select.Item>
-              <Select.Item value="z">Supplier Z</Select.Item>
+              <Select.Item value="Supplier A">Supplier A</Select.Item>
+              <Select.Item value="Supplier B">Supplier B</Select.Item>
+              <Select.Item value="Supplier C">Supplier C</Select.Item>
             </Select.Content>
           </Select.Root>
-
-          <Select.Root 
-            value={selectedProduct}
-            onValueChange={(value: string) => setSelectedProduct(value)}
-          >
-            <Select.Trigger 
-              placeholder="Select Product" 
-              style={{ backgroundColor: '#2563eb', color: 'white' }} 
-            />
+          <Select.Root value={product} onValueChange={setProduct}>
+            <Select.Trigger placeholder="Select Product" />
             <Select.Content>
-              <Select.Item value="a">Product A</Select.Item>
-              <Select.Item value="b">Product B</Select.Item>
-              <Select.Item value="c">Product C</Select.Item>
+              <Select.Item value="Product X">Product X</Select.Item>
+              <Select.Item value="Product Y">Product Y</Select.Item>
             </Select.Content>
           </Select.Root>
-
-          <Select.Root 
-            value={currency}
-            onValueChange={(value: 'USD' | 'EGP') => setCurrency(value)}
-          >
-            <Select.Trigger 
-              placeholder="Currency" 
-              style={{ backgroundColor: '#2563eb', color: 'white' }} 
-            />
+          <Select.Root value={currency} onValueChange={setCurrency}>
+            <Select.Trigger />
             <Select.Content>
-              <Select.Item value="USD">USD ($)</Select.Item>
-              <Select.Item value="EGP">EGP (ج.م)</Select.Item>
+              <Select.Item value="EGP">EGP</Select.Item>
+              <Select.Item value="USD">USD</Select.Item>
             </Select.Content>
           </Select.Root>
         </Flex>
       </Flex>
 
-      <Grid columns="4" gap="4" mb="5">
+      {/* KPI Cards */}
+      <Grid columns={{ initial: '1', md: '4' }} gap="3" mb="4">
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Total Actual Cost</Text>
-            <Heading size="7">{formatCurrency(totalActualCost)}</Heading>
-            <Text size="1" color="gray">Across all transactions</Text>
-          </Flex>
+          <Text size="2" weight="bold">Supplier Tier</Text>
+          <TextField.Root>
+            <TextField.Input 
+              value={cards.tier} 
+              onChange={(e) => handleCardChange('tier', e.target.value)} 
+            />
+          </TextField.Root>
         </Card>
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Supplier Trust Score</Text>
-            <Heading size="7">{Math.round(avgTrustScore)}/100</Heading>
-            <Text size="1" color="gray">Average across suppliers</Text>
-          </Flex>
+          <Text size="2" weight="bold">Transaction Volume</Text>
+          <TextField.Root>
+            <TextField.Input 
+              value={cards.volume} 
+              onChange={(e) => handleCardChange('volume', e.target.value)} 
+            />
+          </TextField.Root>
         </Card>
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">IoT Verified Cost</Text>
-            <Heading size="7">{formatCurrency(iotVerifiedCost)}</Heading>
-            <Text size="1" color="gray">Verified by IoT devices</Text>
-          </Flex>
+          <Text size="2" weight="bold">Component Criticality</Text>
+          <TextField.Root>
+            <TextField.Input 
+              value={cards.criticality} 
+              onChange={(e) => handleCardChange('criticality', e.target.value)} 
+            />
+          </TextField.Root>
         </Card>
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Supplier Incentives Offered</Text>
-            <Heading size="7">{totalIncentives}</Heading>
-            <Text size="1" color="gray">Total incentives across suppliers</Text>
-          </Flex>
+          <Text size="2" weight="bold">Supplier Incentives Offered</Text>
+          <Select.Root 
+            value={cards.incentives} 
+            onValueChange={(val) => handleCardChange('incentives', val)}
+          >
+            <Select.Trigger />
+            <Select.Content>
+              {supplierIncentiveOptions.map((option) => (
+                <Select.Item key={option} value={option}>{option}</Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
         </Card>
       </Grid>
 
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Transaction ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Amount</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Due Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>IoT Verified</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {transactions.map((tx) => (
-            <Table.Row key={tx.id}>
-              <Table.Cell>{tx.id}</Table.Cell>
-              <Table.Cell>{tx.date}</Table.Cell>
-              <Table.Cell>{tx.product}</Table.Cell>
-              <Table.Cell>{tx.supplier}</Table.Cell>
-              <Table.Cell>{formatCurrency(tx.amount)}</Table.Cell>
-              <Table.Cell>
-                <Badge color={tx.status === 'paid' ? 'green' : 'orange'}>
-                  {tx.status}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>{tx.dueDate}</Table.Cell>
-              <Table.Cell>
-                <Badge color={tx.iotVerified ? 'green' : 'red'}>
-                  {tx.iotVerified ? 'Yes' : 'No'}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>{tx.incentives}</Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+      {/* Production Design Info Section */}
+      <Box mt="5">
+        <Heading size="4" mb="3">Production Design Info</Heading>
+        <Text as="p" mb="2">
+          Please describe or update key production parameters or processes.
+        </Text>
+        <TextArea
+          placeholder="e.g., Batch Size: 5000 units, Sterile Processing, etc."
+          rows={3}
+          value={productionDesign}
+          onChange={(e) => setProductionDesign(e.target.value)}
+        />
+      </Box>
 
-      <Flex mt="5" gap="4">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Spending by Supplier</Heading>
-          <div className="h-64">
-            <BarChart 
-              width={500} 
-              height={250} 
-              data={supplierData.map(item => ({
-                ...item,
-                value: currency === 'EGP' ? item.value * exchangeRate : item.value
-              }))}
-            >
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => [formatCurrency(Number(value)), 'Amount']} />
-              <Legend />
-              <Bar dataKey="value" fill="#3b82f6" name="Amount" />
-            </BarChart>
-          </div>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">Supplier Trust Scores</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {pieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </div>
-        </Card>
+      {/* Transactions Table */}
+      <Box mt="6">
+        <Heading size="4" mb="3">Detailed Transactions</Heading>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Declared Cost</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {transactions.map((tx, index) => (
+              <Table.Row key={index}>
+                <Table.Cell>
+                  <TextField.Input
+                    type="date"
+                    value={tx.date}
+                    onChange={(e) => handleTransactionChange(index, 'date', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Input
+                    value={tx.item}
+                    onChange={(e) => handleTransactionChange(index, 'item', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Input
+                    value={tx.material}
+                    onChange={(e) => handleTransactionChange(index, 'material', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Input
+                    type="number"
+                    value={tx.declaredCost}
+                    onChange={(e) => handleTransactionChange(index, 'declaredCost', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Input
+                    type="number"
+                    value={tx.actualCost}
+                    onChange={(e) => handleTransactionChange(index, 'actualCost', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  {calculateVariance(tx.declaredCost, tx.actualCost)}
+                </Table.Cell>
+                <Table.Cell>
+                  <Select.Root
+                    value={tx.incentive}
+                    onValueChange={(value) => handleTransactionChange(index, 'incentive', value)}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      {supplierIncentiveOptions.map((option) => (
+                        <Select.Item key={option} value={option}>{option}</Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+        <Button mt="3" onClick={addTransactionRow}>+ Add Transaction</Button>
+      </Box>
+
+      {/* Relationship Chart */}
+      <Box mt="6">
+        <Heading size="4">Supplier Relationship Quality</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <RadarChart data={relationshipMetrics}>
+            <PolarGrid />
+            <PolarAngleAxis dataKey="metric" />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} />
+            <Radar 
+              name="Supplier" 
+              dataKey="score" 
+              stroke="#8884d8" 
+              fill="#8884d8" 
+              fillOpacity={0.6} 
+            />
+            <Tooltip />
+          </RadarChart>
+        </ResponsiveContainer>
+      </Box>
+
+      {/* Submit Button */}
+      <Flex justify="end" mt="6">
+        <Button onClick={handleSubmitAll}>Submit All</Button>
       </Flex>
     </Box>
   );
 };
 
-export default OpenBookAccounting;
+export default OpenBookAccountingDashboard;
