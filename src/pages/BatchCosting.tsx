@@ -1,308 +1,122 @@
 import React, { useState } from "react";
-import {
-  Box,
-  Button,
-  Flex,
-  Grid,
-  Heading,
-  Select as RadixSelect,
-  Table,
-  Text,
-} from "@radix-ui/themes";
+
+const rawMaterials = [
+  { item: "Vitamin B1", declaredPrice: 10, actualCost: 50 },
+  { item: "Vitamin B2", declaredPrice: 8, actualCost: 48 },
+  { item: "Vitamin B12", declaredPrice: 12, actualCost: 60 },
+];
 
 const incentiveOptions = [
   "Greater volumes",
   "Longer contracts",
   "Technical support",
   "Marketing support",
-  "Negotiation support",
-  "Joint problem solving teams",
 ];
 
-const rawMaterials = [
-  { item: "Vitamin B1", declaredPrice: 10, actualCost: 50 },
-  { item: "Vitamin B2", declaredPrice: 8, actualCost: 48 },
-  { item: "Vitamin B12", declaredPrice: 12, actualCost: 60 },
-  { item: "Pantothenic Acid", declaredPrice: 5, actualCost: 25 },
-  { item: "Vitamin B6", declaredPrice: 6, actualCost: 30 },
-  { item: "Leucine", declaredPrice: 7, actualCost: 35 },
-  { item: "Taurine", declaredPrice: 4, actualCost: 20 },
-  { item: "Glycine", declaredPrice: 3, actualCost: 15 },
-];
-
-function formatCurrency(value: number, currency: string) {
-  return `${currency} ${value.toFixed(2)}`;
-}
-
-const BatchCosting = () => {
-  // States
-  const [supplier, setSupplier] = useState("");
-  const [product, setProduct] = useState("");
-  const [currency, setCurrency] = useState<"EGP" | "USD">("USD");
-  const [tier, setTier] = useState("Tier 1");
-  const [volume, setVolume] = useState("");
-  const [criticality, setCriticality] = useState("");
-  const [incentives, setIncentives] = useState<string[]>([]);
+export default function BatchCosting() {
+  const [currency, setCurrency] = useState("USD");
   const [incentivesMap, setIncentivesMap] = useState<Record<number, string>>({});
 
-  // Toggle incentives checkboxes
-  const handleIncentiveToggle = (val: string) => {
-    setIncentives((prev) =>
-      prev.includes(val) ? prev.filter((i) => i !== val) : [...prev, val]
-    );
-  };
-
-  // Handle incentive select change for each raw material row
   const handleIncentiveSelect = (idx: number, val: string) => {
-    setIncentivesMap((prev) => ({
-      ...prev,
-      [idx]: val,
-    }));
+    setIncentivesMap((prev) => ({ ...prev, [idx]: val }));
   };
 
   return (
-    <Box p="6" style={{ backgroundColor: "#f9fafb", minHeight: "100vh" }}>
-      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
-        <Heading size="6">Open Book Accounting Overview</Heading>
-      </Flex>
+    <div style={{ padding: 20, fontFamily: "Arial, sans-serif", backgroundColor: "#f9fafb", minHeight: "100vh" }}>
+      <h1 style={{ marginBottom: 20 }}>Open Book Accounting Overview</h1>
 
-      {/* Filters Row */}
-      <Grid columns={{ initial: "3", md: "3" }} gap="4" mb="6">
-        <Box
+      <label style={{ marginBottom: 20, display: "block" }}>
+        Currency:{" "}
+        <select
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
           style={{
+            padding: 8,
+            borderRadius: 6,
             border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
+            fontSize: 16,
+            minWidth: 100,
+            cursor: "pointer",
           }}
         >
-          <Text size="2" weight="bold" mb="2">
-            Supplier
-          </Text>
-          <RadixSelect.Root
-            value={supplier}
-            onValueChange={(val) => setSupplier(val)}
-          >
-            <RadixSelect.Trigger aria-label="Select supplier" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="">Select Supplier</RadixSelect.Item>
-              <RadixSelect.Item value="Supplier A">Supplier A</RadixSelect.Item>
-              <RadixSelect.Item value="Supplier B">Supplier B</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-        </Box>
+          <option value="USD">USD</option>
+          <option value="EGP">EGP</option>
+        </select>
+      </label>
 
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Product
-          </Text>
-          <RadixSelect.Root
-            value={product}
-            onValueChange={(val) => setProduct(val)}
-          >
-            <RadixSelect.Trigger aria-label="Select product" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="">Select Product</RadixSelect.Item>
-              <RadixSelect.Item value="Product X">Product X</RadixSelect.Item>
-              <RadixSelect.Item value="Product Y">Product Y</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-        </Box>
-
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Currency
-          </Text>
-          <RadixSelect.Root
-            value={currency}
-            onValueChange={(val) => setCurrency(val as "EGP" | "USD")}
-          >
-            <RadixSelect.Trigger aria-label="Select currency" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
-              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-        </Box>
-      </Grid>
-
-      {/* Info Cards Row */}
-      <Grid columns={{ initial: "4", md: "4" }} gap="4" mb="6">
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Supplier Tier
-          </Text>
-          <RadixSelect.Root value={tier} onValueChange={(val) => setTier(val)}>
-            <RadixSelect.Trigger aria-label="Select tier" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="Tier 1">Tier 1</RadixSelect.Item>
-              <RadixSelect.Item value="Tier 2">Tier 2</RadixSelect.Item>
-              <RadixSelect.Item value="Tier 3">Tier 3</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-        </Box>
-
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Transaction Volume
-          </Text>
-          <input
-            type="text"
-            value={volume}
-            onChange={(e) => setVolume(e.target.value)}
-            style={{
-              width: "100%",
-              padding: 8,
-              borderRadius: 6,
-              border: "1px solid #ccc",
-            }}
-            placeholder="Enter volume"
-          />
-        </Box>
-
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Component Criticality
-          </Text>
-          <RadixSelect.Root
-            value={criticality}
-            onValueChange={(val) => setCriticality(val)}
-          >
-            <RadixSelect.Trigger aria-label="Select criticality" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="">Select Criticality</RadixSelect.Item>
-              <RadixSelect.Item value="High">High</RadixSelect.Item>
-              <RadixSelect.Item value="Medium">Medium</RadixSelect.Item>
-              <RadixSelect.Item value="Low">Low</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-        </Box>
-
-        <Box
-          style={{
-            border: "1px solid #ccc",
-            borderRadius: 8,
-            padding: 12,
-            backgroundColor: "#fff",
-          }}
-        >
-          <Text size="2" weight="bold" mb="2">
-            Supplier Incentives Offered
-          </Text>
-          <Flex wrap="wrap" gap="3" direction="column" style={{ maxHeight: 130, overflowY: "auto" }}>
-            {incentiveOptions.map((inc) => (
-              <label key={inc} style={{ userSelect: "none" }}>
-                <input
-                  type="checkbox"
-                  checked={incentives.includes(inc)}
-                  onChange={() => handleIncentiveToggle(inc)}
-                  style={{ marginRight: 8 }}
-                />
-                {inc}
-              </label>
-            ))}
-          </Flex>
-        </Box>
-      </Grid>
-
-      {/* Raw Materials Table */}
-      <Box
+      <table
         style={{
+          width: "100%",
+          borderCollapse: "collapse",
           backgroundColor: "#fff",
-          padding: 20,
-          borderRadius: 10,
+          borderRadius: 8,
+          overflow: "hidden",
           boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
-          overflowX: "auto",
-          marginBottom: 24,
         }}
       >
-        <Heading size="5" mb="4">
-          Raw Materials Breakdown
-        </Heading>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Declared Price ({currency})</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actual Cost ({currency})</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Variance ({currency})</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {rawMaterials.map(({ item, declaredPrice, actualCost }, idx) => (
-              <Table.Row key={idx}>
-                <Table.RowHeaderCell>{item}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(declaredPrice, currency)}</Table.Cell>
-                <Table.Cell>{formatCurrency(actualCost, currency)}</Table.Cell>
-                <Table.Cell>{formatCurrency(actualCost - declaredPrice, currency)}</Table.Cell>
-                <Table.Cell>
-                  <RadixSelect.Root
-                    value={incentivesMap[idx] || ""}
-                    onValueChange={(val) => handleIncentiveSelect(idx, val)}
-                  >
-                    <RadixSelect.Trigger aria-label="Select incentive" />
-                    <RadixSelect.Content>
-                      <RadixSelect.Item value="">Select Incentive</RadixSelect.Item>
-                      {incentiveOptions.map((inc) => (
-                        <RadixSelect.Item key={inc} value={inc}>
-                          {inc}
-                        </RadixSelect.Item>
-                      ))}
-                    </RadixSelect.Content>
-                  </RadixSelect.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </Box>
+        <thead>
+          <tr style={{ backgroundColor: "#f3f4f6" }}>
+            <th style={{ border: "1px solid #ddd", padding: 12, textAlign: "left" }}>Item</th>
+            <th style={{ border: "1px solid #ddd", padding: 12, textAlign: "left" }}>
+              Declared Price ({currency})
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: 12, textAlign: "left" }}>
+              Actual Cost ({currency})
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: 12, textAlign: "left" }}>
+              Variance ({currency})
+            </th>
+            <th style={{ border: "1px solid #ddd", padding: 12, textAlign: "left" }}>Incentives</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rawMaterials.map(({ item, declaredPrice, actualCost }, idx) => (
+            <tr key={idx}>
+              <td style={{ border: "1px solid #ddd", padding: 12 }}>{item}</td>
+              <td style={{ border: "1px solid #ddd", padding: 12 }}>
+                {currency} {declaredPrice.toFixed(2)}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: 12 }}>
+                {currency} {actualCost.toFixed(2)}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: 12 }}>
+                {currency} {(actualCost - declaredPrice).toFixed(2)}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: 12 }}>
+                <select
+                  value={incentivesMap[idx] || ""}
+                  onChange={(e) => handleIncentiveSelect(idx, e.target.value)}
+                  style={{ padding: 6, borderRadius: 6, border: "1px solid #ccc", width: "100%" }}
+                >
+                  <option value="">Select Incentive</option>
+                  {incentiveOptions.map((inc) => (
+                    <option key={inc} value={inc}>
+                      {inc}
+                    </option>
+                  ))}
+                </select>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
 
-      <Flex justify="end">
-        <Button
-          style={{ backgroundColor: "#10b981", color: "#fff", fontWeight: "bold" }}
-          onClick={() => alert("Submit clicked!")}
-        >
-          Submit
-        </Button>
-      </Flex>
-    </Box>
+      <button
+        onClick={() => alert("Submit clicked!")}
+        style={{
+          marginTop: 20,
+          padding: "12px 24px",
+          backgroundColor: "#007bff",
+          color: "white",
+          border: "none",
+          borderRadius: 6,
+          cursor: "pointer",
+          fontWeight: "bold",
+          fontSize: 16,
+        }}
+      >
+        Submit
+      </button>
+    </div>
   );
-};
-
-export default BatchCosting;
+}
