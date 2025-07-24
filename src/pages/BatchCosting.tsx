@@ -199,7 +199,17 @@ const BatchCosting = () => {
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Supplier Tier</Text>
             <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
-              <Select.Trigger aria-label="Supplier Tier" style={{...dropdownTriggerStyle, backgroundColor: 'white', color: '#1e293b', border: '1px solid #ccc'}}>
+              <Select.Trigger
+                aria-label="Supplier Tier"
+                style={{
+                  ...dropdownTriggerStyle,
+                  backgroundColor: 'white',
+                  color: '#1e293b',
+                  border: '1px solid #ccc',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                }}
+              >
                 <Select.Value placeholder="Select Tier" />
                 <Select.Icon />
               </Select.Trigger>
@@ -235,7 +245,17 @@ const BatchCosting = () => {
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Component Criticality</Text>
             <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
-              <Select.Trigger aria-label="Component Criticality" style={{...dropdownTriggerStyle, backgroundColor: 'white', color: '#1e293b', border: '1px solid #ccc'}}>
+              <Select.Trigger
+                aria-label="Component Criticality"
+                style={{
+                  ...dropdownTriggerStyle,
+                  backgroundColor: 'white',
+                  color: '#1e293b',
+                  border: '1px solid #ccc',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                }}
+              >
                 <Select.Value placeholder="Select criticality" />
                 <Select.Icon />
               </Select.Trigger>
@@ -267,7 +287,7 @@ const BatchCosting = () => {
         </Card>
       </Grid>
 
-      {/* Rest of the page: table, charts etc. */}
+      {/* Table and Charts */}
 
       <Table.Root variant="surface">
         <Table.Header>
@@ -315,3 +335,27 @@ const BatchCosting = () => {
           <Heading size="4" mb="3">
             {t('varianceAnalysis')}
           </Heading>
+          <div className="h-64">
+            <PieChart width={300} height={250}>
+              <Pie
+                data={[
+                  { name: t('material'), value: 65 },
+                  { name: t('labor'), value: 25 },
+                  { name: t('overhead'), value: 10 },
+                ]}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={80}
+                paddingAngle={5}
+                dataKey="value"
+              />
+            </PieChart>
+          </div>
+        </Card>
+      </Flex>
+    </Box>
+  );
+};
+
+export default BatchCosting;
