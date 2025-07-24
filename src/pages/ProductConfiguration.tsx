@@ -46,8 +46,8 @@ const ProductConfiguration = () => {
             removalMethod: 'Chemical Dissolution',
             description: 'Veterinary antiparasitic suspension for oral administration',
             formula: [
-                { component: 'Albendazole', percentage: 40, width: '250mm' },
-                { component: 'Suspending Agent', percentage: 60, width: '120mm' }
+                { component: 'Albendazole', width: '250mm' },
+                { component: 'Suspending Agent', width: '120mm' }
             ]
         },
     ];
@@ -71,16 +71,40 @@ const ProductConfiguration = () => {
 
                     <TextArea placeholder={t('new-configuration-modal.product-description-placeholder')} />
 
-                    <Select.Root defaultValue="iso-9001">
+                    <TextField.Root placeholder="Cost (e.g. 1200)">
+                        <TextField.Slot>Cost</TextField.Slot>
+                    </TextField.Root>
+
+                    <TextField.Root placeholder="Price (e.g. 2500)">
+                        <TextField.Slot>Price</TextField.Slot>
+                    </TextField.Root>
+
+                    <Select.Root defaultValue="fifo">
+                        <Select.Group>
+                            <Select.Label>Removal Method</Select.Label>
+                            <Select.Trigger />
+                            <Select.Content>
+                                <Select.Item value="fifo">FIFO</Select.Item>
+                                <Select.Item value="lifo">LIFO</Select.Item>
+                                <Select.Item value="closest-location">Closest Location</Select.Item>
+                            </Select.Content>
+                        </Select.Group>
+                    </Select.Root>
+
+                    <Select.Root defaultValue="ich-q11">
                         <Select.Group>
                             <Select.Label>Compliance</Select.Label>
                             <Select.Trigger />
                             <Select.Content>
-                                <Select.Item value="iso-9001">ISO 9001:2015 (QMS)</Select.Item>
-                                <Select.Item value="iso-14001">ISO 14001:2015 (EHS)</Select.Item>
-                                <Select.Item value="iso-45001">ISO 45001:2018 (OHS)</Select.Item>
-                                <Select.Item value="iso-22716">ISO 22716:2007</Select.Item>
-                                <Select.Item value="eda">EDA</Select.Item>
+                                <Select.Item value="ich-q11">
+                                    {t('new-configuration-modal.compliance-standards.ich-q11')}
+                                </Select.Item>
+                                <Select.Item value="ich-q8">
+                                    {t('new-configuration-modal.compliance-standards.ich-q8')}
+                                </Select.Item>
+                                <Select.Item value="fda">
+                                    {t('new-configuration-modal.compliance-standards.fda')}
+                                </Select.Item>
                             </Select.Content>
                         </Select.Group>
                     </Select.Root>
@@ -94,9 +118,6 @@ const ProductConfiguration = () => {
                                 </TextField.Root>
                                 <TextField.Root style={{ flex: 1 }}>
                                     <input placeholder={t('new-configuration-modal.percentage-placeholder')} />
-                                </TextField.Root>
-                                <TextField.Root style={{ flex: 1 }}>
-                                    <input placeholder={t('new-configuration-modal.weight-placeholder')} />
                                 </TextField.Root>
                                 <Button variant="ghost" color="red">
                                     <Cross2Icon />
@@ -165,7 +186,7 @@ const ProductConfiguration = () => {
                                     {selectedProduct.formula.map((comp: any, i: number) => (
                                         <Table.Row key={i}>
                                             <Table.Cell>{comp.component}</Table.Cell>
-                                            <Table.Cell>{comp.percentage} %</Table.Cell>
+                                            <Table.Cell>{comp.percentage}k.g.</Table.Cell>
                                             <Table.Cell>
                                                 <Badge variant="outline">{t('view-spec-modal.usp-standard')}</Badge>
                                             </Table.Cell>
