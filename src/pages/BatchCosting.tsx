@@ -75,7 +75,7 @@ const BatchCosting = () => {
     if (selectedCurrency === 'USD') {
       return `$${value.toLocaleString()}`;
     } else if (selectedCurrency === 'EGP') {
-      return `£${(value * exchangeRate).toLocaleString()}`;
+      return `EGP ${ (value * exchangeRate).toLocaleString() }`;
     }
     return value.toString();
   };
