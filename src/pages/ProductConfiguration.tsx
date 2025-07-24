@@ -4,9 +4,9 @@ import {
   Flex,
   Heading,
   Table,
+  Button,
   Text,
   TextField,
-  Button,
   DropdownMenu,
 } from "@radix-ui/themes";
 
@@ -22,71 +22,68 @@ const complianceOptions = [
   "EDA",
 ];
 
-type PackagingInfo = {
-  productId: number;
+type ProductRow = {
+  productId: string;
   name: string;
   components: string;
   packagingShape: string;
   packagingType: string;
   capType: string;
-  packWeight: number;
+  packWeight: string;
   compliance: string;
   status: string;
-  component: number;
+  comment: string;
 };
 
-const initialData: PackagingInfo[] = [
-  {
-    productId: 1,
-    name: "Poultry Product A",
-    components: "",
-    packagingShape: "",
-    packagingType: "",
-    capType: "",
-    packWeight: 0,
-    compliance: "",
-    status: "Pending",
-    component: 0,
-  },
-];
+export default function ProductConfiguration() {
+  const [data, setData] = useState<ProductRow[]>([
+    {
+      productId: "P-001",
+      name: "Poultry Product A",
+      components: "",
+      packagingShape: "",
+      packagingType: "",
+      capType: "",
+      packWeight: "",
+      compliance: "",
+      status: "Pending",
+      comment: "",
+    },
+  ]);
 
-export default function PackagingTable() {
-  const [data, setData] = useState<PackagingInfo[]>(initialData);
-
-  const handleChange = (
-    index: number,
-    field: keyof PackagingInfo,
-    value: string | number
-  ) => {
-    const newData = [...data];
-    (newData[index][field] as any) = value;
-    setData(newData);
+  const handleChange = (index: number, key: keyof ProductRow, value: string) => {
+    const updated = [...data];
+    updated[index][key] = value;
+    setData(updated);
   };
 
-  const renderDropdown = (
-    options: string[],
-    value: string,
-    onChange: (val: string) => void
-  ) => (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger>
-        <Button variant="soft">{value || "Select"}</Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
-        {options.map((opt, i) => (
-          <DropdownMenu.Item key={i} onSelect={() => onChange(opt)}>
-            {opt}
-          </DropdownMenu.Item>
-        ))}
-      </DropdownMenu.Content>
-    </DropdownMenu.Root>
-  );
-
   return (
-    <Card style={{ margin: 20 }}>
-      <Heading size="5" mb="4">
-        PRODUCTION DESIGN INFO
-      </Heading>
+    <Card>
+      <Flex justify="between" align="center" mb="4">
+        <Heading size="5">Production Design Info</Heading>
+        <Button
+          onClick={() =>
+            setData([
+              ...data,
+              {
+                productId: `P-${String(data.length + 1).padStart(3, "0")}`,
+                name: "",
+                components: "",
+                packagingShape: "",
+                packagingType: "",
+                capType: "",
+                packWeight: "",
+                compliance: "",
+                status: "Pending",
+                comment: "",
+              },
+            ])
+          }
+        >
+          Add Row
+        </Button>
+      </Flex>
+
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -96,81 +93,137 @@ export default function PackagingTable() {
             <Table.ColumnHeaderCell>Packaging Shape</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Packaging Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cap Type</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Pack Weight (grams)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Pack Weight (g)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Comment</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
+
         <Table.Body>
           {data.map((row, index) => (
             <Table.Row key={index}>
               <Table.Cell>{row.productId}</Table.Cell>
+
               <Table.Cell>
-                {renderDropdown(productNames, row.name, (val) =>
-                  handleChange(index, "name", val)
-                )}
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.name || "Select"}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {productNames.map((name) => (
+                      <DropdownMenu.Item
+                        key={name}
+                        onSelect={() => handleChange(index, "name", name)}
+                      >
+                        {name}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
               </Table.Cell>
+
               <Table.Cell>
-                <TextField.Root>
-                  <TextField.Input
-                    value={row.components}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleChange(index, "components", e.target.value)
+                <TextField
+                  value={row.components}
+                  onChange={(e) => handleChange(index, "components", e.target.value)}
+                />
+              </Table.Cell>
+
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.packagingShape || "Select"}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {packagingShapes.map((shape) => (
+                      <DropdownMenu.Item
+                        key={shape}
+                        onSelect={() => handleChange(index, "packagingShape", shape)}
+                      >
+                        {shape}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.packagingType || "Select"}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {packagingTypes.map((type) => (
+                      <DropdownMenu.Item
+                        key={type}
+                        onSelect={() => handleChange(index, "packagingType", type)}
+                      >
+                        {type}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.capType || "Select"}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {capTypes.map((cap) => (
+                      <DropdownMenu.Item
+                        key={cap}
+                        onSelect={() => handleChange(index, "capType", cap)}
+                      >
+                        {cap}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+
+              <Table.Cell>
+                <TextField
+                  value={row.packWeight}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d*$/.test(value)) {
+                      handleChange(index, "packWeight", value);
                     }
-                  />
-                </TextField.Root>
+                  }}
+                  placeholder="grams"
+                />
               </Table.Cell>
+
               <Table.Cell>
-                {renderDropdown(packagingShapes, row.packagingShape, (val) =>
-                  handleChange(index, "packagingShape", val)
-                )}
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.compliance || "Select"}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {complianceOptions.map((opt) => (
+                      <DropdownMenu.Item
+                        key={opt}
+                        onSelect={() => handleChange(index, "compliance", opt)}
+                      >
+                        {opt}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
               </Table.Cell>
+
               <Table.Cell>
-                {renderDropdown(packagingTypes, row.packagingType, (val) =>
-                  handleChange(index, "packagingType", val)
-                )}
+                <Text color="gray">{row.status}</Text>
               </Table.Cell>
+
               <Table.Cell>
-                {renderDropdown(capTypes, row.capType, (val) =>
-                  handleChange(index, "capType", val)
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                <TextField.Root>
-                  <TextField.Input
-                    type="number"
-                    value={row.packWeight}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleChange(index, "packWeight", parseFloat(e.target.value) || 0)
-                    }
-                  />
-                </TextField.Root>
-              </Table.Cell>
-              <Table.Cell>
-                {renderDropdown(complianceOptions, row.compliance, (val) =>
-                  handleChange(index, "compliance", val)
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                <Text>{row.status}</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <TextField.Root>
-                  <TextField.Input
-                    type="number"
-                    value={row.component}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      handleChange(index, "component", parseFloat(e.target.value) || 0)
-                    }
-                  />
-                </TextField.Root>
-              </Table.Cell>
-              <Table.Cell>
-                <Button variant="outline" size="1">
-                  View
-                </Button>
+                <TextField
+                  value={row.comment}
+                  onChange={(e) => handleChange(index, "comment", e.target.value)}
+                />
               </Table.Cell>
             </Table.Row>
           ))}
