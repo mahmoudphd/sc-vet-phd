@@ -7,15 +7,14 @@ import {
   Text,
   Table,
   Badge,
-  Button,
   Grid,
   Progress,
   Box,
+  TextField,
 } from '@radix-ui/themes';
 
 import * as Select from '@radix-ui/react-select';
 
-import { PieChartIcon, BarChartIcon, MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
 const dropdownTriggerStyle: React.CSSProperties = {
@@ -54,12 +53,20 @@ const dropdownItemStyle: React.CSSProperties = {
   color: '#1e293b',
 };
 
+const SupplierTierOptions = ['Tier 1', 'Tier 2', 'Tier 3'];
+const ComponentCriticalityOptions = ['High', 'Medium', 'Low'];
+
 const BatchCosting = () => {
   const { t } = useTranslation('batch-costing');
 
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
+
+  const [supplierTier, setSupplierTier] = useState('');
+  const [transactionVolume, setTransactionVolume] = useState('');
+  const [componentCriticality, setComponentCriticality] = useState('');
+  const [supplierIncentives, setSupplierIncentives] = useState('');
 
   const suppliers = ['a', 'b', 'c'];
   const products = ['a', 'b', 'c'];
@@ -83,9 +90,10 @@ const BatchCosting = () => {
 
   return (
     <Box p="6">
-      <Flex justify="between" align="center" mb="5">
+      {/* Header and Dropdowns */}
+      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Open Book Accounting Overview</Heading>
-        <Flex gap="3" align="center">
+        <Flex gap="3" align="center" wrap="wrap">
           {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
             <Select.Trigger
@@ -184,35 +192,82 @@ const BatchCosting = () => {
         </Flex>
       </Flex>
 
-      {/* باقي الصفحة كما هي ... */}
-      <Grid columns="4" gap="4" mb="5">
+      {/* Four Cards Section */}
+      <Grid columns={4} gap="4" mb="5">
+        {/* Supplier Tier */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('avgCostUnit')}</Text>
-            <Heading size="7">$3.45</Heading>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">Supplier Tier</Text>
+            <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
+              <Select.Trigger aria-label="Supplier Tier" style={{...dropdownTriggerStyle, backgroundColor: 'white', color: '#1e293b', border: '1px solid #ccc'}}>
+                <Select.Value placeholder="Select Tier" />
+                <Select.Icon />
+              </Select.Trigger>
+              <Select.Content style={dropdownContentStyle}>
+                {SupplierTierOptions.map((tier) => (
+                  <Select.Item key={tier} value={tier} style={dropdownItemStyle}>
+                    <Select.ItemText>{tier}</Select.ItemText>
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
           </Flex>
         </Card>
+
+        {/* Transaction Volume */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('yieldVariance')}</Text>
-            <Heading size="7" className="text-green-500">
-              -1.8%
-            </Heading>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">Transaction Volume</Text>
+            <TextField.Root>
+              <TextField.Input
+                type="number"
+                placeholder="Enter volume"
+                value={transactionVolume}
+                onChange={(e) => setTransactionVolume(e.target.value)}
+                style={{ fontWeight: 600 }}
+              />
+            </TextField.Root>
           </Flex>
         </Card>
+
+        {/* Component Criticality */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('materialWaste')}</Text>
-            <Heading size="7">4.5%</Heading>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">Component Criticality</Text>
+            <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
+              <Select.Trigger aria-label="Component Criticality" style={{...dropdownTriggerStyle, backgroundColor: 'white', color: '#1e293b', border: '1px solid #ccc'}}>
+                <Select.Value placeholder="Select criticality" />
+                <Select.Icon />
+              </Select.Trigger>
+              <Select.Content style={dropdownContentStyle}>
+                {ComponentCriticalityOptions.map((level) => (
+                  <Select.Item key={level} value={level} style={dropdownItemStyle}>
+                    <Select.ItemText>{level}</Select.ItemText>
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
           </Flex>
         </Card>
+
+        {/* Supplier Incentives Offered */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('batchEfficiency')}</Text>
-            <Progress value={88} />
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold">Supplier Incentives Offered</Text>
+            <TextField.Root>
+              <TextField.Input
+                type="number"
+                placeholder="Enter amount"
+                value={supplierIncentives}
+                onChange={(e) => setSupplierIncentives(e.target.value)}
+                style={{ fontWeight: 600 }}
+              />
+            </TextField.Root>
           </Flex>
         </Card>
       </Grid>
+
+      {/* Rest of the page: table, charts etc. */}
 
       <Table.Root variant="surface">
         <Table.Header>
@@ -260,27 +315,3 @@ const BatchCosting = () => {
           <Heading size="4" mb="3">
             {t('varianceAnalysis')}
           </Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={[
-                  { name: t('material'), value: 65 },
-                  { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 },
-                ]}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              />
-            </PieChart>
-          </div>
-        </Card>
-      </Flex>
-    </Box>
-  );
-};
-
-export default BatchCosting;
