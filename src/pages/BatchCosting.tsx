@@ -22,6 +22,36 @@ import {
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
+const dropdownTriggerStyle: React.CSSProperties = {
+  minWidth: 140,
+  padding: '8px 12px',
+  borderRadius: 6,
+  border: '1px solid #ccc',
+  backgroundColor: 'white',
+  fontSize: 14,
+  cursor: 'pointer',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+};
+
+const dropdownContentStyle: React.CSSProperties = {
+  backgroundColor: 'white',
+  borderRadius: 6,
+  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+  padding: '8px 0',
+  minWidth: 140,
+  zIndex: 1000,
+};
+
+const dropdownItemStyle: React.CSSProperties = {
+  padding: '8px 12px',
+  cursor: 'pointer',
+  fontSize: 14,
+  borderRadius: 4,
+};
+
 const BatchCosting = () => {
   const { t } = useTranslation('batch-costing');
 
@@ -51,13 +81,16 @@ const BatchCosting = () => {
         <Flex gap="3" align="center">
           {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
-            <Select.Trigger aria-label={t('selectSupplier') || 'Select Supplier'} style={{ minWidth: 120 }}>
+            <Select.Trigger
+              aria-label={t('selectSupplier') || 'Select Supplier'}
+              style={dropdownTriggerStyle}
+            >
               <Select.Value placeholder={t('selectSupplier') || 'Select Supplier'} />
               <Select.Icon />
             </Select.Trigger>
-            <Select.Content>
+            <Select.Content style={dropdownContentStyle}>
               {suppliers.map((sup) => (
-                <Select.Item key={sup} value={sup}>
+                <Select.Item key={sup} value={sup} style={dropdownItemStyle}>
                   <Select.ItemText>{sup.toUpperCase()}</Select.ItemText>
                 </Select.Item>
               ))}
@@ -66,13 +99,16 @@ const BatchCosting = () => {
 
           {/* Product Dropdown */}
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
-            <Select.Trigger aria-label={t('selectProduct') || 'Select Product'} style={{ minWidth: 120 }}>
+            <Select.Trigger
+              aria-label={t('selectProduct') || 'Select Product'}
+              style={dropdownTriggerStyle}
+            >
               <Select.Value placeholder={t('selectProduct') || 'Select Product'} />
               <Select.Icon />
             </Select.Trigger>
-            <Select.Content>
+            <Select.Content style={dropdownContentStyle}>
               {products.map((prod) => (
-                <Select.Item key={prod} value={prod}>
+                <Select.Item key={prod} value={prod} style={dropdownItemStyle}>
                   <Select.ItemText>{prod.toUpperCase()}</Select.ItemText>
                 </Select.Item>
               ))}
