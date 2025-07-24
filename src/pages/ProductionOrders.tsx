@@ -1,232 +1,162 @@
+import React, { useState } from "react";
 import {
-  Table,
-  Badge,
+  Dialog,
+  Text,
+  TextField,
   Button,
   Flex,
-  Heading,
-  Select,
-  TextField,
   Box,
-  Progress,
-  Dialog,
-  Text
-} from '@radix-ui/themes';
-import { useTranslation } from 'react-i18next';
-import { ClipboardIcon } from '@radix-ui/react-icons';
-import { BarChart, XAxis, YAxis, Bar } from 'recharts';
-import { toast } from 'sonner';
-import { useState } from 'react';
-import { DialogTitle } from '@radix-ui/react-dialog';
+  Heading,
+  Table,
+  Select,
+  DropdownMenu,
+} from "@radix-ui/themes";
 
-const ProductionOrders = () => {
-  const { t } = useTranslation('production-orders');
+const NewProductConfig = () => {
   const [open, setOpen] = useState(false);
-  const [productId, setProductId] = useState('');
-  const [productName, setProductName] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [priority, setPriority] = useState('medium');
-  const [materialsStatus, setMaterialsStatus] = useState('pending');
+  const [products, setProducts] = useState([
+    {
+      id: "001",
+      name: "Poultry Product A",
+      components: [
+        { name: "Vitamin B1", percentage: "1%", weight: "0.5g" },
+        { name: "Vitamin B2", percentage: "0.8%", weight: "0.3g" },
+      ],
+      shape: "Round",
+      type: "PUmb",
+      cap: "Safety Steel",
+      weight: "50g",
+      compliance:
+        "ISO 9001:2015 (QMS) / ISO 14001:2015 (EHS) / ISO 45001:2018 (OHS) / ISO 22716:2007 / EDA",
+      status: "Approved",
+    },
+  ]);
 
-  const orders = [
-      {
-          id: 'PO23045',
-          product: t('product-names.vaccine-adjuvant'),
-          priority: 'High',
-          materials: 'Allocated',
-          progress: 40,
-          schedule: '2023-08-01'
-      },
-  ];
-
-  const handleSubmit = () => {
-      if (!productId || !productName || !quantity) {
-          toast.error(t('errors.fillAllFields'));
-          return;
-      }
-
-      // Add your order creation logic here
-      setOpen(false);
-      toast.success(t('success.orderCreated'));
+  const handleChange = (index: number, field: string, value: string) => {
+    const updated = [...products];
+    (updated[index] as any)[field] = value;
+    setProducts(updated);
   };
 
   return (
-      <Box p="6" className="flex-1">
-          <Flex justify="between" align="center" mb="5">
-              <Heading size="6">{t('page-title')}</Heading>
-              
-              <Dialog.Root open={open} onOpenChange={setOpen}>
-                  <Dialog.Trigger>
-                      <Button variant="soft">
-                          <ClipboardIcon /> {t('new-order-button')}
-                      </Button>
-                  </Dialog.Trigger>
+    <Box p="4">
+      <Flex justify="between" align="center" mb="4">
+        <Heading size="6" color="indigo">
+          Product Design Info
+        </Heading>
+        <Button onClick={() => setOpen(true)}>New Product Configuration</Button>
+      </Flex>
 
-                  <Dialog.Content style={{ maxWidth: 600 }}>
-                      {/* <DialogHeader> */}
-                          <DialogTitle>{t('dialog.createOrderTitle')}</DialogTitle>
-                          <Dialog.Description>
-                              {t('dialog.createOrderDescription')}
-                          </Dialog.Description>
-                      {/* </DialogHeader> */}
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Components</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Packaging Shape</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Packaging Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cap Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {products.map((product, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>{product.id}</Table.Cell>
+              <Table.Cell>{product.name}</Table.Cell>
+              <Table.Cell>
+                {product.components.map((c, i) => (
+                  <Text key={i}>
+                    {c.name} – {c.percentage} – {c.weight}
+                  </Text>
+                ))}
+              </Table.Cell>
+              <Table.Cell>{product.shape}</Table.Cell>
+              <Table.Cell>{product.type}</Table.Cell>
+              <Table.Cell>{product.cap}</Table.Cell>
+              <Table.Cell>{product.weight}</Table.Cell>
+              <Table.Cell>{product.compliance}</Table.Cell>
+              <Table.Cell>{product.status}</Table.Cell>
+              <Table.Cell>
+                <Button size="1" variant="soft" color="blue">
+                  Edit
+                </Button>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
 
-                      <Box p="4">
-                          <TextField.Root
-                              value={productId}
-                              onChange={(e) => setProductId(e.target.value)}
-                              placeholder={t('form.productId')}
-                              className="w-full h-11 rounded-lg border-gray-300"
-                          />
-                          
-                          <TextField.Root
-                              value={productName}
-                              onChange={(e) => setProductName(e.target.value)}
-                              placeholder={t('form.productName')}
-                              className="w-full h-11 rounded-lg border-gray-300"
-                          />
-                          
-                          <TextField.Root
-                              type="number"
-                              value={quantity}
-                              onChange={(e) => setQuantity(e.target.value)}
-                              placeholder={t('form.quantity')}
-                              className="w-full h-11 rounded-lg border-gray-300"
-                          />
-                          
-                          <Select.Root
-                              value={priority}
-                              onValueChange={setPriority}
-                          >
-                              <Select.Trigger
-                                  placeholder={t('form.priority')}
-                                  className="bg-gray-100 rounded-lg"
-                              />
-                              <Select.Content>
-                                  <Select.Item value="high">
-                                      {t('priority.high')}
-                                  </Select.Item>
-                                  <Select.Item value="medium">
-                                      {t('priority.medium')}
-                                  </Select.Item>
-                                  <Select.Item value="low">
-                                      {t('priority.low')}
-                                  </Select.Item>
-                              </Select.Content>
-                          </Select.Root>
-                          
-                          <Select.Root
-                              value={materialsStatus}
-                              onValueChange={setMaterialsStatus}
-                          >
-                              <Select.Trigger
-                                  placeholder={t('form.materialsStatus')}
-                                  className="bg-gray-100 rounded-lg"
-                              />
-                              <Select.Content>
-                                  <Select.Item value="pending">
-                                      {t('status.materials.pending')}
-                                  </Select.Item>
-                                  <Select.Item value="allocated">
-                                      {t('status.materials.allocated')}
-                                  </Select.Item>
-                                  <Select.Item value="insufficient">
-                                      {t('status.materials.insufficient')}
-                                  </Select.Item>
-                              </Select.Content>
-                          </Select.Root>
-                      </Box>
+      <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Content maxWidth="600px">
+          <Dialog.Title>New Product Configuration</Dialog.Title>
+          <Flex direction="column" gap="3" mt="3">
+            <TextField.Input placeholder="Product Name" />
+            <TextField.Input placeholder="Component Name" />
+            <Flex gap="3">
+              <TextField.Input placeholder="Percentage" />
+              <TextField.Input placeholder="Weight (g)" />
+            </Flex>
+            <Select.Root>
+              <Select.Trigger placeholder="Packaging Shape" />
+              <Select.Content>
+                <Select.Item value="Round">Round</Select.Item>
+                <Select.Item value="Oval">Oval</Select.Item>
+                <Select.Item value="Rectangular">Rectangular</Select.Item>
+              </Select.Content>
+            </Select.Root>
 
-                      <Flex gap="3" justify="end" mt="4">
-                          <Button
-                              variant="ghost"
-                              color="gray"
-                              onClick={() => setOpen(false)}
-                          >
-                              {t('buttons.cancel')}
-                          </Button>
-                          <Button
-                              variant="solid"
-                              onClick={handleSubmit}
-                          >
-                              {t('buttons.createOrder')}
-                          </Button>
-                      </Flex>
-                  </Dialog.Content>
-              </Dialog.Root>
+            <Select.Root>
+              <Select.Trigger placeholder="Packaging Type" />
+              <Select.Content>
+                <Select.Item value="PUmb">PUmb</Select.Item>
+                <Select.Item value="Floater">Floater</Select.Item>
+                <Select.Item value="Scroll">Scroll</Select.Item>
+                <Select.Item value="Tube">Tube</Select.Item>
+              </Select.Content>
+            </Select.Root>
+
+            <Select.Root>
+              <Select.Trigger placeholder="Cap Type" />
+              <Select.Content>
+                <Select.Item value="Safety Steel">Safety Steel</Select.Item>
+                <Select.Item value="Flip Top">Flip Top</Select.Item>
+                <Select.Item value="Screw Cap">Screw Cap</Select.Item>
+              </Select.Content>
+            </Select.Root>
+
+            <TextField.Input placeholder="Product Weight (e.g. 50g)" />
+
+            <TextField.Input
+              defaultValue="ISO 9001:2015 (QMS) / ISO 14001:2015 (EHS) / ISO 45001:2018 (OHS) / ISO 22716:2007 / EDA"
+              disabled
+            />
+
+            <Select.Root>
+              <Select.Trigger placeholder="Status" />
+              <Select.Content>
+                <Select.Item value="Approved">Approved</Select.Item>
+                <Select.Item value="Pending">Pending</Select.Item>
+                <Select.Item value="Rejected">Rejected</Select.Item>
+              </Select.Content>
+            </Select.Root>
           </Flex>
 
-          <Table.Root variant="surface">
-              <Table.Header>
-                  <Table.Row>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.order-id')}
-                      </Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.product')}
-                      </Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.priority')}
-                      </Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.materials')}
-                      </Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.progress')}
-                      </Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>
-                          {t('table-headers.schedule')}
-                      </Table.ColumnHeaderCell>
-                  </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                  {orders.map((order) => (
-                      <Table.Row key={order.id}>
-                          <Table.Cell>{order.id}</Table.Cell>
-                          <Table.Cell>{order.product}</Table.Cell>
-                          <Table.Cell>
-                              <Badge
-                                  color={order.priority === 'High' ? 'red' :
-                                         order.priority === 'Medium' ? 'amber' : 'green'}
-                                  variant="soft"
-                              >
-                                  {t(`status.priority.${order.priority.toLowerCase()}`)}
-                              </Badge>
-                          </Table.Cell>
-                          <Table.Cell>
-                              <Badge color={order.materials === 'Allocated' ? 'green' : 'red'}>
-                                  {t(`status.materials.${order.materials.toLowerCase()}`)}
-                              </Badge>
-                          </Table.Cell>
-                          <Table.Cell>
-                              <Flex align="center" gap="2">
-                                  <Progress value={order.progress} />
-                                  <Text size="4">
-                                      {order.progress}%
-                                  </Text>
-                              </Flex>
-                          </Table.Cell>
-                          <Table.Cell>{order.schedule}</Table.Cell>
-                      </Table.Row>
-                  ))}
-              </Table.Body>
-          </Table.Root>
-
-          <Flex mt="6" direction="column" gap="4">
-              <Heading size="5">{t('chart-title')}</Heading>
-              <div className="h-64">
-                  <BarChart
-                      layout="vertical"
-                      data={orders}
-                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="product" type="category" />
-                      <Bar dataKey="progress" fill="#3b82f6" />
-                  </BarChart>
-              </div>
+          <Flex gap="3" mt="4" justify="end">
+            <Button variant="soft" color="gray" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="solid" color="green">
+              Save
+            </Button>
           </Flex>
-      </Box>
+        </Dialog.Content>
+      </Dialog.Root>
+    </Box>
   );
 };
 
-export default ProductionOrders;
+export default NewProductConfig;
