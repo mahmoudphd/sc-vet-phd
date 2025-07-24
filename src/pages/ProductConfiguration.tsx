@@ -46,8 +46,8 @@ const ProductConfiguration = () => {
             removalMethod: 'Chemical Dissolution',
             description: 'Veterinary antiparasitic suspension for oral administration',
             formula: [
-                { component: 'Albendazole', width: '250mm', percentage: 4 },
-                { component: 'Suspending Agent', width: '120mm', percentage: 2 }
+                { component: 'Albendazole', width: '250mm' },
+                { component: 'Suspending Agent', width: '120mm' }
             ]
         },
     ];
@@ -65,18 +65,18 @@ const ProductConfiguration = () => {
                 </Flex>
 
                 <Flex direction="column" gap="4">
-                    <TextField.Root>
-                        <TextField.Input placeholder={t('new-configuration-modal.product-name-placeholder')} />
+                    <TextField.Root placeholder={t('new-configuration-modal.product-name-placeholder')}>
+                        <TextField.Slot>Name</TextField.Slot>
                     </TextField.Root>
 
-                    <TextArea placeholder={t('new-configuration-modal.product-description-placeholder')} style={{ fontSize: '14px' }} />
+                    <TextArea placeholder={t('new-configuration-modal.product-description-placeholder')} />
 
-                    <TextField.Root>
-                        <TextField.Input placeholder="Cost (e.g. 1200)" />
+                    <TextField.Root placeholder="Cost (e.g. 1200)">
+                        <TextField.Slot>Cost</TextField.Slot>
                     </TextField.Root>
 
-                    <TextField.Root>
-                        <TextField.Input placeholder="Price (e.g. 2500)" />
+                    <TextField.Root placeholder="Price (e.g. 2500)">
+                        <TextField.Slot>Price</TextField.Slot>
                     </TextField.Root>
 
                     <Select.Root defaultValue="fifo">
@@ -96,9 +96,15 @@ const ProductConfiguration = () => {
                             <Select.Label>Compliance</Select.Label>
                             <Select.Trigger />
                             <Select.Content>
-                                <Select.Item value="ich-q11">{t('new-configuration-modal.compliance-standards.ich-q11')}</Select.Item>
-                                <Select.Item value="ich-q8">{t('new-configuration-modal.compliance-standards.ich-q8')}</Select.Item>
-                                <Select.Item value="fda">{t('new-configuration-modal.compliance-standards.fda')}</Select.Item>
+                                <Select.Item value="ich-q11">
+                                    {t('new-configuration-modal.compliance-standards.ich-q11')}
+                                </Select.Item>
+                                <Select.Item value="ich-q8">
+                                    {t('new-configuration-modal.compliance-standards.ich-q8')}
+                                </Select.Item>
+                                <Select.Item value="fda">
+                                    {t('new-configuration-modal.compliance-standards.fda')}
+                                </Select.Item>
                             </Select.Content>
                         </Select.Group>
                     </Select.Root>
@@ -108,10 +114,10 @@ const ProductConfiguration = () => {
                         {[1, 2, 3].map((_, i) => (
                             <Flex key={i} gap="3" align="center">
                                 <TextField.Root style={{ flex: 2 }}>
-                                    <TextField.Input placeholder={t('new-configuration-modal.component-name-placeholder')} />
+                                    <input placeholder={t('new-configuration-modal.component-name-placeholder')} />
                                 </TextField.Root>
                                 <TextField.Root style={{ flex: 1 }}>
-                                    <TextField.Input placeholder={t('new-configuration-modal.percentage-placeholder')} />
+                                    <input placeholder={t('new-configuration-modal.percentage-placeholder')} />
                                 </TextField.Root>
                                 <Button variant="ghost" color="red">
                                     <Cross2Icon />
@@ -180,7 +186,7 @@ const ProductConfiguration = () => {
                                     {selectedProduct.formula.map((comp: any, i: number) => (
                                         <Table.Row key={i}>
                                             <Table.Cell>{comp.component}</Table.Cell>
-                                            <Table.Cell>{comp.percentage} k.g.</Table.Cell>
+                                            <Table.Cell>{comp.percentage}k.g.</Table.Cell>
                                             <Table.Cell>
                                                 <Badge variant="outline">{t('view-spec-modal.usp-standard')}</Badge>
                                             </Table.Cell>
