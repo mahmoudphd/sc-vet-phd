@@ -22,16 +22,17 @@ const dropdownTriggerStyle: React.CSSProperties = {
   minWidth: 140,
   padding: '8px 12px',
   borderRadius: 6,
-  border: '1px solid #ccc',
-  backgroundColor: 'white',
+  border: 'none',
+  backgroundColor: '#2563eb',
   fontSize: 14,
   fontWeight: 600,
-  color: '#2563eb',
+  color: 'white',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.6)',
+  transition: 'background-color 0.2s ease',
 };
 
 const dropdownContentStyle: React.CSSProperties = {
@@ -58,9 +59,14 @@ const BatchCosting = () => {
 
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   const suppliers = ['a', 'b', 'c'];
   const products = ['a', 'b', 'c'];
+  const currencies = [
+    { value: 'USD', label: 'Dollar (USD)' },
+    { value: 'EGP', label: 'Egyptian Pound (EGP)' },
+  ];
 
   const batches = [
     {
@@ -83,10 +89,12 @@ const BatchCosting = () => {
           {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
             <Select.Trigger
-              aria-label={t('selectSupplier') || 'Select Supplier'}
+              aria-label={t('selectSupplier') || 'Supplier'}
               style={dropdownTriggerStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
             >
-              <Select.Value placeholder={t('selectSupplier') || 'Select Supplier'} />
+              <Select.Value placeholder="Supplier" />
               <Select.Icon />
             </Select.Trigger>
             <Select.Content style={dropdownContentStyle}>
@@ -113,10 +121,12 @@ const BatchCosting = () => {
           {/* Product Dropdown */}
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <Select.Trigger
-              aria-label={t('selectProduct') || 'Select Product'}
+              aria-label={t('selectProduct') || 'Product'}
               style={dropdownTriggerStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
             >
-              <Select.Value placeholder={t('selectProduct') || 'Select Product'} />
+              <Select.Value placeholder="Product" />
               <Select.Icon />
             </Select.Trigger>
             <Select.Content style={dropdownContentStyle}>
@@ -139,9 +149,42 @@ const BatchCosting = () => {
               ))}
             </Select.Content>
           </Select.Root>
+
+          {/* Currency Dropdown */}
+          <Select.Root value={selectedCurrency} onValueChange={setSelectedCurrency}>
+            <Select.Trigger
+              aria-label={t('selectCurrency') || 'Currency'}
+              style={dropdownTriggerStyle}
+              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
+              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+            >
+              <Select.Value placeholder="Currency" />
+              <Select.Icon />
+            </Select.Trigger>
+            <Select.Content style={dropdownContentStyle}>
+              {currencies.map(({ value, label }) => (
+                <Select.Item
+                  key={value}
+                  value={value}
+                  style={dropdownItemStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#dbeafe';
+                    e.currentTarget.style.color = '#2563eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#1e293b';
+                  }}
+                >
+                  <Select.ItemText>{label}</Select.ItemText>
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
         </Flex>
       </Flex>
 
+      {/* باقي الصفحة كما هي ... */}
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
