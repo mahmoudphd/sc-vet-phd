@@ -264,7 +264,12 @@ const BatchCosting = () => {
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Declared Price via blockchain</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>
+              Declared Price
+              <div style={{ fontSize: 12, color: '#10b981', fontWeight: '600' }}>
+                via blockchain
+              </div>
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
