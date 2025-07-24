@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Card,
@@ -10,8 +11,6 @@ import {
   Grid,
   Progress,
   Box,
-  Dialog,
-  TextField,
   Select,
 } from '@radix-ui/themes';
 import {
@@ -20,10 +19,18 @@ import {
   MixerHorizontalIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
-// import { DialogClose, , DialogDescription, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
 
 const BatchCosting = () => {
   const { t } = useTranslation('batch-costing');
+
+  // حالات لتخزين القيمة المختارة
+  const [selectedSupplier, setSelectedSupplier] = useState('');
+  const [selectedProduct, setSelectedProduct] = useState('');
+
+  // قيم الموردين والمنتجات
+  const suppliers = ['a', 'b', 'c'];
+  const products = ['a', 'b', 'c'];
+
   const batches = [
     {
       id: 'VC23001',
@@ -40,106 +47,39 @@ const BatchCosting = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('batchCostAccounting')}</Heading>
-        <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                <MixerHorizontalIcon /> {t('newCostRun')}
-              </Button>
-            </Dialog.Trigger>
+        <Heading size="6">Open Book Accounting Overview</Heading>
+        <Flex gap="3" align="center">
+          {/* Dropdown الموردين بدل زر New Cost Run */}
+          <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
+            <Select.Trigger aria-label={t('selectSupplier') || 'Select Supplier'} style={{ minWidth: 120 }}>
+              <Select.Value placeholder={t('selectSupplier') || 'Select Supplier'} />
+            </Select.Trigger>
+            <Select.Content>
+              {suppliers.map((sup) => (
+                <Select.Item key={sup} value={sup}>
+                  {sup.toUpperCase()}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
 
-            <Dialog.Content>
-              <Dialog.Title>{t('newCostRun')}</Dialog.Title>
-              <Dialog.Description>
-                {t('createNewCostDesc')}
-              </Dialog.Description>
-
-              <Flex direction="column" gap="3">
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('costRunName')}
-                  </Text>
-                  <TextField.Root placeholder={t('enterRunName')} />
-                </label>
-
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('selectBatch')}
-                  </Text>
-                  <Select.Root>
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="vc23001">VC23001</Select.Item>
-                      <Select.Item value="vc23002">VC23002</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-                </label>
-
-                <Flex gap="3" mt="2" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('cancel')}
-                    </Button>
-                  </Dialog.Close>
-                  <Button>{t('submit')}</Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                {t('compareStandards')}
-              </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content maxWidth="600px">
-              <Dialog.Title>{t('compareBatchStandards')}</Dialog.Title>
-
-              <Grid columns="2" gap="4" mb="4">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch1')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch2')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Grid>
-
-              <Flex direction="column" gap="2">
-                <Text size="4" weight="bold">{t('comparisonResults')}</Text>
-                <Card variant="classic">
-                  <Flex justify="between">
-                    <Text>{t('totalCostDiff')}</Text>
-                    <Badge color="ruby">+$1,200</Badge>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text>{t('materialVariance')}</Text>
-                    <Badge color="jade">-4.2%</Badge>
-                  </Flex>
-                </Card>
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('close')}
-                    </Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
+          {/* Dropdown المنتجات بدل زر Compare Standards */}
+          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Select.Trigger aria-label={t('selectProduct') || 'Select Product'} style={{ minWidth: 120 }}>
+              <Select.Value placeholder={t('selectProduct') || 'Select Product'} />
+            </Select.Trigger>
+            <Select.Content>
+              {products.map((prod) => (
+                <Select.Item key={prod} value={prod}>
+                  {prod.toUpperCase()}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
         </Flex>
       </Flex>
+
+      {/* باقي الصفحة كما في الكود الأصلي */}
 
       <Grid columns="4" gap="4" mb="5">
         <Card>
