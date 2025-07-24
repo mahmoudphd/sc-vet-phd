@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Card,
@@ -88,13 +88,19 @@ const BatchCosting = () => {
     },
   ];
 
+  // Handlers with explicit event typing:
+  const handleTransactionVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setTransactionVolume(e.target.value);
+  };
+  const handleSupplierIncentivesChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setSupplierIncentives(e.target.value);
+  };
+
   return (
     <Box p="6">
-      {/* Header and Dropdowns */}
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Open Book Accounting Overview</Heading>
         <Flex gap="3" align="center" wrap="wrap">
-          {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
             <Select.Trigger
               aria-label={t('selectSupplier') || 'Supplier'}
@@ -126,7 +132,6 @@ const BatchCosting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Product Dropdown */}
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <Select.Trigger
               aria-label={t('selectProduct') || 'Product'}
@@ -158,7 +163,6 @@ const BatchCosting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Currency Dropdown */}
           <Select.Root value={selectedCurrency} onValueChange={setSelectedCurrency}>
             <Select.Trigger
               aria-label={t('selectCurrency') || 'Currency'}
@@ -192,9 +196,7 @@ const BatchCosting = () => {
         </Flex>
       </Flex>
 
-      {/* Four Cards Section */}
-      <Grid columns={4} gap="4" mb="5">
-        {/* Supplier Tier */}
+      <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Supplier Tier</Text>
@@ -224,23 +226,19 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Transaction Volume */}
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Transaction Volume</Text>
-            <TextField.Root>
-              <TextField.Input
-                type="number"
-                placeholder="Enter volume"
-                value={transactionVolume}
-                onChange={(e) => setTransactionVolume(e.target.value)}
-                style={{ fontWeight: 600 }}
-              />
-            </TextField.Root>
+            <TextField
+              type="number"
+              placeholder="Enter volume"
+              value={transactionVolume}
+              onChange={handleTransactionVolumeChange}
+              style={{ fontWeight: 600 }}
+            />
           </Flex>
         </Card>
 
-        {/* Component Criticality */}
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Component Criticality</Text>
@@ -270,24 +268,19 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Supplier Incentives Offered */}
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Supplier Incentives Offered</Text>
-            <TextField.Root>
-              <TextField.Input
-                type="number"
-                placeholder="Enter amount"
-                value={supplierIncentives}
-                onChange={(e) => setSupplierIncentives(e.target.value)}
-                style={{ fontWeight: 600 }}
-              />
-            </TextField.Root>
+            <TextField
+              type="number"
+              placeholder="Enter amount"
+              value={supplierIncentives}
+              onChange={handleSupplierIncentivesChange}
+              style={{ fontWeight: 600 }}
+            />
           </Flex>
         </Card>
       </Grid>
-
-      {/* Table and Charts */}
 
       <Table.Root variant="surface">
         <Table.Header>
