@@ -46,8 +46,8 @@ const ProductConfiguration = () => {
             removalMethod: 'Chemical Dissolution',
             description: 'Veterinary antiparasitic suspension for oral administration',
             formula: [
-                { component: 'Albendazole', width: '250mm' },
-                { component: 'Suspending Agent', width: '120mm' }
+                { component: 'Albendazole', percentage: 30 },
+                { component: 'Suspending Agent', percentage: 70 }
             ]
         },
     ];
@@ -71,20 +71,16 @@ const ProductConfiguration = () => {
 
                     <TextArea placeholder={t('new-configuration-modal.product-description-placeholder')} />
 
-                    <Select.Root defaultValue="ich-q11">
+                    <Select.Root defaultValue="iso-9001">
                         <Select.Group>
                             <Select.Label>Compliance</Select.Label>
                             <Select.Trigger />
                             <Select.Content>
-                                <Select.Item value="ich-q11">
-                                    {t('new-configuration-modal.compliance-standards.ich-q11')}
-                                </Select.Item>
-                                <Select.Item value="ich-q8">
-                                    {t('new-configuration-modal.compliance-standards.ich-q8')}
-                                </Select.Item>
-                                <Select.Item value="fda">
-                                    {t('new-configuration-modal.compliance-standards.fda')}
-                                </Select.Item>
+                                <Select.Item value="iso-9001">ISO 9001:2015 (QMS)</Select.Item>
+                                <Select.Item value="iso-14001">ISO 14001:2015 (EHS)</Select.Item>
+                                <Select.Item value="iso-45001">ISO 45001:2018 (OHS)</Select.Item>
+                                <Select.Item value="iso-22716">ISO 22716:2007</Select.Item>
+                                <Select.Item value="eda">EDA</Select.Item>
                             </Select.Content>
                         </Select.Group>
                     </Select.Root>
@@ -94,10 +90,13 @@ const ProductConfiguration = () => {
                         {[1, 2, 3].map((_, i) => (
                             <Flex key={i} gap="3" align="center">
                                 <TextField.Root style={{ flex: 2 }}>
-                                    <input placeholder={t('new-configuration-modal.component-name-placeholder')} />
+                                    <input placeholder="Component Name" />
                                 </TextField.Root>
                                 <TextField.Root style={{ flex: 1 }}>
-                                    <input placeholder={t('new-configuration-modal.percentage-placeholder')} />
+                                    <input placeholder="%" />
+                                </TextField.Root>
+                                <TextField.Root style={{ flex: 1 }}>
+                                    <input placeholder="Weight (g)" />
                                 </TextField.Root>
                                 <Button variant="ghost" color="red">
                                     <Cross2Icon />
@@ -166,7 +165,7 @@ const ProductConfiguration = () => {
                                     {selectedProduct.formula.map((comp: any, i: number) => (
                                         <Table.Row key={i}>
                                             <Table.Cell>{comp.component}</Table.Cell>
-                                            <Table.Cell>{comp.percentage}k.g.</Table.Cell>
+                                            <Table.Cell>{comp.percentage} %</Table.Cell>
                                             <Table.Cell>
                                                 <Badge variant="outline">{t('view-spec-modal.usp-standard')}</Badge>
                                             </Table.Cell>
@@ -269,57 +268,57 @@ const ProductConfiguration = () => {
             </Grid>
 
             <Table.Root variant="surface">
-        <Table.Header>
-            <Table.Row>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.product-id')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.name')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.components')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.cost')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.price')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.removal-method')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.version')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.compliance')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.status')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.actions')}</Table.ColumnHeaderCell>
-            </Table.Row>
-        </Table.Header>
-        <Table.Body>
-            {products.map(product => (
-                <Table.Row key={product.id}>
-                    <Table.Cell>{product.id}</Table.Cell>
-                    <Table.Cell>{product.name}</Table.Cell>
-                    <Table.Cell>{product.components}</Table.Cell>
-                    <Table.Cell>{product.cost}</Table.Cell>
-                    <Table.Cell>{product.price}</Table.Cell>
-                    <Table.Cell>{product.removalMethod}</Table.Cell>
-                    <Table.Cell>{product.version}</Table.Cell>
-                    <Table.Cell>
-                        <Badge variant="soft">{product.compliance}</Badge>
-                    </Table.Cell>
-                    <Table.Cell>
-                        <Badge color={product.status === 'Draft' ? 'blue' : 'green'}>
-                            {t('main-section.status.draft')}
-                        </Badge>
-                    </Table.Cell>
-                    <Table.Cell>
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                                <Button variant="ghost">•••</Button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content>
-                                <DropdownMenu.Item>
-                                    <FileTextIcon /> {t('main-section.actions.view-spec')}
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Item>
-                                    {t('main-section.actions.history')}
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
-                    </Table.Cell>
-                </Table.Row>
-            ))}
-        </Table.Body>
-    </Table.Root>
+                <Table.Header>
+                    <Table.Row>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.product-id')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.name')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.components')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.cost')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.price')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.removal-method')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.version')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.compliance')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.status')}</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell>{t('main-section.table-headers.actions')}</Table.ColumnHeaderCell>
+                    </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                    {products.map(product => (
+                        <Table.Row key={product.id}>
+                            <Table.Cell>{product.id}</Table.Cell>
+                            <Table.Cell>{product.name}</Table.Cell>
+                            <Table.Cell>{product.components}</Table.Cell>
+                            <Table.Cell>{product.cost}</Table.Cell>
+                            <Table.Cell>{product.price}</Table.Cell>
+                            <Table.Cell>{product.removalMethod}</Table.Cell>
+                            <Table.Cell>{product.version}</Table.Cell>
+                            <Table.Cell>
+                                <Badge variant="soft">{product.compliance}</Badge>
+                            </Table.Cell>
+                            <Table.Cell>
+                                <Badge color={product.status === 'Draft' ? 'blue' : 'green'}>
+                                    {t('main-section.status.draft')}
+                                </Badge>
+                            </Table.Cell>
+                            <Table.Cell>
+                                <DropdownMenu.Root>
+                                    <DropdownMenu.Trigger>
+                                        <Button variant="ghost">•••</Button>
+                                    </DropdownMenu.Trigger>
+                                    <DropdownMenu.Content>
+                                        <DropdownMenu.Item>
+                                            <FileTextIcon /> {t('main-section.actions.view-spec')}
+                                        </DropdownMenu.Item>
+                                        <DropdownMenu.Item>
+                                            {t('main-section.actions.history')}
+                                        </DropdownMenu.Item>
+                                    </DropdownMenu.Content>
+                                </DropdownMenu.Root>
+                            </Table.Cell>
+                        </Table.Row>
+                    ))}
+                </Table.Body>
+            </Table.Root>
         </Box>
     );
 };
