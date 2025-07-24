@@ -15,11 +15,7 @@ import {
 
 import * as Select from '@radix-ui/react-select';
 
-import {
-  PieChartIcon,
-  BarChartIcon,
-  MixerHorizontalIcon,
-} from '@radix-ui/react-icons';
+import { PieChartIcon, BarChartIcon, MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
 const dropdownTriggerStyle: React.CSSProperties = {
@@ -29,6 +25,8 @@ const dropdownTriggerStyle: React.CSSProperties = {
   border: '1px solid #ccc',
   backgroundColor: 'white',
   fontSize: 14,
+  fontWeight: 600,
+  color: '#2563eb',
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
@@ -50,6 +48,9 @@ const dropdownItemStyle: React.CSSProperties = {
   cursor: 'pointer',
   fontSize: 14,
   borderRadius: 4,
+  fontWeight: 600,
+  textTransform: 'capitalize',
+  color: '#1e293b',
 };
 
 const BatchCosting = () => {
@@ -90,8 +91,20 @@ const BatchCosting = () => {
             </Select.Trigger>
             <Select.Content style={dropdownContentStyle}>
               {suppliers.map((sup) => (
-                <Select.Item key={sup} value={sup} style={dropdownItemStyle}>
-                  <Select.ItemText>{sup.toUpperCase()}</Select.ItemText>
+                <Select.Item
+                  key={sup}
+                  value={sup}
+                  style={dropdownItemStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#dbeafe';
+                    e.currentTarget.style.color = '#2563eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#1e293b';
+                  }}
+                >
+                  <Select.ItemText>{`Supplier ${sup.toUpperCase()}`}</Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Content>
@@ -108,8 +121,20 @@ const BatchCosting = () => {
             </Select.Trigger>
             <Select.Content style={dropdownContentStyle}>
               {products.map((prod) => (
-                <Select.Item key={prod} value={prod} style={dropdownItemStyle}>
-                  <Select.ItemText>{prod.toUpperCase()}</Select.ItemText>
+                <Select.Item
+                  key={prod}
+                  value={prod}
+                  style={dropdownItemStyle}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#dbeafe';
+                    e.currentTarget.style.color = '#2563eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#1e293b';
+                  }}
+                >
+                  <Select.ItemText>{`Product ${prod.toUpperCase()}`}</Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Content>
