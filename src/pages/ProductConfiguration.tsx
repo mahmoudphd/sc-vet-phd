@@ -1,9 +1,52 @@
+// src/pages/ProductConfiguration.tsx
 import React, { useState } from "react";
+import {
+  Card,
+  Flex,
+  Heading,
+  Table,
+  Text,
+  TextField,
+  DropdownMenu,
+  Button,
+} from "@radix-ui/themes";
 
-const productNames = ["Poultry Drug Product A", "Poultry Drug Product B"];
-const packagingShapes = ["Round", "Oval", "Rectangular"];
-const packagingTypes = ["Pump", "Floater", "Scroll", "Tube"];
-const capTypes = ["Safety Steel", "Flip Top", "Screw Cap"];
+// تعريف نوع البيانات مع دعم الوصول الديناميكي
+type ProductRow = {
+  productId: string;
+  name: string;
+  components: string;
+  packagingShape: string;
+  packagingType: string;
+  capType: string;
+  packWeight: string;
+  compliance: string;
+  status: string;
+  component: string;
+  [key: string]: string; // 👈 حل المشكلة
+};
+
+// البيانات الافتراضية
+const defaultRows: ProductRow[] = [
+  {
+    productId: "PD-A",
+    name: "Poultry Drug Product A",
+    components: "Vitamin B1, B2, B12",
+    packagingShape: "Round",
+    packagingType: "Pump",
+    capType: "Flip Top",
+    packWeight: "500",
+    compliance: "ISO 9001:2015 QMS",
+    status: "Active",
+    component: "101",
+  },
+];
+
+// القوائم المنسدلة
+const nameOptions = ["Poultry Drug Product A", "Poultry Drug Product B"];
+const shapeOptions = ["Round", "Oval", "Rectangular"];
+const typeOptions = ["Pump", "Floater", "Scroll", "Tube"];
+const capOptions = ["Safety Steel", "Flip Top", "Screw Cap"];
 const complianceOptions = [
   "ISO 9001:2015 QMS",
   "ISO 14001:2015 EHS",
@@ -12,192 +55,171 @@ const complianceOptions = [
   "EDA",
 ];
 
-const initialData = [
-  {
-    productId: "PD-001",
-    name: "",
-    components: "",
-    packagingShape: "",
-    packagingType: "",
-    capType: "",
-    packWeight: "",
-    compliance: "",
-    status: "Active",
-    component: "",
-  },
-];
-
-export default function ProductionDesignTable() {
-  const [data, setData] = useState(initialData);
+export default function ProductConfiguration() {
+  const [rows, setRows] = useState<ProductRow[]>(defaultRows);
 
   const handleChange = (index: number, key: string, value: string) => {
-    const updated = [...data];
+    const updated = [...rows];
     updated[index][key] = value;
-    setData(updated);
-  };
-
-  const addRow = () => {
-    setData([
-      ...data,
-      {
-        productId: `PD-00${data.length + 1}`,
-        name: "",
-        components: "",
-        packagingShape: "",
-        packagingType: "",
-        capType: "",
-        packWeight: "",
-        compliance: "",
-        status: "Active",
-        component: "",
-      },
-    ]);
+    setRows(updated);
   };
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2 style={{ marginBottom: 16 }}>Production Design Info</h2>
-      <table style={{ width: "100%", borderCollapse: "collapse" }}>
-        <thead>
-          <tr style={{ background: "#f0f0f0" }}>
-            <th>Product ID</th>
-            <th>Name</th>
-            <th>Components</th>
-            <th>Packaging Shape</th>
-            <th>Packaging Type</th>
-            <th>Cap Type</th>
-            <th>Pack Weight (g)</th>
-            <th>Compliance</th>
-            <th>Status</th>
-            <th>Actions</th>
-            <th>Component</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((row, i) => (
-            <tr key={i}>
-              <td>{row.productId}</td>
-              <td>
-                <select
-                  value={row.name}
-                  onChange={(e) => handleChange(i, "name", e.target.value)}
-                >
-                  <option value="">Select</option>
-                  {productNames.map((name) => (
-                    <option key={name} value={name}>
-                      {name}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <input
-                  type="text"
+    <Card style={{ padding: 24 }}>
+      <Heading size="5" mb="4">
+        Production Design Info
+      </Heading>
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Components</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Packaging Shape</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Packaging Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cap Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Pack Weight (gram)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {rows.map((row, index) => (
+            <Table.Row key={index}>
+              <Table.Cell>{row.productId}</Table.Cell>
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.name}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {nameOptions.map((option) => (
+                      <DropdownMenu.Item
+                        key={option}
+                        onSelect={() =>
+                          handleChange(index, "name", option)
+                        }
+                      >
+                        {option}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Input
                   value={row.components}
-                  onChange={(e) => handleChange(i, "components", e.target.value)}
+                  onChange={(e) =>
+                    handleChange(index, "components", e.target.value)
+                  }
                 />
-              </td>
-              <td>
-                <select
-                  value={row.packagingShape}
-                  onChange={(e) =>
-                    handleChange(i, "packagingShape", e.target.value)
-                  }
-                >
-                  <option value="">Select</option>
-                  {packagingShapes.map((shape) => (
-                    <option key={shape} value={shape}>
-                      {shape}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <select
-                  value={row.packagingType}
-                  onChange={(e) =>
-                    handleChange(i, "packagingType", e.target.value)
-                  }
-                >
-                  <option value="">Select</option>
-                  {packagingTypes.map((type) => (
-                    <option key={type} value={type}>
-                      {type}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <select
-                  value={row.capType}
-                  onChange={(e) => handleChange(i, "capType", e.target.value)}
-                >
-                  <option value="">Select</option>
-                  {capTypes.map((cap) => (
-                    <option key={cap} value={cap}>
-                      {cap}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <input
+              </Table.Cell>
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.packagingShape}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {shapeOptions.map((option) => (
+                      <DropdownMenu.Item
+                        key={option}
+                        onSelect={() =>
+                          handleChange(index, "packagingShape", option)
+                        }
+                      >
+                        {option}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.packagingType}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {typeOptions.map((option) => (
+                      <DropdownMenu.Item
+                        key={option}
+                        onSelect={() =>
+                          handleChange(index, "packagingType", option)
+                        }
+                      >
+                        {option}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.capType}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {capOptions.map((option) => (
+                      <DropdownMenu.Item
+                        key={option}
+                        onSelect={() =>
+                          handleChange(index, "capType", option)
+                        }
+                      >
+                        {option}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Input
                   type="number"
-                  min="0"
                   value={row.packWeight}
-                  onChange={(e) => handleChange(i, "packWeight", e.target.value)}
-                />
-              </td>
-              <td>
-                <select
-                  value={row.compliance}
                   onChange={(e) =>
-                    handleChange(i, "compliance", e.target.value)
+                    handleChange(index, "packWeight", e.target.value)
                   }
-                >
-                  <option value="">Select</option>
-                  {complianceOptions.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </td>
-              <td>
-                <span
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: 8,
-                    background: row.status === "Active" ? "#d1e7dd" : "#f8d7da",
-                    color: row.status === "Active" ? "#0f5132" : "#842029",
-                    fontWeight: 600,
-                  }}
-                >
-                  {row.status}
-                </span>
-              </td>
-              <td>
-                <button style={{ marginRight: 8 }}>Edit</button>
-                <button>Delete</button>
-              </td>
-              <td>
-                <input
-                  type="number"
-                  min="0"
-                  value={row.component}
-                  onChange={(e) => handleChange(i, "component", e.target.value)}
                 />
-              </td>
-            </tr>
+              </Table.Cell>
+              <Table.Cell>
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="soft">{row.compliance}</Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    {complianceOptions.map((option) => (
+                      <DropdownMenu.Item
+                        key={option}
+                        onSelect={() =>
+                          handleChange(index, "compliance", option)
+                        }
+                      >
+                        {option}
+                      </DropdownMenu.Item>
+                    ))}
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Input
+                  value={row.status}
+                  onChange={(e) =>
+                    handleChange(index, "status", e.target.value)
+                  }
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Input
+                  value={row.component}
+                  onChange={(e) =>
+                    handleChange(index, "component", e.target.value)
+                  }
+                />
+              </Table.Cell>
+            </Table.Row>
           ))}
-        </tbody>
-      </table>
-      <button
-        onClick={addRow}
-        style={{ marginTop: 16, padding: "8px 16px", fontWeight: "bold" }}
-      >
-        Add Row
-      </button>
-    </div>
+        </Table.Body>
+      </Table.Root>
+    </Card>
   );
 }
