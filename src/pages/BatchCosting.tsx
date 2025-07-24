@@ -1,5 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -11,44 +10,12 @@ import {
   Progress,
   Box,
 } from '@radix-ui/themes';
-import * as Select from '@radix-ui/react-select';
+import * as Tabs from '@radix-ui/react-tabs';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
-const dropdownTriggerStyle: React.CSSProperties = {
-  minWidth: 140,
-  padding: '8px 12px',
-  borderRadius: 6,
-  border: 'none',
-  backgroundColor: '#2563eb',
-  fontSize: 14,
-  fontWeight: 600,
-  color: 'white',
-  cursor: 'pointer',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  boxShadow: '0 2px 6px rgba(37, 99, 235, 0.6)',
-  transition: 'background-color 0.2s ease',
-};
-
-const dropdownContentStyle: React.CSSProperties = {
-  backgroundColor: 'white',
-  borderRadius: 6,
-  boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-  padding: '8px 0',
-  minWidth: 140,
-  zIndex: 1000,
-};
-
-const dropdownItemStyle: React.CSSProperties = {
-  padding: '8px 12px',
-  cursor: 'pointer',
-  fontSize: 14,
-  borderRadius: 4,
-  fontWeight: 600,
-  textTransform: 'capitalize',
-  color: '#1e293b',
-};
+const suppliers = ['A', 'B', 'C'];
+const products = ['A', 'B', 'C'];
+const currencies = ['USD', 'EGP'];
 
 const SupplierTierOptions = ['Tier 1', 'Tier 2', 'Tier 3'];
 const ComponentCriticalityOptions = ['High', 'Medium', 'Low'];
@@ -63,10 +30,8 @@ const incentivesOptions = [
 ];
 
 const BatchCosting = () => {
-  const { t } = useTranslation('batch-costing');
-
-  const [selectedSupplier, setSelectedSupplier] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
+  const [selectedSupplier, setSelectedSupplier] = useState('A');
+  const [selectedProduct, setSelectedProduct] = useState('A');
   const [selectedCurrency, setSelectedCurrency] = useState('USD');
 
   const [supplierTier, setSupplierTier] = useState('');
@@ -91,13 +56,6 @@ const BatchCosting = () => {
     },
   ]);
 
-  const suppliers = ['a', 'b', 'c'];
-  const products = ['a', 'b', 'c'];
-  const currencies = [
-    { value: 'USD', label: 'Dollar (USD)' },
-    { value: 'EGP', label: 'Egyptian Pound (EGP)' },
-  ];
-
   const batches = [
     {
       id: 'VC23001',
@@ -111,11 +69,15 @@ const BatchCosting = () => {
     },
   ];
 
-  const handleTransactionVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setTransactionVolume(e.target.value);
-  };
-  const handleSupplierIncentivesChange = (e: ChangeEvent<HTMLInputElement>) => {
-    setSupplierIncentives(e.target.value);
+  const exchangeRate = 30;
+
+  const formatPrice = (value: number) => {
+    if (selectedCurrency === 'USD') {
+      return `$${value.toLocaleString()}`;
+    } else if (selectedCurrency === 'EGP') {
+      return `£${(value * exchangeRate).toLocaleString()}`;
+    }
+    return value.toString();
   };
 
   const handleIncentivesChange = (value: string, index: number) => {
@@ -124,103 +86,75 @@ const BatchCosting = () => {
     setItems(updated);
   };
 
+  const tabTriggerStyle = (isSelected: boolean): React.CSSProperties => ({
+    padding: '8px 16px',
+    borderRadius: 6,
+    backgroundColor: isSelected ? '#2563eb' : '#e0e7ff',
+    color: isSelected ? 'white' : '#1e293b',
+    cursor: 'pointer',
+    fontWeight: 600,
+    border: 'none',
+  });
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Open Book Accounting Overview</Heading>
+
         <Flex gap="3" align="center" wrap="wrap">
-          <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
-            <Select.Trigger
-              aria-label={t('selectSupplier') || 'Supplier'}
-              style={dropdownTriggerStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+          {/* Supplier Tabs */}
+          <Tabs.Root
+            value={selectedSupplier}
+            onValueChange={setSelectedSupplier}
+          >
+            <Tabs.List
+              aria-label="Suppliers"
+              style={{ display: 'flex', gap: 10, marginRight: 10 }}
             >
-              <Select.Value placeholder="Supplier" />
-              <Select.Icon />
-            </Select.Trigger>
-            <Select.Content style={dropdownContentStyle}>
-              {suppliers.map((sup) => (
-                <Select.Item
-                  key={sup}
-                  value={sup}
-                  style={dropdownItemStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#dbeafe';
-                    e.currentTarget.style.color = '#2563eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#1e293b';
-                  }}
+              {suppliers.map((s) => (
+                <Tabs.Trigger
+                  key={s}
+                  value={s}
+                  style={tabTriggerStyle(selectedSupplier === s)}
                 >
-                  <Select.ItemText>{`Supplier ${sup.toUpperCase()}`}</Select.ItemText>
-                </Select.Item>
+                  Supplier {s}
+                </Tabs.Trigger>
               ))}
-            </Select.Content>
-          </Select.Root>
+            </Tabs.List>
+          </Tabs.Root>
 
-          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
-            <Select.Trigger
-              aria-label={t('selectProduct') || 'Product'}
-              style={dropdownTriggerStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
+          {/* Product Tabs */}
+          <Tabs.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Tabs.List
+              aria-label="Products"
+              style={{ display: 'flex', gap: 10, marginRight: 10 }}
             >
-              <Select.Value placeholder="Product" />
-              <Select.Icon />
-            </Select.Trigger>
-            <Select.Content style={dropdownContentStyle}>
-              {products.map((prod) => (
-                <Select.Item
-                  key={prod}
-                  value={prod}
-                  style={dropdownItemStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#dbeafe';
-                    e.currentTarget.style.color = '#2563eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#1e293b';
-                  }}
+              {products.map((p) => (
+                <Tabs.Trigger
+                  key={p}
+                  value={p}
+                  style={tabTriggerStyle(selectedProduct === p)}
                 >
-                  <Select.ItemText>{`Product ${prod.toUpperCase()}`}</Select.ItemText>
-                </Select.Item>
+                  Product {p}
+                </Tabs.Trigger>
               ))}
-            </Select.Content>
-          </Select.Root>
+            </Tabs.List>
+          </Tabs.Root>
 
-          <Select.Root value={selectedCurrency} onValueChange={setSelectedCurrency}>
-            <Select.Trigger
-              aria-label={t('selectCurrency') || 'Currency'}
-              style={dropdownTriggerStyle}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#3b82f6')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = '#2563eb')}
-            >
-              <Select.Value placeholder="Currency" />
-              <Select.Icon />
-            </Select.Trigger>
-            <Select.Content style={dropdownContentStyle}>
-              {currencies.map(({ value, label }) => (
-                <Select.Item
-                  key={value}
-                  value={value}
-                  style={dropdownItemStyle}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#dbeafe';
-                    e.currentTarget.style.color = '#2563eb';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#1e293b';
-                  }}
+          {/* Currency Tabs */}
+          <Tabs.Root value={selectedCurrency} onValueChange={setSelectedCurrency}>
+            <Tabs.List aria-label="Currencies" style={{ display: 'flex', gap: 10 }}>
+              {currencies.map((c) => (
+                <Tabs.Trigger
+                  key={c}
+                  value={c}
+                  style={tabTriggerStyle(selectedCurrency === c)}
                 >
-                  <Select.ItemText>{label}</Select.ItemText>
-                </Select.Item>
+                  {c}
+                </Tabs.Trigger>
               ))}
-            </Select.Content>
-          </Select.Root>
+            </Tabs.List>
+          </Tabs.Root>
         </Flex>
       </Flex>
 
@@ -228,29 +162,29 @@ const BatchCosting = () => {
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Supplier Tier</Text>
-            <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
-              <Select.Trigger
-                aria-label="Supplier Tier"
-                style={{
-                  ...dropdownTriggerStyle,
-                  backgroundColor: 'white',
-                  color: '#1e293b',
-                  border: '1px solid #ccc',
-                  boxShadow: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <Select.Value placeholder="Select Tier" />
-                <Select.Icon />
-              </Select.Trigger>
-              <Select.Content style={dropdownContentStyle}>
-                {SupplierTierOptions.map((tier) => (
-                  <Select.Item key={tier} value={tier} style={dropdownItemStyle}>
-                    <Select.ItemText>{tier}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
+            <select
+              value={supplierTier}
+              onChange={(e) => setSupplierTier(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                fontSize: 14,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                fontWeight: 600,
+                width: '100%',
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="" disabled>
+                Select Tier
+              </option>
+              {SupplierTierOptions.map((tier) => (
+                <option key={tier} value={tier}>
+                  {tier}
+                </option>
+              ))}
+            </select>
           </Flex>
         </Card>
 
@@ -278,29 +212,29 @@ const BatchCosting = () => {
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Component Criticality</Text>
-            <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
-              <Select.Trigger
-                aria-label="Component Criticality"
-                style={{
-                  ...dropdownTriggerStyle,
-                  backgroundColor: 'white',
-                  color: '#1e293b',
-                  border: '1px solid #ccc',
-                  boxShadow: 'none',
-                  cursor: 'pointer',
-                }}
-              >
-                <Select.Value placeholder="Select criticality" />
-                <Select.Icon />
-              </Select.Trigger>
-              <Select.Content style={dropdownContentStyle}>
-                {ComponentCriticalityOptions.map((level) => (
-                  <Select.Item key={level} value={level} style={dropdownItemStyle}>
-                    <Select.ItemText>{level}</Select.ItemText>
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
+            <select
+              value={componentCriticality}
+              onChange={(e) => setComponentCriticality(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                fontSize: 14,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                fontWeight: 600,
+                width: '100%',
+                boxSizing: 'border-box',
+                cursor: 'pointer',
+              }}
+            >
+              <option value="" disabled>
+                Select criticality
+              </option>
+              {ComponentCriticalityOptions.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
           </Flex>
         </Card>
 
@@ -326,8 +260,7 @@ const BatchCosting = () => {
         </Card>
       </Grid>
 
-      {/* New Table with requested columns */}
-      <Table.Root variant="surface" mb="6">
+      <Table.Root variant="surface" style={{ marginBottom: 24 }}>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
@@ -337,98 +270,68 @@ const BatchCosting = () => {
             <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
-
         <Table.Body>
-          {items.map((item, i) => (
+          {items.map((item, index) => (
             <Table.Row key={item.id}>
               <Table.Cell>{item.id}</Table.Cell>
-              <Table.Cell>${item.declaredPrice.toLocaleString()}</Table.Cell>
-              <Table.Cell>${item.actualCost.toLocaleString()}</Table.Cell>
+              <Table.Cell>{formatPrice(item.declaredPrice)}</Table.Cell>
+              <Table.Cell>{formatPrice(item.actualCost)}</Table.Cell>
               <Table.Cell>
                 <Badge color={item.variance.startsWith('-') ? 'green' : 'red'}>
                   {item.variance}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
-                <Select.Root
+                <select
                   value={item.incentives}
-                  onValueChange={(value) => handleIncentivesChange(value, i)}
+                  onChange={(e) => handleIncentivesChange(e.target.value, index)}
+                  style={{
+                    padding: '6px 10px',
+                    borderRadius: 6,
+                    border: '1px solid #ccc',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#1e293b',
+                    cursor: 'pointer',
+                    width: '100%',
+                    boxSizing: 'border-box',
+                  }}
                 >
-                  <Select.Trigger
-                    aria-label="Select incentive"
-                    style={{
-                      minWidth: 180,
-                      padding: '6px 10px',
-                      fontSize: 14,
-                      borderRadius: 6,
-                      border: '1px solid #ccc',
-                      backgroundColor: 'white',
-                      color: '#1e293b',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    <Select.Value placeholder="Select incentive" />
-                    <Select.Icon />
-                  </Select.Trigger>
-                  <Select.Content
-                    style={{
-                      backgroundColor: 'white',
-                      borderRadius: 6,
-                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
-                      minWidth: 180,
-                      zIndex: 1000,
-                    }}
-                  >
-                    {incentivesOptions.map((opt) => (
-                      <Select.Item
-                        key={opt}
-                        value={opt}
-                        style={{
-                          padding: '8px 12px',
-                          cursor: 'pointer',
-                          fontSize: 14,
-                          borderRadius: 4,
-                          fontWeight: 600,
-                          textTransform: 'capitalize',
-                          color: '#1e293b',
-                        }}
-                      >
-                        <Select.ItemText>{opt}</Select.ItemText>
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                  <option value="" disabled>
+                    Select incentive
+                  </option>
+                  {incentivesOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt}
+                    </option>
+                  ))}
+                </select>
               </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
-      {/* Existing charts and cards section */}
-      <Flex mt="5" gap="4">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">
-            {t('costBreakdown')}
-          </Heading>
+      <Flex mt="5" gap="4" wrap="wrap">
+        <Card style={{ flex: 1, minWidth: 320 }}>
+          <Heading size="4" mb="3">Cost Breakdown</Heading>
           <div className="h-64">
             <BarChart width={500} height={250} data={batches}>
-              <Bar dataKey="materialCost" fill="#3b82f6" name={t('material')} />
-              <Bar dataKey="laborCost" fill="#ef4444" name={t('labor')} />
-              <Bar dataKey="overhead" fill="#10b981" name={t('overhead')} />
+              <Bar dataKey="materialCost" fill="#3b82f6" name="Material" />
+              <Bar dataKey="laborCost" fill="#ef4444" name="Labor" />
+              <Bar dataKey="overhead" fill="#10b981" name="Overhead" />
             </BarChart>
           </div>
         </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">
-            {t('varianceAnalysis')}
-          </Heading>
+        <Card style={{ flex: 1, minWidth: 320 }}>
+          <Heading size="4" mb="3">Variance Analysis</Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
-                  { name: t('material'), value: 65 },
-                  { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 },
+                  { name: 'Material', value: 65 },
+                  { name: 'Labor', value: 25 },
+                  { name: 'Overhead', value: 10 },
                 ]}
                 cx="50%"
                 cy="50%"
