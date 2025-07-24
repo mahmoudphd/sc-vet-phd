@@ -11,23 +11,23 @@ import {
   Grid,
   Progress,
   Box,
-  Select,
 } from '@radix-ui/themes';
+
+import * as Select from '@radix-ui/react-select';
+
 import {
   PieChartIcon,
   BarChartIcon,
-  MixerHorizontalIcon
+  MixerHorizontalIcon,
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
 
 const BatchCosting = () => {
   const { t } = useTranslation('batch-costing');
 
-  // حالات لتخزين القيمة المختارة
   const [selectedSupplier, setSelectedSupplier] = useState('');
   const [selectedProduct, setSelectedProduct] = useState('');
 
-  // قيم الموردين والمنتجات
   const suppliers = ['a', 'b', 'c'];
   const products = ['a', 'b', 'c'];
 
@@ -40,7 +40,7 @@ const BatchCosting = () => {
       overhead: 8500,
       totalCost: 45000,
       costPerUnit: 3.15,
-      variance: '-2.5%'
+      variance: '-2.5%',
     },
   ];
 
@@ -49,37 +49,37 @@ const BatchCosting = () => {
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Open Book Accounting Overview</Heading>
         <Flex gap="3" align="center">
-          {/* Dropdown الموردين بدل زر New Cost Run */}
+          {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
             <Select.Trigger aria-label={t('selectSupplier') || 'Select Supplier'} style={{ minWidth: 120 }}>
               <Select.Value placeholder={t('selectSupplier') || 'Select Supplier'} />
+              <Select.Icon />
             </Select.Trigger>
             <Select.Content>
               {suppliers.map((sup) => (
                 <Select.Item key={sup} value={sup}>
-                  {sup.toUpperCase()}
+                  <Select.ItemText>{sup.toUpperCase()}</Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Content>
           </Select.Root>
 
-          {/* Dropdown المنتجات بدل زر Compare Standards */}
+          {/* Product Dropdown */}
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <Select.Trigger aria-label={t('selectProduct') || 'Select Product'} style={{ minWidth: 120 }}>
               <Select.Value placeholder={t('selectProduct') || 'Select Product'} />
+              <Select.Icon />
             </Select.Trigger>
             <Select.Content>
               {products.map((prod) => (
                 <Select.Item key={prod} value={prod}>
-                  {prod.toUpperCase()}
+                  <Select.ItemText>{prod.toUpperCase()}</Select.ItemText>
                 </Select.Item>
               ))}
             </Select.Content>
           </Select.Root>
         </Flex>
       </Flex>
-
-      {/* باقي الصفحة كما في الكود الأصلي */}
 
       <Grid columns="4" gap="4" mb="5">
         <Card>
@@ -91,7 +91,9 @@ const BatchCosting = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('yieldVariance')}</Text>
-            <Heading size="7" className="text-green-500">-1.8%</Heading>
+            <Heading size="7" className="text-green-500">
+              -1.8%
+            </Heading>
           </Flex>
         </Card>
         <Card>
@@ -124,9 +126,7 @@ const BatchCosting = () => {
             <Table.Row key={batch.id}>
               <Table.Cell>{batch.id}</Table.Cell>
               <Table.Cell>${batch.materialCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>
-                ${(batch.laborCost + batch.overhead).toLocaleString()}
-              </Table.Cell>
+              <Table.Cell>${(batch.laborCost + batch.overhead).toLocaleString()}</Table.Cell>
               <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
               <Table.Cell>${batch.costPerUnit}</Table.Cell>
               <Table.Cell>
@@ -141,7 +141,9 @@ const BatchCosting = () => {
 
       <Flex mt="5" gap="4">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('costBreakdown')}</Heading>
+          <Heading size="4" mb="3">
+            {t('costBreakdown')}
+          </Heading>
           <div className="h-64">
             <BarChart width={500} height={250} data={batches}>
               <Bar dataKey="materialCost" fill="#3b82f6" name={t('material')} />
@@ -151,14 +153,16 @@ const BatchCosting = () => {
           </div>
         </Card>
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('varianceAnalysis')}</Heading>
+          <Heading size="4" mb="3">
+            {t('varianceAnalysis')}
+          </Heading>
           <div className="h-64">
             <PieChart width={300} height={250}>
               <Pie
                 data={[
                   { name: t('material'), value: 65 },
                   { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 }
+                  { name: t('overhead'), value: 10 },
                 ]}
                 cx="50%"
                 cy="50%"
