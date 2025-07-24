@@ -8,6 +8,7 @@ import {
   Text,
   TextField,
   DropdownMenu,
+  Dialog,
 } from "@radix-ui/themes";
 
 const productNames = ["Poultry Product A", "Poultry Product B", "Poultry Product C"];
@@ -29,62 +30,58 @@ type ProductRow = {
   packagingShape: string;
   packagingType: string;
   capType: string;
-  packWeight: string;
+  packWeight: number;
   compliance: string;
-  status: string;
-  comment: string;
 };
 
 export default function ProductConfiguration() {
-  const [data, setData] = useState<ProductRow[]>([
+  const [rows, setRows] = useState<ProductRow[]>([
     {
       productId: "P-001",
       name: "Poultry Product A",
-      components: "",
-      packagingShape: "",
-      packagingType: "",
-      capType: "",
-      packWeight: "",
-      compliance: "",
-      status: "Pending",
-      comment: "",
+      components: "Vitamin A, B, D",
+      packagingShape: "Round",
+      packagingType: "Pump",
+      capType: "Flip Top",
+      packWeight: 500,
+      compliance: "ISO 9001:2015 QMS",
     },
   ]);
 
-  const handleChange = (index: number, key: keyof ProductRow, value: string) => {
-    const updated = [...data];
-    updated[index][key] = value;
-    setData(updated);
+  const handleFieldChange = (
+    index: number,
+    field: keyof ProductRow,
+    value: string | number
+  ) => {
+    const updatedRows = [...rows];
+    (updatedRows[index][field] as any) = value;
+    setRows(updatedRows);
+  };
+
+  const addNewRow = () => {
+    setRows([
+      ...rows,
+      {
+        productId: `P-${rows.length + 1}`.padStart(5, "0"),
+        name: "",
+        components: "",
+        packagingShape: "",
+        packagingType: "",
+        capType: "",
+        packWeight: 0,
+        compliance: "",
+      },
+    ]);
   };
 
   return (
     <Card>
       <Flex justify="between" align="center" mb="4">
-        <Heading size="5">Production Design Info</Heading>
-        <Button
-          onClick={() =>
-            setData([
-              ...data,
-              {
-                productId: `P-${String(data.length + 1).padStart(3, "0")}`,
-                name: "",
-                components: "",
-                packagingShape: "",
-                packagingType: "",
-                capType: "",
-                packWeight: "",
-                compliance: "",
-                status: "Pending",
-                comment: "",
-              },
-            ])
-          }
-        >
-          Add Row
-        </Button>
+        <Heading size="5">Product Configuration</Heading>
+        <Button onClick={addNewRow}>Add Product</Button>
       </Flex>
 
-      <Table.Root>
+      <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
@@ -93,18 +90,15 @@ export default function ProductConfiguration() {
             <Table.ColumnHeaderCell>Packaging Shape</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Packaging Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Cap Type</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Pack Weight (g)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Pack Weight (grams)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Comment</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
-
         <Table.Body>
-          {data.map((row, index) => (
+          {rows.map((row, index) => (
             <Table.Row key={index}>
               <Table.Cell>{row.productId}</Table.Cell>
-
               <Table.Cell>
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger>
@@ -114,7 +108,7 @@ export default function ProductConfiguration() {
                     {productNames.map((name) => (
                       <DropdownMenu.Item
                         key={name}
-                        onSelect={() => handleChange(index, "name", name)}
+                        onSelect={() => handleFieldChange(index, "name", name)}
                       >
                         {name}
                       </DropdownMenu.Item>
@@ -124,10 +118,13 @@ export default function ProductConfiguration() {
               </Table.Cell>
 
               <Table.Cell>
-                <TextField
-                  value={row.components}
-                  onChange={(e) => handleChange(index, "components", e.target.value)}
-                />
+                <TextField.Root>
+                  <input
+                    type="text"
+                    value={row.components}
+                    onChange={(e) => handleFieldChange(index, "components", e.target.value)}
+                  />
+                </TextField.Root>
               </Table.Cell>
 
               <Table.Cell>
@@ -139,7 +136,7 @@ export default function ProductConfiguration() {
                     {packagingShapes.map((shape) => (
                       <DropdownMenu.Item
                         key={shape}
-                        onSelect={() => handleChange(index, "packagingShape", shape)}
+                        onSelect={() => handleFieldChange(index, "packagingShape", shape)}
                       >
                         {shape}
                       </DropdownMenu.Item>
@@ -157,7 +154,7 @@ export default function ProductConfiguration() {
                     {packagingTypes.map((type) => (
                       <DropdownMenu.Item
                         key={type}
-                        onSelect={() => handleChange(index, "packagingType", type)}
+                        onSelect={() => handleFieldChange(index, "packagingType", type)}
                       >
                         {type}
                       </DropdownMenu.Item>
@@ -172,12 +169,12 @@ export default function ProductConfiguration() {
                     <Button variant="soft">{row.capType || "Select"}</Button>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Content>
-                    {capTypes.map((cap) => (
+                    {capTypes.map((type) => (
                       <DropdownMenu.Item
-                        key={cap}
-                        onSelect={() => handleChange(index, "capType", cap)}
+                        key={type}
+                        onSelect={() => handleFieldChange(index, "capType", type)}
                       >
-                        {cap}
+                        {type}
                       </DropdownMenu.Item>
                     ))}
                   </DropdownMenu.Content>
@@ -185,16 +182,15 @@ export default function ProductConfiguration() {
               </Table.Cell>
 
               <Table.Cell>
-                <TextField
-                  value={row.packWeight}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d*$/.test(value)) {
-                      handleChange(index, "packWeight", value);
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={row.packWeight}
+                    onChange={(e) =>
+                      handleFieldChange(index, "packWeight", parseInt(e.target.value) || 0)
                     }
-                  }}
-                  placeholder="grams"
-                />
+                  />
+                </TextField.Root>
               </Table.Cell>
 
               <Table.Cell>
@@ -203,12 +199,12 @@ export default function ProductConfiguration() {
                     <Button variant="soft">{row.compliance || "Select"}</Button>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Content>
-                    {complianceOptions.map((opt) => (
+                    {complianceOptions.map((option) => (
                       <DropdownMenu.Item
-                        key={opt}
-                        onSelect={() => handleChange(index, "compliance", opt)}
+                        key={option}
+                        onSelect={() => handleFieldChange(index, "compliance", option)}
                       >
-                        {opt}
+                        {option}
                       </DropdownMenu.Item>
                     ))}
                   </DropdownMenu.Content>
@@ -216,14 +212,29 @@ export default function ProductConfiguration() {
               </Table.Cell>
 
               <Table.Cell>
-                <Text color="gray">{row.status}</Text>
-              </Table.Cell>
-
-              <Table.Cell>
-                <TextField
-                  value={row.comment}
-                  onChange={(e) => handleChange(index, "comment", e.target.value)}
-                />
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <Button variant="soft" color="blue">
+                      Configure
+                    </Button>
+                  </Dialog.Trigger>
+                  <Dialog.Content style={{ maxWidth: 500 }}>
+                    <Dialog.Title>Product Configuration</Dialog.Title>
+                    <Dialog.Description>
+                      Here you can configure the selected product.
+                    </Dialog.Description>
+                    <Text as="p" mt="3">
+                      (Keep this area for detailed configuration options...)
+                    </Text>
+                    <Flex justify="end" mt="4">
+                      <Dialog.Close>
+                        <Button variant="soft" color="green">
+                          Save
+                        </Button>
+                      </Dialog.Close>
+                    </Flex>
+                  </Dialog.Content>
+                </Dialog.Root>
               </Table.Cell>
             </Table.Row>
           ))}
