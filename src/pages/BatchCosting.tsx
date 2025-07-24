@@ -10,12 +10,21 @@ import {
   Grid,
   Progress,
   Box,
-  TextField,
 } from '@radix-ui/themes';
 
 import * as Select from '@radix-ui/react-select';
 
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
+
+const inputStyle: React.CSSProperties = {
+  padding: '8px 12px',
+  fontSize: 14,
+  borderRadius: 6,
+  border: '1px solid #ccc',
+  fontWeight: 600,
+  width: '100%',
+  boxSizing: 'border-box',
+};
 
 const dropdownTriggerStyle: React.CSSProperties = {
   minWidth: 140,
@@ -88,7 +97,6 @@ const BatchCosting = () => {
     },
   ];
 
-  // Handlers with explicit event typing:
   const handleTransactionVolumeChange = (e: ChangeEvent<HTMLInputElement>) => {
     setTransactionVolume(e.target.value);
   };
@@ -229,12 +237,12 @@ const BatchCosting = () => {
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Transaction Volume</Text>
-            <TextField
+            <input
               type="number"
               placeholder="Enter volume"
               value={transactionVolume}
               onChange={handleTransactionVolumeChange}
-              style={{ fontWeight: 600 }}
+              style={inputStyle}
             />
           </Flex>
         </Card>
@@ -271,12 +279,12 @@ const BatchCosting = () => {
         <Card>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold">Supplier Incentives Offered</Text>
-            <TextField
+            <input
               type="number"
               placeholder="Enter amount"
               value={supplierIncentives}
               onChange={handleSupplierIncentivesChange}
-              style={{ fontWeight: 600 }}
+              style={inputStyle}
             />
           </Flex>
         </Card>
