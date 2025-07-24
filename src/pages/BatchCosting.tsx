@@ -11,20 +11,8 @@ import {
   Progress,
   Box,
 } from '@radix-ui/themes';
-
 import * as Select from '@radix-ui/react-select';
-
 import { PieChart, Pie, BarChart, Bar } from 'recharts';
-
-const inputStyle: React.CSSProperties = {
-  padding: '8px 12px',
-  fontSize: 14,
-  borderRadius: 6,
-  border: '1px solid #ccc',
-  fontWeight: 600,
-  width: '100%',
-  boxSizing: 'border-box',
-};
 
 const dropdownTriggerStyle: React.CSSProperties = {
   minWidth: 140,
@@ -64,6 +52,15 @@ const dropdownItemStyle: React.CSSProperties = {
 
 const SupplierTierOptions = ['Tier 1', 'Tier 2', 'Tier 3'];
 const ComponentCriticalityOptions = ['High', 'Medium', 'Low'];
+const incentivesOptions = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
+  'Negotiation support',
+  'Joint problem solving teams',
+  'Shared Profit',
+];
 
 const BatchCosting = () => {
   const { t } = useTranslation('batch-costing');
@@ -76,6 +73,23 @@ const BatchCosting = () => {
   const [transactionVolume, setTransactionVolume] = useState('');
   const [componentCriticality, setComponentCriticality] = useState('');
   const [supplierIncentives, setSupplierIncentives] = useState('');
+
+  const [items, setItems] = useState([
+    {
+      id: 'Item1',
+      declaredPrice: 1000,
+      actualCost: 900,
+      variance: '-10%',
+      incentives: '',
+    },
+    {
+      id: 'Item2',
+      declaredPrice: 1500,
+      actualCost: 1600,
+      variance: '+6.7%',
+      incentives: '',
+    },
+  ]);
 
   const suppliers = ['a', 'b', 'c'];
   const products = ['a', 'b', 'c'];
@@ -102,6 +116,12 @@ const BatchCosting = () => {
   };
   const handleSupplierIncentivesChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSupplierIncentives(e.target.value);
+  };
+
+  const handleIncentivesChange = (value: string, index: number) => {
+    const updated = [...items];
+    updated[index].incentives = value;
+    setItems(updated);
   };
 
   return (
@@ -241,8 +261,16 @@ const BatchCosting = () => {
               type="number"
               placeholder="Enter volume"
               value={transactionVolume}
-              onChange={handleTransactionVolumeChange}
-              style={inputStyle}
+              onChange={(e) => setTransactionVolume(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                fontSize: 14,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                fontWeight: 600,
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
             />
           </Flex>
         </Card>
@@ -283,42 +311,100 @@ const BatchCosting = () => {
               type="number"
               placeholder="Enter amount"
               value={supplierIncentives}
-              onChange={handleSupplierIncentivesChange}
-              style={inputStyle}
+              onChange={(e) => setSupplierIncentives(e.target.value)}
+              style={{
+                padding: '8px 12px',
+                fontSize: 14,
+                borderRadius: 6,
+                border: '1px solid #ccc',
+                fontWeight: 600,
+                width: '100%',
+                boxSizing: 'border-box',
+              }}
             />
           </Flex>
         </Card>
       </Grid>
 
-      <Table.Root variant="surface">
+      {/* New Table with requested columns */}
+      <Table.Root variant="surface" mb="6">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('batchID')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('materialCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('conversionCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('totalCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('costPerUnit')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Declared Price via blockchain</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
+
         <Table.Body>
-          {batches.map((batch) => (
-            <Table.Row key={batch.id}>
-              <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>${batch.materialCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>${(batch.laborCost + batch.overhead).toLocaleString()}</Table.Cell>
-              <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>${batch.costPerUnit}</Table.Cell>
+          {items.map((item, i) => (
+            <Table.Row key={item.id}>
+              <Table.Cell>{item.id}</Table.Cell>
+              <Table.Cell>${item.declaredPrice.toLocaleString()}</Table.Cell>
+              <Table.Cell>${item.actualCost.toLocaleString()}</Table.Cell>
               <Table.Cell>
-                <Badge color={batch.variance.startsWith('-') ? 'green' : 'red'}>
-                  {batch.variance}
+                <Badge color={item.variance.startsWith('-') ? 'green' : 'red'}>
+                  {item.variance}
                 </Badge>
+              </Table.Cell>
+              <Table.Cell>
+                <Select.Root
+                  value={item.incentives}
+                  onValueChange={(value) => handleIncentivesChange(value, i)}
+                >
+                  <Select.Trigger
+                    aria-label="Select incentive"
+                    style={{
+                      minWidth: 180,
+                      padding: '6px 10px',
+                      fontSize: 14,
+                      borderRadius: 6,
+                      border: '1px solid #ccc',
+                      backgroundColor: 'white',
+                      color: '#1e293b',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <Select.Value placeholder="Select incentive" />
+                    <Select.Icon />
+                  </Select.Trigger>
+                  <Select.Content
+                    style={{
+                      backgroundColor: 'white',
+                      borderRadius: 6,
+                      boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
+                      minWidth: 180,
+                      zIndex: 1000,
+                    }}
+                  >
+                    {incentivesOptions.map((opt) => (
+                      <Select.Item
+                        key={opt}
+                        value={opt}
+                        style={{
+                          padding: '8px 12px',
+                          cursor: 'pointer',
+                          fontSize: 14,
+                          borderRadius: 4,
+                          fontWeight: 600,
+                          textTransform: 'capitalize',
+                          color: '#1e293b',
+                        }}
+                      >
+                        <Select.ItemText>{opt}</Select.ItemText>
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
+      {/* Existing charts and cards section */}
       <Flex mt="5" gap="4">
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3">
