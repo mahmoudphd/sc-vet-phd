@@ -71,29 +71,34 @@ const SimpleInventory = () => {
             <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {inventoryData.map((item, index) => (
-            <Table.Row key={item.id}>
-              <Table.Cell>{item.id}</Table.Cell>
-              <Table.Cell>{item.name}</Table.Cell>
-              <Table.Cell>
-                <TextField.Root
-                  type="number"
-                  value={item.quantity}
-                  onChange={(e) => handleChange(index, 'quantity', e.target.value)}
-                />
-              </Table.Cell>
-              <Table.Cell>
-                <TextField.Root
-                  type="number"
-                  value={item.reserved}
-                  onChange={(e) => handleChange(index, 'reserved', e.target.value)}
-                />
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {inventoryData.map((item, index) => {
+            const freeToUse = Math.max(item.quantity - item.reserved, 0);
+            return (
+              <Table.Row key={item.id}>
+                <Table.Cell>{item.id}</Table.Cell>
+                <Table.Cell>{item.name}</Table.Cell>
+                <Table.Cell>
+                  <TextField.Root
+                    type="number"
+                    value={item.quantity}
+                    onChange={(e) => handleChange(index, 'quantity', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>
+                  <TextField.Root
+                    type="number"
+                    value={item.reserved}
+                    onChange={(e) => handleChange(index, 'reserved', e.target.value)}
+                  />
+                </Table.Cell>
+                <Table.Cell>{freeToUse}</Table.Cell>
+              </Table.Row>
+            );
+          })}
         </Table.Body>
       </Table.Root>
 
