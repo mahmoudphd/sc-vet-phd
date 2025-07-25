@@ -51,7 +51,7 @@ const EquipmentMaintenance = () => {
         <Flex align="center" gap="3">
           <Heading size="6">{t('equipment-maintenance-register')}</Heading>
           <Button color="green" variant="solid">
-            سبميت تو بلوكتشين
+            Submit to Blockchain
           </Button>
         </Flex>
         <Flex gap="3">
