@@ -1,181 +1,140 @@
-// src/pages/FinishedGoodsInventory.tsx
-
 import React, { useState } from 'react';
 import {
   Card,
-  Table,
-  Button,
   Flex,
   Heading,
-  Text,
+  Table,
   TextField,
-  Box,
+  Button,
   Select,
+  Box,
+  Text,
 } from '@radix-ui/themes';
-import { CheckIcon } from '@radix-ui/react-icons';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-type FinishedGood = {
-  id: string;
-  name: string;
-  batch: string;
-  quantity: number;
-  reserved: number;
-  location: string;
-  expiryDate: string;
-  storageTemp: string;
-};
-
-const initialData: FinishedGood[] = [
+const initialData = [
   {
-    id: 'FG001',
-    name: 'Product A',
-    batch: 'BATCH-001',
+    id: 'P-001',
+    name: 'Poultry Product 1',
     quantity: 100,
-    reserved: 20,
+    reserved: 30,
     location: 'Zone 1',
-    expiryDate: '2025-12-31',
-    storageTemp: '2-8°C',
+    expiry: '2025-09-15',
+    storage: 'Cool',
   },
   {
-    id: 'FG002',
-    name: 'Product B',
-    batch: 'BATCH-002',
-    quantity: 150,
-    reserved: 50,
+    id: 'P-002',
+    name: 'Poultry Product 2',
+    quantity: 80,
+    reserved: 20,
     location: 'Zone 2',
-    expiryDate: '2025-09-30',
-    storageTemp: 'Room Temp',
+    expiry: '2025-10-10',
+    storage: 'Dry',
+  },
+  {
+    id: 'P-003',
+    name: 'Poultry Product 3',
+    quantity: 120,
+    reserved: 50,
+    location: 'Zone 3',
+    expiry: '2025-08-20',
+    storage: 'Room Temperature',
   },
 ];
 
-const FinishedGoodsInventory: React.FC = () => {
-  const [data, setData] = useState(initialData);
-  const [submitting, setSubmitting] = useState(false);
+const FinishedGoodsInventory = () => {
+  const [products, setProducts] = useState(initialData);
 
-  const handleSubmitToBlockchain = async () => {
-    setSubmitting(true);
-    try {
-      // Replace with actual smart contract interaction
-      console.log('Submitting to blockchain...', data);
-      setTimeout(() => {
-        alert('Data submitted to blockchain successfully!');
-        setSubmitting(false);
-      }, 1000);
-    } catch (error) {
-      alert('Submission failed');
-      setSubmitting(false);
-    }
+  const handleChange = (index: number, field: 'quantity' | 'reserved', value: number) => {
+    const updated = [...products];
+    updated[index][field] = value;
+    setProducts(updated);
   };
 
-  const handleChange = (
-    index: number,
-    field: keyof FinishedGood,
-    value: string | number
-  ) => {
-    const newData = [...data];
-    if (field === 'quantity' || field === 'reserved') {
-      newData[index][field] = Number(value);
-    } else {
-      newData[index][field] = value as string;
-    }
-    setData(newData);
+  const handleSubmit = () => {
+    // Simulate blockchain submission
+    alert('Data submitted to blockchain successfully!');
+    console.log('Blockchain Data:', products);
   };
+
+  const chartData = products.map((product) => ({
+    name: product.name,
+    Quantity: product.quantity,
+    Reserved: product.reserved,
+    FreeToUse: product.quantity - product.reserved,
+  }));
 
   return (
     <Box p="4">
-      <Heading mb="4">Finished Goods Inventory</Heading>
+      <Heading size="6" mb="4">Finished Goods Inventory</Heading>
+
       <Card>
-        <Table.Root variant="surface">
+        <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeader>ID</Table.ColumnHeader>
-              <Table.ColumnHeader>Name</Table.ColumnHeader>
-              <Table.ColumnHeader>Batch</Table.ColumnHeader>
-              <Table.ColumnHeader>Quantity</Table.ColumnHeader>
-              <Table.ColumnHeader>Reserved</Table.ColumnHeader>
-              <Table.ColumnHeader>Free to Use</Table.ColumnHeader>
-              <Table.ColumnHeader>Location</Table.ColumnHeader>
-              <Table.ColumnHeader>Expiry Date</Table.ColumnHeader>
-              <Table.ColumnHeader>Storage Temp</Table.ColumnHeader>
+              <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {data.map((item, index) => (
-              <Table.Row key={item.id}>
-                <Table.Cell>{item.id}</Table.Cell>
-                <Table.Cell>{item.name}</Table.Cell>
-                <Table.Cell>{item.batch}</Table.Cell>
+            {products.map((product, index) => (
+              <Table.Row key={product.id}>
+                <Table.Cell>{product.id}</Table.Cell>
+                <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleChange(index, 'quantity', e.target.value)
-                      }
-                    />
-                  </TextField.Root>
+                  <TextField
+                    type="number"
+                    size="1"
+                    value={product.quantity}
+                    onChange={(e) => handleChange(index, 'quantity', Number(e.target.value))}
+                  />
                 </Table.Cell>
                 <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="number"
-                      value={item.reserved}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleChange(index, 'reserved', e.target.value)
-                      }
-                    />
-                  </TextField.Root>
-                </Table.Cell>
-                <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
-                <Table.Cell>
-                  <Select.Root
-                    value={item.location}
-                    onValueChange={(val: string) =>
-                      handleChange(index, 'location', val)
-                    }
-                  >
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="Zone 1">Zone 1</Select.Item>
-                      <Select.Item value="Zone 2">Zone 2</Select.Item>
-                      <Select.Item value="Zone 3">Zone 3</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
+                  <TextField
+                    type="number"
+                    size="1"
+                    value={product.reserved}
+                    onChange={(e) => handleChange(index, 'reserved', Number(e.target.value))}
+                  />
                 </Table.Cell>
                 <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="date"
-                      value={item.expiryDate}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleChange(index, 'expiryDate', e.target.value)
-                      }
-                    />
-                  </TextField.Root>
+                  {product.quantity - product.reserved}
                 </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="text"
-                      value={item.storageTemp}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        handleChange(index, 'storageTemp', e.target.value)
-                      }
-                    />
-                  </TextField.Root>
-                </Table.Cell>
+                <Table.Cell>{product.location}</Table.Cell>
+                <Table.Cell>{product.expiry}</Table.Cell>
+                <Table.Cell>{product.storage}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table.Root>
-        <Flex justify="end" mt="4">
-          <Button onClick={handleSubmitToBlockchain} disabled={submitting}>
-            {submitting ? 'Submitting...' : 'Submit to Blockchain'}
-            <CheckIcon />
-          </Button>
-        </Flex>
       </Card>
+
+      <Box mt="6">
+        <Heading size="5" mb="2">Inventory Trend</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={chartData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Quantity" fill="#4f46e5" />
+            <Bar dataKey="Reserved" fill="#f59e0b" />
+            <Bar dataKey="FreeToUse" fill="#10b981" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Box>
+
+      <Flex justify="end" mt="5">
+        <Button size="3" color="green" onClick={handleSubmit}>
+          Submit to Blockchain
+        </Button>
+      </Flex>
     </Box>
   );
 };
