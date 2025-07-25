@@ -14,6 +14,7 @@ import {
 } from '@radix-ui/themes';
 import { MixerHorizontalIcon } from '@radix-ui/react-icons';
 import { useTranslation } from 'react-i18next';
+import { differenceInDays } from 'date-fns';
 
 const equipmentData = [
   { id: 'EQ00001', name: 'سير العبوات', criticality: 'حرج', lastService: '2025-04-01', status: 'تشغيلي', nextDue: 'شهري', iot: true },
@@ -32,11 +33,27 @@ const equipmentData = [
 
 const EquipmentMaintenance = () => {
   const { t } = useTranslation('equipment-maintenance');
-  
+
+  const criticalCount = equipmentData.filter(eq => eq.criticality === 'حرج').length;
+
+  const overdueCount = equipmentData.filter(eq => {
+    const last = new Date(eq.lastService);
+    const today = new Date();
+    const daysDiff = differenceInDays(today, last);
+    return daysDiff > 30;
+  }).length;
+
+  const calibrationCompliance = '100%';
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('equipment-maintenance-register')}</Heading>
+        <Flex align="center" gap="3">
+          <Heading size="6">{t('equipment-maintenance-register')}</Heading>
+          <Button color="green" variant="solid">
+            سبميت تو بلوكتشين
+          </Button>
+        </Flex>
         <Flex gap="3">
           <Dialog.Root>
             <Dialog.Trigger>
@@ -48,7 +65,7 @@ const EquipmentMaintenance = () => {
               <Dialog.Title>{t('new-work-order')}</Dialog.Title>
               <Flex direction="column" gap="3">
                 <TextField.Root placeholder={t('title')} />
-                <TextField.Root  placeholder={t('description')} />
+                <TextField.Root placeholder={t('description')} />
                 <Select.Root>
                   <Select.Trigger placeholder={t('priority')} />
                   <Select.Content>
@@ -69,6 +86,7 @@ const EquipmentMaintenance = () => {
               </Flex>
             </Dialog.Content>
           </Dialog.Root>
+
           <Dialog.Root>
             <Dialog.Trigger>
               <Button variant="soft">
@@ -88,8 +106,8 @@ const EquipmentMaintenance = () => {
                     ))}
                   </Select.Content>
                 </Select.Root>
-                <TextField.Root  type="date" placeholder={t('calibration-date')} />
-                <TextField.Root  placeholder={t('technician')} />
+                <TextField.Root type="date" placeholder={t('calibration-date')} />
+                <TextField.Root placeholder={t('technician')} />
                 <Flex gap="3" justify="end">
                   <Dialog.Close>
                     <Button variant="soft" color="gray">
@@ -108,19 +126,19 @@ const EquipmentMaintenance = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('critical-equipment')}</Text>
-            <Heading size="7">45</Heading>
+            <Heading size="7">{criticalCount}</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('overdue-maintenance')}</Text>
-            <Heading size="7" className="text-red-500">3</Heading>
+            <Heading size="7" className="text-red-500">{overdueCount}</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('calibration-compliance')}</Text>
-            <Heading size="7">100%</Heading>
+            <Heading size="7">{calibrationCompliance}</Heading>
           </Flex>
         </Card>
       </Grid>
