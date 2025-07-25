@@ -1,5 +1,4 @@
 // src/pages/CostAnalytics.tsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -72,6 +71,7 @@ const getDetailsByCategory = (category: CostCategory): Item[] => {
       return [];
   }
 };
+
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -88,20 +88,25 @@ function CostAnalytics() {
     'Overhead': {},
     'Other Costs': {},
   });
+
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
 
+  const postOptimizationEstimate = totalActual - totalCostAfter;
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
-  const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
+
+  const handleBenchmarkChange = (value: number) => {
+    setBenchmarkPrice(value);
+  };
 
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
     { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
     { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
   ];
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
@@ -109,6 +114,7 @@ function CostAnalytics() {
     targetCost,
     gap: d.actual - targetCost,
   }));
+
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
 
   const percentOfTotal = (category: CostCategory) =>
@@ -140,6 +146,7 @@ function CostAnalytics() {
       },
     }));
   };
+
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
@@ -172,6 +179,7 @@ function CostAnalytics() {
           <Button onClick={handleExportReport}>Export Report</Button>
         </Flex>
       </Flex>
+
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Actual Cost</Text>
@@ -191,13 +199,26 @@ function CostAnalytics() {
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Benchmark Price</Text>
-          <Heading size="6">{formatCurrency(benchmarkPrice, currency)}</Heading>
+          <input
+            type="number"
+            value={benchmarkPrice}
+            onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
+            style={{ width: '80px', marginTop: '4px' }}
+          />
+          <Heading size="6" mt="2">{formatCurrency(benchmarkPrice, currency)}</Heading>
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Profit Margin (%)</Text>
-          <Heading size="6">{profitMargin}%</Heading>
+          <input
+            type="number"
+            value={profitMargin}
+            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
+            style={{ width: '80px', marginTop: '4px' }}
+          />
+          <Heading size="6" mt="2">{profitMargin}%</Heading>
         </Box>
       </Grid>
+
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -248,6 +269,7 @@ function CostAnalytics() {
           </Table.Row>
         </Table.Body>
       </Table.Root>
+
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
@@ -392,6 +414,7 @@ function CostAnalytics() {
           </Dialog.Content>
         </Dialog.Root>
       )}
+
       <Flex mt="8" gap="6" wrap="wrap" justify="center">
         <Box style={{
           backgroundColor: '#fff',
@@ -489,6 +512,7 @@ function CostAnalytics() {
           </ResponsiveContainer>
         </Box>
       </Flex>
+
       <Flex justify="end" mt="6">
         <Button style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
           onClick={() => alert('Submit All clicked')}>
