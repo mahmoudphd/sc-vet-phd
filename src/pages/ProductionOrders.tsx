@@ -30,7 +30,7 @@ const ProductionOrders = () => {
   const orders = [
     {
       id: 'PO23045',
-      product: 'Poultry Product 1',
+      product: 'Poultry Drug 1',
       priority: 'High',
       materials: 'Allocated',
       progress: 40,
@@ -44,13 +44,11 @@ const ProductionOrders = () => {
       return;
     }
 
-    // Add your order creation logic here
     setOpen(false);
     toast.success(t('success.orderCreated'));
   };
 
   const handleSubmitToBlockchain = () => {
-    // يمكن ربطه بعقد ذكي فعلي لاحقًا
     toast.success(t('messages.blockchainSubmitSuccess', 'Submitted to blockchain successfully!'));
   };
 
@@ -166,9 +164,9 @@ const ProductionOrders = () => {
                 </Badge>
               </Table.Cell>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <Progress value={order.progress} />
-                  <Text size="4">{order.progress}%</Text>
+                <Flex align="center" gap="2" style={{ minWidth: 150 }}>
+                  <Progress value={order.progress} max={100} size="3" />
+                  <Text size="3">{order.progress}%</Text>
                 </Flex>
               </Table.Cell>
               <Table.Cell>{order.schedule}</Table.Cell>
