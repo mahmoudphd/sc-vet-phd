@@ -124,7 +124,7 @@ export default function MaterialTable() {
                             <Text
                               as="span"
                               color="blue"
-                              weight="normal"
+                              weight="regular"
                               style={{ marginLeft: 6 }}
                             >
                               via IoT
