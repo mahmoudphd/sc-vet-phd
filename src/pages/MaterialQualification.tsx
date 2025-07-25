@@ -150,7 +150,29 @@ export default function MaterialTable() {
               </Table.Cell>
               <Table.Cell>
                 {item.certificate ? (
-                  <Badge color="green">Available</Badge>
+                  <Dialog.Root>
+                    <Dialog.Trigger asChild>
+                      <Badge color="green" style={{ cursor: 'pointer' }}>
+                        Available
+                      </Badge>
+                    </Dialog.Trigger>
+                    <Dialog.Content maxWidth="400px" padding="20px" style={{ borderRadius: '8px' }}>
+                      <Dialog.Title>Certificates Details</Dialog.Title>
+                      <Dialog.Description mb="4">
+                        This material has the following certificates:
+                      </Dialog.Description>
+                      <Box as="ul" pl="4" mb="4" style={{ listStyleType: 'disc' }}>
+                        <li>Certificate of Analysis (CoA)</li>
+                        <li>Certificate of Compliance (CoC)</li>
+                        <li>GMP (Good Manufacturing Practice)</li>
+                      </Box>
+                      <Flex justify="end">
+                        <Dialog.Close>
+                          <Button>Close</Button>
+                        </Dialog.Close>
+                      </Flex>
+                    </Dialog.Content>
+                  </Dialog.Root>
                 ) : (
                   <Badge color="red">Not Available</Badge>
                 )}
