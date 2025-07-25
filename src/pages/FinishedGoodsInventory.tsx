@@ -1,141 +1,163 @@
 import React, { useState } from 'react';
 import {
   Card,
-  Flex,
-  Heading,
   Table,
   Button,
-  TextField,
+  Flex,
+  Heading,
   Text,
   Box,
 } from '@radix-ui/themes';
-import { FileTextIcon } from '@radix-ui/react-icons';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-interface FinishedGood {
-  id: string;
-  name: string;
-  location: string;
-  status: string;
-  expiry: string;
-  storage: string;
-  quantity: number;
-  reserved: number;
-}
-
-const initialData: FinishedGood[] = [
-  {
-    id: 'FG001',
-    name: 'Poultry Product A',
-    location: 'Warehouse A',
-    status: 'Available',
-    expiry: '2025-12-31',
-    storage: 'Cold',
-    quantity: 100,
-    reserved: 30,
-  },
-  {
-    id: 'FG002',
-    name: 'Poultry Product B',
-    location: 'Warehouse B',
-    status: 'Reserved',
-    expiry: '2025-10-15',
-    storage: 'Room Temp',
-    quantity: 80,
-    reserved: 20,
-  },
+const initialData = [
+  { location: 'Warehouse A', status: 'Available', expiry: '2025-08-10', storage: 'Cool', quantity: 120, freeToUse: 80 },
+  { location: 'Warehouse B', status: 'Quarantined', expiry: '2025-09-01', storage: 'Dry', quantity: 75, freeToUse: 0 },
+  { location: 'Warehouse C', status: 'Available', expiry: '2025-07-30', storage: 'Cool', quantity: 95, freeToUse: 60 },
 ];
 
 export default function FinishedGoodsInventory() {
-  const [data, setData] = useState<FinishedGood[]>(initialData);
+  const [data, setData] = useState(initialData);
+  const [newEntry, setNewEntry] = useState({
+    location: '',
+    status: '',
+    expiry: '',
+    storage: '',
+    quantity: '',
+    freeToUse: '',
+  });
 
-  const handleSubmitToBlockchain = (item: FinishedGood) => {
-    console.log('Submitting to blockchain:', item);
-    alert(`Submitted ${item.name} to blockchain`);
+  const handleChange = (field: string, value: string) => {
+    setNewEntry((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const handleQuantityChange = (index: number, value: string) => {
-    const updated = [...data];
-    updated[index].quantity = parseInt(value) || 0;
-    setData(updated);
+  const handleSubmit = () => {
+    if (
+      newEntry.location &&
+      newEntry.status &&
+      newEntry.expiry &&
+      newEntry.storage &&
+      newEntry.quantity &&
+      newEntry.freeToUse
+    ) {
+      const parsedEntry = {
+        ...newEntry,
+        quantity: parseInt(newEntry.quantity),
+        freeToUse: parseInt(newEntry.freeToUse),
+      };
+      setData([...data, parsedEntry]);
+      setNewEntry({
+        location: '',
+        status: '',
+        expiry: '',
+        storage: '',
+        quantity: '',
+        freeToUse: '',
+      });
+    }
   };
 
-  const handleReservedChange = (index: number, value: string) => {
-    const updated = [...data];
-    updated[index].reserved = parseInt(value) || 0;
-    setData(updated);
+  const submitToBlockchain = () => {
+    console.log('Submitting data to blockchain:', data);
+    alert('Submitted to Blockchain!');
   };
 
   return (
     <Box p="4">
-      <Card>
-        <Flex justify="between" align="center" mb="4">
-          <Heading size="5">Finished Goods Inventory</Heading>
-          <FileTextIcon />
-        </Flex>
+      <Heading mb="4">Finished Goods Inventory</Heading>
 
-        <Table.Root variant="surface">
+      <Card mb="4" p="4">
+        <Flex gap="3" direction="column">
+          <Flex gap="2">
+            <input
+              type="text"
+              placeholder="Location"
+              value={newEntry.location}
+              onChange={(e) => handleChange('location', e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Status"
+              value={newEntry.status}
+              onChange={(e) => handleChange('status', e.target.value)}
+            />
+            <input
+              type="date"
+              placeholder="Expiry"
+              value={newEntry.expiry}
+              onChange={(e) => handleChange('expiry', e.target.value)}
+            />
+            <input
+              type="text"
+              placeholder="Storage"
+              value={newEntry.storage}
+              onChange={(e) => handleChange('storage', e.target.value)}
+            />
+          </Flex>
+          <Flex gap="2">
+            <input
+              type="number"
+              placeholder="Quantity"
+              value={newEntry.quantity}
+              onChange={(e) => handleChange('quantity', e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Free to Use"
+              value={newEntry.freeToUse}
+              onChange={(e) => handleChange('freeToUse', e.target.value)}
+            />
+            <Button onClick={handleSubmit}>Add Entry</Button>
+          </Flex>
+        </Flex>
+      </Card>
+
+      <Card mb="4">
+        <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
-
           <Table.Body>
             {data.map((item, index) => (
-              <Table.Row key={item.id}>
-                <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-
-                <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => handleQuantityChange(index, e.target.value)}
-                    />
-                  </TextField.Root>
-                </Table.Cell>
-
-                <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="number"
-                      value={item.reserved}
-                      onChange={(e) => handleReservedChange(index, e.target.value)}
-                    />
-                  </TextField.Root>
-                </Table.Cell>
-
-                <Table.Cell>
-                  <Text>{item.quantity - item.reserved}</Text>
-                </Table.Cell>
-
+              <Table.Row key={index}>
                 <Table.Cell>{item.location}</Table.Cell>
                 <Table.Cell>{item.status}</Table.Cell>
                 <Table.Cell>{item.expiry}</Table.Cell>
                 <Table.Cell>{item.storage}</Table.Cell>
-
-                <Table.Cell>
-                  <Button
-                    size="1"
-                    variant="solid"
-                    onClick={() => handleSubmitToBlockchain(item)}
-                  >
-                    Submit to Blockchain
-                  </Button>
-                </Table.Cell>
+                <Table.Cell>{item.quantity}</Table.Cell>
+                <Table.Cell>{item.freeToUse}</Table.Cell>
               </Table.Row>
             ))}
           </Table.Body>
         </Table.Root>
       </Card>
+
+      <Card p="4" mb="4">
+        <Heading size="4" mb="3">Inventory by Location</Heading>
+        <ResponsiveContainer width="100%" height={300}>
+          <BarChart data={data}>
+            <XAxis dataKey="location" />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="quantity" fill="#8884d8" name="Quantity" />
+            <Bar dataKey="freeToUse" fill="#82ca9d" name="Free to Use" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Card>
+
+      <Button variant="solid" color="green" onClick={submitToBlockchain}>
+        Submit to Blockchain
+      </Button>
     </Box>
   );
 }
