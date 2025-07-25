@@ -1,128 +1,111 @@
-// src/pages/SimplifiedInventory.tsx
-
+// src/pages/FinishedGoodsInventory.tsx
 import React, { useState } from 'react';
 import {
   Table,
+  Card,
+  Button,
+  Flex,
+  Heading,
   TextField,
   Select,
-  Flex,
-  Button,
-  Heading,
-  Card,
-  Grid,
-  Text,
+  Box,
 } from '@radix-ui/themes';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { PlusIcon } from '@radix-ui/react-icons';
 
-type Product = {
+type FinishedGood = {
   id: string;
   name: string;
   quantity: number;
   reserved: number;
   location: string;
-  expiry: string;
-  storage: string;
+  expiryDate: string;
+  storageTemp: string;
 };
 
-const initialData: Product[] = [
+const initialData: FinishedGood[] = [
   {
-    id: 'P-001',
+    id: 'FG001',
     name: 'Product A',
-    quantity: 100,
+    quantity: 120,
     reserved: 20,
     location: 'Zone 1',
-    expiry: '2025-12-31',
-    storage: '5°C',
+    expiryDate: '2025-12-31',
+    storageTemp: '2-8°C',
   },
   {
-    id: 'P-002',
+    id: 'FG002',
     name: 'Product B',
-    quantity: 150,
-    reserved: 50,
+    quantity: 80,
+    reserved: 10,
     location: 'Zone 2',
-    expiry: '2025-10-15',
-    storage: '8°C',
+    expiryDate: '2025-10-15',
+    storageTemp: 'Room Temp',
   },
 ];
 
-const SimplifiedInventory = () => {
-  const [products, setProducts] = useState<Product[]>(initialData);
+const FinishedGoodsInventory = () => {
+  const [data, setData] = useState<FinishedGood[]>(initialData);
 
-  const handleChange = (
-    index: number,
-    field: keyof Product,
-    value: string
-  ) => {
-    const updated = [...products];
-    if (field === 'quantity' || field === 'reserved') {
-      updated[index][field] = parseInt(value) || 0;
-    } else {
-      updated[index][field] = value;
-    }
-    setProducts(updated);
+  const handleChange = (index: number, field: keyof FinishedGood, value: any) => {
+    const updated = [...data];
+    updated[index][field] = value;
+    setData(updated);
   };
 
-  const handleSubmit = () => {
-    console.log('Submitting to blockchain...', products);
-    alert('Submitted to Blockchain ✅');
+  const handleSubmitToBlockchain = () => {
+    // Logic to submit to blockchain goes here
+    console.log('Submitted to blockchain:', data);
+    alert('Submitted to Blockchain!');
   };
-
-  const chartData = products.map((product) => ({
-    name: product.name,
-    Quantity: product.quantity,
-    Reserved: product.reserved,
-    FreeToUse: product.quantity - product.reserved,
-  }));
 
   return (
-    <Card m="4" p="4">
-      <Heading mb="4">Finished Goods Inventory</Heading>
+    <Card className="p-4">
+      <Heading size="6" mb="4">Finished Goods Inventory</Heading>
 
       <Table.Root>
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Storage (°C)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Storage Temp</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {products.map((product, index) => (
-            <Table.Row key={product.id}>
-              <Table.RowHeaderCell>{product.id}</Table.RowHeaderCell>
-              <Table.Cell>{product.name}</Table.Cell>
+          {data.map((item, index) => (
+            <Table.Row key={item.id}>
+              <Table.Cell>{item.id}</Table.Cell>
               <Table.Cell>
-                <TextField.Input
-                  type="number"
-                  value={product.quantity}
-                  onChange={(e) =>
-                    handleChange(index, 'quantity', e.target.value)
-                  }
+                <TextField
+                  value={item.name}
+                  onChange={(e) => handleChange(index, 'name', e.target.value)}
                 />
               </Table.Cell>
               <Table.Cell>
-                <TextField.Input
+                <TextField
                   type="number"
-                  value={product.reserved}
-                  onChange={(e) =>
-                    handleChange(index, 'reserved', e.target.value)
-                  }
+                  value={item.quantity}
+                  onChange={(e) => handleChange(index, 'quantity', parseInt(e.target.value) || 0)}
                 />
               </Table.Cell>
               <Table.Cell>
-                {product.quantity - product.reserved}
+                <TextField
+                  type="number"
+                  value={item.reserved}
+                  onChange={(e) => handleChange(index, 'reserved', parseInt(e.target.value) || 0)}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                {item.quantity - item.reserved}
               </Table.Cell>
               <Table.Cell>
                 <Select.Root
-                  value={product.location}
-                  onValueChange={(value) =>
-                    handleChange(index, 'location', value)
-                  }
+                  value={item.location}
+                  onValueChange={(value) => handleChange(index, 'location', value)}
                 >
                   <Select.Trigger />
                   <Select.Content>
@@ -133,20 +116,16 @@ const SimplifiedInventory = () => {
                 </Select.Root>
               </Table.Cell>
               <Table.Cell>
-                <TextField.Input
+                <TextField
                   type="date"
-                  value={product.expiry}
-                  onChange={(e) =>
-                    handleChange(index, 'expiry', e.target.value)
-                  }
+                  value={item.expiryDate}
+                  onChange={(e) => handleChange(index, 'expiryDate', e.target.value)}
                 />
               </Table.Cell>
               <Table.Cell>
-                <TextField.Input
-                  value={product.storage}
-                  onChange={(e) =>
-                    handleChange(index, 'storage', e.target.value)
-                  }
+                <TextField
+                  value={item.storageTemp}
+                  onChange={(e) => handleChange(index, 'storageTemp', e.target.value)}
                 />
               </Table.Cell>
             </Table.Row>
@@ -154,25 +133,8 @@ const SimplifiedInventory = () => {
         </Table.Body>
       </Table.Root>
 
-      <Box mt="6" mb="4">
-        <Heading size="4" mb="2">
-          Inventory Trend
-        </Heading>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Quantity" fill="#8884d8" />
-            <Bar dataKey="Reserved" fill="#f87171" />
-            <Bar dataKey="FreeToUse" fill="#4ade80" />
-          </BarChart>
-        </ResponsiveContainer>
-      </Box>
-
-      <Flex justify="center" mt="5">
-        <Button size="3" onClick={handleSubmit}>
+      <Flex justify="end" mt="4">
+        <Button onClick={handleSubmitToBlockchain}>
           Submit to Blockchain
         </Button>
       </Flex>
@@ -180,4 +142,4 @@ const SimplifiedInventory = () => {
   );
 };
 
-export default SimplifiedInventory;
+export default FinishedGoodsInventory;
