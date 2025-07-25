@@ -5,7 +5,6 @@ import {
   Heading,
   Table,
   Button,
-  Text,
   TextField,
   Dialog,
   Select,
@@ -16,8 +15,8 @@ interface ScrapEntry {
   id: string;
   productName: string;
   batchId: string;
-  component: string;
-  quantity: number;
+  type: string;
+  weight: number;
   handlingMethod: string;
   reason: string;
   date: string;
@@ -28,8 +27,8 @@ const initialScrapData: ScrapEntry[] = [
     id: '1',
     productName: 'Poultry Product A',
     batchId: 'BR-001',
-    component: 'Vitamin B12',
-    quantity: 12,
+    type: 'Full',
+    weight: 500,
     handlingMethod: 'Recycled',
     reason: 'Expiration',
     date: '2025-07-24',
@@ -38,8 +37,8 @@ const initialScrapData: ScrapEntry[] = [
     id: '2',
     productName: 'Poultry Product B',
     batchId: 'BR-002',
-    component: 'Dextrose',
-    quantity: 8,
+    type: 'Partial',
+    weight: 300,
     handlingMethod: 'Disposed',
     reason: 'Damage',
     date: '2025-07-24',
@@ -54,8 +53,8 @@ export default function ScrapProducts() {
     id: '',
     productName: '',
     batchId: '',
-    component: '',
-    quantity: 0,
+    type: 'Full',
+    weight: 0,
     handlingMethod: 'Recycled',
     reason: 'Expiration',
     date: new Date().toISOString().split('T')[0],
@@ -69,8 +68,8 @@ export default function ScrapProducts() {
       id: '',
       productName: '',
       batchId: '',
-      component: '',
-      quantity: 0,
+      type: 'Full',
+      weight: 0,
       handlingMethod: 'Recycled',
       reason: 'Expiration',
       date: new Date().toISOString().split('T')[0],
@@ -104,21 +103,29 @@ export default function ScrapProducts() {
                   setNewEntry({ ...newEntry, batchId: e.target.value })
                 }
               />
-              <TextField.Root
-                placeholder="Component"
-                value={newEntry.component}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, component: e.target.value })
+
+              <Select.Root
+                value={newEntry.type}
+                onValueChange={(value) =>
+                  setNewEntry({ ...newEntry, type: value })
                 }
-              />
+              >
+                <Select.Trigger placeholder="Type" />
+                <Select.Content>
+                  <Select.Item value="Full">Full</Select.Item>
+                  <Select.Item value="Partial">Partial</Select.Item>
+                </Select.Content>
+              </Select.Root>
+
               <TextField.Root
                 type="number"
-                placeholder="Quantity"
-                value={newEntry.quantity.toString()}
+                placeholder="Weight (g)"
+                value={newEntry.weight.toString()}
                 onChange={(e) =>
-                  setNewEntry({ ...newEntry, quantity: parseInt(e.target.value) })
+                  setNewEntry({ ...newEntry, weight: parseInt(e.target.value) })
                 }
               />
+
               <Select.Root
                 value={newEntry.handlingMethod}
                 onValueChange={(value) =>
@@ -132,6 +139,7 @@ export default function ScrapProducts() {
                   <Select.Item value="Incinerated">Incinerated</Select.Item>
                 </Select.Content>
               </Select.Root>
+
               <Select.Root
                 value={newEntry.reason}
                 onValueChange={(value) =>
@@ -145,6 +153,7 @@ export default function ScrapProducts() {
                   <Select.Item value="Quality Issue">Quality Issue</Select.Item>
                 </Select.Content>
               </Select.Root>
+
               <TextField.Root
                 type="date"
                 value={newEntry.date}
@@ -164,8 +173,8 @@ export default function ScrapProducts() {
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight (g)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Reason</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
@@ -177,8 +186,8 @@ export default function ScrapProducts() {
               <Table.Cell>
                 {entry.batchId} / {entry.productName}
               </Table.Cell>
-              <Table.Cell>{entry.component}</Table.Cell>
-              <Table.Cell>{entry.quantity}</Table.Cell>
+              <Table.Cell>{entry.type}</Table.Cell>
+              <Table.Cell>{entry.weight}</Table.Cell>
               <Table.Cell>{entry.handlingMethod}</Table.Cell>
               <Table.Cell>{entry.reason}</Table.Cell>
               <Table.Cell>{entry.date}</Table.Cell>
