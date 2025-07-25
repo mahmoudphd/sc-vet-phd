@@ -3,14 +3,18 @@ import {
   Flex,
   Heading,
   Table,
-  Badge,
   Button,
-  Grid,
-  Text,
   TextField,
   Box
 } from '@radix-ui/themes';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
 import { useState } from 'react';
 
 const initialData = [
@@ -21,6 +25,7 @@ const initialData = [
     reserved: 40,
     storage: '4°C',
     expiry: '2025-08-10',
+    location: 'Zone 1'
   },
   {
     id: 'FGI002',
@@ -29,6 +34,7 @@ const initialData = [
     reserved: 30,
     storage: '6°C',
     expiry: '2025-09-15',
+    location: 'Zone 2'
   },
   {
     id: 'FGI003',
@@ -37,6 +43,7 @@ const initialData = [
     reserved: 20,
     storage: '8°C',
     expiry: '2025-07-28',
+    location: 'Zone 2'
   }
 ];
 
@@ -53,10 +60,19 @@ const FinishedGoodsInventory = () => {
     const today = new Date();
     const expiryDate = new Date(expiry);
     const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays < 10 ? (
-      <span style={{ color: 'red', fontSize: '1.2rem' }}>🔴</span>
-    ) : (
-      <span style={{ color: 'green', fontSize: '1.2rem' }}>🟢</span>
+
+    const color = diffDays < 10 ? '#ef4444' : '#22c55e';
+    return (
+      <span
+        style={{
+          display: 'inline-block',
+          width: '10px',
+          height: '10px',
+          borderRadius: '50%',
+          backgroundColor: color,
+          marginLeft: '6px',
+        }}
+      />
     );
   };
 
@@ -76,6 +92,10 @@ const FinishedGoodsInventory = () => {
                 <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                   Storage
+                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  Location
                   <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
@@ -108,8 +128,13 @@ const FinishedGoodsInventory = () => {
                     <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
                   </Table.Cell>
                   <Table.Cell>
+                    {item.location}
+                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Flex align="center" gap="2">
-                      {item.expiry} {getExpiryIndicator(item.expiry)}
+                      {item.expiry}
+                      {getExpiryIndicator(item.expiry)}
                     </Flex>
                   </Table.Cell>
                 </Table.Row>
