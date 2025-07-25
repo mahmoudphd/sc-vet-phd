@@ -15,7 +15,7 @@ const BatchRecords = () => {
   const records = [
     { 
       id: 'BR2023-045', 
-      product: 'Poultry Product 1',
+      product: 'Poultry Drug 1',
       approval: 'approved',
       date: '2025-07-25',
       author: 'QA Auditor 1'
