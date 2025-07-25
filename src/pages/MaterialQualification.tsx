@@ -4,7 +4,6 @@ import {
   Dialog,
   Flex,
   Text,
-  Heading,
   Box,
   Badge,
   Card,
@@ -36,7 +35,7 @@ const materialsData = [
       Microbial: 'Pending',
       Endotoxins: 'Pending',
     },
-    certificate: 'Cert-002',
+    certificate: '', // لا توجد شهادة
   },
   {
     material: 'Nicotinamide',
@@ -58,7 +57,9 @@ export default function MaterialTable() {
 
   return (
     <Box p="4">
-      <Heading size="6" mb="4">Raw Materials Compliance Table</Heading>
+      <Text size="4" weight="bold" mb="4">
+        Material Qualification Dashboard {' / '} Raw Materials Compliance Table
+      </Text>
 
       {/* Cards Row */}
       <Flex gap="4" mb="5">
@@ -97,7 +98,7 @@ export default function MaterialTable() {
             <Table.ColumnHeaderCell>Test Results</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Certificate</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            {/* تم حذف عمود Actions */}
           </Table.Row>
         </Table.Header>
 
@@ -148,11 +149,17 @@ export default function MaterialTable() {
                   <Badge color="yellow">Pending</Badge>
                 )}
               </Table.Cell>
-              <Table.Cell>{item.certificate}</Table.Cell>
-              <Table.Cell>{item.expiry}</Table.Cell>
               <Table.Cell>
-                <Button size="1" variant="soft">Edit</Button>
+                <Flex direction="column" gap="1">
+                  <Text>{item.certificate || 'No Certificate'}</Text>
+                  {item.certificate ? (
+                    <Badge color="green">Available</Badge>
+                  ) : (
+                    <Badge color="red">Not Available</Badge>
+                  )}
+                </Flex>
               </Table.Cell>
+              <Table.Cell>{item.expiry}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
