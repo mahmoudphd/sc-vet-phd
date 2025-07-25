@@ -8,147 +8,146 @@ import {
   Grid,
   Text,
   TextField,
-  Box
+  Select,
 } from '@radix-ui/themes';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState } from 'react';
 
-const initialData = [
-  {
-    id: 'FGI001',
-    name: 'Poultry Product 1',
-    quantity: 120,
-    reserved: 40,
-    storage: '4°C',
-    expiry: '2025-08-10',
-  },
-  {
-    id: 'FGI002',
-    name: 'Poultry Product 2',
-    quantity: 100,
-    reserved: 30,
-    storage: '6°C',
-    expiry: '2025-09-15',
-  },
-  {
-    id: 'FGI003',
-    name: 'Poultry Product 3',
-    quantity: 80,
-    reserved: 20,
-    storage: '8°C',
-    expiry: '2025-07-28',
-  }
-];
-
 const FinishedGoodsInventory = () => {
-  const [data, setData] = useState(initialData);
-
-  const handleChange = (index: number, field: 'quantity' | 'reserved', value: number) => {
-    const newData = [...data];
-    newData[index][field] = value;
-    setData(newData);
-  };
-
-  const getExpiryIndicator = (expiry: string) => {
-    const today = new Date();
-    const expiryDate = new Date(expiry);
-    const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    return diffDays < 10 ? (
-      <span style={{ color: 'red', fontSize: '1.2rem' }}>🔴</span>
-    ) : (
-      <span style={{ color: 'green', fontSize: '1.2rem' }}>🟢</span>
-    );
-  };
+  const [inventory, setInventory] = useState([
+    {
+      id: 'FG001',
+      productName: 'Poultry Product 1',
+      quantity: 100,
+      reserved: 20,
+      free: 80,
+      location: 'Main Storage',
+      storage: 'Cold Room A',
+      expiry: '2025-12-31',
+      zone: 'Zone 1',
+    },
+    {
+      id: 'FG002',
+      productName: 'Poultry Product 2',
+      quantity: 200,
+      reserved: 50,
+      free: 150,
+      location: 'Secondary Storage',
+      storage: 'Freezer B',
+      expiry: '2025-10-15',
+      zone: 'Zone 2',
+    },
+    {
+      id: 'FG003',
+      productName: 'Poultry Product 3',
+      quantity: 150,
+      reserved: 30,
+      free: 120,
+      location: 'Backup Storage',
+      storage: 'Shelf C',
+      expiry: '2025-11-20',
+      zone: 'Zone 3',
+    },
+  ]);
 
   return (
-    <Box p="4">
+    <Flex direction="column" gap="4">
+      <Heading size="6">📦 Finished Goods Inventory</Heading>
+
       <Card>
-        <Flex direction="column" gap="4">
-          <Heading size="6">Finished Goods Inventory</Heading>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
 
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
-                  Storage
-                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {data.map((item, index) => (
-                <Table.Row key={item.id}>
-                  <Table.Cell>{item.id}</Table.Cell>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>
-                    <TextField.Root
-                      value={item.quantity}
-                      type="number"
-                      onChange={(e) => handleChange(index, 'quantity', parseInt(e.target.value))}
-                      style={{ width: '70px' }}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>
-                    <TextField.Root
-                      value={item.reserved}
-                      type="number"
-                      onChange={(e) => handleChange(index, 'reserved', parseInt(e.target.value))}
-                      style={{ width: '70px' }}
-                    />
-                  </Table.Cell>
-                  <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
-                  <Table.Cell>
+          <Table.Body>
+            {inventory.map((item) => (
+              <Table.Row key={item.id}>
+                <Table.Cell>{item.id}</Table.Cell>
+                <Table.Cell>{item.productName}</Table.Cell>
+                <Table.Cell>{item.quantity}</Table.Cell>
+                <Table.Cell>{item.reserved}</Table.Cell>
+                <Table.Cell>{item.free}</Table.Cell>
+
+                {/* Location with Zone */}
+                <Table.Cell>
+                  <div>
+                    {item.location}
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#333',
+                        backgroundColor: '#f1f1f1',
+                        border: '1px solid #ccc',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        marginTop: '4px',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {item.zone} via IoT
+                    </div>
+                  </div>
+                </Table.Cell>
+
+                {/* Storage with Zone */}
+                <Table.Cell>
+                  <div>
                     {item.storage}
-                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
-                      {item.expiry} {getExpiryIndicator(item.expiry)}
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#333',
+                        backgroundColor: '#f1f1f1',
+                        border: '1px solid #ccc',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        marginTop: '4px',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {item.zone} via IoT
+                    </div>
+                  </div>
+                </Table.Cell>
 
-          <Box mt="6">
-            <Heading size="5" mb="2">
-              Inventory Overview
-            </Heading>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
-                <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
-                <Bar
-                  dataKey={(entry) => entry.quantity - entry.reserved}
-                  fill="#10b981"
-                  name="Free to Use"
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
-
-          <Flex justify="end" mt="4">
-            <Button
-              style={{ backgroundColor: '#22c55e', color: 'white' }}
-              size="3"
-              onClick={() => alert('Submitted to Blockchain!')}
-            >
-              Submit to Blockchain
-            </Button>
-          </Flex>
-        </Flex>
+                {/* Expiry with Zone */}
+                <Table.Cell>
+                  <div>
+                    {item.expiry}
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontWeight: 'bold',
+                        color: '#333',
+                        backgroundColor: '#f1f1f1',
+                        border: '1px solid #ccc',
+                        borderRadius: '6px',
+                        padding: '2px 6px',
+                        marginTop: '4px',
+                        display: 'inline-block',
+                      }}
+                    >
+                      {item.zone} via IoT
+                    </div>
+                  </div>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       </Card>
-    </Box>
+    </Flex>
   );
 };
 
