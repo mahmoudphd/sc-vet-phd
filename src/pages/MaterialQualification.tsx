@@ -35,7 +35,7 @@ const materialsData = [
       Microbial: 'Pending',
       Endotoxins: 'Pending',
     },
-    certificate: '', // لا توجد شهادة
+    certificate: '', // No certificate
   },
   {
     material: 'Nicotinamide',
@@ -58,7 +58,7 @@ export default function MaterialTable() {
   return (
     <Box p="4">
       <Text size="4" weight="bold" mb="4">
-        Material Qualification Dashboard {' / '} Raw Materials Compliance Table
+        Material Qualification Dashboard
       </Text>
 
       {/* Cards Row */}
@@ -98,7 +98,6 @@ export default function MaterialTable() {
             <Table.ColumnHeaderCell>Test Results</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Certificate</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
-            {/* تم حذف عمود Actions */}
           </Table.Row>
         </Table.Header>
 
@@ -150,14 +149,11 @@ export default function MaterialTable() {
                 )}
               </Table.Cell>
               <Table.Cell>
-                <Flex direction="column" gap="1">
-                  <Text>{item.certificate || 'No Certificate'}</Text>
-                  {item.certificate ? (
-                    <Badge color="green">Available</Badge>
-                  ) : (
-                    <Badge color="red">Not Available</Badge>
-                  )}
-                </Flex>
+                {item.certificate ? (
+                  <Badge color="green">Available</Badge>
+                ) : (
+                  <Badge color="red">Not Available</Badge>
+                )}
               </Table.Cell>
               <Table.Cell>{item.expiry}</Table.Cell>
             </Table.Row>
