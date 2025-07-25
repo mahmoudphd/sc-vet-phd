@@ -1,98 +1,141 @@
+import React, { useState } from 'react';
 import {
   Card,
-  Table,
-  Text,
-  Heading,
   Flex,
+  Heading,
+  Table,
+  Button,
   TextField,
+  Text,
+  Box,
 } from '@radix-ui/themes';
-import { useState } from 'react';
+import { FileTextIcon } from '@radix-ui/react-icons';
 
-type ProductInventory = {
-  productId: string;
+interface FinishedGood {
+  id: string;
+  name: string;
   location: string;
   status: string;
   expiry: string;
   storage: string;
   quantity: number;
   reserved: number;
-};
+}
 
-const sampleData: ProductInventory[] = [
+const initialData: FinishedGood[] = [
   {
-    productId: 'P001',
+    id: 'FG001',
+    name: 'Poultry Product A',
     location: 'Warehouse A',
     status: 'Available',
     expiry: '2025-12-31',
-    storage: 'Cool',
+    storage: 'Cold',
     quantity: 100,
-    reserved: 25,
-  },
-  {
-    productId: 'P002',
-    location: 'Warehouse B',
-    status: 'On Hold',
-    expiry: '2026-05-20',
-    storage: 'Ambient',
-    quantity: 80,
     reserved: 30,
   },
   {
-    productId: 'P003',
-    location: 'Warehouse A',
-    status: 'Available',
-    expiry: '2025-09-15',
-    storage: 'Cool',
-    quantity: 150,
-    reserved: 50,
+    id: 'FG002',
+    name: 'Poultry Product B',
+    location: 'Warehouse B',
+    status: 'Reserved',
+    expiry: '2025-10-15',
+    storage: 'Room Temp',
+    quantity: 80,
+    reserved: 20,
   },
 ];
 
-const FinishedGoodsInventory = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+export default function FinishedGoodsInventory() {
+  const [data, setData] = useState<FinishedGood[]>(initialData);
 
-  const filteredData = sampleData.filter((item) =>
-    item.productId.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const handleSubmitToBlockchain = (item: FinishedGood) => {
+    console.log('Submitting to blockchain:', item);
+    alert(`Submitted ${item.name} to blockchain`);
+  };
+
+  const handleQuantityChange = (index: number, value: string) => {
+    const updated = [...data];
+    updated[index].quantity = parseInt(value) || 0;
+    setData(updated);
+  };
+
+  const handleReservedChange = (index: number, value: string) => {
+    const updated = [...data];
+    updated[index].reserved = parseInt(value) || 0;
+    setData(updated);
+  };
 
   return (
-    <Card>
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="5">Finished Goods Inventory</Heading>
-        <TextField
-          placeholder="Search by Product ID..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </Flex>
+    <Box p="4">
+      <Card>
+        <Flex justify="between" align="center" mb="4">
+          <Heading size="5">Finished Goods Inventory</Heading>
+          <FileTextIcon />
+        </Flex>
 
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>
-          {filteredData.map((item, index) => (
-            <Table.Row key={index}>
-              <Table.Cell>{item.productId}</Table.Cell>
-              <Table.Cell>{item.location}</Table.Cell>
-              <Table.Cell>{item.status}</Table.Cell>
-              <Table.Cell>{item.expiry}</Table.Cell>
-              <Table.Cell>{item.storage}</Table.Cell>
-              <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
-    </Card>
-  );
-};
+          </Table.Header>
 
-export default FinishedGoodsInventory;
+          <Table.Body>
+            {data.map((item, index) => (
+              <Table.Row key={item.id}>
+                <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
+
+                <Table.Cell>
+                  <TextField.Root>
+                    <TextField.Input
+                      type="number"
+                      value={item.quantity}
+                      onChange={(e) => handleQuantityChange(index, e.target.value)}
+                    />
+                  </TextField.Root>
+                </Table.Cell>
+
+                <Table.Cell>
+                  <TextField.Root>
+                    <TextField.Input
+                      type="number"
+                      value={item.reserved}
+                      onChange={(e) => handleReservedChange(index, e.target.value)}
+                    />
+                  </TextField.Root>
+                </Table.Cell>
+
+                <Table.Cell>
+                  <Text>{item.quantity - item.reserved}</Text>
+                </Table.Cell>
+
+                <Table.Cell>{item.location}</Table.Cell>
+                <Table.Cell>{item.status}</Table.Cell>
+                <Table.Cell>{item.expiry}</Table.Cell>
+                <Table.Cell>{item.storage}</Table.Cell>
+
+                <Table.Cell>
+                  <Button
+                    size="1"
+                    variant="solid"
+                    onClick={() => handleSubmitToBlockchain(item)}
+                  >
+                    Submit to Blockchain
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Card>
+    </Box>
+  );
+}
