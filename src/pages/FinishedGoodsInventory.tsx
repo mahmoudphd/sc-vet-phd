@@ -62,7 +62,6 @@ const FinishedGoodsInventory = () => {
     const today = new Date();
     const expiryDate = new Date(expiry);
     const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
     const color = diffDays < 10 ? '#ef4444' : '#22c55e';
     return (
       <span
@@ -85,13 +84,13 @@ const FinishedGoodsInventory = () => {
           <Heading size="6">Finished Goods Inventory</Heading>
 
           <Grid columns="2" gap="4">
-            <Card>
+            <Card style={{ fontWeight: 600 }}>
               <Flex direction="column" gap="1">
                 <Text size="2" color="gray">Total SKUs</Text>
                 <Text size="5" weight="bold">{data.length}</Text>
               </Flex>
             </Card>
-            <Card>
+            <Card style={{ fontWeight: 600 }}>
               <Flex direction="column" gap="1">
                 <Text size="2" color="gray">Expiring Soon</Text>
                 <Text size="5" weight="bold">
@@ -108,7 +107,7 @@ const FinishedGoodsInventory = () => {
             </Card>
           </Grid>
 
-          <Table.Root>
+          <Table.Root style={{ fontWeight: 600 }}>
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
@@ -130,14 +129,14 @@ const FinishedGoodsInventory = () => {
             <Table.Body>
               {data.map((item, index) => (
                 <Table.Row key={item.id}>
-                  <Table.Cell>{item.id}</Table.Cell>
-                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell><Text weight="medium">{item.id}</Text></Table.Cell>
+                  <Table.Cell><Text weight="medium">{item.name}</Text></Table.Cell>
                   <Table.Cell>
                     <TextField.Root
                       value={item.quantity}
                       type="number"
                       onChange={(e) => handleChange(index, 'quantity', parseInt(e.target.value))}
-                      style={{ width: '70px' }}
+                      style={{ width: '70px', fontWeight: 600 }}
                     />
                   </Table.Cell>
                   <Table.Cell>
@@ -145,21 +144,21 @@ const FinishedGoodsInventory = () => {
                       value={item.reserved}
                       type="number"
                       onChange={(e) => handleChange(index, 'reserved', parseInt(e.target.value))}
-                      style={{ width: '70px' }}
+                      style={{ width: '70px', fontWeight: 600 }}
                     />
                   </Table.Cell>
-                  <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
+                  <Table.Cell><Text weight="medium">{item.quantity - item.reserved}</Text></Table.Cell>
                   <Table.Cell>
-                    {item.storage}
+                    <Text weight="medium">{item.storage}</Text>
                     <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
                   </Table.Cell>
                   <Table.Cell>
-                    {item.location}
+                    <Text weight="medium">{item.location}</Text>
                     <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
                   </Table.Cell>
                   <Table.Cell>
                     <Flex align="center" gap="2">
-                      {item.expiry}
+                      <Text weight="medium">{item.expiry}</Text>
                       {getExpiryIndicator(item.expiry)}
                     </Flex>
                   </Table.Cell>
@@ -190,7 +189,7 @@ const FinishedGoodsInventory = () => {
 
           <Flex justify="end" mt="4">
             <Button
-              style={{ backgroundColor: '#22c55e', color: 'white' }}
+              style={{ backgroundColor: '#22c55e', color: 'white', fontWeight: 700 }}
               size="3"
               onClick={() => alert('Submitted to Blockchain!')}
             >
