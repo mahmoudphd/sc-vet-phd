@@ -5,7 +5,9 @@ import {
   Table,
   Button,
   TextField,
-  Box
+  Box,
+  Grid,
+  Text
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -81,6 +83,30 @@ const FinishedGoodsInventory = () => {
       <Card>
         <Flex direction="column" gap="4">
           <Heading size="6">Finished Goods Inventory</Heading>
+
+          <Grid columns="2" gap="4">
+            <Card>
+              <Flex direction="column" gap="1">
+                <Text size="2" color="gray">Total SKUs</Text>
+                <Text size="5" weight="bold">{data.length}</Text>
+              </Flex>
+            </Card>
+            <Card>
+              <Flex direction="column" gap="1">
+                <Text size="2" color="gray">Expiring Soon</Text>
+                <Text size="5" weight="bold">
+                  {
+                    data.filter(item => {
+                      const today = new Date();
+                      const expiry = new Date(item.expiry);
+                      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                      return diffDays < 10;
+                    }).length
+                  }
+                </Text>
+              </Flex>
+            </Card>
+          </Grid>
 
           <Table.Root>
             <Table.Header>
