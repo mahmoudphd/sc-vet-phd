@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
+// src/pages/CostAnalytics.tsx
+
+import React, { useState } from 'react';
 import {
-  Box,
-  Button,
   Card,
-  Dialog,
   Flex,
   Heading,
-  Select as RadixSelect,
   Table,
+  Button,
+  Box,
+  Dialog,
   Text,
-  TextField,
 } from '@radix-ui/themes';
 import {
   ResponsiveContainer,
@@ -23,271 +23,171 @@ import {
   Pie,
   Cell,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 
-import { simulatedIoTCostData, CostCategory, Item } from '../simulateIoTCostData';
+import { simulatedIoTCostData, CostCategory } from '../simulateIoTCostData';
 
-const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#0088fe'];
+const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff7300', '#00c49f'];
 
-type Totals = typeof simulatedIoTCostData.totals;
-
-const solutionsOptions = [
-  'Negotiating better prices with supplier',
-  'Reducing waste in material usage',
-  'Automation to reduce manual labor costs',
-  'Optimizing machine usage',
-  'Improving inventory management',
-  'Minimize transportation costs',
-  'Reduce rework costs',
-  'Other',
-];
+const formatCurrency = (value: number) =>
+  `$${value.toFixed(2)}`;
 
 const CostAnalytics: React.FC = () => {
-  // State for totals summary (actual, budget, costAfter)
-  const [totals, setTotals] = useState<Totals>(simulatedIoTCostData.totals);
+  const { t } = useTranslation();
 
-  // State for Benchmark Price editable (per product or global)
-  const [benchmarkPrice, setBenchmarkPrice] = useState<number>(150); // مثال
+  // بيانات الجدول (يمكن تحديثها ديناميكيًا لاحقاً)
+  const [totals, setTotals] = useState(simulatedIoTCostData.totals);
 
-  // State for which dialog (category) is open
-  const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
+  // حالة عرض تحليل الفجوة في الرسم البياني
+  const [showGapAnalysis, setShowGapAnalysis] = useState(false);
 
-  // State for solutions selected per category & item index
-  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
-    'Direct Materials': {},
-    'Packaging Materials': {},
-    'Direct Labor': {},
-    Overhead: {},
-    'Other Costs': {},
-  });
+  // حالة الـ Dialog
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<CostCategory | null>(null);
 
-  // AutoMode toggle (disable inputs when true)
-  const [autoMode, setAutoMode] = useState<boolean>(false);
-
-  // Currency formatter helper
-  const formatCurrency = (value: number) =>
-    `$${value.toFixed(2)}`; // غيّر حسب العملة المطلوبة
-
-  // الدالة لإرجاع البيانات التفصيلية حسب الفئة
-  const getDetailsByCategory = (category: CostCategory): Item[] => {
-    switch (category) {
-      case 'Direct Materials':
-        return simulatedIoTCostData.rawMaterials;
-      case 'Packaging Materials':
-        return simulatedIoTCostData.packagingMaterials;
-      case 'Direct Labor':
-        return simulatedIoTCostData.directLabor;
-      case 'Overhead':
-        return simulatedIoTCostData.overheadItems;
-      case 'Other Costs':
-        return simulatedIoTCostData.otherCosts;
-      default:
-        return [];
-    }
+  // فتح النافذة مع اختيار الفئة
+  const openDialog = (category: CostCategory) => {
+    setSelectedCategory(category);
+    setDialogOpen(true);
   };
 
-  // دالة تعديل قيم cost داخل العناصر التفصيلية (تحتاج تحديث totals بشكل متناسب)
-  const handleDetailCostChange = (category: CostCategory, index: number, newCost: number) => {
-    // تعديل في بيانات محلية موقتة (هنا تحتاج إدارة بيانات أعمق إذا تريد تعديل حقيقي)
-    // هذه مجرد فكرة لتوضيح
-    const updatedDetails = [...getDetailsByCategory(category)];
-    updatedDetails[index] = { ...updatedDetails[index], cost: newCost };
-
-    // تحديث totals actual لهذا البند (مجموع عناصر cost الجديدة)
-    const newActualTotal = updatedDetails.reduce((sum, item) => sum + (item.cost || 0), 0);
-    setTotals((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        actual: newActualTotal,
-        // يمكن حساب costAfter كما تريد، هنا أبقيته كما هو مؤقتًا
-        costAfter: prev[category].costAfter,
-      },
-    }));
-
-    // لو عندك طريقة لحفظ التفاصيل المحدثة في State مركزي يمكن إضافتها هنا
+  // إغلاق النافذة
+  const closeDialog = () => {
+    setDialogOpen(false);
+    setSelectedCategory(null);
   };
 
-  // دالة تعديل budget في totals
-  const handleBudgetChange = (category: CostCategory, newBudget: number) => {
-    setTotals((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        budget: newBudget,
-      },
-    }));
-  };
+  // حساب إجمالي التكلفة لكل بند (costAfter)
+  const totalCost = Object.values(totals).reduce((sum, val) => sum + val.costAfter, 0);
 
-  // دالة تعديل costAfter في totals (مثلاً بعد تحسينات)
-  const handleCostAfterChange = (category: CostCategory, newCostAfter: number) => {
-    setTotals((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        costAfter: newCostAfter,
-      },
-    }));
-  };
-
-  // دالة تغيير حلول لكل بند تفصيلي
-  const handleSolutionChange = (category: CostCategory, index: number, solution: string) => {
-    setSolutions((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [index]: solution,
-      },
-    }));
-  };
-
-  // حساب إجمالي actual من totals
-  const totalActualCost = Object.values(totals).reduce((sum, v) => sum + v.actual, 0);
-
-  // حساب Post-Optimization Estimate = Actual Cost - Cost After Optimization (لكل category ثم المجموع)
-  const postOptimizationEstimate = Object.values(totals).reduce(
-    (sum, v) => sum + (v.actual - v.costAfter),
-    0,
-  );
-
-  // بيانات الجدول الرئيسي
-  const mainTableData: { category: CostCategory; actual: number; budget: number; costAfter: number }[] =
-    Object.entries(totals).map(([category, values]) => ({
-      category: category as CostCategory,
-      actual: values.actual,
-      budget: values.budget,
-      costAfter: values.costAfter,
-    }));
-
-  // بيانات للرسم البياني للخط
-  const lineChartData = mainTableData.map((item, idx) => ({
-    month: item.category,
-    actual: item.actual,
-    target: item.budget,
-    gap: item.actual - item.budget,
-  }));
-
-  // بيانات رسم بياني Benchmark (كمثال ثابت شهري)
-  const benchmarkChartData = [
-    { month: 'Jan', Actual: 140, Benchmark: benchmarkPrice, Gap: 140 - benchmarkPrice },
-    { month: 'Feb', Actual: 135, Benchmark: benchmarkPrice, Gap: 135 - benchmarkPrice },
-    { month: 'Mar', Actual: 150, Benchmark: benchmarkPrice, Gap: 150 - benchmarkPrice },
+  // بيانات الرسم البياني للخط (مثال مبسط)
+  const data = [
+    { month: 'Jan', actual: 120, target: 100, gap: 20 },
+    { month: 'Feb', actual: 110, target: 105, gap: 5 },
+    { month: 'Mar', actual: 115, target: 110, gap: 5 },
+    // ... أكمل حسب حاجتك
   ];
 
-  // بيانات Pie Chart لتكوين التكلفة (حسب actual)
-  const pieData = mainTableData.map((item) => ({
-    name: item.category,
-    value: item.actual,
+  // بيانات PieChart بناءً على التكلفة لكل بند
+  const pieData = Object.entries(totals).map(([name, val]) => ({
+    name,
+    value: val.costAfter,
   }));
 
-  // Handle benchmarkPrice change
-  const handleBenchmarkPriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = parseFloat(e.target.value);
-    if (!isNaN(val)) setBenchmarkPrice(val);
-  };
-
-  // دالة لإغلاق النافذة المنبثقة
-  const closeDialog = () => setDialogCategory(null);
+  // بيانات Benchmark Price (مثال)
+  const benchmarkChartData = [
+    { month: 'Jan', Actual: 120, Benchmark: 115, Gap: 5 },
+    { month: 'Feb', Actual: 110, Benchmark: 108, Gap: 2 },
+    { month: 'Mar', Actual: 115, Benchmark: 112, Gap: 3 },
+  ];
 
   return (
-    <Box p="4" style={{ maxWidth: 1200, margin: 'auto' }}>
-      <Heading mb="4">Cost Analysis Dashboard</Heading>
-
-      {/* الجدول الرئيسي */}
+    <Box p="4">
       <Card>
+        <Heading size="3" mb="3">
+          {t('Inter-Organizational Cost Management')}
+        </Heading>
+
+        {/* جدول التكلفة */}
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.RowHeaderCell>Category</Table.RowHeaderCell>
-              <Table.HeaderCell>Actual Cost</Table.HeaderCell>
-              <Table.HeaderCell>Budget</Table.HeaderCell>
-              <Table.HeaderCell>Cost After Optimization</Table.HeaderCell>
-              <Table.HeaderCell>Actions</Table.HeaderCell>
+              <Table.RowHeaderCell>{t('Cost Category')}</Table.RowHeaderCell>
+              <Table.HeaderCell>{t('Actual')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('Budget')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('Cost After Optimization')}</Table.HeaderCell>
+              <Table.HeaderCell>{t('Details')}</Table.HeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {mainTableData.map((row, idx) => (
-              <Table.Row key={idx}>
-                <Table.RowHeaderCell>{row.category}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(row.actual)}</Table.Cell>
+            {Object.entries(totals).map(([category, values]) => (
+              <Table.Row key={category}>
+                <Table.Cell>{category}</Table.Cell>
+                <Table.Cell>{formatCurrency(values.actual)}</Table.Cell>
+                <Table.Cell>{formatCurrency(values.budget)}</Table.Cell>
+                <Table.Cell>{formatCurrency(values.costAfter)}</Table.Cell>
                 <Table.Cell>
-                  <TextField
-                    type="number"
-                    value={row.budget}
-                    onChange={(e) => handleBudgetChange(row.category, parseFloat(e.target.value))}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField
-                    type="number"
-                    value={row.costAfter}
-                    onChange={(e) => handleCostAfterChange(row.category, parseFloat(e.target.value))}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <Button onClick={() => setDialogCategory(row.category)}>View Details</Button>
+                  <Button onClick={() => openDialog(category as CostCategory)}>
+                    {t('View Details')}
+                  </Button>
                 </Table.Cell>
               </Table.Row>
             ))}
 
-            {/* Total Row */}
+            {/* صف الإجمالي */}
             <Table.Row>
-              <Table.RowHeaderCell>
-                <strong>Total</strong>
-              </Table.RowHeaderCell>
-              <Table.Cell>
-                <strong>{formatCurrency(totalActualCost)}</strong>
-              </Table.Cell>
+              <Table.RowHeaderCell><strong>{t('Total')}</strong></Table.RowHeaderCell>
               <Table.Cell />
-              <Table.Cell>
-                <strong>{formatCurrency(postOptimizationEstimate)}</strong>
-              </Table.Cell>
+              <Table.Cell />
+              <Table.Cell><strong>{formatCurrency(totalCost)}</strong></Table.Cell>
               <Table.Cell />
             </Table.Row>
           </Table.Body>
         </Table.Root>
+
+        {/* زر إرسال */}
+        <Flex justify="end" mt="4">
+          <Button onClick={() => alert('Submitted!')}>{t('Submit All')}</Button>
+        </Flex>
       </Card>
 
-      {/* Benchmark Price Editable */}
-      <Card mt="4" p="3" style={{ maxWidth: 400 }}>
-        <Text mb="2" weight="bold">
-          Benchmark Price:
-        </Text>
-        <TextField
-          type="number"
-          value={benchmarkPrice}
-          onChange={handleBenchmarkPriceChange}
-          step={0.01}
-        />
-      </Card>
-
-      {/* Line Chart for Cost Breakdown */}
+      {/* الرسم البياني الخطّي */}
       <Card mt="4">
         <Flex justify="between" align="center">
-          <Heading size="4">Cost Breakdown</Heading>
+          <Heading size="4">{t('Cost Breakdown')}</Heading>
+          <Button onClick={() => setShowGapAnalysis(!showGapAnalysis)}>
+            {showGapAnalysis ? t('Hide Gap Analysis') : t('Show Gap Analysis')}
+          </Button>
         </Flex>
         <Box height={300} mt="3">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={lineChartData}>
+            <LineChart data={data}>
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
               <Legend />
-              <Line type="monotone" dataKey="actual" stroke="#8884d8" name="Actual Cost" />
-              <Line type="monotone" dataKey="target" stroke="#82ca9d" name="Target Cost" />
-              <Line type="monotone" dataKey="gap" stroke="#ff7300" name="Gap" />
+              <Line
+                type="monotone"
+                dataKey="actual"
+                stroke="#8884d8"
+                name={t('Actual Cost')}
+              />
+              <Line
+                type="monotone"
+                dataKey="target"
+                stroke="#82ca9d"
+                name={t('Target Cost')}
+              />
+              {showGapAnalysis && (
+                <Line
+                  type="monotone"
+                  dataKey="gap"
+                  stroke="#ff7300"
+                  name={t('Gap')}
+                />
+              )}
             </LineChart>
           </ResponsiveContainer>
         </Box>
       </Card>
 
-      {/* Pie Chart for Cost Composition */}
+      {/* رسم بياني دائري */}
       <Card mt="4">
         <Heading size="3" mb="2">
-          Cost Composition
+          {t('Cost Composition')}
         </Heading>
         <ResponsiveContainer width="100%" height={300}>
           <PieChart>
-            <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={100} fill="#8884d8" label>
+            <Pie
+              data={pieData}
+              dataKey="value"
+              nameKey="name"
+              cx="50%"
+              cy="50%"
+              outerRadius={100}
+              fill="#8884d8"
+              label
+            >
               {pieData.map((entry, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
@@ -297,10 +197,10 @@ const CostAnalytics: React.FC = () => {
         </ResponsiveContainer>
       </Card>
 
-      {/* Benchmark Price Analysis Chart */}
+      {/* Benchmark Price Chart */}
       <Card mt="4">
         <Heading size="3" mb="2">
-          Benchmark Price Analysis
+          {t('Benchmark Price Analysis')}
         </Heading>
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={benchmarkChartData}>
@@ -315,77 +215,151 @@ const CostAnalytics: React.FC = () => {
         </ResponsiveContainer>
       </Card>
 
-      {/* Dialog for Details */}
-      <Dialog.Root open={!!dialogCategory} onOpenChange={(open) => !open && closeDialog()}>
-        <Dialog.Content size="5" style={{ maxWidth: 700 }}>
-          <Dialog.Title>Details - {dialogCategory}</Dialog.Title>
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.RowHeaderCell>Name</Table.RowHeaderCell>
-                <Table.HeaderCell>Actual Cost</Table.HeaderCell>
-                <Table.HeaderCell>Budget</Table.HeaderCell>
-                <Table.HeaderCell>Cost After Optimization</Table.HeaderCell>
-                <Table.HeaderCell>Solution</Table.HeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {dialogCategory &&
-                getDetailsByCategory(dialogCategory).map((item, idx) => (
-                  <Table.Row key={idx}>
-                    <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
-                    <Table.Cell>
-                      <TextField
-                        type="number"
-                        value={item.cost || 0}
-                        disabled={autoMode}
-                        onChange={(e) =>
-                          handleDetailCostChange(dialogCategory, idx, parseFloat(e.target.value))
-                        }
-                      />
-                    </Table.Cell>
-                    <Table.Cell>
-                      {/* Budget editable for whole category only - can extend per item if needed */}
-                      <TextField
-                        type="number"
-                        value={totals[dialogCategory].budget}
-                        disabled={autoMode}
-                        onChange={(e) => handleBudgetChange(dialogCategory, parseFloat(e.target.value))}
-                      />
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField
-                        type="number"
-                        value={totals[dialogCategory].costAfter}
-                        disabled={autoMode}
-                        onChange={(e) => handleCostAfterChange(dialogCategory, parseFloat(e.target.value))}
-                      />
-                    </Table.Cell>
-                    <Table.Cell>
-                      <RadixSelect.Root
-                        value={solutions[dialogCategory]?.[idx] || ''}
-                        onValueChange={(val) => handleSolutionChange(dialogCategory, idx, val)}
-                      >
-                        <RadixSelect.Trigger aria-label="Select solution" />
-                        <RadixSelect.Content>
-                          {solutionsOptions.map((opt) => (
-                            <RadixSelect.Item key={opt} value={opt}>
-                              {opt}
-                            </RadixSelect.Item>
-                          ))}
-                        </RadixSelect.Content>
-                      </RadixSelect.Root>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-            </Table.Body>
-          </Table.Root>
+      {/* Dialog: تفاصيل كل بند */}
+      <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog.Overlay
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            zIndex: 1000,
+          }}
+        />
+        <Dialog.Content
+          style={{
+            backgroundColor: 'white',
+            borderRadius: 8,
+            padding: 20,
+            maxWidth: 600,
+            margin: '100px auto',
+            position: 'relative',
+            zIndex: 1001,
+          }}
+        >
+          <Dialog.Title style={{ fontWeight: 'bold', fontSize: '1.25rem' }}>
+            {selectedCategory} {t('Details')}
+          </Dialog.Title>
 
-          <Dialog.Close asChild>
-            <Button mt="4" fullWidth>
-              Close
-            </Button>
-          </Dialog.Close>
+          <Box mt="3" mb="3" style={{ maxHeight: 300, overflowY: 'auto' }}>
+            {selectedCategory === 'Direct Materials' && (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.RowHeaderCell>{t('Name')}</Table.RowHeaderCell>
+                    <Table.HeaderCell>{t('Concentration (Kg)')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Price per Kg')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Cost')}</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {simulatedIoTCostData.rawMaterials.map((item) => (
+                    <Table.Row key={item.name}>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{item.concentrationKg}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.pricePerKg || 0)}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.cost || 0)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {selectedCategory === 'Packaging Materials' && (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.RowHeaderCell>{t('Name')}</Table.RowHeaderCell>
+                    <Table.HeaderCell>{t('Quantity')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Unit Price')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Cost')}</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {simulatedIoTCostData.packagingMaterials.map((item) => (
+                    <Table.Row key={item.name}>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{item.qty}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.unitPrice || 0)}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.cost || 0)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {selectedCategory === 'Direct Labor' && (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.RowHeaderCell>{t('Name')}</Table.RowHeaderCell>
+                    <Table.HeaderCell>{t('Hours')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Hourly Rate')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Cost')}</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {simulatedIoTCostData.directLabor.map((item) => (
+                    <Table.Row key={item.name}>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{item.hours}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.hourlyRate || 0)}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.cost || 0)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {selectedCategory === 'Overhead' && (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.RowHeaderCell>{t('Name')}</Table.RowHeaderCell>
+                    <Table.HeaderCell>{t('Total Cost')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Basis')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Cost')}</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {simulatedIoTCostData.overheadItems.map((item) => (
+                    <Table.Row key={item.name}>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.totalCost || 0)}</Table.Cell>
+                      <Table.Cell>{item.basis}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.cost || 0)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {selectedCategory === 'Other Costs' && (
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.RowHeaderCell>{t('Name')}</Table.RowHeaderCell>
+                    <Table.HeaderCell>{t('Quantity')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Unit Price')}</Table.HeaderCell>
+                    <Table.HeaderCell>{t('Cost')}</Table.HeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {simulatedIoTCostData.otherCosts.map((item) => (
+                    <Table.Row key={item.name}>
+                      <Table.Cell>{item.name}</Table.Cell>
+                      <Table.Cell>{item.qty}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.unitPrice || 0)}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.cost || 0)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            )}
+          </Box>
+
+          <Flex justify="end" mt="4">
+            <Button onClick={closeDialog}>{t('Close')}</Button>
+          </Flex>
         </Dialog.Content>
       </Dialog.Root>
     </Box>
