@@ -1,174 +1,109 @@
+import React, { useState } from 'react';
 import {
+  Table,
   Card,
   Flex,
   Heading,
-  Table,
-  Badge,
-  Button,
-  Grid,
   Text,
   TextField,
-  DropdownMenu,
-  Dialog,
-  Select,
+  Button,
+  Box
 } from '@radix-ui/themes';
-import { Pencil2Icon } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from 'recharts';
 
-const FinishedGoodsInventory = () => {
-  const [products, setProducts] = useState([
-    {
-      id: 'FG001',
-      name: 'Poultry Product A',
-      quantity: 150,
-      location: 'Warehouse 1',
-      status: 'Available',
-    },
-    {
-      id: 'FG002',
-      name: 'Poultry Product B',
-      quantity: 80,
-      location: 'Warehouse 2',
-      status: 'Reserved',
-    },
-    {
-      id: 'FG003',
-      name: 'Poultry Product C',
-      quantity: 200,
-      location: 'Warehouse 1',
-      status: 'Available',
-    },
+const SimpleInventory = () => {
+  const [inventoryData, setInventoryData] = useState([
+    { id: 'P001', name: 'Product A', quantity: 100, reserved: 20 },
+    { id: 'P002', name: 'Product B', quantity: 150, reserved: 30 },
+    { id: 'P003', name: 'Product C', quantity: 80, reserved: 10 },
   ]);
 
-  const [selectedItem, setSelectedItem] = useState<any>(null);
-  const [open, setOpen] = useState(false);
-
-  const handleUpdate = () => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === selectedItem.id ? selectedItem : p))
-    );
-    setOpen(false);
+  const handleChange = (index: number, field: 'quantity' | 'reserved', value: string) => {
+    const newData = [...inventoryData];
+    const numericValue = parseInt(value) || 0;
+    newData[index][field] = numericValue;
+    setInventoryData(newData);
   };
 
+  const handleSubmitAllToBlockchain = () => {
+    console.log('Submitting all to blockchain:', inventoryData);
+    alert('All products submitted to blockchain!');
+  };
+
+  const chartData = inventoryData.map(item => ({
+    name: item.name,
+    Quantity: item.quantity,
+    Reserved: item.reserved,
+    FreeToUse: Math.max(item.quantity - item.reserved, 0),
+  }));
+
   return (
-    <Card>
-      <Flex direction="column" gap="4">
-        <Heading size="6">Finished Goods Inventory</Heading>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+    <Box p="6">
+      <Heading size="6" mb="4">Finished Goods Inventory (Simplified)</Heading>
+
+      <Card mb="6">
+        <Text size="2" mb="2">Inventory Trend</Text>
+        <ResponsiveContainer width="100%" height={250}>
+          <BarChart data={chartData}>
+            <XAxis dataKey="name" />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="Quantity" fill="#3b82f6" />
+            <Bar dataKey="Reserved" fill="#ef4444" />
+            <Bar dataKey="FreeToUse" fill="#8b5cf6" />
+          </BarChart>
+        </ResponsiveContainer>
+      </Card>
+
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {inventoryData.map((item, index) => (
+            <Table.Row key={item.id}>
+              <Table.Cell>{item.id}</Table.Cell>
+              <Table.Cell>{item.name}</Table.Cell>
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  value={item.quantity}
+                  onChange={(e) => handleChange(index, 'quantity', e.target.value)}
+                />
+              </Table.Cell>
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  value={item.reserved}
+                  onChange={(e) => handleChange(index, 'reserved', e.target.value)}
+                />
+              </Table.Cell>
             </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {products.map((product) => (
-              <Table.Row key={product.id}>
-                <Table.RowHeaderCell>{product.id}</Table.RowHeaderCell>
-                <Table.Cell>{product.name}</Table.Cell>
-                <Table.Cell>{product.quantity}</Table.Cell>
-                <Table.Cell>{product.location}</Table.Cell>
-                <Table.Cell>
-                  <Badge color={product.status === 'Available' ? 'green' : 'orange'}>
-                    {product.status}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell>
-                  <Button
-                    size="1"
-                    variant="outline"
-                    onClick={() => {
-                      setSelectedItem(product);
-                      setOpen(true);
-                    }}
-                  >
-                    <Pencil2Icon />
-                  </Button>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
+          ))}
+        </Table.Body>
+      </Table.Root>
+
+      <Flex justify="end" mt="4">
+        <Button onClick={handleSubmitAllToBlockchain} variant="solid" color="blue">
+          Submit All to Blockchain
+        </Button>
       </Flex>
-
-      <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Content style={{ maxWidth: 500 }}>
-          <Dialog.Title>Edit Product</Dialog.Title>
-          <Flex direction="column" gap="3" mt="4">
-            <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                Name
-              </Text>
-              <TextField
-                value={selectedItem?.name || ''}
-                onChange={(e) =>
-                  setSelectedItem({ ...selectedItem, name: e.target.value })
-                }
-              />
-            </label>
-
-            <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                Quantity
-              </Text>
-              <TextField
-                type="number"
-                value={selectedItem?.quantity?.toString() || ''}
-                onChange={(e) =>
-                  setSelectedItem({
-                    ...selectedItem,
-                    quantity: parseInt(e.target.value),
-                  })
-                }
-              />
-            </label>
-
-            <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                Location
-              </Text>
-              <TextField
-                value={selectedItem?.location || ''}
-                onChange={(e) =>
-                  setSelectedItem({ ...selectedItem, location: e.target.value })
-                }
-              />
-            </label>
-
-            <label>
-              <Text as="div" size="2" mb="1" weight="bold">
-                Status
-              </Text>
-              <Select.Root
-                value={selectedItem?.status || ''}
-                onValueChange={(value) =>
-                  setSelectedItem({ ...selectedItem, status: value })
-                }
-              >
-                <Select.Trigger />
-                <Select.Content>
-                  <Select.Item value="Available">Available</Select.Item>
-                  <Select.Item value="Reserved">Reserved</Select.Item>
-                  <Select.Item value="Out of Stock">Out of Stock</Select.Item>
-                </Select.Content>
-              </Select.Root>
-            </label>
-          </Flex>
-
-          <Flex gap="3" mt="4" justify="end">
-            <Button variant="soft" color="gray" onClick={() => setOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleUpdate}>Save</Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
-    </Card>
+    </Box>
   );
 };
 
-export default FinishedGoodsInventory;
+export default SimpleInventory;
