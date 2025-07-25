@@ -119,12 +119,12 @@ export default function MaterialTable() {
                     <Flex direction="column" gap="3">
                       {Object.entries(item.tests).map(([testName, result]) => (
                         <Flex key={testName} justify="between" align="center">
-                          <Text>
+                          <Text weight="bold">
                             {testName}{' '}
                             <Text
                               as="span"
-                              color="green"
-                              weight="bold"
+                              color="blue"
+                              weight="normal"
                               style={{ marginLeft: 6 }}
                             >
                               via IoT
