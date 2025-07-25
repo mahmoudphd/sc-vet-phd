@@ -1,114 +1,103 @@
-import React, { useState } from 'react';
 import {
-  Table,
   Card,
   Flex,
   Heading,
-  Text,
-  TextField,
+  Table,
   Button,
-  Box
+  Text,
+  Box,
 } from '@radix-ui/themes';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useState } from 'react';
 
-const SimpleInventory = () => {
-  const [inventoryData, setInventoryData] = useState([
-    { id: 'P001', name: 'Product A', quantity: 100, reserved: 20 },
-    { id: 'P002', name: 'Product B', quantity: 150, reserved: 30 },
-    { id: 'P003', name: 'Product C', quantity: 80, reserved: 10 },
+const FinishedGoodsInventory = () => {
+  const [data] = useState([
+    {
+      id: 'FP001',
+      name: 'Poultry Product A',
+      quantity: 100,
+      reserved: 30,
+      freeToUse: 70,
+      location: 'Warehouse 1 - Zone 1',
+      storage: '4°C',
+    },
+    {
+      id: 'FP002',
+      name: 'Poultry Product B',
+      quantity: 150,
+      reserved: 50,
+      freeToUse: 100,
+      location: 'Warehouse 2 - Zone 2',
+      storage: '8°C',
+    },
+    {
+      id: 'FP003',
+      name: 'Poultry Product C',
+      quantity: 200,
+      reserved: 80,
+      freeToUse: 120,
+      location: 'Warehouse 1 - Zone 1',
+      storage: '6°C',
+    },
   ]);
 
-  const handleChange = (index: number, field: 'quantity' | 'reserved', value: string) => {
-    const newData = [...inventoryData];
-    const numericValue = parseInt(value) || 0;
-    newData[index][field] = numericValue;
-    setInventoryData(newData);
-  };
-
-  const handleSubmitAllToBlockchain = () => {
-    console.log('Submitting all to blockchain:', inventoryData);
-    alert('All products submitted to blockchain!');
-  };
-
-  const chartData = inventoryData.map(item => ({
-    name: item.name,
-    Quantity: item.quantity,
-    Reserved: item.reserved,
-    FreeToUse: Math.max(item.quantity - item.reserved, 0),
-  }));
-
   return (
-    <Box p="6">
-      <Heading size="6" mb="4">Finished Goods Inventory (Simplified)</Heading>
-
-      <Card mb="6">
-        <Text size="2" mb="2">Inventory Trend</Text>
-        <ResponsiveContainer width="100%" height={250}>
-          <BarChart data={chartData}>
-            <XAxis dataKey="name" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar dataKey="Quantity" fill="#3b82f6" />
-            <Bar dataKey="Reserved" fill="#ef4444" />
-            <Bar dataKey="FreeToUse" fill="#8b5cf6" />
-          </BarChart>
-        </ResponsiveContainer>
+    <Box p="4">
+      <Card>
+        <Flex justify="between" align="center" mb="4">
+          <Heading size="6">Finished Goods Inventory</Heading>
+          <Button>Submit to Blockchain</Button>
+        </Flex>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Storage
+                <br />
+                <Text size="1" color="gray">Via IoT</Text>
+              </Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {data.map((record) => (
+              <Table.Row key={record.id}>
+                <Table.RowHeaderCell>{record.id}</Table.RowHeaderCell>
+                <Table.Cell>{record.name}</Table.Cell>
+                <Table.Cell>{record.quantity}</Table.Cell>
+                <Table.Cell>{record.reserved}</Table.Cell>
+                <Table.Cell>{record.freeToUse}</Table.Cell>
+                <Table.Cell>{record.location}</Table.Cell>
+                <Table.Cell>{record.storage}</Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
       </Card>
 
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {inventoryData.map((item, index) => {
-            const freeToUse = Math.max(item.quantity - item.reserved, 0);
-            return (
-              <Table.Row key={item.id}>
-                <Table.Cell>{item.id}</Table.Cell>
-                <Table.Cell>{item.name}</Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) => handleChange(index, 'quantity', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>
-                  <TextField.Root
-                    type="number"
-                    value={item.reserved}
-                    onChange={(e) => handleChange(index, 'reserved', e.target.value)}
-                  />
-                </Table.Cell>
-                <Table.Cell>{freeToUse}</Table.Cell>
-              </Table.Row>
-            );
-          })}
-        </Table.Body>
-      </Table.Root>
-
-      <Flex justify="end" mt="4">
-        <Button onClick={handleSubmitAllToBlockchain} variant="solid" color="blue">
-          Submit All to Blockchain
-        </Button>
-      </Flex>
+      <Box mt="6">
+        <Card>
+          <Heading size="5" mb="3">Inventory Levels Overview</Heading>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="quantity" fill="#4F46E5" name="Quantity" />
+              <Bar dataKey="reserved" fill="#EC4899" name="Reserved" />
+              <Bar dataKey="freeToUse" fill="#10B981" name="Free to Use" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </Box>
     </Box>
   );
 };
 
-export default SimpleInventory;
+export default FinishedGoodsInventory;
