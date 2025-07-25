@@ -8,8 +8,7 @@ import {
   Flex,
   Heading,
   Text,
-  TextFieldRoot,
-  TextFieldInput,
+  TextField,
   Box,
   Select,
 } from '@radix-ui/themes';
@@ -89,15 +88,15 @@ const FinishedGoodsInventory: React.FC = () => {
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.Column>ID</Table.Column>
-              <Table.Column>Name</Table.Column>
-              <Table.Column>Batch</Table.Column>
-              <Table.Column>Quantity</Table.Column>
-              <Table.Column>Reserved</Table.Column>
-              <Table.Column>Free to Use</Table.Column>
-              <Table.Column>Location</Table.Column>
-              <Table.Column>Expiry Date</Table.Column>
-              <Table.Column>Storage Temp</Table.Column>
+              <Table.ColumnHeader>ID</Table.ColumnHeader>
+              <Table.ColumnHeader>Name</Table.ColumnHeader>
+              <Table.ColumnHeader>Batch</Table.ColumnHeader>
+              <Table.ColumnHeader>Quantity</Table.ColumnHeader>
+              <Table.ColumnHeader>Reserved</Table.ColumnHeader>
+              <Table.ColumnHeader>Free to Use</Table.ColumnHeader>
+              <Table.ColumnHeader>Location</Table.ColumnHeader>
+              <Table.ColumnHeader>Expiry Date</Table.ColumnHeader>
+              <Table.ColumnHeader>Storage Temp</Table.ColumnHeader>
             </Table.Row>
           </Table.Header>
           <Table.Body>
@@ -107,32 +106,34 @@ const FinishedGoodsInventory: React.FC = () => {
                 <Table.Cell>{item.name}</Table.Cell>
                 <Table.Cell>{item.batch}</Table.Cell>
                 <Table.Cell>
-                  <TextFieldRoot>
-                    <TextFieldInput
+                  <TextField.Root>
+                    <TextField.Input
                       type="number"
                       value={item.quantity}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleChange(index, 'quantity', e.target.value)
                       }
                     />
-                  </TextFieldRoot>
+                  </TextField.Root>
                 </Table.Cell>
                 <Table.Cell>
-                  <TextFieldRoot>
-                    <TextFieldInput
+                  <TextField.Root>
+                    <TextField.Input
                       type="number"
                       value={item.reserved}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleChange(index, 'reserved', e.target.value)
                       }
                     />
-                  </TextFieldRoot>
+                  </TextField.Root>
                 </Table.Cell>
                 <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={item.location}
-                    onValueChange={(val) => handleChange(index, 'location', val)}
+                    onValueChange={(val: string) =>
+                      handleChange(index, 'location', val)
+                    }
                   >
                     <Select.Trigger />
                     <Select.Content>
@@ -143,26 +144,26 @@ const FinishedGoodsInventory: React.FC = () => {
                   </Select.Root>
                 </Table.Cell>
                 <Table.Cell>
-                  <TextFieldRoot>
-                    <TextFieldInput
+                  <TextField.Root>
+                    <TextField.Input
                       type="date"
                       value={item.expiryDate}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleChange(index, 'expiryDate', e.target.value)
                       }
                     />
-                  </TextFieldRoot>
+                  </TextField.Root>
                 </Table.Cell>
                 <Table.Cell>
-                  <TextFieldRoot>
-                    <TextFieldInput
+                  <TextField.Root>
+                    <TextField.Input
                       type="text"
                       value={item.storageTemp}
-                      onChange={(e) =>
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                         handleChange(index, 'storageTemp', e.target.value)
                       }
                     />
-                  </TextFieldRoot>
+                  </TextField.Root>
                 </Table.Cell>
               </Table.Row>
             ))}
