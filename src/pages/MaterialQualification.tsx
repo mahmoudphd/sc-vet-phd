@@ -7,8 +7,7 @@ import {
   Heading,
   Box,
   Badge,
-  TextField,
-  Card
+  Card,
 } from '@radix-ui/themes';
 import { useState } from 'react';
 
@@ -59,94 +58,26 @@ export default function MaterialTable() {
 
   return (
     <Box p="4">
-      {/* Header with Tabs */}
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Raw Materials Compliance Table</Heading>
-
-        <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">New Qualification</Button>
-            </Dialog.Trigger>
-            <Dialog.Content maxWidth="500px">
-              <Dialog.Title>New Material Qualification</Dialog.Title>
-              <Dialog.Description mb="4">
-                Enter qualification details for a new material.
-              </Dialog.Description>
-              <Flex direction="column" gap="3">
-                <TextField.Input placeholder="Material Name" />
-                <TextField.Input placeholder="Material Type" />
-                <TextField.Input placeholder="Supplier Name" />
-              </Flex>
-              <Flex justify="between" mt="4" gap="3">
-                <Button variant="soft">Save Draft</Button>
-                <Flex gap="2">
-                  <Dialog.Close>
-                    <Button variant="outline" color="gray">Cancel</Button>
-                  </Dialog.Close>
-                  <Dialog.Close>
-                    <Button color="green">Submit</Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">Supplier Audit</Button>
-            </Dialog.Trigger>
-            <Dialog.Content maxWidth="400px">
-              <Dialog.Title>Supplier Audit</Dialog.Title>
-              <Dialog.Description mb="4">
-                Enter audit details for the supplier.
-              </Dialog.Description>
-              <Flex direction="column" gap="3">
-                <TextField.Input placeholder="Supplier Name" />
-                <TextField.Input placeholder="Audit Date" type="date" />
-              </Flex>
-              <Flex justify="between" mt="4" gap="3">
-                <Button variant="soft">Save Draft</Button>
-                <Flex gap="2">
-                  <Dialog.Close>
-                    <Button variant="outline" color="gray">Cancel</Button>
-                  </Dialog.Close>
-                  <Dialog.Close>
-                    <Button color="green">Submit</Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-        </Flex>
-      </Flex>
+      <Heading size="6" mb="4">Raw Materials Compliance Table</Heading>
 
       {/* Cards Row */}
       <Flex gap="4" mb="5">
-        {/* Card 1: Qualification Progress */}
-        <Card style={{ minWidth: 200, flex: 1, padding: '16px' }}>
-          <Text weight="bold" size="2">Qualification Progress</Text>
-          <Box mt="2">
-            <Text size="1">Pending: <strong>3</strong></Text><br />
-            <Text size="1">Approved: <strong>12</strong></Text>
-          </Box>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Text weight="bold">Qualification Progress</Text>
+          <Text>Pending: 3</Text>
+          <Text>Approved: 12</Text>
         </Card>
 
-        {/* Card 2: Compliance Score */}
-        <Card style={{ minWidth: 200, flex: 1, padding: '16px' }}>
-          <Text weight="bold" size="2">Compliance Score</Text>
-          <Box mt="2">
-            <Text size="4" weight="bold">98.4%</Text>
-            <Text size="1" color="gray">ALCOA+ Compliant</Text>
-          </Box>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Text weight="bold">Compliance Score</Text>
+          <Text size="5" color="green" weight="bold">98.4%</Text>
+          <Text>ALCOA+ Compliant</Text>
         </Card>
 
-        {/* Card 3: Expiring Soon */}
-        <Card style={{ minWidth: 200, flex: 1, padding: '16px' }}>
-          <Text weight="bold" size="2">Expiring Soon</Text>
-          <Box mt="2">
-            <Text size="1"><strong>2</strong> Materials</Text>
-          </Box>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Text weight="bold">Expiring Soon</Text>
+          <Text size="5" color="red" weight="bold">2</Text>
+          <Text>Materials</Text>
         </Card>
       </Flex>
 
@@ -221,7 +152,6 @@ export default function MaterialTable() {
         </Table.Body>
       </Table.Root>
 
-      {/* Submit Button */}
       <Flex justify="end" mt="4">
         <Button variant="solid" color="blue">
           Submit to Blockchain
