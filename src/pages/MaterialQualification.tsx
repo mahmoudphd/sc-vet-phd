@@ -63,21 +63,27 @@ export default function MaterialTable() {
       {/* Cards Row */}
       <Flex gap="4" mb="5">
         <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
-          <Text weight="bold">Qualification Progress</Text>
-          <Text>Pending: 3</Text>
-          <Text>Approved: 12</Text>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Qualification Progress</Text>
+            <Text>Pending: 3</Text>
+            <Text>Approved: 12</Text>
+          </Flex>
         </Card>
 
         <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
-          <Text weight="bold">Compliance Score</Text>
-          <Text size="5" color="green" weight="bold">98.4%</Text>
-          <Text>ALCOA+ Compliant</Text>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Compliance Score</Text>
+            <Text size="6" color="green" weight="bold">98.4%</Text>
+            <Text>ALCOA+ Compliant</Text>
+          </Flex>
         </Card>
 
         <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
-          <Text weight="bold">Expiring Soon</Text>
-          <Text size="5" color="red" weight="bold">2</Text>
-          <Text>Materials</Text>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Expiring Soon</Text>
+            <Text size="6" color="red" weight="bold">2</Text>
+            <Text>Materials</Text>
+          </Flex>
         </Card>
       </Flex>
 
