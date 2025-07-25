@@ -3,207 +3,193 @@ import {
   Card,
   Flex,
   Heading,
+  Table,
   Button,
   Text,
-  Table,
-  Dialog,
   TextField,
+  Dialog,
   Select,
-  Box,
 } from '@radix-ui/themes';
 import { PlusIcon } from '@radix-ui/react-icons';
 
 interface ScrapEntry {
-  batchId: string;
+  id: string;
   productName: string;
+  batchId: string;
+  component: string;
+  quantity: number;
+  handlingMethod: string;
   reason: string;
-  type: string;
-  weight: string;
   date: string;
-  status: string;
-  handling: string;
 }
 
 const initialScrapData: ScrapEntry[] = [
   {
-    batchId: 'BATCH-001',
+    id: '1',
     productName: 'Poultry Product A',
+    batchId: 'BR-001',
+    component: 'Vitamin B12',
+    quantity: 12,
+    handlingMethod: 'Recycled',
     reason: 'Expiration',
-    type: 'Liquid',
-    weight: '12',
-    date: '2025-07-25',
-    status: 'Pending',
-    handling: 'Incineration',
+    date: '2025-07-24',
   },
   {
-    batchId: 'BATCH-002',
+    id: '2',
     productName: 'Poultry Product B',
-    reason: 'Damaged Packaging',
-    type: 'Powder',
-    weight: '8',
+    batchId: 'BR-002',
+    component: 'Dextrose',
+    quantity: 8,
+    handlingMethod: 'Disposed',
+    reason: 'Damage',
     date: '2025-07-24',
-    status: 'Handled',
-    handling: 'Recycling',
   },
 ];
 
 export default function ScrapProducts() {
   const [scrapData, setScrapData] = useState<ScrapEntry[]>(initialScrapData);
-  const [open, setOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+
   const [newEntry, setNewEntry] = useState<ScrapEntry>({
-    batchId: '',
+    id: '',
     productName: '',
-    reason: '',
-    type: '',
-    weight: '',
-    date: '',
-    status: '',
-    handling: '',
+    batchId: '',
+    component: '',
+    quantity: 0,
+    handlingMethod: 'Recycled',
+    reason: 'Expiration',
+    date: new Date().toISOString().split('T')[0],
   });
 
-  const handleAddNew = () => {
-    setScrapData([...scrapData, newEntry]);
-    setOpen(false);
+  const handleAddEntry = () => {
+    const newId = (scrapData.length + 1).toString();
+    setScrapData([...scrapData, { ...newEntry, id: newId }]);
+    setDialogOpen(false);
     setNewEntry({
-      batchId: '',
+      id: '',
       productName: '',
-      reason: '',
-      type: '',
-      weight: '',
-      date: '',
-      status: '',
-      handling: '',
+      batchId: '',
+      component: '',
+      quantity: 0,
+      handlingMethod: 'Recycled',
+      reason: 'Expiration',
+      date: new Date().toISOString().split('T')[0],
     });
   };
 
   return (
-    <Box p="4">
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Scrap Products Management</Heading>
-        <Dialog.Root open={open} onOpenChange={setOpen}>
+    <Card className="p-4">
+      <Flex justify="between" align="center" className="mb-4">
+        <Heading size="5">Scrap Products</Heading>
+        <Dialog.Root open={dialogOpen} onOpenChange={setDialogOpen}>
           <Dialog.Trigger>
-            <Button variant="soft" color="green">
-              <PlusIcon /> New Scrap +
+            <Button variant="soft" color="blue">
+              <PlusIcon /> New Scrap
             </Button>
           </Dialog.Trigger>
           <Dialog.Content maxWidth="450px">
-            <Dialog.Title>Add New Scrap Entry</Dialog.Title>
+            <Dialog.Title>Add New Scrap</Dialog.Title>
             <Flex direction="column" gap="3" mt="3">
-              <TextField.Input
-                placeholder="Batch ID"
-                value={newEntry.batchId}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, batchId: e.target.value })
-                }
-              />
-              <TextField.Input
+              <TextField.Root
                 placeholder="Product Name"
                 value={newEntry.productName}
                 onChange={(e) =>
                   setNewEntry({ ...newEntry, productName: e.target.value })
                 }
               />
+              <TextField.Root
+                placeholder="Batch ID"
+                value={newEntry.batchId}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, batchId: e.target.value })
+                }
+              />
+              <TextField.Root
+                placeholder="Component"
+                value={newEntry.component}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, component: e.target.value })
+                }
+              />
+              <TextField.Root
+                type="number"
+                placeholder="Quantity"
+                value={newEntry.quantity.toString()}
+                onChange={(e) =>
+                  setNewEntry({ ...newEntry, quantity: parseInt(e.target.value) })
+                }
+              />
+              <Select.Root
+                value={newEntry.handlingMethod}
+                onValueChange={(value) =>
+                  setNewEntry({ ...newEntry, handlingMethod: value })
+                }
+              >
+                <Select.Trigger placeholder="Handling Method" />
+                <Select.Content>
+                  <Select.Item value="Recycled">Recycled</Select.Item>
+                  <Select.Item value="Disposed">Disposed</Select.Item>
+                  <Select.Item value="Incinerated">Incinerated</Select.Item>
+                </Select.Content>
+              </Select.Root>
               <Select.Root
                 value={newEntry.reason}
                 onValueChange={(value) =>
                   setNewEntry({ ...newEntry, reason: value })
                 }
               >
-                <Select.Trigger placeholder="Select Reason" />
+                <Select.Trigger placeholder="Reason" />
                 <Select.Content>
                   <Select.Item value="Expiration">Expiration</Select.Item>
-                  <Select.Item value="Damaged Packaging">
-                    Damaged Packaging
-                  </Select.Item>
-                  <Select.Item value="Contamination">Contamination</Select.Item>
-                  <Select.Item value="Other">Other</Select.Item>
+                  <Select.Item value="Damage">Damage</Select.Item>
+                  <Select.Item value="Quality Issue">Quality Issue</Select.Item>
                 </Select.Content>
               </Select.Root>
-              <Select.Root
-                value={newEntry.type}
-                onValueChange={(value) =>
-                  setNewEntry({ ...newEntry, type: value })
-                }
-              >
-                <Select.Trigger placeholder="Select Type" />
-                <Select.Content>
-                  <Select.Item value="Liquid">Liquid</Select.Item>
-                  <Select.Item value="Powder">Powder</Select.Item>
-                  <Select.Item value="Solid">Solid</Select.Item>
-                </Select.Content>
-              </Select.Root>
-              <TextField.Input
-                placeholder="Weight (kg)"
-                type="number"
-                value={newEntry.weight}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, weight: e.target.value })
-                }
-              />
-              <TextField.Input
-                placeholder="Date"
+              <TextField.Root
                 type="date"
                 value={newEntry.date}
                 onChange={(e) =>
                   setNewEntry({ ...newEntry, date: e.target.value })
                 }
               />
-              <TextField.Input
-                placeholder="Status"
-                value={newEntry.status}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, status: e.target.value })
-                }
-              />
-              <TextField.Input
-                placeholder="Handling Method"
-                value={newEntry.handling}
-                onChange={(e) =>
-                  setNewEntry({ ...newEntry, handling: e.target.value })
-                }
-              />
             </Flex>
-            <Flex mt="4" justify="end">
-              <Button onClick={handleAddNew}>Add</Button>
+            <Flex justify="end" mt="4">
+              <Button onClick={handleAddEntry}>Add</Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
       </Flex>
 
-      <Card>
-        <Table.Root>
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Reason</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Handling</Table.ColumnHeaderCell>
+      <Table.Root>
+        <Table.Header>
+          <Table.Row>
+            <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Reason</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {scrapData.map((entry) => (
+            <Table.Row key={entry.id}>
+              <Table.Cell>
+                {entry.batchId} / {entry.productName}
+              </Table.Cell>
+              <Table.Cell>{entry.component}</Table.Cell>
+              <Table.Cell>{entry.quantity}</Table.Cell>
+              <Table.Cell>{entry.handlingMethod}</Table.Cell>
+              <Table.Cell>{entry.reason}</Table.Cell>
+              <Table.Cell>{entry.date}</Table.Cell>
             </Table.Row>
-          </Table.Header>
-          <Table.Body>
-            {scrapData.map((item, index) => (
-              <Table.Row key={index}>
-                <Table.Cell>{item.batchId}</Table.Cell>
-                <Table.Cell>{item.productName}</Table.Cell>
-                <Table.Cell>{item.reason}</Table.Cell>
-                <Table.Cell>{item.type}</Table.Cell>
-                <Table.Cell>{item.weight}</Table.Cell>
-                <Table.Cell>{item.date}</Table.Cell>
-                <Table.Cell>{item.status}</Table.Cell>
-                <Table.Cell>{item.handling}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table.Root>
-      </Card>
+          ))}
+        </Table.Body>
+      </Table.Root>
 
-      <Flex justify="end" mt="4">
-        <Button color="blue">Submit to Blockchain</Button>
+      <Flex justify="center" mt="5">
+        <Button color="green">Submit to Blockchain</Button>
       </Flex>
-    </Box>
+    </Card>
   );
 }
