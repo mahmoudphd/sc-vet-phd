@@ -118,12 +118,27 @@ export default function MaterialTable() {
                     </Dialog.Description>
                     <Flex direction="column" gap="3">
                       {Object.entries(item.tests).map(([testName, result]) => (
-                        <Flex key={testName} justify="between">
+                        <Flex key={testName} justify="between" align="center">
                           <Text>
-                            {testName}
-                            {testName === 'Identity' && <Text color="gray"> (via IoT)</Text>}
+                            {testName}{' '}
+                            <Text
+                              as="span"
+                              color="green"
+                              weight="bold"
+                              style={{ marginLeft: 6 }}
+                            >
+                              via IoT
+                            </Text>
                           </Text>
-                          <Badge color={result === 'Passed' ? 'green' : result === 'Pending' ? 'yellow' : 'red'}>
+                          <Badge
+                            color={
+                              result === 'Passed'
+                                ? 'green'
+                                : result === 'Pending'
+                                ? 'yellow'
+                                : 'red'
+                            }
+                          >
                             {result}
                           </Badge>
                         </Flex>
