@@ -11,6 +11,7 @@ interface StageItem {
   [key: string]: any;
   emissions: number;
   environmentalCost?: number;
+  unit?: string;
 }
 
 interface EmissionDataItem {
@@ -21,37 +22,50 @@ interface EmissionDataItem {
   environmentalCost?: number;
 }
 
+interface CostCalculationItem {
+  name: string;
+  emissions: number;
+  cost: number;
+  calculation: string;
+}
+
+interface CostCalculation {
+  stage: string;
+  items: CostCalculationItem[];
+  total: number;
+}
+
 const EXCHANGE_RATE = 50;
 
 const stageData: Record<string, StageItem[]> = {
   'Raw Materials': [
-    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
-    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
-    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
-    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, reference: '[US LCI Database]', emissions: 0.780 },
-    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, reference: '[DEFRA 2022]', emissions: 0.260 },
-    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, reference: '[IPCC 2023]', emissions: 0.132 },
-    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, reference: '[FAO STAT 2023]', emissions: 1.260 },
-    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, reference: '[FAO STAT 2023]', emissions: 0.380 },
-    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, reference: '[LCA Food DK]', emissions: 0.138 },
-    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, reference: '[EPD International]', emissions: 0.080 },
-    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
-    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, reference: '[USDA LCA Commons]', emissions: 0.288 },
-    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, reference: '[Egyptian LCA 2024]', emissions: 2.625 },
-    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, reference: '[EU PEF Guide]', emissions: 0.220 },
-    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, reference: '[World Food LCA]', emissions: 0.475 },
-    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, reference: '[USDA ARS]', emissions: 0.560 },
-    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, reference: '[Chinese LCA Database]', emissions: 1.350 },
-    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
+    { material: 'Vitamin B1', quantity: 1, unit: 'g', emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
+    { material: 'Vitamin B2', quantity: 6, unit: 'g', emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
+    { material: 'Vitamin B12', quantity: 1, unit: 'g', emissionFactor: 120, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Nicotinamide (B3)', quantity: 10, unit: 'g', emissionFactor: 78, reference: '[US LCI Database]', emissions: 0.780 },
+    { material: 'Pantothenic Acid', quantity: 4, unit: 'g', emissionFactor: 65, reference: '[DEFRA 2022]', emissions: 0.260 },
+    { material: 'Vitamin B6', quantity: 1.5, unit: 'g', emissionFactor: 88, reference: '[IPCC 2023]', emissions: 0.132 },
+    { material: 'Leucine', quantity: 30, unit: 'g', emissionFactor: 42, reference: '[FAO STAT 2023]', emissions: 1.260 },
+    { material: 'Threonine', quantity: 10, unit: 'g', emissionFactor: 38, reference: '[FAO STAT 2023]', emissions: 0.380 },
+    { material: 'Taurine', quantity: 2.5, unit: 'g', emissionFactor: 55, reference: '[LCA Food DK]', emissions: 0.138 },
+    { material: 'Glycine', quantity: 2.5, unit: 'g', emissionFactor: 32, reference: '[EPD International]', emissions: 0.080 },
+    { material: 'Arginine', quantity: 2.5, unit: 'g', emissionFactor: 48, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Cynarine', quantity: 2.5, unit: 'g', emissionFactor: 115, reference: '[USDA LCA Commons]', emissions: 0.288 },
+    { material: 'Silymarin', quantity: 25, unit: 'g', emissionFactor: 105, reference: '[Egyptian LCA 2024]', emissions: 2.625 },
+    { material: 'Sorbitol', quantity: 10, unit: 'g', emissionFactor: 22, reference: '[EU PEF Guide]', emissions: 0.220 },
+    { material: 'Carnitine', quantity: 5, unit: 'g', emissionFactor: 95, reference: '[World Food LCA]', emissions: 0.475 },
+    { material: 'Betaine', quantity: 20, unit: 'g', emissionFactor: 28, reference: '[USDA ARS]', emissions: 0.560 },
+    { material: 'Tween-80', quantity: 75, unit: 'g', emissionFactor: 18, reference: '[Chinese LCA Database]', emissions: 1.350 },
+    { material: 'Water', quantity: 571, unit: 'g', emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
   ],
   'Manufacturing': [
-    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, reference: '[Pharma LCA 2023]', emissions: 0.050 },
-    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, reference: '[WHO GMP 2022]', emissions: 0.009 },
-    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, reference: '[CAPMAS 2023]', emissions: 0.275 },
-    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[ISO 14044]', emissions: 0.165 },
-    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, reference: '[USP Sterilization]', emissions: 0.825 },
-    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, reference: '[EgyPack 2023]', emissions: 0.110 },
-    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[FDA Guidelines]', emissions: 0.165 },
+    { process: 'Water Mixing', quantity: 1000, unit: 'L', emissionFactor: 0.00005, reference: '[Pharma LCA 2023]', emissions: 0.050 },
+    { process: 'Equipment Cleaning', quantity: 300, unit: 'L', emissionFactor: 0.00003, reference: '[WHO GMP 2022]', emissions: 0.009 },
+    { process: 'Material Mixing', quantity: 5, unit: 'kWh', emissionFactor: 0.55, reference: '[CAPMAS 2023]', emissions: 2.750 },
+    { process: 'Liquid Filling', quantity: 3, unit: 'kWh', emissionFactor: 0.55, reference: '[ISO 14044]', emissions: 1.650 },
+    { process: 'Sterilization', quantity: 15, unit: 'kWh', emissionFactor: 0.55, reference: '[USP Sterilization]', emissions: 8.250 },
+    { process: 'Primary Packaging', quantity: 2, unit: 'kWh', emissionFactor: 0.55, reference: '[EgyPack 2023]', emissions: 1.100 },
+    { process: 'Quality Inspection', quantity: 3, unit: 'kWh', emissionFactor: 0.55, reference: '[FDA Guidelines]', emissions: 1.650 },
   ],
   'Packaging': [
     { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, reference: '[EgyPack 2023]', emissions: 0.210 },
@@ -62,24 +76,24 @@ const stageData: Record<string, StageItem[]> = {
     { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, reference: '[CAPMAS 2023]', emissions: 0.0075 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, reference: '[Egyptian Cold Chain 2023]', emissions: 0.210 },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, reference: '[CAPMAS 2023]', emissions: 0.090 },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, reference: '[EgyLogistics 2023]', emissions: 0.300 },
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.3, reference: '[Egyptian Cold Chain 2023]', emissions: 2.100 },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, reference: '[CAPMAS 2023]', emissions: 9.000 },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, reference: '[EgyLogistics 2023]', emissions: 30.000 },
   ],
   'Distribution': [
     { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, reference: '[EgyLogistics 2023]', emissions: 0.030 },
-    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, reference: '[Cairo Air Quality]', emissions: 0.018 },
+    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, reference: '[Cairo Air Quality]', emissions: 1.800 },
     { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, reference: '[Retail LCA 2023]', emissions: 0.010 },
   ],
   'Use': [
-    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, reference: '[WB 2023]', emissions: 0.010 },
-    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, reference: '[UNEP 2023]', emissions: 0.070 },
+    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, reference: '[WB 2023]', emissions: 1.000 },
+    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, reference: '[UNEP 2023]', emissions: 0.700 },
     { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, reference: '[Household Energy]', emissions: 0.050 },
   ],
   'End of Life': [
-    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, reference: '[Egyptian EPA 2023]', emissions: 0.350 },
-    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, reference: '[EgyWaste 2023]', emissions: -0.015 },
-    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, reference: '[Cairo Waste Authority]', emissions: 0.045 },
+    { method: 'Medical Waste Incineration', quantity: 100, unit: 'g', emissionFactor: 3.5, reference: '[Egyptian EPA 2023]', emissions: 0.350 },
+    { method: 'Recycling', quantity: 50, unit: 'g', emissionFactor: -0.3, reference: '[EgyWaste 2023]', emissions: -0.015 },
+    { method: 'Landfill', quantity: 30, unit: 'g', emissionFactor: 1.5, reference: '[Cairo Waste Authority]', emissions: 0.045 },
   ],
 };
 
@@ -90,16 +104,7 @@ const CO2Footprint = () => {
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
   const [currentStageData, setCurrentStageData] = useState<StageItem[]>([]);
-  const [costCalculation, setCostCalculation] = useState<{
-    stage: string;
-    items: Array<{
-      name: string;
-      emissions: number;
-      cost: number;
-      calculation: string;
-    }>;
-    total: number;
-  } | null>(null);
+  const [costCalculation, setCostCalculation] = useState<CostCalculation | null>(null);
 
   const calculateEnvironmentalCost = (emissionsKg: number): number => {
     const costUSD = emissionsKg * 1;
@@ -221,8 +226,9 @@ const CO2Footprint = () => {
     const data = processedStageData[stage];
     const columns = stage === 'Raw Materials' ? [
       { header: 'Material', accessor: 'material' },
-      { header: 'Quantity (kg)', accessor: 'quantity', format: (val: number) => val.toFixed(4) },
-      { header: 'Emission Factor (kg CO₂e/kg)', accessor: 'emissionFactor' },
+      { header: 'Quantity', accessor: 'quantity' },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
       { header: 'Reference', accessor: 'reference' },
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
