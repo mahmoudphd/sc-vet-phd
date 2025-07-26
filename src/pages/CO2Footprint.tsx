@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch,
-  Dialog, DialogContent, DialogTitle, DialogDescription
+  Dialog
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
@@ -287,11 +287,11 @@ const CO2Footprint = () => {
 
       {/* Raw Materials Modal */}
       <Dialog.Root open={rawMaterialsOpen} onOpenChange={setRawMaterialsOpen}>
-        <DialogContent style={{ maxWidth: 800 }}>
-          <DialogTitle>Raw Materials Detailed Emissions</DialogTitle>
-          <DialogDescription>
+        <Dialog.Content style={{ maxWidth: 800 }}>
+          <Dialog.Title>Raw Materials Detailed Emissions</Dialog.Title>
+          <Dialog.Description>
             Detailed breakdown of raw materials emissions (Total: {totalRawMaterialsEmissions.toFixed(3)} kg CO₂e)
-          </DialogDescription>
+          </Dialog.Description>
 
           <Box mt="4" style={{ maxHeight: 500, overflowY: 'auto' }}>
             <Table.Root variant="surface">
@@ -333,7 +333,7 @@ const CO2Footprint = () => {
               Close
             </Button>
           </Flex>
-        </DialogContent>
+        </Dialog.Content>
       </Dialog.Root>
     </Box>
   );
