@@ -42,13 +42,14 @@ const EmployeeManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [employees, setEmployees] = useState([
-    { id: 1, name: 'John Doe', email: 'john@supplychain.com', role: 'Warehouse Manager', 
-      department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
-    { id: 2, name: 'Jane Smith', email: 'jane@supplychain.com', role: 'Inventory Specialist', 
-      department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
-    { id: 3, name: 'Mike Johnson', email: 'mike@supplychain.com', role: 'Inventory Specialist', 
-      department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
-  ]);
+  { id: 1, name: 'Moamen Mahmoud', email: 'moamen@supplychain.com', role: 'Warehouse Manager', 
+    department: 'Logistics', status: 'active', trainingComplete: true, performance: 4.8 },
+  { id: 2, name: 'Housam Nabil', email: 'housam@supplychain.com', role: 'Inventory Specialist', 
+    department: 'Operations', status: 'active', trainingComplete: false, performance: 4.5 },
+  { id: 3, name: 'Mohamed Ahmed', email: 'mohamed@supplychain.com', role: 'Inventory Specialist', 
+    department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
+]);
+
 
   const departmentData = [
     { name: t('logistics'), employees: 15 },

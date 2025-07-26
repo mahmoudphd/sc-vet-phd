@@ -1,204 +1,205 @@
-import React, { useState } from 'react';
 import {
-  Table,
-  Badge,
   Card,
   Flex,
   Heading,
-  Text,
-  Progress,
-  TextField,
-  Select,
+  Table,
   Button,
-  Box
+  TextField,
+  Box,
+  Grid,
+  Text
 } from '@radix-ui/themes';
 import {
-  BoxIcon,
-  CalendarIcon,
-  CheckCircledIcon,
-  CrossCircledIcon,
-  CubeIcon,
-} from '@radix-ui/react-icons';
-import { BarChart, Bar, XAxis, YAxis } from 'recharts';
-import { useTranslation } from 'react-i18next';
-import NewReceiptModel from '../components/NewReceiptModel';
-import ExportCSVModel from '../components/ExportCSVModel';
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer
+} from 'recharts';
+import { useState } from 'react';
+
+const initialData = [
+  {
+    id: 'FGI001',
+    name: 'Poultry Product 1',
+    quantity: 120,
+    reserved: 40,
+    storage: '4°C',
+    expiry: '2025-08-10',
+    location: 'Zone 1'
+  },
+  {
+    id: 'FGI002',
+    name: 'Poultry Product 2',
+    quantity: 100,
+    reserved: 30,
+    storage: '6°C',
+    expiry: '2025-09-15',
+    location: 'Zone 2'
+  },
+  {
+    id: 'FGI003',
+    name: 'Poultry Product 3',
+    quantity: 80,
+    reserved: 20,
+    storage: '8°C',
+    expiry: '2025-07-28',
+    location: 'Zone 2'
+  }
+];
 
 const FinishedGoodsInventory = () => {
-  const { t } = useTranslation('finished-goods-inventory');
-  const [isNewReceiptOpen, setIsNewReceiptOpen] = useState(false);
-  const [isExportCSVOpen, setIsExportCSVOpen] = useState(false);
+  const [data, setData] = useState(initialData);
 
-  const inventory = [
-    {
-      id: 'FG23045',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 1245,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 400,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 800,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 1300,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-  ];
+  const handleChange = (index: number, field: 'quantity' | 'reserved', value: number) => {
+    const newData = [...data];
+    newData[index][field] = value;
+    setData(newData);
+  };
+
+  const getExpiryIndicator = (expiry: string) => {
+    const today = new Date();
+    const expiryDate = new Date(expiry);
+    const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    const color = diffDays < 10 ? '#ef4444' : '#22c55e';
+    return (
+      <span
+        style={{
+          display: 'inline-block',
+          width: '10px',
+          height: '10px',
+          borderRadius: '50%',
+          backgroundColor: color,
+          marginLeft: '6px',
+        }}
+      />
+    );
+  };
 
   return (
-    <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('finished-goods-inventory')}</Heading>
-        <Flex gap="3">
-          <Button variant="soft" onClick={() => setIsNewReceiptOpen(true)}>
-            <CubeIcon /> {t('new-receipt')}
-          </Button>
-          <Button variant="soft" onClick={() => setIsExportCSVOpen(true)}>
-            {t('export-csv')}
-          </Button>
-        </Flex>
-      </Flex>
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Flex justify="between" align="center">
-            <Text size="2" className="text-gray-500">{t('total-skus')}</Text>
-            <Heading size="7">245</Heading>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Flex justify="between" align="center">
-            <Text size="2" className="text-gray-500">{t('quarantined')}</Text>
-            <Heading size="7" className="text-red-500">3</Heading>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 2 }} className="h-32">
-          <Text size="2" mb="2">{t('inventory-trend')}</Text>
-          <BarChart width={300} height={100} data={inventory}>
-            <Bar dataKey="quantity" fill="#3b82f6" />
-          </BarChart>
-        </Card>
-      </Flex>
-      <Flex gap="3" mb="4">
-        <TextField.Root placeholder={t('search-products')} />
-        <Select.Root defaultValue="all">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="all">{t('all-products')}</Select.Item>
-            <Select.Item value="oral">{t('oral-preparations')}</Select.Item>
-            <Select.Item value="injectable">{t('parenterals')}</Select.Item>
-          </Select.Content>
-        </Select.Root>
-        <Select.Root defaultValue="all">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="all">{t('all-statuses')}</Select.Item>
-            <Select.Item value="released">{t('released')}</Select.Item>
-            <Select.Item value="quarantine">{t('quarantined-status')}</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </Flex>
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>{t('product')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('product-category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('quantity')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Free To Use')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Incoming')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('outgoing')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Forecasted')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('location')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('status')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('expiry')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('storage')}</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {inventory.map((item) => (
-            <Table.Row key={item.id}>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  <BoxIcon />
-                  {item.product}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>{item.productCategory}</Table.Cell>
-              <Table.Cell>
-                <Badge variant="outline">{item.quantity} {t('units')}</Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">10</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">+20</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">-40</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">100</Text>
-              </Table.Cell>
-              <Table.Cell>{item.location}</Table.Cell>
-              <Table.Cell>
-                <Badge
-                  color={item.status === 'Released' ? 'green' : 'red'}
-                  variant="soft"
-                >
-                  {t(item.status.toLowerCase())}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  <CalendarIcon />
-                  {item.expiry}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>
-                <Badge variant="outline">{item.temperature}</Badge>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+    <Box p="4">
+      <Card>
+        <Flex direction="column" gap="4">
+          <Heading size="6">Finished Goods Inventory</Heading>
 
-      <NewReceiptModel isOpen={isNewReceiptOpen} onClose={() => setIsNewReceiptOpen(false)} />
-      <ExportCSVModel isOpen={isExportCSVOpen} onClose={() => setIsExportCSVOpen(false)} />
+          <Grid columns="2" gap="4">
+            <Card style={{ fontWeight: 600 }}>
+              <Flex direction="column" gap="1">
+                <Text size="2" color="gray">Total SKUs</Text>
+                <Text size="5" weight="bold">{data.length}</Text>
+              </Flex>
+            </Card>
+            <Card style={{ fontWeight: 600 }}>
+              <Flex direction="column" gap="1">
+                <Text size="2" color="gray">Expiring Soon</Text>
+                <Text size="5" weight="bold">
+                  {
+                    data.filter(item => {
+                      const today = new Date();
+                      const expiry = new Date(item.expiry);
+                      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+                      return diffDays < 10;
+                    }).length
+                  }
+                </Text>
+              </Flex>
+            </Card>
+          </Grid>
+
+          <Table.Root style={{ fontWeight: 600 }}>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  Storage
+                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  Location
+                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {data.map((item, index) => (
+                <Table.Row key={item.id}>
+                  <Table.Cell><Text weight="medium">{item.id}</Text></Table.Cell>
+                  <Table.Cell><Text weight="medium">{item.name}</Text></Table.Cell>
+                  <Table.Cell>
+                    <TextField.Root
+                      value={item.quantity}
+                      type="number"
+                      onChange={(e) => handleChange(index, 'quantity', parseInt(e.target.value))}
+                      style={{ width: '70px', fontWeight: 600 }}
+                    />
+                  </Table.Cell>
+                  <Table.Cell>
+                    <TextField.Root
+                      value={item.reserved}
+                      type="number"
+                      onChange={(e) => handleChange(index, 'reserved', parseInt(e.target.value))}
+                      style={{ width: '70px', fontWeight: 600 }}
+                    />
+                  </Table.Cell>
+                  <Table.Cell><Text weight="medium">{item.quantity - item.reserved}</Text></Table.Cell>
+                  <Table.Cell>
+                    <Text weight="medium">{item.storage}</Text>
+                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Text weight="medium">{item.location}</Text>
+                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex align="center" gap="2">
+                      <Text weight="medium">{item.expiry}</Text>
+                      {getExpiryIndicator(item.expiry)}
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+
+          <Box mt="6">
+            <Heading size="5" mb="2">
+              Inventory Overview
+            </Heading>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={data}>
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
+                <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
+                <Bar
+                  dataKey={(entry) => entry.quantity - entry.reserved}
+                  fill="#10b981"
+                  name="Free to Use"
+                />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
+
+          <Flex justify="end" mt="4">
+            <Button
+              style={{ backgroundColor: '#22c55e', color: 'white', fontWeight: 700 }}
+              size="3"
+              onClick={() => alert('Submitted to Blockchain!')}
+            >
+              Submit to Blockchain
+            </Button>
+          </Flex>
+        </Flex>
+      </Card>
     </Box>
   );
 };
 
 export default FinishedGoodsInventory;
-
-/*
-
-  - Released
-  - Quarantined
-
-*/

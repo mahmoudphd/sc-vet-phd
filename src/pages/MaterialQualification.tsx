@@ -1,195 +1,213 @@
-// Updated component
-import { useTranslation } from 'react-i18next';
-import { 
-  Table, 
-  Badge, 
-  Card, 
-  Flex, 
-  Heading, 
-  Text,
+import {
+  Table,
   Button,
-  Progress,
-  Box,
   Dialog,
-  Select,
-  TextField
+  Flex,
+  Text,
+  Box,
+  Badge,
+  Card,
 } from '@radix-ui/themes';
-import { CubeIcon } from '@radix-ui/react-icons';
+import { useState } from 'react';
 
-const MaterialQualification = () => {
-  const { t } = useTranslation('material-qualification');
-  const materials = [
-    { 
-      id: 'RM4587',
-      material: 'Albendazole API',
-      supplier: 'PharmaChem Ltd.',
-      status: 'Approved',
-      tests: '4/5 Passed',
-      certificate: 'CoA Available',
-      expiry: '2025-06-01'
+const materialsData = [
+  {
+    material: 'Vitamin B1',
+    supplier: 'Supplier A',
+    status: 'Approved',
+    expiry: '2025-08-10',
+    tests: {
+      Identity: 'Passed',
+      Purity: 'Passed',
+      Microbial: 'Passed',
+      Endotoxins: 'Passed',
     },
-  ];
+    certificate: 'Cert-001',
+  },
+  {
+    material: 'Vitamin B2',
+    supplier: 'Supplier B',
+    status: 'Pending',
+    expiry: '2025-12-15',
+    tests: {
+      Identity: 'Pending',
+      Purity: 'Pending',
+      Microbial: 'Pending',
+      Endotoxins: 'Pending',
+    },
+    certificate: '', // No certificate
+  },
+  {
+    material: 'Nicotinamide',
+    supplier: 'Supplier A',
+    status: 'Approved',
+    expiry: '2026-01-20',
+    tests: {
+      Identity: 'Passed',
+      Purity: 'Passed',
+      Microbial: 'Passed',
+      Endotoxins: 'Passed',
+    },
+    certificate: 'Cert-003',
+  },
+];
+
+export default function MaterialTable() {
+  const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
 
   return (
-    <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('dashboard-heading')}</Heading>
-        <Flex gap="3">
-            {/* New Qualification Modal */}
-            <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">{t('new-qualification-button')}</Button>
-            </Dialog.Trigger>
-            <Dialog.Content>
-              <Dialog.Title>{t('new-qualification.title')}</Dialog.Title>
-              <Flex direction="column" gap="3">
-                <TextField.Root placeholder={t('new-qualification.material')} />
-                <TextField.Root placeholder={t('new-qualification.supplier')} />
-                <Select.Root>
-                  <Select.Trigger placeholder={t('new-qualification.type')} />
-                  <Select.Content>
-                    <Select.Item value="api">{t('new-qualification.types.api')}</Select.Item>
-                    <Select.Item value="excipient">{t('new-qualification.types.excipient')}</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Flex>
-              <Flex gap="3" mt="4" justify="end">
-                <Dialog.Close>
-                  <Button variant="soft">{t('cancel')}</Button>
-                </Dialog.Close>
-                <Button>{t('submit')}</Button>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">{t('supplier-audit-button')}</Button>
-            </Dialog.Trigger>
-            <Dialog.Content>
-              <Dialog.Title>{t('supplier-audit.title')}</Dialog.Title>
-              <Flex direction="column" gap="3">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('supplier-audit.select-supplier')} />
-                  <Select.Content>
-                    <Select.Item value="pharmachem">PharmaChem Ltd.</Select.Item>
-                    <Select.Item value="other">Other Suppliers</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-                <TextField.Root  placeholder={t('supplier-audit.audit-date')} type="date" />
-              </Flex>
-              <Flex gap="3" mt="4" justify="end">
-                <Dialog.Close>
-                  <Button variant="soft">{t('cancel')}</Button>
-                </Dialog.Close>
-                <Button>{t('schedule-audit')}</Button>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-        </Flex>
-      </Flex>
+    <Box p="4">
+      <Text size="4" weight="bold" mb="4">
+        Material Qualification Dashboard
+      </Text>
 
+      {/* Cards Row */}
       <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" gap="2">
-            <Text size="2">{t('qualification-progress')}</Text>
-            <Progress value={75} />
-            <Flex justify="between">
-              <Text size="1">{t('pending-label')}</Text>
-              <Text size="1">{t('approved-label')}</Text>
-            </Flex>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Qualification Progress</Text>
+            <Text>Pending: 3</Text>
+            <Text>Approved: 12</Text>
           </Flex>
         </Card>
 
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" gap="2">
-            <Text size="2">{t('compliance-score')}</Text>
-            <Heading size="7">98.4%</Heading>
-            <Text size="1">{t('alcoa-compliant')}</Text>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Compliance Score</Text>
+            <Text size="6" color="green" weight="bold">98.4%</Text>
+            <Text>ALCOA+ Compliant</Text>
           </Flex>
         </Card>
 
-        <Card style={{ flex: 1 }}>
-          <Flex direction="column" gap="2">
-            <Text size="2">{t('expiring-soon')}</Text>
-            <Heading size="7" className="text-amber-500">2</Heading>
-            <Text size="1">{t('materials')}</Text>
+        <Card variant="surface" style={{ flex: 1, padding: '16px' }}>
+          <Flex direction="column" gap="4">
+            <Text weight="bold" size="3">Expiring Soon</Text>
+            <Text size="6" color="red" weight="bold">2</Text>
+            <Text>Materials</Text>
           </Flex>
         </Card>
       </Flex>
 
+      {/* Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('material-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('supplier-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('status-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('test-results-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('certificate-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('expiry-header')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actions-header')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Test Results</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Certificate</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
         <Table.Body>
-          {materials.map((material) => (
-            <Table.Row key={material.id}>
+          {materialsData.map((item, index) => (
+            <Table.Row key={index}>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <CubeIcon />
-                  {material.material}
-                </Flex>
+                <Dialog.Root>
+                  <Dialog.Trigger>
+                    <Button variant="ghost" onClick={() => setSelectedMaterial(item)}>
+                      {item.material}
+                    </Button>
+                  </Dialog.Trigger>
+                  <Dialog.Content maxWidth="500px">
+                    <Dialog.Title>Test Results for {item.material}</Dialog.Title>
+                    <Dialog.Description mb="4">
+                      Detailed compliance results for each quality test.
+                    </Dialog.Description>
+                    <Flex direction="column" gap="3">
+                      {Object.entries(item.tests).map(([testName, result]) => (
+                        <Flex key={testName} justify="between" align="center">
+                          <Text weight="bold">
+                            {testName}{' '}
+                            <Text
+                              as="span"
+                              color="blue"
+                              weight="regular"
+                              style={{ marginLeft: 6 }}
+                            >
+                              via IoT
+                            </Text>
+                          </Text>
+                          <Badge
+                            color={
+                              result === 'Passed'
+                                ? 'green'
+                                : result === 'Pending'
+                                ? 'yellow'
+                                : 'red'
+                            }
+                          >
+                            {result}
+                          </Badge>
+                        </Flex>
+                      ))}
+                    </Flex>
+                    <Flex justify="end" mt="4">
+                      <Dialog.Close>
+                        <Button>Close</Button>
+                      </Dialog.Close>
+                    </Flex>
+                  </Dialog.Content>
+                </Dialog.Root>
               </Table.Cell>
-              <Table.Cell>{material.supplier}</Table.Cell>
+              <Table.Cell>{item.supplier}</Table.Cell>
               <Table.Cell>
-                <Badge 
-                  color={material.status === 'Approved' ? 'green' : 'red'}
-                  variant="soft"
-                >
-                  {t(`status.${material.status.toLowerCase()}`)}
-                </Badge>
+                <Badge color={item.status === 'Approved' ? 'green' : 'yellow'}>{item.status}</Badge>
               </Table.Cell>
               <Table.Cell>
-                <Progress value={80} />
-                <Text size="1">{material.tests}</Text>
+                {Object.values(item.tests).every(v => v === 'Passed') ? (
+                  <Badge color="green">All Passed</Badge>
+                ) : (
+                  <Badge color="yellow">Pending</Badge>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Badge variant="outline">
-                  {t(`certificate.${material.certificate.toLowerCase().replace(/ /g, '-')}`)}
-                </Badge>
+                {item.certificate ? (
+                  <Dialog.Root>
+                    <Dialog.Trigger>
+                      <Badge color="green" style={{ cursor: 'pointer' }}>
+                        Available
+                      </Badge>
+                    </Dialog.Trigger>
+                    <Dialog.Content
+                      maxWidth="400px"
+                      style={{ borderRadius: '8px', padding: '20px' }}
+                    >
+                      <Dialog.Title>Certificates Details</Dialog.Title>
+                      <Dialog.Description mb="4">
+                        This material has the following certificates:
+                      </Dialog.Description>
+                      <Box mb="4">
+                        <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>
+                          <li>Certificate of Analysis (CoA)</li>
+                          <li>Certificate of Compliance (CoC)</li>
+                          <li>GMP (Good Manufacturing Practice)</li>
+                        </ul>
+                      </Box>
+                      <Flex justify="end">
+                        <Dialog.Close>
+                          <Button>Close</Button>
+                        </Dialog.Close>
+                      </Flex>
+                    </Dialog.Content>
+                  </Dialog.Root>
+                ) : (
+                  <Badge color="red">Not Available</Badge>
+                )}
               </Table.Cell>
-              <Table.Cell>{material.expiry}</Table.Cell>
-              <Table.Cell>
-                <Flex gap="2">
-                  <Button variant="soft" size="1">{t('view-coa-button')}</Button>
-                  <Button variant="soft" size="1">{t('retest-button')}</Button>
-                </Flex>
-              </Table.Cell>
+              <Table.Cell>{item.expiry}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
-      <Flex mt="5" direction="column" gap="3">
-        <Heading size="5">{t('test-parameters-heading')}</Heading>
-        <Flex gap="2">
-          {['Identity', 'Purity', 'Microbial', 'Endotoxins'].map((test) => (
-            <Badge key={test} variant="outline">
-              {t(`test-parameters.${test.toLowerCase()}`)}
-            </Badge>
-          ))}
-        </Flex>
+      <Flex justify="end" mt="4">
+        <Button variant="solid" color="blue">
+          Submit to Blockchain
+        </Button>
       </Flex>
     </Box>
   );
-};
-
-export default MaterialQualification;
-
-/*
-
-  Status
-    - Approved
-    - Rejected
-    - Pending
-
-*/
+}

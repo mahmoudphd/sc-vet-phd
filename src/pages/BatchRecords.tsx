@@ -15,12 +15,17 @@ const BatchRecords = () => {
   const records = [
     { 
       id: 'BR2023-045', 
-      product: 'NSAID Injectable',
+      product: 'Poultry Drug 1',
       approval: 'approved',
-      date: '2023-07-15',
+      date: '2025-07-25',
       author: 'QA Auditor 1'
     },
   ];
+
+  const handleSubmitToBlockchain = () => {
+    // هنا يمكن استدعاء smart contract أو trigger API
+    console.log('Submitting to blockchain...');
+  };
 
   return (
     <Box p="6" className="flex-1">
@@ -75,6 +80,12 @@ const BatchRecords = () => {
           ))}
         </Table.Body>
       </Table.Root>
+
+      <Flex mt="6" justify="center">
+        <Button variant="solid" color="blue" onClick={handleSubmitToBlockchain}>
+          {t('submit-to-blockchain', 'Submit to Blockchain')}
+        </Button>
+      </Flex>
     </Box>
   );
 };
