@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch
+  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch,
+  Dialog, DialogContent, DialogTitle, DialogDescription
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
@@ -12,6 +13,7 @@ const CO2Footprint = () => {
   const [selectedProduct, setSelectedProduct] = useState('Poultry Product 1');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto'>('manual');
+  const [rawMaterialsOpen, setRawMaterialsOpen] = useState(false);
 
   const defaultManualData = [
     { category: 'Raw Materials', emissions: 5.0 },
@@ -22,6 +24,32 @@ const CO2Footprint = () => {
     { category: 'Use', emissions: 1.5 },
     { category: 'End of Life', emissions: 2.3 }
   ];
+
+  const rawMaterialsData = [
+    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
+    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
+    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, reference: '[US LCI Database]', emissions: 0.780 },
+    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, reference: '[DEFRA 2022]', emissions: 0.260 },
+    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, reference: '[IPCC 2023]', emissions: 0.132 },
+    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, reference: '[FAO STAT 2023]', emissions: 1.260 },
+    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, reference: '[FAO STAT 2023]', emissions: 0.380 },
+    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, reference: '[LCA Food DK]', emissions: 0.138 },
+    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, reference: '[EPD International]', emissions: 0.080 },
+    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, reference: '[USDA LCA Commons]', emissions: 0.288 },
+    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, reference: '[Egyptian LCA 2024]', emissions: 2.625 },
+    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, reference: '[EU PEF Guide]', emissions: 0.220 },
+    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, reference: '[World Food LCA]', emissions: 0.475 },
+    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, reference: '[USDA ARS]', emissions: 0.560 },
+    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, reference: '[Chinese LCA Database]', emissions: 1.350 },
+    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
+  ];
+
+  const totalRawMaterialsEmissions = useMemo(() => 
+    rawMaterialsData.reduce((sum, item) => sum + item.emissions, 0), 
+    [rawMaterialsData]
+  );
 
   const [emissionData, setEmissionData] = useState(defaultManualData);
 
@@ -195,7 +223,19 @@ const CO2Footprint = () => {
           <Table.Body>
             {emissionDataWithPercent.map((item, i) => (
               <Table.Row key={i}>
-                <Table.Cell><strong>{item.category}</strong></Table.Cell>
+                <Table.Cell>
+                  {item.category === 'Raw Materials' ? (
+                    <Button 
+                      variant="ghost" 
+                      onClick={() => setRawMaterialsOpen(true)}
+                      style={{ padding: 0, fontWeight: 'bold' }}
+                    >
+                      {item.category}
+                    </Button>
+                  ) : (
+                    <strong>{item.category}</strong>
+                  )}
+                </Table.Cell>
                 <Table.Cell>
                   {mode === 'manual' ? (
                     <Flex align="center" gap="2">
@@ -244,6 +284,57 @@ const CO2Footprint = () => {
           Submit
         </Button>
       </Flex>
+
+      {/* Raw Materials Modal */}
+      <Dialog.Root open={rawMaterialsOpen} onOpenChange={setRawMaterialsOpen}>
+        <DialogContent style={{ maxWidth: 800 }}>
+          <DialogTitle>Raw Materials Detailed Emissions</DialogTitle>
+          <DialogDescription>
+            Detailed breakdown of raw materials emissions (Total: {totalRawMaterialsEmissions.toFixed(3)} kg CO₂e)
+          </DialogDescription>
+
+          <Box mt="4" style={{ maxHeight: 500, overflowY: 'auto' }}>
+            <Table.Root variant="surface">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Quantity (kg)</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/kg)</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Scientific Reference</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {rawMaterialsData.map((item, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell>{item.material}</Table.Cell>
+                    <Table.Cell>{item.quantity.toFixed(4)}</Table.Cell>
+                    <Table.Cell>{item.emissionFactor}</Table.Cell>
+                    <Table.Cell>{item.reference}</Table.Cell>
+                    <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                  </Table.Row>
+                ))}
+                <Table.Row>
+                  <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
+                  <Table.Cell><strong>{totalRawMaterialsEmissions.toFixed(3)}</strong></Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
+          </Box>
+
+          <Box mt="4">
+            <Text size="2">
+              <strong>Weighted Average Emission Factor:</strong> 38.6 kg CO₂e/kg
+            </Text>
+          </Box>
+
+          <Flex mt="4" justify="end" gap="3">
+            <Button variant="soft" onClick={() => setRawMaterialsOpen(false)}>
+              Close
+            </Button>
+          </Flex>
+        </DialogContent>
+      </Dialog.Root>
     </Box>
   );
 };
