@@ -7,7 +7,6 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 
-// بيانات كل مرحلة كاملة
 const stageData = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
@@ -30,25 +29,26 @@ const stageData = {
     { material: 'Water', quantity: 0.571, emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
   ],
   'Manufacturing': [
-    { process: 'Mixing with Water', quantity: 1, unit: 'kg', emissionFactor: 0.02, reference: '[Poultry Sci]', emissions: 0.02 },
-    { process: 'Equipment Cleaning', quantity: 0.5, unit: 'L water', emissionFactor: 0.001, reference: '[LCA Egypt]', emissions: 0.0005 },
-    { process: 'Material Mixing', quantity: 0.2, unit: 'kWh', emissionFactor: 0.15, reference: '[EEAA 2023]', emissions: 0.030 },
-    { process: 'Liquid Filling', quantity: 0.1, unit: 'kWh', emissionFactor: 0.15, reference: '[CAPMAS 2023]', emissions: 0.015 },
-    { process: 'Sterilization', quantity: 0.5, unit: 'kWh', emissionFactor: 0.15, reference: '[Mansoura Univ. 2023]', emissions: 0.075 },
-    { process: 'Primary Packaging', quantity: 0.05, unit: 'kWh', emissionFactor: 0.15, reference: '[EgyPack 2023]', emissions: 0.007 },
-    { process: 'Quality Inspection', quantity: 0.1, unit: 'kWh', emissionFactor: 0.15, reference: '[Min. of Health 2023]', emissions: 0.015 },
+    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, reference: '[Pharma LCA 2023]', emissions: 0.050 },
+    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, reference: '[WHO GMP 2022]', emissions: 0.009 },
+    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, reference: '[CAPMAS 2023]', emissions: 0.275 },
+    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[ISO 14044]', emissions: 0.165 },
+    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, reference: '[USP Sterilization]', emissions: 0.825 },
+    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, reference: '[EgyPack 2023]', emissions: 0.110 },
+    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[FDA Guidelines]', emissions: 0.165 },
   ],
   'Packaging': [
-    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.2, reference: '[EgyPack 2023]', emissions: 0.192 },
-    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 6.8, reference: '[WorldSteel 2023]', emissions: 0.102 },
-    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 8.5, reference: '[IPCC 2023]', emissions: 0.017 },
-    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.8, reference: '[EEAA 2023]', emissions: 0.004 },
-    { component: 'Secondary Packaging', quantity: 0.05, unit: 'kg cardboard', emissionFactor: 0.8, reference: '[EgyPack 2023]', emissions: 0.040 },
+    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, reference: '[EgyPack 2023]', emissions: 0.210 },
+    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, reference: '[WorldSteel 2023]', emissions: 0.105 },
+    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, reference: '[IPCC 2023]', emissions: 0.018 },
+    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, reference: '[EEAA 2023]', emissions: 0.0045 },
+    { component: 'Secondary Packaging', quantity: 50, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, reference: '[EgyPack 2023]', emissions: 0.050 },
+    { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, reference: '[CAPMAS 2023]', emissions: 0.0075 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.02, reference: '[US LCI Database]', emissions: 0.140 },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.15, reference: '[CAPMAS 2023]', emissions: 0.075 },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.08, reference: '[EgyLogistics 2023]', emissions: 0.240 },
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, reference: '[Egyptian Cold Chain 2023]', emissions: 0.210 },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, reference: '[CAPMAS 2023]', emissions: 0.090 },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, reference: '[EgyLogistics 2023]', emissions: 0.300 },
   ],
   'Distribution': [
     { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, reference: '[EgyLogistics 2023]', emissions: 0.030 },
@@ -61,9 +61,9 @@ const stageData = {
     { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, reference: '[Household Energy]', emissions: 0.050 },
   ],
   'End of Life': [
-    { method: 'Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 2.8, reference: '[US EPA]', emissions: 0.280 },
-    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.5, reference: '[EgyWaste]', emissions: -0.025 },
-    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.2, reference: '[Waste Mgmt 2023]', emissions: 0.036 },
+    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, reference: '[Egyptian EPA 2023]', emissions: 0.350 },
+    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, reference: '[EgyWaste 2023]', emissions: -0.015 },
+    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, reference: '[Cairo Waste Authority]', emissions: 0.045 },
   ],
 };
 
@@ -71,18 +71,39 @@ const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Product 1');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
-  const [mode, setMode] = useState<'manual' | 'auto'>('manual');
+  const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
   const [currentStageData, setCurrentStageData] = useState<any[]>([]);
 
   const defaultManualData = [
-    { category: 'Raw Materials', emissions: 5.0 },
-    { category: 'Manufacturing', emissions: 8.5 },
-    { category: 'Packaging', emissions: 3.2 },
-    { category: 'Transport', emissions: 4.0 },
-    { category: 'Distribution', emissions: 2.5 },
-    { category: 'Use', emissions: 1.5 },
-    { category: 'End of Life', emissions: 2.3 }
+    { 
+      category: 'Raw Materials', 
+      emissions: stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Manufacturing', 
+      emissions: stageData['Manufacturing'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Packaging', 
+      emissions: stageData['Packaging'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Transport', 
+      emissions: stageData['Transport'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Distribution', 
+      emissions: stageData['Distribution'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Use', 
+      emissions: stageData['Use'].reduce((sum, item) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'End of Life', 
+      emissions: stageData['End of Life'].reduce((sum, item) => sum + item.emissions, 0) 
+    }
   ];
 
   const [emissionData, setEmissionData] = useState(defaultManualData);
@@ -322,7 +343,6 @@ const CO2Footprint = () => {
         </Button>
       </Flex>
 
-      {/* نافذة تفاصيل المراحل */}
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
         <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh' }}>
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
