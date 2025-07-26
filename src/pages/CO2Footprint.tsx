@@ -7,9 +7,23 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 
-const EXCHANGE_RATE = 50; // 50 جنيه لكل دولار
+interface StageItem {
+  [key: string]: any;
+  emissions: number;
+  environmentalCost?: number;
+}
 
-const stageData = {
+interface EmissionDataItem {
+  category: string;
+  emissions: number;
+  percentOfTotal?: string;
+  target?: string;
+  environmentalCost?: number;
+}
+
+const EXCHANGE_RATE = 50;
+
+const stageData: Record<string, StageItem[]> = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
     { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
@@ -75,7 +89,7 @@ const CO2Footprint = () => {
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
-  const [currentStageData, setCurrentStageData] = useState<any[]>([]);
+  const [currentStageData, setCurrentStageData] = useState<StageItem[]>([]);
   const [costCalculation, setCostCalculation] = useState<{
     stage: string;
     items: Array<{
@@ -87,14 +101,14 @@ const CO2Footprint = () => {
     total: number;
   } | null>(null);
 
-  const calculateEnvironmentalCost = (emissionsKg: number) => {
-    const costUSD = emissionsKg * 1; // 1 دولار لكل كجم CO₂e
-    const costEGP = costUSD * EXCHANGE_RATE; // تحويل للجنيه المصري
+  const calculateEnvironmentalCost = (emissionsKg: number): number => {
+    const costUSD = emissionsKg * 1;
+    const costEGP = costUSD * EXCHANGE_RATE;
     return currency === 'EGP' ? costEGP : costUSD;
   };
 
-  const processStageData = (data: any) => {
-    return data.map((item: any) => ({
+  const processStageData = (data: StageItem[]): StageItem[] => {
+    return data.map((item: StageItem) => ({
       ...item,
       environmentalCost: calculateEnvironmentalCost(item.emissions * 1000)
     }));
@@ -104,38 +118,38 @@ const CO2Footprint = () => {
     Object.entries(stageData).map(([key, value]) => [key, processStageData(value)])
   );
 
-  const defaultManualData = [
+  const defaultManualData: EmissionDataItem[] = [
     { 
       category: 'Raw Materials', 
-      emissions: stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Raw Materials'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'Manufacturing', 
-      emissions: stageData['Manufacturing'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Manufacturing'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'Packaging', 
-      emissions: stageData['Packaging'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Packaging'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'Transport', 
-      emissions: stageData['Transport'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Transport'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'Distribution', 
-      emissions: stageData['Distribution'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Distribution'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'Use', 
-      emissions: stageData['Use'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Use'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     },
     { 
       category: 'End of Life', 
-      emissions: stageData['End of Life'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['End of Life'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
     }
   ];
 
-  const [emissionData, setEmissionData] = useState(defaultManualData);
+  const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(defaultManualData);
 
   const handleStageClick = (stage: string) => {
     setCurrentStageData(processedStageData[stage]);
@@ -143,7 +157,7 @@ const CO2Footprint = () => {
   };
 
   const showCostCalculation = (stage: string) => {
-    const items = processedStageData[stage].map((item: any) => ({
+    const items = processedStageData[stage].map((item: StageItem) => ({
       name: item.material || item.process || item.component || item.type || item.activity || item.method,
       emissions: item.emissions * 1000,
       cost: calculateEnvironmentalCost(item.emissions * 1000),
@@ -153,7 +167,7 @@ const CO2Footprint = () => {
     setCostCalculation({
       stage,
       items,
-      total: items.reduce((sum, item) => sum + item.cost, 0)
+      total: items.reduce((sum: number, item) => sum + item.cost, 0)
     });
   };
 
@@ -181,10 +195,13 @@ const CO2Footprint = () => {
     { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
   ];
 
-  const totalEmissions = useMemo(() => emissionData.reduce((sum, item) => sum + item.emissions, 0), [emissionData]);
+  const totalEmissions = useMemo(() => 
+    emissionData.reduce((sum: number, item: EmissionDataItem) => sum + item.emissions, 0), 
+    [emissionData]
+  );
 
   const emissionDataWithPercent = useMemo(() => {
-    return emissionData.map(item => ({
+    return emissionData.map((item: EmissionDataItem) => ({
       ...item,
       percentOfTotal: ((item.emissions / totalEmissions) * 100).toFixed(1),
       target: (item.emissions * 0.8).toFixed(1),
@@ -194,7 +211,7 @@ const CO2Footprint = () => {
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
-  const totalReduction = reductionData.reduce((sum, item) => sum + item.reduction, 0);
+  const totalReduction = reductionData.reduce((sum: number, item) => sum + item.reduction, 0);
 
   const handleSubmit = () => {
     console.log('Submitted emission data:', emissionData);
@@ -210,7 +227,7 @@ const CO2Footprint = () => {
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -229,7 +246,7 @@ const CO2Footprint = () => {
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -249,7 +266,7 @@ const CO2Footprint = () => {
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -261,14 +278,14 @@ const CO2Footprint = () => {
       }
     ] : stage === 'Transport' ? [
       { header: 'Transport Type', accessor: 'type' },
-      { header: 'Distance/Duration', accessor: (item: any) => item.distance || item.duration },
+      { header: 'Distance/Duration', accessor: (item: StageItem) => item.distance || item.duration },
       { header: 'Unit', accessor: 'unit' },
       { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
       { header: 'Reference', accessor: 'reference' },
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -280,14 +297,14 @@ const CO2Footprint = () => {
       }
     ] : stage === 'Distribution' ? [
       { header: 'Activity', accessor: 'activity' },
-      { header: 'Distance/Duration', accessor: (item: any) => item.distance || item.duration },
+      { header: 'Distance/Duration', accessor: (item: StageItem) => item.distance || item.duration },
       { header: 'Unit', accessor: 'unit' },
       { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
       { header: 'Reference', accessor: 'reference' },
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -299,14 +316,14 @@ const CO2Footprint = () => {
       }
     ] : stage === 'Use' ? [
       { header: 'Aspect', accessor: 'aspect' },
-      { header: 'Quantity/Distance/Duration', accessor: (item: any) => item.quantity || item.distance || item.duration },
+      { header: 'Quantity/Distance/Duration', accessor: (item: StageItem) => item.quantity || item.distance || item.duration },
       { header: 'Unit', accessor: 'unit' },
       { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
       { header: 'Reference', accessor: 'reference' },
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -325,7 +342,7 @@ const CO2Footprint = () => {
       { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
       { 
         header: `Environmental Cost (${currency})`, 
-        cell: (item: any) => (
+        cell: (item: StageItem) => (
           <Button 
             variant="ghost" 
             onClick={() => showCostCalculation(stage)}
@@ -347,7 +364,7 @@ const CO2Footprint = () => {
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {data.map((item: any, index: number) => (
+          {data.map((item: StageItem, index: number) => (
             <Table.Row key={index}>
               {columns.map((col, idx) => (
                 <Table.Cell key={idx}>
@@ -363,7 +380,7 @@ const CO2Footprint = () => {
             <Table.Cell>
               <strong>
                 {calculateEnvironmentalCost(
-                  data.reduce((sum, item) => sum + item.emissions, 0) * 1000
+                  data.reduce((sum: number, item: StageItem) => sum + item.emissions, 0) * 1000
                 ).toFixed(2)}
               </strong>
             </Table.Cell>
@@ -532,7 +549,7 @@ const CO2Footprint = () => {
                     onClick={() => showCostCalculation(item.category)}
                     style={{ padding: 0, fontWeight: 'bold' }}
                   >
-                    {item.environmentalCost.toFixed(2)}
+                    {item.environmentalCost?.toFixed(2)}
                   </Button>
                 </Table.Cell>
                 <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
