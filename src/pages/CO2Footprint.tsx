@@ -1,202 +1,191 @@
 import { useState, useMemo } from 'react';
 import {
-  Box, Button, Card, Flex, Grid, Heading, Table, Text, TextField, Switch,
-  Dialog, ScrollArea, Badge, Strong, Separator, Select
+  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch,
+  Dialog
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 
-// Constants
-const CARBON_PRICE_USD_PER_TON = 50;
+interface StageItem {
+  [key: string]: any;
+  emissions: number;
+  environmentalCost?: number;
+  unit?: string;
+}
+
+interface EmissionDataItem {
+  category: string;
+  emissions: number;
+  percentOfTotal?: string;
+  target?: string;
+  environmentalCost?: number;
+}
+
+interface CostCalculationItem {
+  name: string;
+  emissions: number;
+  cost: number;
+  calculation: string;
+}
+
+interface CostCalculation {
+  stage: string;
+  items: CostCalculationItem[];
+  total: number;
+}
+
 const EXCHANGE_RATE = 50;
-const KG_TO_TON = 0.001;
+const CARBON_PRICE_USD = 50;
 
-interface ProcessItem {
-  id: string;
-  name: string;
-  quantity: number;
-  unit: string;
-  emissionFactor: number;
-  category?: string;
-  type?: string;
-  material?: string;
-  reference?: string;
-}
+const stageData: Record<string, StageItem[]> = {
+  'Raw Materials': [
+    { material: 'Vitamin B1', quantity: 1, unit: 'g', emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
+    { material: 'Vitamin B2', quantity: 6, unit: 'g', emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
+    { material: 'Vitamin B12', quantity: 1, unit: 'g', emissionFactor: 120, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Nicotinamide (B3)', quantity: 10, unit: 'g', emissionFactor: 78, reference: '[US LCI Database]', emissions: 0.780 },
+    { material: 'Pantothenic Acid', quantity: 4, unit: 'g', emissionFactor: 65, reference: '[DEFRA 2022]', emissions: 0.260 },
+    { material: 'Vitamin B6', quantity: 1.5, unit: 'g', emissionFactor: 88, reference: '[IPCC 2023]', emissions: 0.132 },
+    { material: 'Leucine', quantity: 30, unit: 'g', emissionFactor: 42, reference: '[FAO STAT 2023]', emissions: 1.260 },
+    { material: 'Threonine', quantity: 10, unit: 'g', emissionFactor: 38, reference: '[FAO STAT 2023]', emissions: 0.380 },
+    { material: 'Taurine', quantity: 2.5, unit: 'g', emissionFactor: 55, reference: '[LCA Food DK]', emissions: 0.138 },
+    { material: 'Glycine', quantity: 2.5, unit: 'g', emissionFactor: 32, reference: '[EPD International]', emissions: 0.080 },
+    { material: 'Arginine', quantity: 2.5, unit: 'g', emissionFactor: 48, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
+    { material: 'Cynarine', quantity: 2.5, unit: 'g', emissionFactor: 115, reference: '[USDA LCA Commons]', emissions: 0.288 },
+    { material: 'Silymarin', quantity: 25, unit: 'g', emissionFactor: 105, reference: '[Egyptian LCA 2024]', emissions: 2.625 },
+    { material: 'Sorbitol', quantity: 10, unit: 'g', emissionFactor: 22, reference: '[EU PEF Guide]', emissions: 0.220 },
+    { material: 'Carnitine', quantity: 5, unit: 'g', emissionFactor: 95, reference: '[World Food LCA]', emissions: 0.475 },
+    { material: 'Betaine', quantity: 20, unit: 'g', emissionFactor: 28, reference: '[USDA ARS]', emissions: 0.560 },
+    { material: 'Tween-80', quantity: 75, unit: 'g', emissionFactor: 18, reference: '[Chinese LCA Database]', emissions: 1.350 },
+    { material: 'Water', quantity: 571, unit: 'g', emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
+  ],
+  'Manufacturing': [
+    { process: 'Water Mixing', quantity: 1000, unit: 'L', emissionFactor: 0.00005, reference: '[Pharma LCA 2023]', emissions: 0.050 },
+    { process: 'Equipment Cleaning', quantity: 300, unit: 'L', emissionFactor: 0.00003, reference: '[WHO GMP 2022]', emissions: 0.009 },
+    { process: 'Material Mixing', quantity: 5, unit: 'kWh', emissionFactor: 0.55, reference: '[CAPMAS 2023]', emissions: 2.750 },
+    { process: 'Liquid Filling', quantity: 3, unit: 'kWh', emissionFactor: 0.55, reference: '[ISO 14044]', emissions: 1.650 },
+    { process: 'Sterilization', quantity: 15, unit: 'kWh', emissionFactor: 0.55, reference: '[USP Sterilization]', emissions: 8.250 },
+    { process: 'Primary Packaging', quantity: 2, unit: 'kWh', emissionFactor: 0.55, reference: '[EgyPack 2023]', emissions: 1.100 },
+    { process: 'Quality Inspection', quantity: 3, unit: 'kWh', emissionFactor: 0.55, reference: '[FDA Guidelines]', emissions: 1.650 },
+  ],
+  'Packaging': [
+    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, reference: '[EgyPack 2023]', emissions: 0.210 },
+    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, reference: '[WorldSteel 2023]', emissions: 0.105 },
+    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, reference: '[IPCC 2023]', emissions: 0.018 },
+    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, reference: '[EEAA 2023]', emissions: 0.0045 },
+    { component: 'Secondary Packaging', quantity: 50, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, reference: '[EgyPack 2023]', emissions: 0.050 },
+    { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, reference: '[CAPMAS 2023]', emissions: 0.0075 },
+  ],
+  'Transport': [
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.3, reference: '[Egyptian Cold Chain 2023]', emissions: 2.100 },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, reference: '[CAPMAS 2023]', emissions: 9.000 },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, reference: '[EgyLogistics 2023]', emissions: 30.000 },
+  ],
+  'Distribution': [
+    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, reference: '[EgyLogistics 2023]', emissions: 0.030 },
+    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, reference: '[Cairo Air Quality]', emissions: 1.800 },
+    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, reference: '[Retail LCA 2023]', emissions: 0.010 },
+  ],
+  'Use': [
+    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, reference: '[WB 2023]', emissions: 1.000 },
+    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, reference: '[UNEP 2023]', emissions: 0.700 },
+    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, reference: '[Household Energy]', emissions: 0.050 },
+  ],
+  'End of Life': [
+    { method: 'Medical Waste Incineration', quantity: 100, unit: 'g', emissionFactor: 3.5, reference: '[Egyptian EPA 2023]', emissions: 0.350 },
+    { method: 'Recycling', quantity: 50, unit: 'g', emissionFactor: -0.3, reference: '[EgyWaste 2023]', emissions: -0.015 },
+    { method: 'Landfill', quantity: 30, unit: 'g', emissionFactor: 1.5, reference: '[Cairo Waste Authority]', emissions: 0.045 },
+  ],
+};
 
-interface ProcessResult {
-  emissionsKg: number;
-  costUSD: number;
-  costEGP: number;
-  calculationSteps: string[];
-}
-
-interface StageData {
-  name: string;
-  items: ProcessItem[];
-}
-
-interface StageResult {
-  name: string;
-  items: (ProcessItem & ProcessResult)[];
-  totalEmissionsKg: number;
-  totalCostUSD: number;
-  totalCostEGP: number;
-}
-
-const productStages: StageData[] = [
-  {
-    name: 'Raw Materials',
-    items: [
-      { id: 'rm-1', name: 'Vitamin B1', quantity: 0.0010, unit: 'kg', emissionFactor: 85, category: 'Vitamin', reference: 'IPCC 2023' },
-      { id: 'rm-2', name: 'Vitamin B2', quantity: 0.0060, unit: 'kg', emissionFactor: 92, category: 'Vitamin', reference: 'Ecoinvent 3.8' },
-      { id: 'rm-3', name: 'Vitamin B12', quantity: 0.0010, unit: 'kg', emissionFactor: 120, category: 'Vitamin', reference: 'Agri-footprint 5.0' },
-      { id: 'rm-4', name: 'Nicotinamide (B3)', quantity: 0.0100, unit: 'kg', emissionFactor: 78, category: 'Vitamin', reference: 'US LCI Database' },
-      { id: 'rm-5', name: 'Pantothenic Acid', quantity: 0.0040, unit: 'kg', emissionFactor: 65, category: 'Vitamin', reference: 'DEFRA 2022' },
-      { id: 'rm-6', name: 'Vitamin B6', quantity: 0.0015, unit: 'kg', emissionFactor: 88, category: 'Vitamin', reference: 'IPCC 2023' },
-      { id: 'rm-7', name: 'Leucine', quantity: 0.0300, unit: 'kg', emissionFactor: 42, category: 'Amino Acid', reference: 'FAO STAT 2023' },
-      { id: 'rm-8', name: 'Threonine', quantity: 0.0100, unit: 'kg', emissionFactor: 38, category: 'Amino Acid', reference: 'FAO STAT 2023' },
-      { id: 'rm-9', name: 'Taurine', quantity: 0.0025, unit: 'kg', emissionFactor: 55, category: 'Amino Acid', reference: 'LCA Food DK' },
-      { id: 'rm-10', name: 'Glycine', quantity: 0.0025, unit: 'kg', emissionFactor: 32, category: 'Amino Acid', reference: 'EPD International' },
-      { id: 'rm-11', name: 'Arginine', quantity: 0.0025, unit: 'kg', emissionFactor: 48, category: 'Amino Acid', reference: 'Agri-footprint 5.0' },
-      { id: 'rm-12', name: 'Cynarine', quantity: 0.0025, unit: 'kg', emissionFactor: 115, category: 'Plant Extract', reference: 'USDA LCA Commons' },
-      { id: 'rm-13', name: 'Silymarin', quantity: 0.0250, unit: 'kg', emissionFactor: 105, category: 'Plant Extract', reference: 'Egyptian LCA 2024' },
-      { id: 'rm-14', name: 'Sorbitol', quantity: 0.0100, unit: 'kg', emissionFactor: 22, category: 'Sweetener', reference: 'EU PEF Guide' },
-      { id: 'rm-15', name: 'Carnitine', quantity: 0.0050, unit: 'kg', emissionFactor: 95, category: 'Supplement', reference: 'World Food LCA' },
-      { id: 'rm-16', name: 'Betaine', quantity: 0.0200, unit: 'kg', emissionFactor: 28, category: 'Supplement', reference: 'USDA ARS' },
-      { id: 'rm-17', name: 'Tween-80', quantity: 0.0750, unit: 'kg', emissionFactor: 18, category: 'Emulsifier', reference: 'Chinese LCA Database' },
-      { id: 'rm-18', name: 'Water', quantity: 0.5710, unit: 'kg', emissionFactor: 0.05, category: 'Solvent', reference: 'Water Footprint' }
-    ]
-  },
-  {
-    name: 'Manufacturing',
-    items: [
-      { id: 'mfg-1', name: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, reference: 'Pharma LCA 2023' },
-      { id: 'mfg-2', name: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, reference: 'WHO GMP 2022' },
-      { id: 'mfg-3', name: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, reference: 'CAPMAS 2023' },
-      { id: 'mfg-4', name: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: 'ISO 14044' },
-      { id: 'mfg-5', name: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, reference: 'USP Sterilization' },
-      { id: 'mfg-6', name: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, reference: 'EgyPack 2023' },
-      { id: 'mfg-7', name: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: 'FDA Guidelines' }
-    ]
-  },
-  {
-    name: 'Packaging',
-    items: [
-      { id: 'pkg-1', name: 'Plastic Bottle', quantity: 60, unit: 'g', emissionFactor: 3.5, material: 'HDPE', reference: 'EgyPack 2023' },
-      { id: 'pkg-2', name: 'Metal Cap', quantity: 15, unit: 'g', emissionFactor: 7.0, material: 'Stainless Steel 304', reference: 'WorldSteel 2023' },
-      { id: 'pkg-3', name: 'Aluminum Seal', quantity: 2, unit: 'g', emissionFactor: 9.0, material: 'Aluminum', reference: 'IPCC 2023' },
-      { id: 'pkg-4', name: 'Paper Label', quantity: 5, unit: 'g', emissionFactor: 0.9, material: 'Recycled Paper', reference: 'EEAA 2023' },
-      { id: 'pkg-5', name: 'Secondary Packaging', quantity: 50, unit: 'g', emissionFactor: 1.0, material: 'Corrugated Cardboard', reference: 'EgyPack 2023' },
-      { id: 'pkg-6', name: 'Adhesive', quantity: 3, unit: 'g', emissionFactor: 2.5, material: 'Chemical', reference: 'CAPMAS 2023' }
-    ]
-  },
-  {
-    name: 'Transport',
-    items: [
-      { id: 'trn-1', name: 'Refrigerated Storage', quantity: 7, unit: 'days', emissionFactor: 0.03, type: 'Cold Storage', reference: 'Egyptian Cold Chain 2023' },
-      { id: 'trn-2', name: 'Local Transport', quantity: 50, unit: 'km', emissionFactor: 0.18, type: 'Diesel Truck', reference: 'CAPMAS 2023' },
-      { id: 'trn-3', name: 'Long-Distance Transport', quantity: 300, unit: 'km', emissionFactor: 0.10, type: 'Heavy Truck', reference: 'EgyLogistics 2023' }
-    ]
-  },
-  {
-    name: 'Distribution',
-    items: [
-      { id: 'dis-1', name: 'Warehouse Storage', quantity: 3, unit: 'days', emissionFactor: 0.01, type: 'Cold Storage', reference: 'EgyLogistics 2023' },
-      { id: 'dis-2', name: 'Last-Mile Delivery', quantity: 15, unit: 'km', emissionFactor: 0.12, type: 'Light Diesel Vehicle', reference: 'Cairo Air Quality' },
-      { id: 'dis-3', name: 'Retail Storage', quantity: 2, unit: 'days', emissionFactor: 0.005, type: 'Shelved Storage', reference: 'Retail LCA 2023' }
-    ]
-  },
-  {
-    name: 'Use',
-    items: [
-      { id: 'use-1', name: 'Consumer Transportation', quantity: 5, unit: 'km', emissionFactor: 0.2, type: 'Private Vehicle', reference: 'WB 2023' },
-      { id: 'use-2', name: 'Product Refrigeration', quantity: 14, unit: 'days', emissionFactor: 0.05, type: 'Domestic Refrigerator', reference: 'UNEP 2023' },
-      { id: 'use-3', name: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, type: 'Household Energy', reference: 'Household Energy' }
-    ]
-  },
-  {
-    name: 'End of Life',
-    items: [
-      { id: 'eol-1', name: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, reference: 'Egyptian EPA 2023' },
-      { id: 'eol-2', name: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, reference: 'EgyWaste 2023' },
-      { id: 'eol-3', name: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, reference: 'Cairo Waste Authority' }
-    ]
-  }
-];
-
-const CarbonFootprintCalculator = () => {
+const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Product 1');
-  const [mode, setMode] = useState<'auto' | 'manual'>('auto');
-  const [selectedStage, setSelectedStage] = useState<string | null>(null);
-  const [detailedItem, setDetailedItem] = useState<(ProcessItem & ProcessResult) | null>(null);
-  const [certifications, setCertifications] = useState<string[]>(Array(productStages.length).fill('ISO 14001'));
+  const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
+  const [mode, setMode] = useState<'manual' | 'auto'>('auto');
+  const [openStage, setOpenStage] = useState<string | null>(null);
+  const [currentStageData, setCurrentStageData] = useState<StageItem[]>([]);
+  const [costCalculation, setCostCalculation] = useState<CostCalculation | null>(null);
 
-  const calculateProcess = (item: ProcessItem): ProcessResult => {
-    const emissionsKg = item.quantity * item.emissionFactor;
-    const emissionsTon = emissionsKg * KG_TO_TON;
-    const costUSD = emissionsTon * CARBON_PRICE_USD_PER_TON;
+  const calculateEnvironmentalCost = (emissionsKg: number): number => {
+    const costUSD = (emissionsKg / 1000) * CARBON_PRICE_USD;
     const costEGP = costUSD * EXCHANGE_RATE;
-
-    return {
-      emissionsKg,
-      costUSD,
-      costEGP,
-      calculationSteps: [
-        `Emissions: ${item.quantity} ${item.unit} × ${item.emissionFactor} kg CO₂e/${item.unit} = ${emissionsKg.toFixed(6)} kg CO₂e`,
-        `Convert to tons: ${emissionsKg.toFixed(6)} kg × 0.001 = ${emissionsTon.toFixed(6)} t CO₂e`,
-        `Carbon cost: ${emissionsTon.toFixed(6)} t × $${CARBON_PRICE_USD_PER_TON}/t = $${costUSD.toFixed(6)}`,
-        `Convert to EGP: $${costUSD.toFixed(6)} × ${EXCHANGE_RATE} EGP/$ = ${costEGP.toFixed(2)} EGP`
-      ]
-    };
+    return currency === 'EGP' ? costEGP : costUSD;
   };
 
-  const results: StageResult[] = useMemo(() => {
-    return productStages.map(stage => {
-      const processedItems = stage.items.map(item => ({
-        ...item,
-        ...calculateProcess(item)
-      }));
-
-      const totalEmissionsKg = processedItems.reduce((sum, item) => sum + item.emissionsKg, 0);
-      const totalCostUSD = processedItems.reduce((sum, item) => sum + item.costUSD, 0);
-      const totalCostEGP = processedItems.reduce((sum, item) => sum + item.costEGP, 0);
-
-      return {
-        name: stage.name,
-        items: processedItems,
-        totalEmissionsKg,
-        totalCostUSD,
-        totalCostEGP
-      };
-    });
-  }, []);
-
-  const totalFootprint = useMemo(() => {
-    return results.reduce((acc, stage) => ({
-      emissionsKg: acc.emissionsKg + stage.totalEmissionsKg,
-      costUSD: acc.costUSD + stage.totalCostUSD,
-      costEGP: acc.costEGP + stage.totalCostEGP
-    }), { emissionsKg: 0, costUSD: 0, costEGP: 0 });
-  }, [results]);
-
-  const emissionDataWithPercent = useMemo(() => {
-    return results.map(stage => ({
-      category: stage.name,
-      emissions: stage.totalEmissionsKg,
-      percentOfTotal: ((stage.totalEmissionsKg / totalFootprint.emissionsKg) * 100).toFixed(1),
-      target: (stage.totalEmissionsKg * 0.8).toFixed(3),
-      environmentalCost: stage.totalCostEGP
+  const processStageData = (data: StageItem[]): StageItem[] => {
+    return data.map((item: StageItem) => ({
+      ...item,
+      environmentalCost: calculateEnvironmentalCost(item.emissions * 1000)
     }));
-  }, [results, totalFootprint]);
+  };
+
+  const processedStageData = Object.fromEntries(
+    Object.entries(stageData).map(([key, value]) => [key, processStageData(value)])
+  );
+
+  const defaultManualData: EmissionDataItem[] = [
+    { 
+      category: 'Raw Materials', 
+      emissions: stageData['Raw Materials'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Manufacturing', 
+      emissions: stageData['Manufacturing'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Packaging', 
+      emissions: stageData['Packaging'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Transport', 
+      emissions: stageData['Transport'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Distribution', 
+      emissions: stageData['Distribution'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'Use', 
+      emissions: stageData['Use'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    },
+    { 
+      category: 'End of Life', 
+      emissions: stageData['End of Life'].reduce((sum: number, item: StageItem) => sum + item.emissions, 0) 
+    }
+  ];
+
+  const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(defaultManualData);
+
+  const handleStageClick = (stage: string) => {
+    setCurrentStageData(processedStageData[stage]);
+    setOpenStage(stage);
+  };
+
+  const showCostCalculation = (stage: string) => {
+    const items = processedStageData[stage].map((item: StageItem) => ({
+      name: item.material || item.process || item.component || item.type || item.activity || item.method,
+      emissions: item.emissions * 1000,
+      cost: calculateEnvironmentalCost(item.emissions * 1000),
+      calculation: `${item.emissions} t × ${currency === 'EGP' ? 
+        `${CARBON_PRICE_USD * EXCHANGE_RATE} EGP/t` : 
+        `${CARBON_PRICE_USD} USD/t`}`
+    }));
+
+    setCostCalculation({
+      stage,
+      items,
+      total: items.reduce((sum: number, item) => sum + item.cost, 0)
+    });
+  };
 
   const handleEmissionChange = (index: number, value: string) => {
     if (mode === 'manual') {
       const newValue = parseFloat(value);
       if (!isNaN(newValue)) {
-        const newData = [...emissionDataWithPercent];
+        const newData = [...emissionData];
         newData[index].emissions = newValue;
+        setEmissionData(newData);
       }
     }
   };
@@ -207,100 +196,230 @@ const CarbonFootprintCalculator = () => {
     setCertifications(newCerts);
   };
 
+  const reductionData = [
+    { initiative: 'Solar Panel Installation', reduction: 2.5 },
+    { initiative: 'LED Lighting', reduction: 1.2 },
+    { initiative: 'Industrial Waste Recycling', reduction: 1.5 },
+    { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
+  ];
+
+  const totalEmissions = useMemo(() => 
+    emissionData.reduce((sum: number, item: EmissionDataItem) => sum + item.emissions, 0), 
+    [emissionData]
+  );
+
+  const emissionDataWithPercent = useMemo(() => {
+    return emissionData.map((item: EmissionDataItem) => ({
+      ...item,
+      percentOfTotal: ((item.emissions / totalEmissions) * 100).toFixed(1),
+      target: (item.emissions * 0.8).toFixed(1),
+      environmentalCost: calculateEnvironmentalCost(item.emissions * 1000)
+    }));
+  }, [emissionData, totalEmissions, currency]);
+
+  const revenue = currency === 'EGP' ? 55000 : 1800;
+  const carbonIntensity = totalEmissions / (revenue / 1000);
+  const totalReduction = reductionData.reduce((sum: number, item) => sum + item.reduction, 0);
+
   const handleSubmit = () => {
-    console.log('Submitted carbon footprint data:', {
-      product: selectedProduct,
-      currency,
-      totalFootprint,
-      stages: results,
-      certifications
-    });
+    console.log('Submitted emission data:', emissionData);
   };
 
-  const renderStageDetails = (stageName: string) => {
-    const stage = results.find(s => s.name === stageName);
-    if (!stage) return null;
+  const renderStageDetails = (stage: string) => {
+    const data = processedStageData[stage];
+    const columns = stage === 'Raw Materials' ? [
+      { header: 'Material', accessor: 'material' },
+      { header: 'Quantity', accessor: 'quantity' },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : stage === 'Manufacturing' ? [
+      { header: 'Process', accessor: 'process' },
+      { header: 'Quantity', accessor: 'quantity' },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : stage === 'Packaging' ? [
+      { header: 'Component', accessor: 'component' },
+      { header: 'Quantity', accessor: 'quantity' },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Material', accessor: 'material' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : stage === 'Transport' ? [
+      { header: 'Transport Type', accessor: 'type' },
+      { header: 'Distance/Duration', accessor: (item: StageItem) => item.distance || item.duration },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : stage === 'Distribution' ? [
+      { header: 'Activity', accessor: 'activity' },
+      { header: 'Distance/Duration', accessor: (item: StageItem) => item.distance || item.duration },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : stage === 'Use' ? [
+      { header: 'Aspect', accessor: 'aspect' },
+      { header: 'Quantity/Distance/Duration', accessor: (item: StageItem) => item.quantity || item.distance || item.duration },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ] : [
+      { header: 'Method', accessor: 'method' },
+      { header: 'Quantity', accessor: 'quantity' },
+      { header: 'Unit', accessor: 'unit' },
+      { header: 'Emission Factor (kg CO₂e/unit)', accessor: 'emissionFactor' },
+      { header: 'Reference', accessor: 'reference' },
+      { header: 'Emissions (kg CO₂e)', accessor: 'emissions', format: (val: number) => val.toFixed(3) },
+      { 
+        header: `Environmental Cost (${currency})`, 
+        cell: (item: StageItem) => (
+          <Button 
+            variant="ghost" 
+            onClick={() => showCostCalculation(stage)}
+            style={{ padding: 0, fontWeight: 'bold' }}
+          >
+            {calculateEnvironmentalCost(item.emissions * 1000).toFixed(2)}
+          </Button>
+        )
+      }
+    ];
 
     return (
-      <Dialog.Content style={{ maxWidth: 900 }}>
-        <Dialog.Title>{stageName} Stage Details</Dialog.Title>
-        <ScrollArea type="always" scrollbars="vertical" style={{ maxHeight: '60vh' }}>
-          <Table.Root variant="surface">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Process</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                {['Transport', 'Distribution', 'Use'].includes(stageName) && <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>}
-                {stageName === 'Packaging' && <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>}
-                <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Emissions (kg)</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-              {stage.items.map((item) => (
-                <Table.Row key={item.id}>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>{item.quantity}</Table.Cell>
-                  <Table.Cell>{item.unit}</Table.Cell>
-                  {['Transport', 'Distribution', 'Use'].includes(stageName) && <Table.Cell>{item.type}</Table.Cell>}
-                  {stageName === 'Packaging' && <Table.Cell>{item.material}</Table.Cell>}
-                  <Table.Cell>{item.emissionFactor} kg/{item.unit}</Table.Cell>
-                  <Table.Cell>{item.emissionsKg.toFixed(6)}</Table.Cell>
-                  <Table.Cell>
-                    {currency === 'USD' ? 
-                      `$${item.costUSD.toFixed(2)}` : 
-                      `${item.costEGP.toFixed(2)} EGP`}
-                  </Table.Cell>
-                </Table.Row>
+      <Table.Root variant="surface">
+        <Table.Header>
+          <Table.Row>
+            {columns.map((col, idx) => (
+              <Table.ColumnHeaderCell key={idx}>{col.header}</Table.ColumnHeaderCell>
+            ))}
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {data.map((item: StageItem, index: number) => (
+            <Table.Row key={index}>
+              {columns.map((col, idx) => (
+                <Table.Cell key={idx}>
+                  {col.cell ? col.cell(item) : 
+                   col.format ? col.format(item[col.accessor]) : 
+                   typeof col.accessor === 'function' ? col.accessor(item) : item[col.accessor]}
+                </Table.Cell>
               ))}
-            </Table.Body>
-          </Table.Root>
-        </ScrollArea>
-
-        <Flex justify="between" mt="4">
-          <Box>
-            <Text><Strong>Total Emissions:</Strong> {stage.totalEmissionsKg.toFixed(3)} kg CO₂e</Text>
-            <Text><Strong>Environmental Cost:</Strong> {
-              currency === 'USD' ? 
-                `$${stage.totalCostUSD.toFixed(2)}` : 
-                `${stage.totalCostEGP.toFixed(2)} EGP`
-            }</Text>
-          </Box>
-          <Dialog.Close>
-            <Button variant="soft">Close</Button>
-          </Dialog.Close>
-        </Flex>
-      </Dialog.Content>
+            </Table.Row>
+          ))}
+          <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+            <Table.RowHeaderCell colSpan={columns.length - 1}><strong>Total</strong></Table.RowHeaderCell>
+            <Table.Cell>
+              <strong>
+                {calculateEnvironmentalCost(
+                  data.reduce((sum: number, item: StageItem) => sum + item.emissions, 0) * 1000
+                ).toFixed(2)}
+              </strong>
+            </Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
     );
   };
 
   return (
-    <Box p="4">
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Veterinary Product Carbon Footprint</Heading>
-        <Flex gap="3" align="center">
+    <Box p="6">
+      <Flex justify="between" align="center" mb="5">
+        <Heading size="6">Carbon Footprint Analysis Dashboard</Heading>
+        <Flex gap="3">
           <Box>
-            <Text size="1">Calculation Mode</Text>
-            <Switch 
-              checked={mode === 'auto'} 
-              onCheckedChange={(val) => setMode(val ? 'auto' : 'manual')} 
-            />
+            <Text size="1">Auto Mode</Text>
+            <Switch checked={mode === 'auto'} onCheckedChange={(val) => setMode(val ? 'auto' : 'manual')} />
           </Box>
           <Box style={{ width: 180 }}>
-            <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Select.Root value={selectedProduct} onValueChange={val => setSelectedProduct(val)}>
               <Select.Trigger />
               <Select.Content>
-                <Select.Item value="Poultry Product 1">Poultry Product 1</Select.Item>
-                <Select.Item value="Poultry Product 2">Poultry Product 2</Select.Item>
-                <Select.Item value="Dairy Product">Dairy Product</Select.Item>
+                <Select.Item value="Poultry Feed Supplement">Poultry Feed Supplement</Select.Item>
+                <Select.Item value="Dairy Cattle Supplement">Dairy Cattle Supplement</Select.Item>
+                <Select.Item value="Aquaculture Feed Additive">Aquaculture Feed Additive</Select.Item>
               </Select.Content>
             </Select.Root>
           </Box>
           <Box style={{ width: 100 }}>
-            <Select.Root value={currency} onValueChange={(val) => setCurrency(val as 'USD' | 'EGP')}>
+            <Select.Root value={currency} onValueChange={val => setCurrency(val as 'USD' | 'EGP')}>
               <Select.Trigger />
               <Select.Content>
                 <Select.Item value="USD">USD</Select.Item>
@@ -311,43 +430,40 @@ const CarbonFootprintCalculator = () => {
         </Flex>
       </Flex>
 
-      <Flex gap="2" mb="4">
-        <Badge color="green">Carbon Price: ${CARBON_PRICE_USD_PER_TON}/t CO₂e</Badge>
-        <Badge color="blue">Exchange Rate: 1 USD = {EXCHANGE_RATE} EGP</Badge>
-      </Flex>
-
-      <Grid columns="4" gap="4" mb="5">
+      <Grid columns="5" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><Strong>Total Emissions</Strong></Text>
-            <Heading size="7">{totalFootprint.emissionsKg.toFixed(3)} kg CO₂e</Heading>
+            <Text size="2"><strong>Total Emissions</strong></Text>
+            <Heading size="7"><strong>{totalEmissions.toFixed(1)} tCO₂e</strong></Heading>
             <Text size="1" color="green">↓ 12% YoY</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><Strong>Carbon Cost</Strong></Text>
-            <Heading size="7">
-              {currency === 'USD' ? 
-                `$${totalFootprint.costUSD.toFixed(2)}` : 
-                `${totalFootprint.costEGP.toFixed(2)} EGP`}
-            </Heading>
+            <Text size="2"><strong>RE100 Progress</strong></Text>
+            <Heading size="7"><strong>68%</strong></Heading>
+            <Progress value={68} />
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><Strong>Carbon Intensity</Strong></Text>
-            <Heading size="7">
-              {(totalFootprint.emissionsKg / 1000).toFixed(3)} t/{currency === 'USD' ? '$K' : 'EGP K'}
-            </Heading>
+            <Text size="2"><strong>Carbon Intensity</strong></Text>
+            <Heading size="7"><strong>{carbonIntensity.toFixed(2)} t/{currency === 'USD' ? '$K' : 'EGP K'}</strong></Heading>
             <Text size="1">Scope 1, 2 & 3</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><Strong>Reduction Potential</Strong></Text>
-            <Heading size="7">{(totalFootprint.emissionsKg * 0.2).toFixed(1)} kg CO₂e</Heading>
-            <Text size="1" color="gray">20% reduction target</Text>
+            <Text size="2"><strong>Emission Reduction Potential</strong></Text>
+            <Heading size="7"><strong>{totalReduction.toFixed(1)} tCO₂e</strong></Heading>
+            <Text size="1" color="gray">Estimated reduction from initiatives</Text>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1" p="4">
+            <Text size="2"><strong>Total Environmental Cost</strong></Text>
+            <Heading size="7"><strong>{calculateEnvironmentalCost(totalEmissions * 1000).toFixed(2)} {currency}</strong></Heading>
+            <Text size="1" color="green">↓ 8% YoY</Text>
           </Flex>
         </Card>
       </Grid>
@@ -365,7 +481,7 @@ const CarbonFootprintCalculator = () => {
                   cx="50%"
                   cy="50%"
                   outerRadius={80}
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ percent }) => `${(percent * 100).toFixed(0)}%`}
                 >
                   {emissionDataWithPercent.map((entry, index) => (
                     <Cell
@@ -375,8 +491,8 @@ const CarbonFootprintCalculator = () => {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value: number) => [`${value.toFixed(3)} kg CO₂e`, 'Emissions']}
-                  labelFormatter={(label) => `Stage: ${label}`}
+                  formatter={(value) => [`${value} tCO₂e`, 'Emissions']}
+                  labelFormatter={(label) => `Category: ${label}`}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -384,46 +500,47 @@ const CarbonFootprintCalculator = () => {
         </Card>
 
         <Card>
-          <Heading size="4" mb="3">Stage Comparison</Heading>
+          <Heading size="4" mb="3">Reduction Initiatives</Heading>
           <Box height="250">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={emissionDataWithPercent}
+                data={reductionData} 
                 margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
+                layout="vertical"
               >
-                <XAxis dataKey="category" />
-                <YAxis />
+                <XAxis type="number" />
+                <YAxis dataKey="initiative" type="category" width={100} />
                 <Tooltip 
-                  formatter={(value: number) => [`${value} kg CO₂e`, 'Emissions']}
-                  labelFormatter={(label) => `Stage: ${label}`}
+                  formatter={(value) => [`${value} tCO₂e`, 'Reduction']}
+                  labelFormatter={(label) => `Initiative: ${label}`}
                 />
-                <Bar dataKey="emissions" fill="#3b82f6" name="Emissions" />
+                <Bar dataKey="reduction" fill="#10b981" name="Emission Reduction" />
               </BarChart>
             </ResponsiveContainer>
           </Box>
         </Card>
       </Grid>
 
-      <Box mb="4">
+      <Box mb="4" style={{ maxHeight: 400, overflowY: 'auto' }}>
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Lifecycle Stage</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Target (kg CO₂e)</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Certification</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Category</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Emissions (tCO₂e)</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Environmental Cost ({currency})</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>% of Total</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Reduction Potential (tCO₂e)</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Target (tCO₂e)</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Certification</strong></Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
-
           <Table.Body>
             {emissionDataWithPercent.map((item, i) => (
               <Table.Row key={i}>
                 <Table.Cell>
                   <Button 
                     variant="ghost" 
-                    onClick={() => setSelectedStage(item.category)}
+                    onClick={() => handleStageClick(item.category)}
                     style={{ padding: 0, fontWeight: 'bold' }}
                   >
                     {item.category}
@@ -431,37 +548,30 @@ const CarbonFootprintCalculator = () => {
                 </Table.Cell>
                 <Table.Cell>
                   {mode === 'manual' ? (
-                    <TextField.Root
-                      size="1"
-                      value={item.emissions.toString()}
-                      onChange={(e) => handleEmissionChange(i, e.target.value)}
-                      style={{ maxWidth: 100 }}
-                    />
+                    <Flex align="center" gap="2">
+                      <TextField.Root
+                        size="1"
+                        value={item.emissions.toString()}
+                        onChange={(e) => handleEmissionChange(i, e.target.value)}
+                        style={{ maxWidth: 80 }}
+                      />
+                    </Flex>
                   ) : (
-                    <Text weight="bold">{Number(item.emissions).toFixed(3)}</Text>
+                    <Text weight="bold">{item.emissions.toFixed(2)}</Text>
                   )}
                 </Table.Cell>
                 <Table.Cell>
                   <Button 
                     variant="ghost" 
-                    onClick={() => {
-                      const stage = results.find(s => s.name === item.category);
-                      if (stage) {
-                        setDetailedItem({
-                          ...stage.items[0],
-                          ...calculateProcess(stage.items[0])
-                        });
-                      }
-                    }}
+                    onClick={() => showCostCalculation(item.category)}
                     style={{ padding: 0, fontWeight: 'bold' }}
                   >
-                    {currency === 'USD' ? 
-                      `$${results.find(s => s.name === item.category)?.totalCostUSD.toFixed(2)}` : 
-                      `${results.find(s => s.name === item.category)?.totalCostEGP.toFixed(2)} EGP`}
+                    {item.environmentalCost?.toFixed(2)}
                   </Button>
                 </Table.Cell>
-                <Table.Cell>{item.percentOfTotal}%</Table.Cell>
-                <Table.Cell>{item.target}</Table.Cell>
+                <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
+                <Table.Cell><strong>{(item.emissions * 0.2).toFixed(1)}</strong></Table.Cell>
+                <Table.Cell><strong>{item.target}</strong></Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={certifications[i]}
@@ -479,65 +589,89 @@ const CarbonFootprintCalculator = () => {
               </Table.Row>
             ))}
             <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-              <Table.RowHeaderCell>Total</Table.RowHeaderCell>
+              <Table.RowHeaderCell><strong>Total</strong></Table.RowHeaderCell>
+              <Table.Cell><strong>{totalEmissions.toFixed(2)}</strong></Table.Cell>
               <Table.Cell>
-                <Strong>{totalFootprint.emissionsKg.toFixed(3)}</Strong>
+                <strong>
+                  {calculateEnvironmentalCost(totalEmissions * 1000).toFixed(2)} {currency}
+                </strong>
               </Table.Cell>
-              <Table.Cell>
-                <Strong>
-                  {currency === 'USD' ? 
-                    `$${totalFootprint.costUSD.toFixed(2)}` : 
-                    `${totalFootprint.costEGP.toFixed(2)} EGP`}
-                </Strong>
-              </Table.Cell>
-              <Table.Cell>100%</Table.Cell>
-              <Table.Cell>{(totalFootprint.emissionsKg * 0.8).toFixed(3)}</Table.Cell>
+              <Table.Cell><strong>100%</strong></Table.Cell>
+              <Table.Cell><strong>{(totalEmissions * 0.2).toFixed(1)}</strong></Table.Cell>
+              <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(2)}</strong></Table.Cell>
               <Table.Cell />
             </Table.Row>
           </Table.Body>
         </Table.Root>
       </Box>
 
-      <Flex justify="between" align="center" mt="4">
-        <Text size="1" color="gray">
-          Last updated: {new Date().toLocaleDateString()}
-        </Text>
+      <Flex mt="4" justify="between" align="center">
+        <Text size="1" color="gray">Last updated: {new Date().toLocaleDateString()}</Text>
         <Button variant="solid" color="green" onClick={handleSubmit}>
           Submit Carbon Report
         </Button>
       </Flex>
 
-      {/* Stage Details Dialog */}
-      <Dialog.Root open={!!selectedStage} onOpenChange={(open) => !open && setSelectedStage(null)}>
-        {selectedStage && renderStageDetails(selectedStage)}
+      <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
+        <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh' }}>
+          <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
+          <Dialog.Description mb="4">
+            Detailed breakdown of emissions for {openStage} stage
+          </Dialog.Description>
+          
+          <Box style={{ overflowY: 'auto', maxHeight: '70vh' }}>
+            {openStage && renderStageDetails(openStage)}
+          </Box>
+
+          <Flex mt="4" justify="end">
+            <Button variant="soft" onClick={() => setOpenStage(null)}>
+              Close Details
+            </Button>
+          </Flex>
+        </Dialog.Content>
       </Dialog.Root>
 
-      {/* Calculation Details Dialog */}
-      <Dialog.Root open={!!detailedItem} onOpenChange={(open) => !open && setDetailedItem(null)}>
-        {detailedItem && (
-          <Dialog.Content style={{ maxWidth: 600 }}>
-            <Dialog.Title>{detailedItem.name} Calculation</Dialog.Title>
-            <Flex direction="column" gap="2">
-              {detailedItem.calculationSteps.map((step, i) => (
-                <Text key={i} as="div" size="2">
-                  {step}
-                </Text>
+      <Dialog.Root open={!!costCalculation} onOpenChange={(open) => !open && setCostCalculation(null)}>
+        <Dialog.Content style={{ maxWidth: 600 }}>
+          <Dialog.Title>Environmental Cost Calculation</Dialog.Title>
+          <Dialog.Description>
+            Detailed cost calculation for {costCalculation?.stage}
+          </Dialog.Description>
+
+          <Table.Root variant="surface" mt="4">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Calculation</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {costCalculation?.items.map((item, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                  <Table.Cell>{item.calculation}</Table.Cell>
+                  <Table.Cell>{item.cost.toFixed(2)}</Table.Cell>
+                </Table.Row>
               ))}
-            </Flex>
-            <Separator my="4" />
-            <Flex justify="between" align="center">
-              <Text size="2" color="gray">
-                Reference: {detailedItem.reference || 'Not specified'}
-              </Text>
-              <Dialog.Close>
-                <Button variant="soft">Close</Button>
-              </Dialog.Close>
-            </Flex>
-          </Dialog.Content>
-        )}
+              <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                <Table.RowHeaderCell colSpan={3}>Total Cost</Table.RowHeaderCell>
+                <Table.Cell><strong>{costCalculation?.total.toFixed(2)}</strong></Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+
+          <Flex justify="end" mt="4">
+            <Button variant="soft" onClick={() => setCostCalculation(null)}>
+              Close
+            </Button>
+          </Flex>
+        </Dialog.Content>
       </Dialog.Root>
     </Box>
   );
 };
 
-export default CarbonFootprintCalculator;
+export default CO2Footprint;
