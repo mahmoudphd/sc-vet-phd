@@ -1,24 +1,26 @@
 import { useState, useMemo } from 'react';
 import {
-  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch,
-  Dialog, ScrollArea, Badge, Strong, Separator
+  Box, Button, Card, Flex, Grid, Heading, Table, Text, TextField, Switch,
+  Dialog, ScrollArea, Badge, Strong, Separator, Select
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 
 // Constants
-const CARBON_PRICE_USD_PER_TON = 50; // World Bank 2023 recommendation
-const EXCHANGE_RATE = 50; // 1 USD = 50 EGP
-const KG_TO_TON = 0.001; // Conversion factor
+const CARBON_PRICE_USD_PER_TON = 50;
+const EXCHANGE_RATE = 50;
+const KG_TO_TON = 0.001;
 
 interface ProcessItem {
   id: string;
   name: string;
   quantity: number;
   unit: string;
-  emissionFactor: number; // kg CO₂e per unit
+  emissionFactor: number;
   category?: string;
+  type?: string;
+  material?: string;
   reference?: string;
 }
 
@@ -81,36 +83,36 @@ const productStages: StageData[] = [
   {
     name: 'Packaging',
     items: [
-      { id: 'pkg-1', name: 'Plastic Bottle', quantity: 60, unit: 'g', emissionFactor: 3.5, reference: 'EgyPack 2023' },
-      { id: 'pkg-2', name: 'Metal Cap', quantity: 15, unit: 'g', emissionFactor: 7.0, reference: 'WorldSteel 2023' },
-      { id: 'pkg-3', name: 'Aluminum Seal', quantity: 2, unit: 'g', emissionFactor: 9.0, reference: 'IPCC 2023' },
-      { id: 'pkg-4', name: 'Paper Label', quantity: 5, unit: 'g', emissionFactor: 0.9, reference: 'EEAA 2023' },
-      { id: 'pkg-5', name: 'Secondary Packaging', quantity: 50, unit: 'g', emissionFactor: 1.0, reference: 'EgyPack 2023' },
-      { id: 'pkg-6', name: 'Adhesive', quantity: 3, unit: 'g', emissionFactor: 2.5, reference: 'CAPMAS 2023' }
+      { id: 'pkg-1', name: 'Plastic Bottle', quantity: 60, unit: 'g', emissionFactor: 3.5, material: 'HDPE', reference: 'EgyPack 2023' },
+      { id: 'pkg-2', name: 'Metal Cap', quantity: 15, unit: 'g', emissionFactor: 7.0, material: 'Stainless Steel 304', reference: 'WorldSteel 2023' },
+      { id: 'pkg-3', name: 'Aluminum Seal', quantity: 2, unit: 'g', emissionFactor: 9.0, material: 'Aluminum', reference: 'IPCC 2023' },
+      { id: 'pkg-4', name: 'Paper Label', quantity: 5, unit: 'g', emissionFactor: 0.9, material: 'Recycled Paper', reference: 'EEAA 2023' },
+      { id: 'pkg-5', name: 'Secondary Packaging', quantity: 50, unit: 'g', emissionFactor: 1.0, material: 'Corrugated Cardboard', reference: 'EgyPack 2023' },
+      { id: 'pkg-6', name: 'Adhesive', quantity: 3, unit: 'g', emissionFactor: 2.5, material: 'Chemical', reference: 'CAPMAS 2023' }
     ]
   },
   {
     name: 'Transport',
     items: [
-      { id: 'trn-1', name: 'Refrigerated Storage', quantity: 7, unit: 'days', emissionFactor: 0.03, reference: 'Egyptian Cold Chain 2023' },
-      { id: 'trn-2', name: 'Local Transport', quantity: 50, unit: 'km', emissionFactor: 0.18, reference: 'CAPMAS 2023' },
-      { id: 'trn-3', name: 'Long-Distance Transport', quantity: 300, unit: 'km', emissionFactor: 0.10, reference: 'EgyLogistics 2023' }
+      { id: 'trn-1', name: 'Refrigerated Storage', quantity: 7, unit: 'days', emissionFactor: 0.03, type: 'Cold Storage', reference: 'Egyptian Cold Chain 2023' },
+      { id: 'trn-2', name: 'Local Transport', quantity: 50, unit: 'km', emissionFactor: 0.18, type: 'Diesel Truck', reference: 'CAPMAS 2023' },
+      { id: 'trn-3', name: 'Long-Distance Transport', quantity: 300, unit: 'km', emissionFactor: 0.10, type: 'Heavy Truck', reference: 'EgyLogistics 2023' }
     ]
   },
   {
     name: 'Distribution',
     items: [
-      { id: 'dis-1', name: 'Warehouse Storage', quantity: 3, unit: 'days', emissionFactor: 0.01, reference: 'EgyLogistics 2023' },
-      { id: 'dis-2', name: 'Last-Mile Delivery', quantity: 15, unit: 'km', emissionFactor: 0.12, reference: 'Cairo Air Quality' },
-      { id: 'dis-3', name: 'Retail Storage', quantity: 2, unit: 'days', emissionFactor: 0.005, reference: 'Retail LCA 2023' }
+      { id: 'dis-1', name: 'Warehouse Storage', quantity: 3, unit: 'days', emissionFactor: 0.01, type: 'Cold Storage', reference: 'EgyLogistics 2023' },
+      { id: 'dis-2', name: 'Last-Mile Delivery', quantity: 15, unit: 'km', emissionFactor: 0.12, type: 'Light Diesel Vehicle', reference: 'Cairo Air Quality' },
+      { id: 'dis-3', name: 'Retail Storage', quantity: 2, unit: 'days', emissionFactor: 0.005, type: 'Shelved Storage', reference: 'Retail LCA 2023' }
     ]
   },
   {
     name: 'Use',
     items: [
-      { id: 'use-1', name: 'Consumer Transportation', quantity: 5, unit: 'km', emissionFactor: 0.2, reference: 'WB 2023' },
-      { id: 'use-2', name: 'Product Refrigeration', quantity: 14, unit: 'days', emissionFactor: 0.05, reference: 'UNEP 2023' },
-      { id: 'use-3', name: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, reference: 'Household Energy' }
+      { id: 'use-1', name: 'Consumer Transportation', quantity: 5, unit: 'km', emissionFactor: 0.2, type: 'Private Vehicle', reference: 'WB 2023' },
+      { id: 'use-2', name: 'Product Refrigeration', quantity: 14, unit: 'days', emissionFactor: 0.05, type: 'Domestic Refrigerator', reference: 'UNEP 2023' },
+      { id: 'use-3', name: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, type: 'Household Energy', reference: 'Household Energy' }
     ]
   },
   {
@@ -121,13 +123,6 @@ const productStages: StageData[] = [
       { id: 'eol-3', name: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, reference: 'Cairo Waste Authority' }
     ]
   }
-];
-
-const reductionInitiatives = [
-  { id: 'red-1', name: 'Solar Panel Installation', reduction: 2.5 },
-  { id: 'red-2', name: 'LED Lighting', reduction: 1.2 },
-  { id: 'red-3', name: 'Industrial Waste Recycling', reduction: 1.5 },
-  { id: 'red-4', name: 'Fuel Consumption Optimization', reduction: 1.3 }
 ];
 
 const CarbonFootprintCalculator = () => {
@@ -196,20 +191,12 @@ const CarbonFootprintCalculator = () => {
     }));
   }, [results, totalFootprint]);
 
-  const totalReduction = useMemo(() => {
-    return reductionInitiatives.reduce((sum, item) => sum + item.reduction, 0);
-  }, []);
-
-  const revenue = currency === 'EGP' ? 55000 : 1800;
-  const carbonIntensity = totalFootprint.emissionsKg / (revenue / 1000);
-
   const handleEmissionChange = (index: number, value: string) => {
     if (mode === 'manual') {
       const newValue = parseFloat(value);
       if (!isNaN(newValue)) {
         const newData = [...emissionDataWithPercent];
         newData[index].emissions = newValue;
-        // Recalculate percentages and costs would need to be implemented here
       }
     }
   };
@@ -228,6 +215,66 @@ const CarbonFootprintCalculator = () => {
       stages: results,
       certifications
     });
+  };
+
+  const renderStageDetails = (stageName: string) => {
+    const stage = results.find(s => s.name === stageName);
+    if (!stage) return null;
+
+    return (
+      <Dialog.Content style={{ maxWidth: 900 }}>
+        <Dialog.Title>{stageName} Stage Details</Dialog.Title>
+        <ScrollArea type="always" scrollbars="vertical" style={{ maxHeight: '60vh' }}>
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Process</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                {['Transport', 'Distribution', 'Use'].includes(stageName) && <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>}
+                {stageName === 'Packaging' && <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>}
+                <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Emissions (kg)</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+
+            <Table.Body>
+              {stage.items.map((item) => (
+                <Table.Row key={item.id}>
+                  <Table.Cell>{item.name}</Table.Cell>
+                  <Table.Cell>{item.quantity}</Table.Cell>
+                  <Table.Cell>{item.unit}</Table.Cell>
+                  {['Transport', 'Distribution', 'Use'].includes(stageName) && <Table.Cell>{item.type}</Table.Cell>}
+                  {stageName === 'Packaging' && <Table.Cell>{item.material}</Table.Cell>}
+                  <Table.Cell>{item.emissionFactor} kg/{item.unit}</Table.Cell>
+                  <Table.Cell>{item.emissionsKg.toFixed(6)}</Table.Cell>
+                  <Table.Cell>
+                    {currency === 'USD' ? 
+                      `$${item.costUSD.toFixed(2)}` : 
+                      `${item.costEGP.toFixed(2)} EGP`}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        </ScrollArea>
+
+        <Flex justify="between" mt="4">
+          <Box>
+            <Text><Strong>Total Emissions:</Strong> {stage.totalEmissionsKg.toFixed(3)} kg CO₂e</Text>
+            <Text><Strong>Environmental Cost:</Strong> {
+              currency === 'USD' ? 
+                `$${stage.totalCostUSD.toFixed(2)}` : 
+                `${stage.totalCostEGP.toFixed(2)} EGP`
+            }</Text>
+          </Box>
+          <Dialog.Close>
+            <Button variant="soft">Close</Button>
+          </Dialog.Close>
+        </Flex>
+      </Dialog.Content>
+    );
   };
 
   return (
@@ -299,8 +346,8 @@ const CarbonFootprintCalculator = () => {
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2"><Strong>Reduction Potential</Strong></Text>
-            <Heading size="7">{totalReduction.toFixed(1)} t CO₂e</Heading>
-            <Text size="1" color="gray">From active initiatives</Text>
+            <Heading size="7">{(totalFootprint.emissionsKg * 0.2).toFixed(1)} kg CO₂e</Heading>
+            <Text size="1" color="gray">20% reduction target</Text>
           </Flex>
         </Card>
       </Grid>
@@ -337,21 +384,20 @@ const CarbonFootprintCalculator = () => {
         </Card>
 
         <Card>
-          <Heading size="4" mb="3">Reduction Initiatives</Heading>
+          <Heading size="4" mb="3">Stage Comparison</Heading>
           <Box height="250">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 
-                data={reductionInitiatives} 
+                data={emissionDataWithPercent}
                 margin={{ top: 20, right: 30, left: 0, bottom: 5 }}
-                layout="vertical"
               >
-                <XAxis type="number" />
-                <YAxis dataKey="name" type="category" width={120} />
+                <XAxis dataKey="category" />
+                <YAxis />
                 <Tooltip 
-                  formatter={(value: number) => [`${value} t CO₂e`, 'Reduction']}
-                  labelFormatter={(label) => `Initiative: ${label}`}
+                  formatter={(value: number) => [`${value} kg CO₂e`, 'Emissions']}
+                  labelFormatter={(label) => `Stage: ${label}`}
                 />
-                <Bar dataKey="reduction" fill="#10b981" name="Emission Reduction" />
+                <Bar dataKey="emissions" fill="#3b82f6" name="Emissions" />
               </BarChart>
             </ResponsiveContainer>
           </Box>
@@ -463,85 +509,32 @@ const CarbonFootprintCalculator = () => {
 
       {/* Stage Details Dialog */}
       <Dialog.Root open={!!selectedStage} onOpenChange={(open) => !open && setSelectedStage(null)}>
-        <Dialog.Content style={{ maxWidth: 900 }}>
-          <Dialog.Title>{selectedStage} Stage Details</Dialog.Title>
-          
-          <ScrollArea type="always" scrollbars="vertical" style={{ maxHeight: '60vh' }}>
-            <Table.Root variant="surface">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Process</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                  {selectedStage === 'Raw Materials' && <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>}
-                  <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Cost ({currency})</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-
-              <Table.Body>
-                {results.find(s => s.name === selectedStage)?.items.map((item) => (
-                  <Table.Row key={item.id}>
-                    <Table.Cell>{item.name}</Table.Cell>
-                    <Table.Cell>{item.quantity}</Table.Cell>
-                    <Table.Cell>{item.unit}</Table.Cell>
-                    {selectedStage === 'Raw Materials' && <Table.Cell>{item.category}</Table.Cell>}
-                    <Table.Cell>{item.emissionFactor} kg/{item.unit}</Table.Cell>
-                    <Table.Cell>{item.emissionsKg.toFixed(6)}</Table.Cell>
-                    <Table.Cell>
-                      <Button 
-                        size="1" 
-                        variant="ghost" 
-                        onClick={() => setDetailedItem(item)}
-                        style={{ padding: 0 }}
-                      >
-                        {currency === 'USD' ? 
-                          `$${item.costUSD.toFixed(2)}` : 
-                          `${item.costEGP.toFixed(2)} EGP`}
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
-          </ScrollArea>
-
-          <Flex justify="between" mt="4">
-            <Text size="2">
-              <Strong>Stage Total:</Strong> {results.find(s => s.name === selectedStage)?.totalEmissionsKg.toFixed(3)} kg CO₂e
-            </Text>
-            <Dialog.Close>
-              <Button variant="soft">Close</Button>
-            </Dialog.Close>
-          </Flex>
-        </Dialog.Content>
+        {selectedStage && renderStageDetails(selectedStage)}
       </Dialog.Root>
 
       {/* Calculation Details Dialog */}
       <Dialog.Root open={!!detailedItem} onOpenChange={(open) => !open && setDetailedItem(null)}>
-        <Dialog.Content style={{ maxWidth: 600 }}>
-          <Dialog.Title>{detailedItem?.name} Calculation</Dialog.Title>
-          
-          <Flex direction="column" gap="2">
-            {detailedItem?.calculationSteps.map((step, i) => (
-              <Text key={i} as="div" size="2">
-                {step}
+        {detailedItem && (
+          <Dialog.Content style={{ maxWidth: 600 }}>
+            <Dialog.Title>{detailedItem.name} Calculation</Dialog.Title>
+            <Flex direction="column" gap="2">
+              {detailedItem.calculationSteps.map((step, i) => (
+                <Text key={i} as="div" size="2">
+                  {step}
+                </Text>
+              ))}
+            </Flex>
+            <Separator my="4" />
+            <Flex justify="between" align="center">
+              <Text size="2" color="gray">
+                Reference: {detailedItem.reference || 'Not specified'}
               </Text>
-            ))}
-          </Flex>
-
-          <Separator my="4" />
-
-          <Flex justify="between" align="center">
-            <Text size="2" color="gray">
-              Reference: {detailedItem?.reference || 'Not specified'}
-            </Text>
-            <Dialog.Close>
-              <Button variant="soft">Close</Button>
-            </Dialog.Close>
-          </Flex>
-        </Dialog.Content>
+              <Dialog.Close>
+                <Button variant="soft">Close</Button>
+              </Dialog.Close>
+            </Flex>
+          </Dialog.Content>
+        )}
       </Dialog.Root>
     </Box>
   );
