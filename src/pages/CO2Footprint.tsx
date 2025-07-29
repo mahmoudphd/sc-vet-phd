@@ -661,4 +661,4 @@ const CO2Footprint = () => {
   );
 };
 
-export default CO2Footprint;  
+export default CO2Footprint;
