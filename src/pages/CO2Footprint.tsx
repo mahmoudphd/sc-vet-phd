@@ -7,6 +7,8 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
 } from 'recharts';
 
+const CARBON_PRICE_PER_KG = 2.5; // EGP per kg CO₂e
+
 const stageData = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
@@ -74,35 +76,44 @@ const CO2Footprint = () => {
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
   const [currentStageData, setCurrentStageData] = useState<any[]>([]);
+  const [costDetailsOpen, setCostDetailsOpen] = useState(false);
+  const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
 
   const defaultManualData = [
     { 
       category: 'Raw Materials', 
-      emissions: stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'Manufacturing', 
-      emissions: stageData['Manufacturing'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Manufacturing'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Manufacturing'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'Packaging', 
-      emissions: stageData['Packaging'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Packaging'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Packaging'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'Transport', 
-      emissions: stageData['Transport'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Transport'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Transport'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'Distribution', 
-      emissions: stageData['Distribution'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Distribution'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Distribution'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'Use', 
-      emissions: stageData['Use'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['Use'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['Use'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     },
     { 
       category: 'End of Life', 
-      emissions: stageData['End of Life'].reduce((sum, item) => sum + item.emissions, 0) 
+      emissions: stageData['End of Life'].reduce((sum, item) => sum + item.emissions, 0),
+      cost: stageData['End of Life'].reduce((sum, item) => sum + item.emissions, 0) * CARBON_PRICE_PER_KG * 1000
     }
   ];
 
@@ -113,12 +124,27 @@ const CO2Footprint = () => {
     setOpenStage(stage);
   };
 
+  const showCostDetails = (item: any) => {
+    const costInEGP = item.emissions * 1000 * CARBON_PRICE_PER_KG;
+    const costInUSD = costInEGP / 50;
+    
+    setCurrentCostDetails({
+      category: item.category,
+      emissions: item.emissions,
+      costEGP: costInEGP.toFixed(2),
+      costUSD: costInUSD.toFixed(2),
+      calculation: `${item.emissions} tCO₂e × 1000 = ${item.emissions * 1000} kg × ${CARBON_PRICE_PER_KG} EGP/kg`
+    });
+    setCostDetailsOpen(true);
+  };
+
   const handleEmissionChange = (index: number, value: string) => {
     if (mode === 'manual') {
       const newValue = parseFloat(value);
       if (!isNaN(newValue)) {
         const newData = [...emissionData];
         newData[index].emissions = newValue;
+        newData[index].cost = newValue * 1000 * CARBON_PRICE_PER_KG;
         setEmissionData(newData);
       }
     }
@@ -138,14 +164,18 @@ const CO2Footprint = () => {
   ];
 
   const totalEmissions = useMemo(() => emissionData.reduce((sum, item) => sum + item.emissions, 0), [emissionData]);
+  const totalCost = useMemo(() => emissionData.reduce((sum, item) => sum + item.cost, 0), [emissionData]);
 
   const emissionDataWithPercent = useMemo(() => {
     return emissionData.map(item => ({
       ...item,
       percentOfTotal: ((item.emissions / totalEmissions) * 100).toFixed(1),
-      target: (item.emissions * 0.8).toFixed(1)
+      target: (item.emissions * 0.8).toFixed(1),
+      displayCost: currency === 'EGP' 
+        ? item.cost.toFixed(2) 
+        : (item.cost / 50).toFixed(2)
     }));
-  }, [emissionData, totalEmissions]);
+  }, [emissionData, totalEmissions, currency]);
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
@@ -196,9 +226,11 @@ const CO2Footprint = () => {
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><strong>RE100 Progress</strong></Text>
-            <Heading size="7"><strong>68%</strong></Heading>
-            <Progress value={68} />
+            <Text size="2"><strong>Environmental Cost</strong></Text>
+            <Heading size="7"><strong>{currency === 'EGP' 
+              ? totalCost.toFixed(2) 
+              : (totalCost / 50).toFixed(2)} {currency}</strong></Heading>
+            <Text size="1">Carbon footprint cost</Text>
           </Flex>
         </Card>
         <Card>
@@ -276,6 +308,7 @@ const CO2Footprint = () => {
             <Table.Row>
               <Table.ColumnHeaderCell><strong>Category</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Emissions (tCO₂e)</strong></Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell><strong>Environmental Cost ({currency})</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>% of Total</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Target (tCO₂e)</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Certification</strong></Table.ColumnHeaderCell>
@@ -307,6 +340,15 @@ const CO2Footprint = () => {
                     <Text weight="bold">{item.emissions.toFixed(2)}</Text>
                   )}
                 </Table.Cell>
+                <Table.Cell>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => showCostDetails(item)}
+                    style={{ padding: 0 }}
+                  >
+                    {item.displayCost} {currency}
+                  </Button>
+                </Table.Cell>
                 <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
                 <Table.Cell><strong>{item.target}</strong></Table.Cell>
                 <Table.Cell>
@@ -328,6 +370,11 @@ const CO2Footprint = () => {
             <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
               <Table.RowHeaderCell><strong>Total</strong></Table.RowHeaderCell>
               <Table.Cell><strong>{totalEmissions.toFixed(2)}</strong></Table.Cell>
+              <Table.Cell><strong>
+                {currency === 'EGP' 
+                  ? totalCost.toFixed(2) 
+                  : (totalCost / 50).toFixed(2)} {currency}
+              </strong></Table.Cell>
               <Table.Cell><strong>100%</strong></Table.Cell>
               <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(2)}</strong></Table.Cell>
               <Table.Cell />
@@ -601,6 +648,52 @@ const CO2Footprint = () => {
             <Button variant="soft" onClick={() => setOpenStage(null)}>
               Close Details
             </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      <Dialog.Root open={costDetailsOpen} onOpenChange={setCostDetailsOpen}>
+        <Dialog.Content style={{ maxWidth: 500 }}>
+          <Dialog.Title>Environmental Cost Details</Dialog.Title>
+          <Box>
+            <Text as="div" size="3" weight="bold" mb="2">
+              {currentCostDetails?.category}
+            </Text>
+            <Table.Root>
+              <Table.Body>
+                <Table.Row>
+                  <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
+                  <Table.Cell>{currentCostDetails?.emissions} tCO₂e</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
+                  <Table.Cell>{CARBON_PRICE_PER_KG} EGP/kg CO₂e</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.RowHeaderCell>Calculation</Table.RowHeaderCell>
+                  <Table.Cell>{currentCostDetails?.calculation}</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.RowHeaderCell>Cost in EGP</Table.RowHeaderCell>
+                  <Table.Cell>
+                    <Text weight="bold">
+                      {currentCostDetails?.costEGP} EGP
+                    </Text>
+                  </Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.RowHeaderCell>Cost in USD</Table.RowHeaderCell>
+                  <Table.Cell>
+                    <Text weight="bold">
+                      {currentCostDetails?.costUSD} USD
+                    </Text>
+                  </Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
+          </Box>
+          <Flex justify="end" mt="4">
+            <Button onClick={() => setCostDetailsOpen(false)}>Close</Button>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
