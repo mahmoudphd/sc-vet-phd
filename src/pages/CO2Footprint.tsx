@@ -36,7 +36,6 @@ interface CostCalculation {
 }
 
 const EXCHANGE_RATE = 50;
-const CARBON_PRICE_USD = 50;
 
 const stageData: Record<string, StageItem[]> = {
   'Raw Materials': [
@@ -108,7 +107,7 @@ const CO2Footprint = () => {
   const [costCalculation, setCostCalculation] = useState<CostCalculation | null>(null);
 
   const calculateEnvironmentalCost = (emissionsKg: number): number => {
-    const costUSD = (emissionsKg / 1000) * CARBON_PRICE_USD;
+    const costUSD = emissionsKg * 1;
     const costEGP = costUSD * EXCHANGE_RATE;
     return currency === 'EGP' ? costEGP : costUSD;
   };
@@ -167,9 +166,7 @@ const CO2Footprint = () => {
       name: item.material || item.process || item.component || item.type || item.activity || item.method,
       emissions: item.emissions * 1000,
       cost: calculateEnvironmentalCost(item.emissions * 1000),
-      calculation: `${item.emissions} t × ${currency === 'EGP' ? 
-        `${CARBON_PRICE_USD * EXCHANGE_RATE} EGP/t` : 
-        `${CARBON_PRICE_USD} USD/t`}`
+      calculation: `${item.emissions * 1000} kg × ${currency === 'EGP' ? EXCHANGE_RATE + ' EGP/kg' : '1 USD/kg'}`
     }));
 
     setCostCalculation({
@@ -402,7 +399,7 @@ const CO2Footprint = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Carbon Footprint Analysis Dashboard</Heading>
+        <Heading size="6">Sustainability Dashboard</Heading>
         <Flex gap="3">
           <Box>
             <Text size="1">Auto Mode</Text>
@@ -412,9 +409,9 @@ const CO2Footprint = () => {
             <Select.Root value={selectedProduct} onValueChange={val => setSelectedProduct(val)}>
               <Select.Trigger />
               <Select.Content>
-                <Select.Item value="Poultry Feed Supplement">Poultry Feed Supplement</Select.Item>
-                <Select.Item value="Dairy Cattle Supplement">Dairy Cattle Supplement</Select.Item>
-                <Select.Item value="Aquaculture Feed Additive">Aquaculture Feed Additive</Select.Item>
+                <Select.Item value="Poultry Product 1">Poultry Product 1</Select.Item>
+                <Select.Item value="Poultry Product 2">Poultry Product 2</Select.Item>
+                <Select.Item value="Dairy Product">Dairy Product</Select.Item>
               </Select.Content>
             </Select.Root>
           </Box>
@@ -430,7 +427,7 @@ const CO2Footprint = () => {
         </Flex>
       </Flex>
 
-      <Grid columns="5" gap="4" mb="5">
+      <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2"><strong>Total Emissions</strong></Text>
@@ -457,13 +454,6 @@ const CO2Footprint = () => {
             <Text size="2"><strong>Emission Reduction Potential</strong></Text>
             <Heading size="7"><strong>{totalReduction.toFixed(1)} tCO₂e</strong></Heading>
             <Text size="1" color="gray">Estimated reduction from initiatives</Text>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1" p="4">
-            <Text size="2"><strong>Total Environmental Cost</strong></Text>
-            <Heading size="7"><strong>{calculateEnvironmentalCost(totalEmissions * 1000).toFixed(2)} {currency}</strong></Heading>
-            <Text size="1" color="green">↓ 8% YoY</Text>
           </Flex>
         </Card>
       </Grid>
@@ -529,7 +519,6 @@ const CO2Footprint = () => {
               <Table.ColumnHeaderCell><strong>Emissions (tCO₂e)</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Environmental Cost ({currency})</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>% of Total</strong></Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell><strong>Reduction Potential (tCO₂e)</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Target (tCO₂e)</strong></Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell><strong>Certification</strong></Table.ColumnHeaderCell>
             </Table.Row>
@@ -570,7 +559,6 @@ const CO2Footprint = () => {
                   </Button>
                 </Table.Cell>
                 <Table.Cell><strong>{item.percentOfTotal}%</strong></Table.Cell>
-                <Table.Cell><strong>{(item.emissions * 0.2).toFixed(1)}</strong></Table.Cell>
                 <Table.Cell><strong>{item.target}</strong></Table.Cell>
                 <Table.Cell>
                   <Select.Root
@@ -597,7 +585,6 @@ const CO2Footprint = () => {
                 </strong>
               </Table.Cell>
               <Table.Cell><strong>100%</strong></Table.Cell>
-              <Table.Cell><strong>{(totalEmissions * 0.2).toFixed(1)}</strong></Table.Cell>
               <Table.Cell><strong>{(totalEmissions * 0.8).toFixed(2)}</strong></Table.Cell>
               <Table.Cell />
             </Table.Row>
