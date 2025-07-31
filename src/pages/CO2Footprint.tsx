@@ -4,13 +4,16 @@ import {
   Dialog
 } from '@radix-ui/themes';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 
 // Constants
 const CARBON_PRICE_PER_TON = 50; // USD per ton
 const EXCHANGE_RATE = 50; // EGP per USD
 const KG_PER_TON = 1000; // kg per ton
+
+// Colors for charts
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
 
 // Original data structure with grams where applicable
 const stageData = {
@@ -206,10 +209,19 @@ const CO2Footprint = () => {
     console.log('Submitted emission data:', emissionData);
   };
 
+  // Data for charts
+  const pieChartData = emissionData.map(item => ({
+    name: item.category,
+    value: item.emissions,
+    cost: currency === 'EGP' ? item.costEGP : item.costUSD
+  }));
+
+  const barChartData = reductionData;
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Veterinary Pharmaceutical Sustainability Dashboard</Heading>
+        <Heading size="6">Sustainability Dashboard - Veterinary Pharmaceuticals</Heading>
         <Flex gap="3">
           <Box>
             <Text size="1">Auto Mode</Text>
@@ -262,6 +274,59 @@ const CO2Footprint = () => {
             <Text size="2"><strong>Emission Reduction</strong></Text>
             <Heading size="7"><strong>{totalReduction.toFixed(1)} kg CO₂e</strong></Heading>
           </Flex>
+        </Card>
+      </Grid>
+
+      {/* Charts Section */}
+      <Grid columns="2" gap="4" mb="4">
+        <Card>
+          <Box p="3">
+            <Heading size="4" mb="2">Emissions by Category</Heading>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {pieChartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: number, name: string, props: any) => [
+                    `${value.toFixed(3)} kg CO₂e`,
+                    name,
+                    `${currency} ${props.payload.cost.toFixed(2)}`
+                  ]}
+                />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </Box>
+        </Card>
+        <Card>
+          <Box p="3">
+            <Heading size="4" mb="2">Emission Reduction Initiatives</Heading>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={barChartData}>
+                <XAxis dataKey="initiative" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => [`${value} kg CO₂e`, 'Reduction']}
+                  labelFormatter={(label) => label}
+                />
+                <Legend />
+                <Bar dataKey="reduction" name="Reduction (kg CO₂e)" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
         </Card>
       </Grid>
 
@@ -462,7 +527,145 @@ const CO2Footprint = () => {
               </Table.Root>
             )}
 
-            {/* Other stages (Transport, Distribution, Use, End of Life) */}
+            {openStage === 'Transport' && (
+              <Table.Root variant="surface">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {currentStageData.map((item: any, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{item.type}</Table.Cell>
+                      <Table.Cell>{item.distance || item.duration}</Table.Cell>
+                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell>{item.emissionFactor}</Table.Cell>
+                      <Table.Cell>{item.reference}</Table.Cell>
+                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>
+                        {currentStageData.reduce((sum, item) => sum + item.emissions, 0).toFixed(3)}
+                      </strong>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {openStage === 'Distribution' && (
+              <Table.Root variant="surface">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Activity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {currentStageData.map((item: any, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{item.activity}</Table.Cell>
+                      <Table.Cell>{item.distance || item.duration}</Table.Cell>
+                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell>{item.emissionFactor}</Table.Cell>
+                      <Table.Cell>{item.reference}</Table.Cell>
+                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>
+                        {currentStageData.reduce((sum, item) => sum + item.emissions, 0).toFixed(3)}
+                      </strong>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {openStage === 'Use' && (
+              <Table.Root variant="surface">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Aspect</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {currentStageData.map((item: any, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{item.aspect}</Table.Cell>
+                      <Table.Cell>{item.distance || item.duration || item.quantity}</Table.Cell>
+                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell>{item.emissionFactor}</Table.Cell>
+                      <Table.Cell>{item.reference}</Table.Cell>
+                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>
+                        {currentStageData.reduce((sum, item) => sum + item.emissions, 0).toFixed(3)}
+                      </strong>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
+            )}
+
+            {openStage === 'End of Life' && (
+              <Table.Root variant="surface">
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Method</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {currentStageData.map((item: any, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{item.method}</Table.Cell>
+                      <Table.Cell>{item.quantity}</Table.Cell>
+                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell>{item.emissionFactor}</Table.Cell>
+                      <Table.Cell>{item.reference}</Table.Cell>
+                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>
+                        {currentStageData.reduce((sum, item) => sum + item.emissions, 0).toFixed(3)}
+                      </strong>
+                    </Table.Cell>
+                  </Table.Row>
+                </Table.Body>
+              </Table.Root>
+            )}
           </Box>
 
           <Flex mt="4" justify="end">
