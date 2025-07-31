@@ -45,7 +45,7 @@ const colors = {
   card: '#ffffff',
 };
 
-const cardStyle = {
+const cardStyle: React.CSSProperties = {
   backgroundColor: colors.card,
   padding: '20px',
   borderRadius: '10px',
@@ -54,11 +54,11 @@ const cardStyle = {
   flex: '1 1 300px',
 };
 
-const headingStyle = {
+const headingStyle: React.CSSProperties = {
   fontSize: '1.25rem',
-  fontWeight: '600',
+  fontWeight: 600,
   marginBottom: '1rem',
-  textAlign: 'center' as const,
+  textAlign: 'center',
 };
 
 const formatCurrency = (value: number, currency: string) =>
@@ -190,6 +190,11 @@ function CostAnalytics() {
     }
   };
 
+  // Custom style for table row hover
+  const tableRowStyle: React.CSSProperties = {
+    transition: 'background-color 0.2s',
+  };
+
   return (
     <Box p="6" style={{ backgroundColor: colors.background, minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
@@ -254,7 +259,7 @@ function CostAnalytics() {
           <Box key={index} style={cardStyle}>
             <Text size="2">{item.label}</Text>
             {item.editable ? (
-              <TextField.Input
+              <input
                 type="number"
                 value={item.value}
                 onChange={item.onChange}
@@ -289,11 +294,11 @@ function CostAnalytics() {
             const variance = totals[category].actual - totals[category].budget;
             const varianceColor = variance <= 0 ? colors.success : colors.danger;
             return (
-              <Table.Row key={category} style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f9fafb' } }}>
+              <Table.Row key={category} style={tableRowStyle}>
                 <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
                 <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
                 <Table.Cell>
-                  <TextField.Input
+                  <input
                     type="number"
                     value={totals[category].budget}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
@@ -379,7 +384,7 @@ function CostAnalytics() {
                     }
                   }
                   return (
-                    <Table.Row key={index} style={{ transition: 'background-color 0.2s', ':hover': { backgroundColor: '#f9fafb' } }}>
+                    <Table.Row key={index} style={tableRowStyle}>
                       <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
                       <Table.Cell>
                         {autoMode ? (
@@ -389,7 +394,7 @@ function CostAnalytics() {
                             ? item.hours ?? '-'
                             : item.qty ?? '-'
                         ) : (
-                          <TextField.Input
+                          <input
                             type="number"
                             value={
                               dialogCategory === 'Direct Materials'
@@ -422,7 +427,7 @@ function CostAnalytics() {
                             ? formatCurrency(item.unitPrice, currency)
                             : '-'
                         ) : (
-                          <TextField.Input
+                          <input
                             type="number"
                             value={
                               dialogCategory === 'Direct Materials'
