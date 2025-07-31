@@ -254,14 +254,12 @@ function CostAnalytics() {
           <Box key={index} style={cardStyle}>
             <Text size="2">{item.label}</Text>
             {item.editable ? (
-              <TextField.Root>
-                <TextField.Input
-                  type="number"
-                  value={item.value}
-                  onChange={item.onChange}
-                  style={{ width: '100px', marginTop: '4px' }}
-                />
-              </TextField.Root>
+              <TextField.Input
+                type="number"
+                value={item.value}
+                onChange={item.onChange}
+                style={{ width: '100px', marginTop: '4px' }}
+              />
             ) : null}
             <Heading size="6" mt={item.editable ? '2' : '0'}>
               {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
@@ -295,14 +293,14 @@ function CostAnalytics() {
                 <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
                 <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
                 <Table.Cell>
-                  <TextField.Root>
-                    <TextField.Input
-                      type="number"
-                      value={totals[category].budget}
-                      onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                      style={{ width: '80px' }}
-                    />
-                  </TextField.Root>
+                  <TextField.Input
+                    type="number"
+                    value={totals[category].budget}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                      handleTargetChange(category, parseFloat(e.target.value) || 0)
+                    }
+                    style={{ width: '80px' }}
+                  />
                 </Table.Cell>
                 <Table.Cell style={{ color: varianceColor }}>
                   {formatCurrency(variance, currency)}
@@ -391,25 +389,23 @@ function CostAnalytics() {
                             ? item.hours ?? '-'
                             : item.qty ?? '-'
                         ) : (
-                          <TextField.Root>
-                            <TextField.Input
-                              type="number"
-                              value={
-                                dialogCategory === 'Direct Materials'
-                                  ? item.concentrationKg ?? 0
-                                  : dialogCategory === 'Direct Labor'
-                                  ? item.hours ?? 0
-                                  : item.qty ?? 0
-                              }
-                              onChange={(e) => {
-                                const value = parseFloat(e.target.value) || 0;
-                                if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
-                                else if (dialogCategory === 'Direct Labor') item.hours = value;
-                                else item.qty = value;
-                              }}
-                              style={{ width: '80px' }}
-                            />
-                          </TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            value={
+                              dialogCategory === 'Direct Materials'
+                                ? item.concentrationKg ?? 0
+                                : dialogCategory === 'Direct Labor'
+                                ? item.hours ?? 0
+                                : item.qty ?? 0
+                            }
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hours = value;
+                              else item.qty = value;
+                            }}
+                            style={{ width: '80px' }}
+                          />
                         )}
                       </Table.Cell>
                       <Table.Cell>
@@ -426,25 +422,23 @@ function CostAnalytics() {
                             ? formatCurrency(item.unitPrice, currency)
                             : '-'
                         ) : (
-                          <TextField.Root>
-                            <TextField.Input
-                              type="number"
-                              value={
-                                dialogCategory === 'Direct Materials'
-                                  ? item.pricePerKg ?? 0
-                                  : dialogCategory === 'Direct Labor'
-                                  ? item.hourlyRate ?? 0
-                                  : item.unitPrice ?? 0
-                              }
-                              onChange={(e) => {
-                                const value = parseFloat(e.target.value) || 0;
-                                if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
-                                else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
-                                else item.unitPrice = value;
-                              }}
-                              style={{ width: '80px' }}
-                            />
-                          </TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            value={
+                              dialogCategory === 'Direct Materials'
+                                ? item.pricePerKg ?? 0
+                                : dialogCategory === 'Direct Labor'
+                                ? item.hourlyRate ?? 0
+                                : item.unitPrice ?? 0
+                            }
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                              else item.unitPrice = value;
+                            }}
+                            style={{ width: '80px' }}
+                          />
                         )}
                       </Table.Cell>
                       <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
