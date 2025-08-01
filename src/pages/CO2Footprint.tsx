@@ -15,8 +15,36 @@ const KG_PER_TON = 1000; // kg per ton
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
 
-// Original data structure with grams where applicable
-const stageData = {
+// Type definitions
+interface StageItem {
+  [key: string]: any;
+  emissions: number;
+}
+
+interface EmissionDataItem {
+  category: string;
+  emissions: number;
+  costEGP: number;
+  costUSD: number;
+  calculation: string;
+  calculationEGP: string;
+}
+
+interface CostDetails {
+  category: string;
+  emissions: number;
+  costEGP: string;
+  costUSD: string;
+  calculation: string;
+}
+
+interface ReductionItem {
+  initiative: string;
+  reduction: number;
+}
+
+// Original data structure
+const stageData: Record<string, StageItem[]> = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
     { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
@@ -97,13 +125,13 @@ const CO2Footprint = () => {
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
-  const [currentStageData, setCurrentStageData] = useState<any[]>([]);
+  const [currentStageData, setCurrentStageData] = useState<StageItem[]>([]);
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
-  const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
+  const [currentCostDetails, setCurrentCostDetails] = useState<CostDetails | null>(null);
   const [editableTargets, setEditableTargets] = useState<number[]>([]);
 
   // Initialize data with calculated carbon costs
-  const defaultManualData = [
+  const defaultManualData: EmissionDataItem[] = [
     { 
       category: 'Raw Materials', 
       emissions: parseFloat(stageData['Raw Materials'].reduce((sum, item) => sum + item.emissions, 0).toFixed(3)),
@@ -141,7 +169,7 @@ const CO2Footprint = () => {
     }
   ];
 
-  const [emissionData, setEmissionData] = useState(defaultManualData);
+  const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(defaultManualData);
 
   // Initialize editable targets
   useEffect(() => {
@@ -155,11 +183,11 @@ const CO2Footprint = () => {
   }, []);
 
   const handleStageClick = (stage: string) => {
-    setCurrentStageData(stageData[stage as keyof typeof stageData]);
+    setCurrentStageData(stageData[stage]);
     setOpenStage(stage);
   };
 
-  const showCostDetails = (item: any) => {
+  const showCostDetails = (item: EmissionDataItem) => {
     const emissionsKg = item.emissions;
     const costInEGP = emissionsKg * (CARBON_PRICE_PER_TON / 1000) * EXCHANGE_RATE;
     const costInUSD = emissionsKg * (CARBON_PRICE_PER_TON / 1000);
@@ -189,7 +217,6 @@ const CO2Footprint = () => {
     }
   };
 
-  // Handle target change
   const handleTargetChange = (index: number, value: string) => {
     const newValue = parseFloat(value);
     if (!isNaN(newValue)) {
@@ -205,31 +232,32 @@ const CO2Footprint = () => {
     setCertifications(newCerts);
   };
 
-  // Handle emission edit in dialog
   const handleEmissionEdit = (index: number, field: string, value: string) => {
     const newValue = parseFloat(value);
     if (!isNaN(newValue)) {
       const newData = [...currentStageData];
       newData[index][field] = newValue;
       
-      // Recalculate emissions if quantity or emissionFactor changed
       if (field === 'quantity' || field === 'emissionFactor') {
         newData[index].emissions = newData[index].quantity * newData[index].emissionFactor;
       }
       
       setCurrentStageData(newData);
       
-      // Update main data if needed
       const updatedEmissionData = [...emissionData];
       const categoryIndex = emissionData.findIndex(item => item.category === openStage);
       if (categoryIndex >= 0) {
         updatedEmissionData[categoryIndex].emissions = newData.reduce((sum, item) => sum + item.emissions, 0);
+        updatedEmissionData[categoryIndex] = {
+          ...updatedEmissionData[categoryIndex],
+          ...calculateCarbonCost(updatedEmissionData[categoryIndex].emissions)
+        };
         setEmissionData(updatedEmissionData);
       }
     }
   };
 
-  const reductionData = [
+  const reductionData: ReductionItem[] = [
     { initiative: 'Solar Panel Installation', reduction: 2.5 },
     { initiative: 'LED Lighting', reduction: 1.2 },
     { initiative: 'Industrial Waste Recycling', reduction: 1.5 },
@@ -264,8 +292,7 @@ const CO2Footprint = () => {
 
   const barChartData = reductionData;
 
-  // Render editable target cell
-  const renderTargetCell = (item: any, index: number) => {
+  const renderTargetCell = (item: EmissionDataItem, index: number) => {
     return (
       <Table.Cell>
         <TextField.Root
@@ -278,7 +305,6 @@ const CO2Footprint = () => {
     );
   };
 
-  // Render editable dialog content
   const renderEditableDialogContent = () => {
     if (!currentStageData || currentStageData.length === 0) return null;
 
@@ -293,7 +319,7 @@ const CO2Footprint = () => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {currentStageData.map((item: any, index: number) => (
+            {currentStageData.map((item: StageItem, index: number) => (
               <Table.Row key={index}>
                 {Object.entries(item).map(([key, value]) => (
                   <Table.Cell key={key}>
@@ -305,7 +331,7 @@ const CO2Footprint = () => {
                         style={{ maxWidth: 100 }}
                       />
                     ) : (
-                      <Text>{value}</Text>
+                      <Text>{String(value)}</Text>
                     )}
                   </Table.Cell>
                 ))}
@@ -386,7 +412,6 @@ const CO2Footprint = () => {
         </Card>
       </Grid>
 
-      {/* Charts Section */}
       <Grid columns="2" gap="4" mb="4">
         <Card>
           <Box p="3">
@@ -557,15 +582,7 @@ const CO2Footprint = () => {
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
                   <Table.Cell>
-                    <TextField.Root
-                      size="1"
-                      value={currentCostDetails?.emissions?.toString() || ''}
-                      onChange={(e) => setCurrentCostDetails({
-                        ...currentCostDetails,
-                        emissions: parseFloat(e.target.value) || 0,
-                        ...calculateCarbonCost(parseFloat(e.target.value) || 0)
-                      })}
-                    />
+                    {currentCostDetails?.emissions.toFixed(3)} kg CO₂e
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row>
