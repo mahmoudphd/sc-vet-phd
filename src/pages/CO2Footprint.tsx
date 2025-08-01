@@ -101,7 +101,6 @@ const CO2Footprint = () => {
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
   const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
   const [editableTargets, setEditableTargets] = useState<number[]>([]);
-  const [editableEmissions, setEditableEmissions] = useState<any>({});
 
   // Initialize data with calculated carbon costs
   const defaultManualData = [
@@ -535,7 +534,7 @@ const CO2Footprint = () => {
         <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh' }}>
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
           <Dialog.Description mb="4">
-            Detailed breakdown of emissions for {openStage} stage
+            {`Detailed breakdown of emissions for ${openStage} stage`}
           </Dialog.Description>
           {renderEditableDialogContent()}
           <Flex mt="4" justify="end">
