@@ -10,16 +10,14 @@ import {
   Select,
   Button,
 } from '@radix-ui/themes';
-import { 
-  FaBitcoin, 
-  FaNetworkWired, 
-  FaShieldAlt,
-  FaChartLine,
-  FaExchangeAlt,
-  FaPercentage,
-  FaHandshake 
-} from 'react-icons/fa6';
-import { IoMdCube } from 'react-icons/io';
+import { FaBitcoin } from '@react-icons/all-files/fa/FaBitcoin';
+import { FaNetworkWired } from '@react-icons/all-files/fa/FaNetworkWired';
+import { FaShieldAlt } from '@react-icons/all-files/fa/FaShieldAlt';
+import { FaChartLine } from '@react-icons/all-files/fa/FaChartLine';
+import { FaExchangeAlt } from '@react-icons/all-files/fa/FaExchangeAlt';
+import { FaPercentage } from '@react-icons/all-files/fa/FaPercentage';
+import { FaHandshake } from '@react-icons/all-files/fa/FaHandshake';
+import { IoMdCube } from '@react-icons/all-files/io/IoMdCube';
 
 interface SubItem {
   id: string;
