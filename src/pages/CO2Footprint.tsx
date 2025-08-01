@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField, Switch,
   Dialog
@@ -100,6 +100,11 @@ const CO2Footprint = () => {
   const [currentStageData, setCurrentStageData] = useState<any[]>([]);
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
   const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
+
+  // Set browser tab title
+  useEffect(() => {
+    document.title = "Sustainability Dashboard";
+  }, []);
 
   // Initialize data with calculated carbon costs
   const defaultManualData = [
@@ -221,7 +226,7 @@ const CO2Footprint = () => {
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Sustainability Dashboard - Veterinary Pharmaceuticals</Heading>
+        <Heading size="6">Sustainability Dashboard</Heading> {/* Updated title */}
         <Flex gap="3">
           <Box>
             <Text size="1">Auto Mode</Text>
@@ -389,6 +394,9 @@ const CO2Footprint = () => {
                       <Select.Item value="ISO 14001">ISO 14001</Select.Item>
                       <Select.Item value="ISO 50001">ISO 50001</Select.Item>
                       <Select.Item value="ISO 14064">ISO 14064</Select.Item>
+                      <Select.Item value="ISO 14067">ISO 14067 (Carbon Footprint)</Select.Item>
+                      <Select.Item value="GHG Protocol">GHG Protocol</Select.Item>
+                      <Select.Item value="C2C">Cradle to Cradle (C2C)</Select.Item>
                       <Select.Item value="None">None</Select.Item>
                     </Select.Content>
                   </Select.Root>
@@ -725,4 +733,4 @@ const CO2Footprint = () => {
   );
 };
 
-export default CO2Footprint;
+export default CO2Footprint;  
