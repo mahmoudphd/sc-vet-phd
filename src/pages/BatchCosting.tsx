@@ -17,8 +17,8 @@ import {
   FaChartLine,
   FaExchangeAlt,
   FaPercentage,
-  FaHandshake
-} from 'react-icons/fa';
+  FaHandshake 
+} from 'react-icons/fa6';
 import { IoMdCube } from 'react-icons/io';
 
 interface SubItem {
