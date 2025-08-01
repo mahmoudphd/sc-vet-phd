@@ -11,6 +11,21 @@ import {
   Button,
 } from '@radix-ui/themes';
 
+interface SubItem {
+  id: string;
+  name: string;
+  declaredPrice: number;
+  actualCost: number;
+  variance: string;
+  incentives: string;
+}
+
+interface ItemGroup {
+  id: string;
+  title: string;
+  subItems: SubItem[];
+}
+
 const suppliers = ['A', 'B', 'C'];
 const products = ['A', 'B', 'C'];
 const currencies = ['USD', 'EGP'];
@@ -28,16 +43,16 @@ const incentivesOptions = [
 ];
 
 const BatchCosting = () => {
-  const [selectedSupplier, setSelectedSupplier] = useState('A');
-  const [selectedProduct, setSelectedProduct] = useState('A');
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('A');
+  const [selectedProduct, setSelectedProduct] = useState<string>('A');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
 
-  const [supplierTier, setSupplierTier] = useState('');
-  const [transactionVolume, setTransactionVolume] = useState('');
-  const [componentCriticality, setComponentCriticality] = useState('');
-  const [supplierIncentives, setSupplierIncentives] = useState('');
+  const [supplierTier, setSupplierTier] = useState<string>('');
+  const [transactionVolume, setTransactionVolume] = useState<string>('');
+  const [componentCriticality, setComponentCriticality] = useState<string>('');
+  const [supplierIncentives, setSupplierIncentives] = useState<string>('');
 
-  const [items, setItems] = useState([
+  const [items, setItems] = useState<ItemGroup[]>([
     {
       id: 'direct-material',
       title: 'Direct Material',
@@ -58,7 +73,7 @@ const BatchCosting = () => {
 
   const exchangeRate = 30;
 
-  const formatPrice = (value) => {
+  const formatPrice = (value: number): string => {
     if (selectedCurrency === 'USD') {
       return `$${value.toLocaleString()}`;
     } else if (selectedCurrency === 'EGP') {
@@ -68,11 +83,11 @@ const BatchCosting = () => {
   };
 
   const handleSubItemChange = (
-    groupId,
-    subItemId,
-    field,
-    value
-  ) => {
+    groupId: string,
+    subItemId: string,
+    field: 'declaredPrice' | 'actualCost',
+    value: string
+  ): void => {
     setItems((prevItems) =>
       prevItems.map((group) => {
         if (group.id !== groupId) return group;
@@ -98,7 +113,7 @@ const BatchCosting = () => {
     );
   };
 
-  const handleIncentivesChange = (groupId, subItemId, value) => {
+  const handleIncentivesChange = (groupId: string, subItemId: string, value: string): void => {
     setItems((prevItems) =>
       prevItems.map((group) => {
         if (group.id !== groupId) return group;
@@ -116,7 +131,7 @@ const BatchCosting = () => {
     );
   };
 
-  const handleSubmitToBlockchain = () => {
+  const handleSubmitToBlockchain = (): void => {
     console.log('Submitting to blockchain:', {
       selectedSupplier,
       selectedProduct,
