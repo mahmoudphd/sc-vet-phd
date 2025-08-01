@@ -10,6 +10,16 @@ import {
   Select,
   Button,
 } from '@radix-ui/themes';
+import { 
+  FaBitcoin, 
+  FaNetworkWired, 
+  FaShieldAlt,
+  FaChartLine,
+  FaExchangeAlt,
+  FaPercentage,
+  FaHandshake
+} from 'react-icons/fa';
+import { IoMdCube } from 'react-icons/io';
 
 interface SubItem {
   id: string;
@@ -203,7 +213,10 @@ const BatchCosting = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card className={`${cardColors[0]} border`}>
           <Flex direction="column" gap="2">
-            <Text size="2" weight="bold" className="text-blue-700">Supplier Tier</Text>
+            <Flex align="center" gap="2">
+              <FaShieldAlt className="text-blue-600" />
+              <Text size="2" weight="bold" className="text-blue-700">Supplier Tier</Text>
+            </Flex>
             <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
               <Select.Trigger 
                 className="bg-white border border-gray-300"
@@ -222,7 +235,10 @@ const BatchCosting = () => {
 
         <Card className={`${cardColors[1]} border`}>
           <Flex direction="column" gap="2">
-            <Text size="2" weight="bold" className="text-green-700">Transaction Volume</Text>
+            <Flex align="center" gap="2">
+              <FaChartLine className="text-green-600" />
+              <Text size="2" weight="bold" className="text-green-700">Transaction Volume</Text>
+            </Flex>
             <input
               type="number"
               placeholder="Enter volume"
@@ -235,7 +251,10 @@ const BatchCosting = () => {
 
         <Card className={`${cardColors[2]} border`}>
           <Flex direction="column" gap="2">
-            <Text size="2" weight="bold" className="text-purple-700">Component Criticality</Text>
+            <Flex align="center" gap="2">
+              <FaExchangeAlt className="text-purple-600" />
+              <Text size="2" weight="bold" className="text-purple-700">Component Criticality</Text>
+            </Flex>
             <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
               <Select.Trigger 
                 className="bg-white border border-gray-300"
@@ -254,7 +273,10 @@ const BatchCosting = () => {
 
         <Card className={`${cardColors[3]} border`}>
           <Flex direction="column" gap="2">
-            <Text size="2" weight="bold" className="text-amber-700">Supplier Incentives</Text>
+            <Flex align="center" gap="2">
+              <FaHandshake className="text-amber-600" />
+              <Text size="2" weight="bold" className="text-amber-700">Supplier Incentives</Text>
+            </Flex>
             <input
               type="number"
               placeholder="Enter amount"
@@ -271,18 +293,23 @@ const BatchCosting = () => {
           <Table.Row>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">Item</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">
-              Declared Price
-              <div className="text-xs text-green-600 font-semibold">
-                via blockchain
-              </div>
+              <Flex align="center" gap="2">
+                Declared Price
+                <FaBitcoin className="text-green-600" title="Blockchain Verified"/>
+              </Flex>
             </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">
-              Actual Cost
-              <div className="text-xs text-green-600 font-semibold">
-                via IoT
-              </div>
+              <Flex align="center" gap="2">
+                Actual Cost
+                <FaNetworkWired className="text-blue-500" title="IoT Sensors Data"/>
+              </Flex>
             </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              <Flex align="center" gap="2">
+                Variance
+                <FaPercentage className="text-purple-500" title="Percentage Difference"/>
+              </Flex>
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
@@ -358,9 +385,10 @@ const BatchCosting = () => {
       <Flex justify="end" mt="6">
         <Button 
           size="3" 
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm transition-colors"
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm transition-colors flex items-center gap-2"
           onClick={handleSubmitToBlockchain}
         >
+          <IoMdCube />
           Submit to Blockchain
         </Button>
       </Flex>
