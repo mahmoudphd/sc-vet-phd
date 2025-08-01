@@ -11,6 +11,21 @@ import {
   Button,
 } from '@radix-ui/themes';
 
+interface SubItem {
+  id: string;
+  name: string;
+  declaredPrice: number;
+  actualCost: number;
+  variance: string;
+  incentives: string;
+}
+
+interface ItemGroup {
+  id: string;
+  title: string;
+  subItems: SubItem[];
+}
+
 const suppliers = ['A', 'B', 'C'];
 const products = ['A', 'B', 'C'];
 const currencies = ['USD', 'EGP'];
@@ -28,16 +43,16 @@ const incentivesOptions = [
 ];
 
 const BatchCosting = () => {
-  const [selectedSupplier, setSelectedSupplier] = useState('A');
-  const [selectedProduct, setSelectedProduct] = useState('A');
-  const [selectedCurrency, setSelectedCurrency] = useState('USD');
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('A');
+  const [selectedProduct, setSelectedProduct] = useState<string>('A');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
 
-  const [supplierTier, setSupplierTier] = useState('');
-  const [transactionVolume, setTransactionVolume] = useState('');
-  const [componentCriticality, setComponentCriticality] = useState('');
-  const [supplierIncentives, setSupplierIncentives] = useState('');
+  const [supplierTier, setSupplierTier] = useState<string>('');
+  const [transactionVolume, setTransactionVolume] = useState<string>('');
+  const [componentCriticality, setComponentCriticality] = useState<string>('');
+  const [supplierIncentives, setSupplierIncentives] = useState<string>('');
 
-  const [items, setItems] = useState([
+  const [items, setItems] = useState<ItemGroup[]>([
     {
       id: 'direct-material',
       title: 'Direct Material',
@@ -58,7 +73,7 @@ const BatchCosting = () => {
 
   const exchangeRate = 30;
 
-  const formatPrice = (value: number) => {
+  const formatPrice = (value: number): string => {
     if (selectedCurrency === 'USD') {
       return `$${value.toLocaleString()}`;
     } else if (selectedCurrency === 'EGP') {
@@ -72,7 +87,7 @@ const BatchCosting = () => {
     subItemId: string,
     field: 'declaredPrice' | 'actualCost',
     value: string
-  ) => {
+  ): void => {
     setItems((prevItems) =>
       prevItems.map((group) => {
         if (group.id !== groupId) return group;
@@ -98,7 +113,7 @@ const BatchCosting = () => {
     );
   };
 
-  const handleIncentivesChange = (groupId: string, subItemId: string, value: string) => {
+  const handleIncentivesChange = (groupId: string, subItemId: string, value: string): void => {
     setItems((prevItems) =>
       prevItems.map((group) => {
         if (group.id !== groupId) return group;
@@ -116,7 +131,19 @@ const BatchCosting = () => {
     );
   };
 
-  // Card colors
+  const handleSubmitToBlockchain = (): void => {
+    console.log('Submitting to blockchain:', {
+      selectedSupplier,
+      selectedProduct,
+      items,
+      supplierTier,
+      transactionVolume,
+      componentCriticality,
+      supplierIncentives
+    });
+    alert('Data submitted to blockchain successfully!');
+  };
+
   const cardColors = [
     'bg-blue-50 border-blue-200',
     'bg-green-50 border-green-200',
@@ -130,7 +157,6 @@ const BatchCosting = () => {
         <Heading size="6" className="text-gray-800">Open Book Accounting Overview</Heading>
 
         <Flex gap="3" align="center" wrap="wrap">
-          {/* Supplier Dropdown */}
           <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
             <Select.Trigger 
               className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
@@ -145,7 +171,6 @@ const BatchCosting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Product Dropdown */}
           <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <Select.Trigger 
               className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
@@ -160,7 +185,6 @@ const BatchCosting = () => {
             </Select.Content>
           </Select.Root>
 
-          {/* Currency Toggle */}
           <Flex align="center" gap="2" className="bg-white p-1 rounded-md border border-gray-300">
             {currencies.map((c) => (
               <Button
@@ -177,7 +201,6 @@ const BatchCosting = () => {
       </Flex>
 
       <Grid columns="4" gap="4" mb="5">
-        {/* Supplier Tier Card */}
         <Card className={`${cardColors[0]} border`}>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold" className="text-blue-700">Supplier Tier</Text>
@@ -197,7 +220,6 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Transaction Volume Card */}
         <Card className={`${cardColors[1]} border`}>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold" className="text-green-700">Transaction Volume</Text>
@@ -211,7 +233,6 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Component Criticality Card */}
         <Card className={`${cardColors[2]} border`}>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold" className="text-purple-700">Component Criticality</Text>
@@ -231,7 +252,6 @@ const BatchCosting = () => {
           </Flex>
         </Card>
 
-        {/* Supplier Incentives Card */}
         <Card className={`${cardColors[3]} border`}>
           <Flex direction="column" gap="2">
             <Text size="2" weight="bold" className="text-amber-700">Supplier Incentives</Text>
@@ -256,7 +276,12 @@ const BatchCosting = () => {
                 via blockchain
               </div>
             </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Actual Cost</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              Actual Cost
+              <div className="text-xs text-green-600 font-semibold">
+                via IoT
+              </div>
+            </Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">Variance</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell className="font-bold text-gray-800">Incentives</Table.ColumnHeaderCell>
           </Table.Row>
@@ -329,6 +354,16 @@ const BatchCosting = () => {
           ))}
         </Table.Body>
       </Table.Root>
+
+      <Flex justify="end" mt="6">
+        <Button 
+          size="3" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm transition-colors"
+          onClick={handleSubmitToBlockchain}
+        >
+          Submit to Blockchain
+        </Button>
+      </Flex>
     </Box>
   );
 };
