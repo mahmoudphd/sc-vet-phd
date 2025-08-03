@@ -11,7 +11,8 @@ import {
   Progress,
   Dialog,
   Text,
-  Tooltip
+  Tooltip,
+  IconButton // Added this import
 } from '@radix-ui/themes';
 import {
   CubeIcon as BlockchainIcon,
