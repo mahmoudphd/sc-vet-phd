@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -19,7 +20,6 @@ import {
   Tooltip as ChartTooltip,
   ResponsiveContainer
 } from 'recharts';
-import { useState } from 'react';
 import { MagnifyingGlassIcon, CubeIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 
 interface ProductMetrics {
@@ -156,25 +156,6 @@ const FinishedGoodsInventory: React.FC = () => {
     );
   };
 
-  const getExpiryIndicator = (expiry: string) => {
-    const today = new Date();
-    const expiryDate = new Date(expiry);
-    const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    const color = diffDays < 10 ? '#ef4444' : '#22c55e';
-    return (
-      <span
-        style={{
-          display: 'inline-block',
-          width: '10px',
-          height: '10px',
-          borderRadius: '50%',
-          backgroundColor: color,
-          marginLeft: '6px',
-        }}
-      />
-    );
-  };
-
   return (
     <Box p="4">
       <Card>
@@ -297,12 +278,7 @@ const FinishedGoodsInventory: React.FC = () => {
                   <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
                   <Table.Cell>{item.storage}</Table.Cell>
                   <Table.Cell>{item.location}</Table.Cell>
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
-                      {item.expiry}
-                      {item.expiry && getExpiryIndicator(item.expiry)}
-                    </Flex>
-                  </Table.Cell>
+                  <Table.Cell>{item.expiry}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
@@ -334,3 +310,5 @@ const FinishedGoodsInventory: React.FC = () => {
 };
 
 export default FinishedGoodsInventory;
+
+
