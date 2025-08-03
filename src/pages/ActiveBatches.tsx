@@ -188,10 +188,10 @@ const ActiveBatches: React.FC = () => {
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return '#10B981'; // Green for high progress
-    if (progress >= 50) return '#3B82F6'; // Blue for medium progress
-    if (progress >= 30) return '#F59E0B'; // Orange for low progress
-    return '#EF4444'; // Red for very low progress
+    if (progress >= 80) return '#10B981';
+    if (progress >= 50) return '#3B82F6';
+    if (progress >= 30) return '#F97316';
+    return '#EF4444';
   };
 
   return (
@@ -388,7 +388,8 @@ const ActiveBatches: React.FC = () => {
                     value={batch.progress} 
                     className="h-2"
                     style={{
-                      backgroundColor: getProgressColor(batch.progress)
+                      backgroundColor: getProgressColor(batch.progress),
+                      borderRadius: '4px'
                     }}
                   />
                   <Text size="2" weight="medium">{batch.progress}%</Text>
