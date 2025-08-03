@@ -15,7 +15,6 @@ import {
   Tooltip
 } from '@radix-ui/themes';
 import {
-  ClipboardIcon,
   CubeIcon as BlockchainIcon,
   PlusIcon,
   MagnifyingGlassIcon
@@ -76,7 +75,7 @@ const ProductionOrders = () => {
   };
 
   const handleSubmitToBlockchain = () => {
-    toast.success(t('messages.blockchainSubmitSuccess'));
+    toast.success('Data submitted to blockchain successfully');
   };
 
   const getPriorityColor = (priority: string) => {
@@ -95,7 +94,7 @@ const ProductionOrders = () => {
         
         <Flex gap="3" align="center">
           <TextField.Root
-            placeholder={t('search-placeholder')}
+            placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-48"
@@ -112,48 +111,48 @@ const ProductionOrders = () => {
             onClick={handleSubmitToBlockchain}
           >
             <BlockchainIcon className="mr-2" />
-            {t('buttons.submitToBlockchain')}
+            Submit to Blockchain
           </Button>
           
           <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger>
               <Button variant="soft">
-                <PlusIcon className="mr-2" /> {t('new-order-button')}
+                <PlusIcon className="mr-2" /> New Order
               </Button>
             </Dialog.Trigger>
 
             <Dialog.Content style={{ maxWidth: 600 }}>
-              <Dialog.Title>{t('dialog.createOrderTitle')}</Dialog.Title>
+              <Dialog.Title>Create New Production Order</Dialog.Title>
               
               <Flex direction="column" gap="4" mt="4">
                 <TextField.Root
                   value={formData.productId}
                   onChange={(e) => handleFormChange('productId', e.target.value)}
-                  placeholder={t('form.productId')}
+                  placeholder="Product ID"
                 />
 
                 <TextField.Root
                   value={formData.productName}
                   onChange={(e) => handleFormChange('productName', e.target.value)}
-                  placeholder={t('form.productName')}
+                  placeholder="Product Name"
                 />
 
                 <TextField.Root
                   type="number"
                   value={formData.quantity}
                   onChange={(e) => handleFormChange('quantity', e.target.value)}
-                  placeholder={t('form.quantity')}
+                  placeholder="Quantity"
                 />
 
                 <Select.Root 
                   value={formData.priority}
                   onValueChange={(value) => handleFormChange('priority', value)}
                 >
-                  <Select.Trigger placeholder={t('form.priority')} />
+                  <Select.Trigger placeholder="Priority" />
                   <Select.Content>
-                    <Select.Item value="high">{t('priority.high')}</Select.Item>
-                    <Select.Item value="medium">{t('priority.medium')}</Select.Item>
-                    <Select.Item value="low">{t('priority.low')}</Select.Item>
+                    <Select.Item value="high">High</Select.Item>
+                    <Select.Item value="medium">Medium</Select.Item>
+                    <Select.Item value="low">Low</Select.Item>
                   </Select.Content>
                 </Select.Root>
 
@@ -161,11 +160,11 @@ const ProductionOrders = () => {
                   value={formData.materialsStatus}
                   onValueChange={(value) => handleFormChange('materialsStatus', value)}
                 >
-                  <Select.Trigger placeholder={t('form.materialsStatus')} />
+                  <Select.Trigger placeholder="Materials Status" />
                   <Select.Content>
-                    <Select.Item value="pending">{t('status.materials.pending')}</Select.Item>
-                    <Select.Item value="allocated">{t('status.materials.allocated')}</Select.Item>
-                    <Select.Item value="insufficient">{t('status.materials.insufficient')}</Select.Item>
+                    <Select.Item value="pending">Pending</Select.Item>
+                    <Select.Item value="allocated">Allocated</Select.Item>
+                    <Select.Item value="insufficient">Insufficient</Select.Item>
                   </Select.Content>
                 </Select.Root>
               </Flex>
@@ -176,10 +175,10 @@ const ProductionOrders = () => {
                   color="gray"
                   onClick={() => setIsDialogOpen(false)}
                 >
-                  {t('buttons.cancel')}
+                  Cancel
                 </Button>
                 <Button onClick={handleSubmit}>
-                  {t('buttons.createOrder')}
+                  Create Order
                 </Button>
               </Flex>
             </Dialog.Content>
@@ -190,24 +189,12 @@ const ProductionOrders = () => {
       <Table.Root variant="surface" className="rounded-lg shadow-sm">
         <Table.Header className="bg-gray-50">
           <Table.Row>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.order-id')}
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.product')}
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.priority')}
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.materials')}
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.progress')}
-            </Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">
-              {t('table-headers.schedule')}
-            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Priority</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Materials</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Schedule</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -221,7 +208,7 @@ const ProductionOrders = () => {
                   color={getPriorityColor(order.priority)}
                   variant="soft"
                 >
-                  {t(`status.priority.${order.priority.toLowerCase()}`)}
+                  {order.priority}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
@@ -229,14 +216,14 @@ const ProductionOrders = () => {
                   color={order.materials === 'Allocated' ? 'green' : 'red'}
                   variant="soft"
                 >
-                  {t(`status.materials.${order.materials.toLowerCase()}`)}
+                  {order.materials}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
-                <Flex align="center" gap="2" style={{ minWidth: 150 }}>
+                <Flex align="center" gap="2" style={{ width: 120 }}>
                   <Progress 
                     value={order.progress} 
-                    className="h-2"
+                    className="h-1"
                     style={{
                       backgroundColor: order.progress > 80 
                         ? '#10B981' 
@@ -245,7 +232,7 @@ const ProductionOrders = () => {
                         : '#F59E0B'
                     }}
                   />
-                  <Text size="2" weight="medium">{order.progress}%</Text>
+                  <Text size="2">{order.progress}%</Text>
                 </Flex>
               </Table.Cell>
               <Table.Cell>{order.schedule}</Table.Cell>
@@ -255,16 +242,18 @@ const ProductionOrders = () => {
       </Table.Root>
 
       <Flex mt="6" direction="column" gap="4">
-        <Heading size="5">{t('chart-title')}</Heading>
-        <div className="h-64">
+        <Heading size="5">Production Progress</Heading>
+        <div className="h-48">
           <BarChart
             layout="vertical"
             data={orders}
-            margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
+            width={500}
+            height={200}
           >
             <XAxis type="number" hide />
             <YAxis dataKey="product" type="category" />
-            <Bar dataKey="progress" fill="#3b82f6" />
+            <Bar dataKey="progress" fill="#3b82f6" barSize={20} />
           </BarChart>
         </div>
       </Flex>
