@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -8,20 +9,54 @@ import {
   Box,
   Grid,
   Text,
-  Badge
+  Badge,
+  Tooltip
 } from '@radix-ui/themes';
 import {
   BarChart,
   Bar,
   XAxis,
   YAxis,
-  Tooltip,
+  Tooltip as ChartTooltip,
   ResponsiveContainer
 } from 'recharts';
-import { useState } from 'react';
-import { MagnifyingGlassIcon, CubeIcon } from '@radix-ui/react-icons';
+import { MagnifyingGlassIcon, CubeIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 
-const initialData = [
+// Product-specific turnover metrics
+const productMetrics = {
+  'Poultry Product A': {
+    annualCOGS: 75000,
+    avgInventoryValue: 15000,
+    shelfLifeDays: 90,
+    seasonalityFactor: 1.2
+  },
+  'Poultry Product B': {
+    annualCOGS: 50000,
+    avgInventoryValue: 20000,
+    shelfLifeDays: 180,
+    seasonalityFactor: 1.0
+  },
+  'Poultry Product C': {
+    annualCOGS: 30000,
+    avgInventoryValue: 10000,
+    shelfLifeDays: 60,
+    seasonalityFactor: 1.5
+  }
+};
+
+// Calculate turnover rate for a specific product
+const calculateTurnoverRate = (productName) => {
+  const metrics = productMetrics[productName];
+  if (!metrics) return 0;
+  
+  const baseTurnover = metrics.annualCOGS / metrics.avgInventoryValue;
+  const shelfLifeAdjustment = 365 / metrics.shelfLifeDays;
+  
+  return (baseTurnover * shelfLifeAdjustment * metrics.seasonalityFactor).toFixed(1);
+};
+
+// Sample inventory data
+const inventoryData = [
   {
     id: 'FGI001',
     name: 'Poultry Product A',
@@ -52,54 +87,32 @@ const initialData = [
 ];
 
 const FinishedGoodsInventory = () => {
-  const [data, setData] = useState(initialData);
+  const [data, setData] = useState(inventoryData);
   const [searchQuery, setSearchQuery] = useState('');
+  const [hoveredItem, setHoveredItem] = useState(null);
 
   const filteredData = data.filter(item =>
     item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleChange = (index: number, field: 'quantity' | 'reserved', value: number) => {
-    const newData = [...data];
-    newData[index][field] = value;
-    setData(newData);
-  };
-
-  const getExpiryIndicator = (expiry: string) => {
-    const today = new Date();
-    const expiryDate = new Date(expiry);
-    const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-    const color = diffDays < 10 ? '#ef4444' : '#22c55e';
-    return (
-      <span
-        style={{
-          display: 'inline-block',
-          width: '10px',
-          height: '10px',
-          borderRadius: '50%',
-          backgroundColor: color,
-          marginLeft: '6px',
-        }}
-      />
-    );
-  };
-
-  // Calculate inventory turnover ratio (simplified calculation)
-  const totalQuantity = data.reduce((sum, item) => sum + item.quantity, 0);
-  const totalReserved = data.reduce((sum, item) => sum + item.reserved, 0);
-  const inventoryTurnoverRatio = totalQuantity > 0 ? (totalReserved / totalQuantity) * 100 : 0;
+  // Calculate average turnover for all products
+  const averageTurnover = (
+    filteredData.reduce((sum, item) => {
+      return sum + parseFloat(calculateTurnoverRate(item.name));
+    }, 0) / filteredData.length
+  ).toFixed(1);
 
   return (
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
-          {/* Header with Search and Blockchain Button */}
+          {/* Header Section */}
           <Flex justify="between" align="center">
             <Heading size="6">Finished Goods Inventory</Heading>
             <Flex gap="3" align="center">
               <TextField.Root
-                placeholder="Search products..."
+                placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-48"
@@ -108,11 +121,7 @@ const FinishedGoodsInventory = () => {
                   <MagnifyingGlassIcon />
                 </TextField.Slot>
               </TextField.Root>
-              <Button
-                variant="solid"
-                color="green"
-                onClick={() => alert('Inventory data submitted to blockchain!')}
-              >
+              <Button variant="solid" color="green">
                 <CubeIcon className="mr-2" />
                 Submit to Blockchain
               </Button>
@@ -121,6 +130,46 @@ const FinishedGoodsInventory = () => {
 
           {/* Summary Cards */}
           <Grid columns="3" gap="4">
+            {/* Inventory Turnover Card */}
+            <Card 
+              onMouseEnter={() => setHoveredItem('turnover')}
+              onMouseLeave={() => setHoveredItem(null)}
+            >
+              <Flex direction="column" gap="1" position="relative">
+                <Flex align="center" gap="2">
+                  <Text size="2" color="gray">Inventory Turnover</Text>
+                  <Tooltip content="Annual inventory turnover rate">
+                    <InfoCircledIcon width="14" height="14" />
+                  </Tooltip>
+                </Flex>
+                <Text size="5" weight="bold">{averageTurnover}x</Text>
+                
+                {hoveredItem === 'turnover' && (
+                  <Box 
+                    position="absolute" 
+                    top="100%" 
+                    left="0" 
+                    p="3" 
+                    className="bg-white shadow-lg rounded-md z-10"
+                    style={{ width: '300px' }}
+                  >
+                    <Text size="2" weight="bold">Product Turnover Rates:</Text>
+                    <ul className="mt-2 space-y-1">
+                      {filteredData.map(item => (
+                        <li key={item.id} className="flex justify-between">
+                          <Text>{item.name}:</Text>
+                          <Text weight="bold">
+                            {calculateTurnoverRate(item.name)}x
+                          </Text>
+                        </li>
+                      ))}
+                    </ul>
+                  </Box>
+                )}
+              </Flex>
+            </Card>
+
+            {/* Other Summary Cards */}
             <Card>
               <Flex direction="column" gap="1">
                 <Text size="2" color="gray">Total Products</Text>
@@ -129,114 +178,106 @@ const FinishedGoodsInventory = () => {
             </Card>
             <Card>
               <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Expiring Soon</Text>
+                <Text size="2" color="gray">Reserved Stock</Text>
                 <Text size="5" weight="bold">
-                  {data.filter(item => {
-                    const today = new Date();
-                    const expiry = new Date(item.expiry);
-                    return (expiry.getTime() - today.getTime()) < 10 * 24 * 60 * 60 * 1000;
-                  }).length}
+                  {data.reduce((sum, item) => sum + item.reserved, 0)}
                 </Text>
-              </Flex>
-            </Card>
-            <Card>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Inventory Turnover</Text>
-                <Flex align="center" gap="2">
-                  <Text size="5" weight="bold">
-                    {inventoryTurnoverRatio.toFixed(1)}%
-                  </Text>
-                  <Badge color={
-                    inventoryTurnoverRatio > 50 ? 'green' :
-                    inventoryTurnoverRatio > 30 ? 'amber' : 'red'
-                  }>
-                    {
-                      inventoryTurnoverRatio > 50 ? 'High' :
-                      inventoryTurnoverRatio > 30 ? 'Medium' : 'Low'
-                    }
-                  </Badge>
-                </Flex>
               </Flex>
             </Card>
           </Grid>
 
           {/* Inventory Table */}
-          <Table.Root style={{ fontWeight: 600 }}>
+          <Table.Root>
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Turnover Rate</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
-                  Storage
-                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>
-                  Location
-                  <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {filteredData.map((item, index) => (
-                <Table.Row key={item.id}>
-                  <Table.Cell><Text weight="medium">{item.id}</Text></Table.Cell>
-                  <Table.Cell><Text weight="medium">{item.name}</Text></Table.Cell>
+              {filteredData.map((item) => (
+                <Table.Row 
+                  key={item.id}
+                  onMouseEnter={() => setHoveredItem(item.id)}
+                  onMouseLeave={() => setHoveredItem(null)}
+                >
+                  <Table.Cell>{item.id}</Table.Cell>
+                  <Table.Cell>{item.name}</Table.Cell>
                   <Table.Cell>
-                    <TextField.Root
-                      value={item.quantity}
-                      type="number"
-                      onChange={(e) => handleChange(index, 'quantity', parseInt(e.target.value))}
-                      style={{ width: '70px', fontWeight: 600 }}
-                    />
+                    <Badge 
+                      color={
+                        calculateTurnoverRate(item.name) > 8 ? 'green' :
+                        calculateTurnoverRate(item.name) > 4 ? 'amber' : 'red'
+                      }
+                    >
+                      {calculateTurnoverRate(item.name)}x
+                    </Badge>
                   </Table.Cell>
-                  <Table.Cell>
-                    <TextField.Root
-                      value={item.reserved}
-                      type="number"
-                      onChange={(e) => handleChange(index, 'reserved', parseInt(e.target.value))}
-                      style={{ width: '70px', fontWeight: 600 }}
-                    />
-                  </Table.Cell>
-                  <Table.Cell><Text weight="medium">{item.quantity - item.reserved}</Text></Table.Cell>
-                  <Table.Cell>
-                    <Text weight="medium">{item.storage}</Text>
-                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Text weight="medium">{item.location}</Text>
-                    <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
-                      <Text weight="medium">{item.expiry}</Text>
-                      {getExpiryIndicator(item.expiry)}
-                    </Flex>
-                  </Table.Cell>
+                  <Table.Cell>{item.quantity}</Table.Cell>
+                  <Table.Cell>{item.reserved}</Table.Cell>
+                  <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
+                  <Table.Cell>{item.storage}</Table.Cell>
+                  <Table.Cell>{item.location}</Table.Cell>
+                  <Table.Cell>{item.expiry}</Table.Cell>
                 </Table.Row>
               ))}
             </Table.Body>
           </Table.Root>
 
-          {/* Inventory Chart */}
+          {/* Product Details Tooltip */}
+          {hoveredItem && hoveredItem !== 'turnover' && {
+            const product = data.find(item => item.id === hoveredItem);
+            return (
+              <Box 
+                position="absolute" 
+                p="3" 
+                className="bg-white shadow-lg rounded-md border"
+                style={{
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  width: '400px',
+                  zIndex: 10
+                }}
+              >
+                <Heading size="4" mb="2">{product.name} Analysis</Heading>
+                <Grid columns="2" gap="2">
+                  <Text>Annual COGS:</Text>
+                  <Text weight="bold">${productMetrics[product.name]?.annualCOGS.toLocaleString()}</Text>
+                  
+                  <Text>Avg Inventory Value:</Text>
+                  <Text weight="bold">${productMetrics[product.name]?.avgInventoryValue.toLocaleString()}</Text>
+                  
+                  <Text>Shelf Life:</Text>
+                  <Text weight="bold">{productMetrics[product.name]?.shelfLifeDays} days</Text>
+                  
+                  <Text>Seasonality Factor:</Text>
+                  <Text weight="bold">{productMetrics[product.name]?.seasonalityFactor}x</Text>
+                </Grid>
+              </Box>
+            );
+          }}
+
+          {/* Inventory Distribution Chart */}
           <Box mt="6">
-            <Heading size="5" mb="2">
-              Inventory Distribution
-            </Heading>
+            <Heading size="5" mb="2">Inventory Distribution</Heading>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={filteredData}>
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip />
-                <Bar dataKey="quantity" fill="#3b82f6" name="Total Quantity" />
+                <ChartTooltip />
+                <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
                 <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
-                <Bar
-                  dataKey={(entry) => entry.quantity - entry.reserved}
+                <Bar 
+                  dataKey={(item) => item.quantity - item.reserved}
                   fill="#10b981"
-                  name="Available"
+                  name="Available" 
                 />
               </BarChart>
             </ResponsiveContainer>
