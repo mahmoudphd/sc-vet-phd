@@ -1,29 +1,30 @@
-import { 
-  Table, 
-  Badge, 
+import React, { useState, useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
+import {
+  Table,
+  Badge,
   Button,
-  Flex, 
-  Heading, 
-  Text, 
+  Flex,
+  Heading,
+  Text,
   Progress,
-  IconButton, 
+  IconButton,
   Box,
   Dialog,
   TextField,
   Select
 } from '@radix-ui/themes';
-import { 
+import {
   MixerHorizontalIcon,
   PauseIcon,
   CrossCircledIcon,
   PlusIcon
 } from '@radix-ui/react-icons';
 import { LineChart, Line, ReferenceLine } from 'recharts';
-import { useState } from 'react';
-import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
 
-const stageOptions = [
+// Constants
+const STAGE_OPTIONS = [
   'Weighting',
   'Mixing',
   'Granulation',
@@ -34,21 +35,49 @@ const stageOptions = [
   'Sterilization',
   'Quality Control',
   'Packaging'
-];
+] as const;
 
-const productOptions = [
+const PRODUCT_OPTIONS = [
   'Poultry Drug 1',
   'Poultry Drug 2',
   'Poultry Drug 3',
+] as const;
+
+type BatchStage = typeof STAGE_OPTIONS[number];
+type ProductType = typeof PRODUCT_OPTIONS[number];
+
+interface Batch {
+  id: string;
+  product: ProductType;
+  stage: BatchStage;
+  temp: number;
+  status: 'status.onTrack' | 'status.delayed';
+  progress: number;
+}
+
+interface FormData {
+  productName: string;
+  batchSize: string;
+  selectedProduct: ProductType | '';
+}
+
+const INITIAL_FORM_DATA: FormData = {
+  productName: '',
+  batchSize: '',
+  selectedProduct: '',
+};
+
+const TEMP_CHART_DATA = [
+  { temp: 2 },
+  { temp: 2.5 },
+  { temp: 3 }
 ];
 
-const ActiveBatches = () => {
+const ActiveBatches: React.FC = () => {
   const { t } = useTranslation('active-batches');
-  const [open, setOpen] = useState(false);
-  const [productName, setProductName] = useState('');
-  const [batchSize, setBatchSize] = useState('');
-  const [selectedProduct, setSelectedProduct] = useState('');
-  const [batches, setBatches] = useState([
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
+  const [batches, setBatches] = useState<Batch[]>([
     { 
       id: 'VC23001', 
       product: 'Poultry Drug 1',
@@ -67,39 +96,71 @@ const ActiveBatches = () => {
     },
   ]);
 
-  const handleNewBatch = () => {
-    if (!productName || !batchSize || !selectedProduct) {
+  const handleFormChange = useCallback((field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  }, []);
+
+  const resetForm = useCallback(() => {
+    setFormData(INITIAL_FORM_DATA);
+  }, []);
+
+  const validateForm = useCallback(() => {
+    return formData.productName.trim() && 
+           formData.batchSize.trim() && 
+           formData.selectedProduct;
+  }, [formData]);
+
+  const handleNewBatch = useCallback(() => {
+    if (!validateForm()) {
       toast.error(t('errors.fillAllFields'));
       return;
     }
-    // Create new batch object
-    const newBatch = {
+
+    const newBatch: Batch = {
       id: `VC${Math.floor(Math.random() * 90000) + 10000}`,
-      product: selectedProduct,
-      stage: stageOptions[0], // default stage
+      product: formData.selectedProduct as ProductType,
+      stage: STAGE_OPTIONS[0],
       temp: 0,
       status: 'status.onTrack',
       progress: 0,
     };
-    setBatches([...batches, newBatch]);
-    setOpen(false);
+
+    setBatches(prev => [...prev, newBatch]);
+    resetForm();
+    setIsDialogOpen(false);
     toast.success(t('success.batchCreated'));
-  };
+  }, [formData, t, validateForm, resetForm]);
 
-  const handleProductChange = (batchId: string, newProduct: string) => {
-    setBatches(batches.map(batch => batch.id === batchId ? {...batch, product: newProduct} : batch));
-  };
+  const handleProductChange = useCallback((batchId: string, newProduct: ProductType) => {
+    setBatches(prev => prev.map(batch => 
+      batch.id === batchId ? { ...batch, product: newProduct } : batch
+    ));
+  }, []);
 
-  const handleStageChange = (batchId: string, newStage: string) => {
-    setBatches(batches.map(batch => batch.id === batchId ? {...batch, stage: newStage} : batch));
-  };
+  const handleStageChange = useCallback((batchId: string, newStage: BatchStage) => {
+    setBatches(prev => prev.map(batch => 
+      batch.id === batchId ? { ...batch, stage: newStage } : batch
+    ));
+  }, []);
+
+  const memoizedTempChart = useMemo(() => (
+    <LineChart width={100} height={40} data={TEMP_CHART_DATA}>
+      <Line 
+        type="monotone" 
+        dataKey="temp" 
+        stroke="#3b82f6" 
+        dot={false}
+      />
+      <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
+    </LineChart>
+  ), []);
 
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">{t('activeBatches.heading')}</Heading>
         
-        <Dialog.Root open={open} onOpenChange={setOpen}>
+        <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <Dialog.Trigger>
             <Button variant="soft">
               <MixerHorizontalIcon /> {t('buttons.newBatch')}
@@ -111,27 +172,27 @@ const ActiveBatches = () => {
             
             <Flex direction="column" gap="4" mt="4">
               <Select.Root 
-                value={selectedProduct}
-                onValueChange={setSelectedProduct}
+                value={formData.selectedProduct}
+                onValueChange={(value) => handleFormChange('selectedProduct', value)}
               >
                 <Select.Trigger placeholder={t('form.selectProduct')} />
                 <Select.Content>
-                  {productOptions.map(prod => (
+                  {PRODUCT_OPTIONS.map(prod => (
                     <Select.Item key={prod} value={prod}>{prod}</Select.Item>
                   ))}
                 </Select.Content>
               </Select.Root>
 
               <TextField.Root
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
+                value={formData.productName}
+                onChange={(e) => handleFormChange('productName', e.target.value)}
                 placeholder={t('form.batchIdentifier')}
               />
 
               <TextField.Root
                 type="number"
-                value={batchSize}
-                onChange={(e) => setBatchSize(e.target.value)}
+                value={formData.batchSize}
+                onChange={(e) => handleFormChange('batchSize', e.target.value)}
                 placeholder={t('form.batchSize')}
               />
 
@@ -139,7 +200,7 @@ const ActiveBatches = () => {
                 <Button 
                   variant="soft" 
                   color="gray"
-                  onClick={() => setOpen(false)}
+                  onClick={() => setIsDialogOpen(false)}
                 >
                   {t('buttons.cancel')}
                 </Button>
@@ -173,11 +234,11 @@ const ActiveBatches = () => {
               <Table.Cell>
                 <Select.Root
                   value={batch.product}
-                  onValueChange={(val) => handleProductChange(batch.id, val)}
+                  onValueChange={(value) => handleProductChange(batch.id, value as ProductType)}
                 >
                   <Select.Trigger />
                   <Select.Content>
-                    {productOptions.map(prod => (
+                    {PRODUCT_OPTIONS.map(prod => (
                       <Select.Item key={prod} value={prod}>{prod}</Select.Item>
                     ))}
                   </Select.Content>
@@ -187,11 +248,11 @@ const ActiveBatches = () => {
               <Table.Cell>
                 <Select.Root
                   value={batch.stage}
-                  onValueChange={(val) => handleStageChange(batch.id, val)}
+                  onValueChange={(value) => handleStageChange(batch.id, value as BatchStage)}
                 >
                   <Select.Trigger />
                   <Select.Content>
-                    {stageOptions.map(stage => (
+                    {STAGE_OPTIONS.map(stage => (
                       <Select.Item key={stage} value={stage}>{stage}</Select.Item>
                     ))}
                   </Select.Content>
@@ -200,19 +261,10 @@ const ActiveBatches = () => {
 
               <Table.Cell>
                 <div style={{ width: 100, height: 40 }}>
-                  <LineChart width={100} height={40} data={[
-                    { temp: 2 }, { temp: 2.5 }, { temp: 3 }
-                  ]}>
-                    <Line 
-                      type="monotone" 
-                      dataKey="temp" 
-                      stroke={batch.temp > 5 ? "#ef4444" : "#3b82f6"} 
-                      dot={false}
-                    />
-                    <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
-                  </LineChart>
+                  {memoizedTempChart}
                 </div>
               </Table.Cell>
+
               <Table.Cell>
                 <Badge 
                   color={batch.status === 'status.onTrack' ? 'green' : 'red'}
@@ -221,18 +273,20 @@ const ActiveBatches = () => {
                   {t(batch.status)}
                 </Badge>
               </Table.Cell>
+
               <Table.Cell>
                 <Flex align="center" gap="2">
                   <Progress value={batch.progress} />
                   <Text size="2">{batch.progress}%</Text>
                 </Flex>
               </Table.Cell>
+
               <Table.Cell>
                 <Flex gap="2">
-                  <IconButton variant="ghost" color="red">
+                  <IconButton variant="ghost" color="red" aria-label={t('buttons.cancelBatch')}>
                     <CrossCircledIcon />
                   </IconButton>
-                  <IconButton variant="ghost">
+                  <IconButton variant="ghost" aria-label={t('buttons.pauseBatch')}>
                     <PauseIcon />
                   </IconButton>
                 </Flex>
