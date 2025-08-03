@@ -16,45 +16,51 @@ import {
 import {
   CubeIcon as BlockchainIcon,
   PlusIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  Cross2Icon
 } from '@radix-ui/react-icons';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ChartTooltip, ResponsiveContainer } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip as ChartTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
+
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
 const ProductionOrders = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  
+  const [formData, setFormData] = useState({
+    productId: '',
+    productName: '',
+    quantity: '',
+    priority: 'medium'
+  });
+
   const orders = [
     {
       id: 'PO23045',
       product: 'Poultry Drug 1',
       priority: 'High',
-      materials: 'Allocated',
-      progress: 40,
+      status: 'In Production',
+      progress: 65,
       schedule: '2025-07-25',
-      batchSize: 5000,
-      completed: 2000
+      batchSize: 5000
     },
     {
       id: 'PO23046',
       product: 'Poultry Drug 2',
       priority: 'Medium',
-      materials: 'Pending',
-      progress: 25,
+      status: 'Pending',
+      progress: 30,
       schedule: '2025-07-28',
-      batchSize: 8000,
-      completed: 2000
+      batchSize: 8000
     },
     {
       id: 'PO23047',
       product: 'Poultry Drug 3',
       priority: 'Low',
-      materials: 'Insufficient',
-      progress: 10,
+      status: 'On Hold',
+      progress: 15,
       schedule: '2025-08-01',
-      batchSize: 6000,
-      completed: 600
+      batchSize: 6000
     },
   ];
 
@@ -67,15 +73,27 @@ const ProductionOrders = () => {
 
   const chartData = filteredOrders().map(order => ({
     name: order.product,
-    progress: order.progress,
-    completed: order.completed,
-    remaining: order.batchSize - order.completed
+    value: order.progress,
+    batchSize: order.batchSize
   }));
+
+  const handleFormChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!formData.productId || !formData.productName || !formData.quantity) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+    toast.success('New order created successfully');
+    setIsDialogOpen(false);
+  };
 
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Production Orders</Heading>
+        <Heading size="6">Production Orders Dashboard</Heading>
         
         <Flex gap="3" align="center">
           <TextField.Root
@@ -93,26 +111,84 @@ const ProductionOrders = () => {
             variant="solid" 
             color="green"
             className="bg-green-700 hover:bg-green-800"
-            onClick={() => toast.success('Submitted to blockchain')}
+            onClick={() => toast.success('Data submitted to blockchain')}
           >
             <BlockchainIcon className="mr-2" />
             Submit to Blockchain
           </Button>
           
-          <Button variant="soft" onClick={() => setIsDialogOpen(true)}>
-            <PlusIcon className="mr-2" /> New Order
-          </Button>
+          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog.Trigger>
+              <Button variant="soft">
+                <PlusIcon className="mr-2" /> New Order
+              </Button>
+            </Dialog.Trigger>
+
+            <Dialog.Content style={{ maxWidth: 500 }}>
+              <Flex justify="between" align="center" mb="4">
+                <Dialog.Title>Create New Production Order</Dialog.Title>
+                <IconButton variant="ghost" onClick={() => setIsDialogOpen(false)}>
+                  <Cross2Icon />
+                </IconButton>
+              </Flex>
+              
+              <Flex direction="column" gap="3">
+                <TextField.Root
+                  placeholder="Product ID"
+                  value={formData.productId}
+                  onChange={(e) => handleFormChange('productId', e.target.value)}
+                />
+
+                <TextField.Root
+                  placeholder="Product Name"
+                  value={formData.productName}
+                  onChange={(e) => handleFormChange('productName', e.target.value)}
+                />
+
+                <TextField.Root
+                  type="number"
+                  placeholder="Quantity"
+                  value={formData.quantity}
+                  onChange={(e) => handleFormChange('quantity', e.target.value)}
+                />
+
+                <Select.Root 
+                  value={formData.priority}
+                  onValueChange={(value) => handleFormChange('priority', value)}
+                >
+                  <Select.Trigger placeholder="Select priority" />
+                  <Select.Content>
+                    <Select.Item value="high">High Priority</Select.Item>
+                    <Select.Item value="medium">Medium Priority</Select.Item>
+                    <Select.Item value="low">Low Priority</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+
+                <Flex gap="3" justify="end" mt="4">
+                  <Button 
+                    variant="soft" 
+                    color="gray"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleSubmit}>
+                    Create Order
+                  </Button>
+                </Flex>
+              </Flex>
+            </Dialog.Content>
+          </Dialog.Root>
         </Flex>
       </Flex>
 
       {/* Compact Table */}
-      <Table.Root variant="surface" className="text-sm">
+      <Table.Root variant="surface" className="text-sm mb-6">
         <Table.Header>
           <Table.Row className="[&>th]:py-2 [&>th]:px-3">
             <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Priority</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Materials</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Schedule</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Batch Size</Table.ColumnHeaderCell>
@@ -126,18 +202,10 @@ const ProductionOrders = () => {
               <Table.Cell>{order.product}</Table.Cell>
               <Table.Cell>
                 <Badge color={
-                  order.priority === 'High' ? 'red' :
-                  order.priority === 'Medium' ? 'amber' : 'green'
+                  order.status === 'In Production' ? 'green' :
+                  order.status === 'Pending' ? 'amber' : 'red'
                 }>
-                  {order.priority}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Badge color={
-                  order.materials === 'Allocated' ? 'green' :
-                  order.materials === 'Pending' ? 'amber' : 'red'
-                }>
-                  {order.materials}
+                  {order.status}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
@@ -156,34 +224,38 @@ const ProductionOrders = () => {
         </Table.Body>
       </Table.Root>
 
-      {/* Improved Stacked Bar Chart */}
-      <Box mt="6" className="bg-white p-4 rounded-lg shadow-sm">
-        <Heading size="5" mb="4">Production Overview</Heading>
+      {/* Pie Chart Visualization */}
+      <Box className="bg-white p-4 rounded-lg shadow-sm">
+        <Heading size="5" mb="4">Production Distribution</Heading>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              layout="vertical"
-              margin={{ top: 20, right: 30, left: 40, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="name" type="category" />
-              <ChartTooltip />
-              <Bar dataKey="completed" stackId="a" fill="#10B981" name="Completed" />
-              <Bar dataKey="remaining" stackId="a" fill="#E5E7EB" name="Remaining" />
-            </BarChart>
+            <PieChart>
+              <Pie
+                data={chartData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                nameKey="name"
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              >
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <ChartTooltip 
+                formatter={(value, name, props) => [
+                  `${value}% (${props.payload.batchSize} units)`,
+                  name
+                ]}
+              />
+              <Legend />
+            </PieChart>
           </ResponsiveContainer>
         </div>
       </Box>
-
-      {/* Dialog for new orders */}
-      <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <Dialog.Content>
-          <Dialog.Title>Create New Order</Dialog.Title>
-          {/* Add your form content here */}
-        </Dialog.Content>
-      </Dialog.Root>
     </Box>
   );
 };
