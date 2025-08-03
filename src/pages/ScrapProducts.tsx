@@ -279,7 +279,14 @@ const ScrapProducts = () => {
                   {entry.handlingMethod}
                 </Badge>
               </Table.Cell>
-              <Table.Cell>{entry.reason}</Table.Cell>
+              <Table.Cell>
+                <Flex direction="column" gap="1">
+                  <Text>{entry.reason}</Text>
+                  <Badge color="blue" variant="soft" className="w-fit">
+                    Via IoT
+                  </Badge>
+                </Flex>
+              </Table.Cell>
               <Table.Cell>{entry.date}</Table.Cell>
             </Table.Row>
           ))}
