@@ -38,9 +38,9 @@ const STAGE_OPTIONS = [
 ] as const;
 
 const PRODUCT_OPTIONS = [
-  'A',
-  'B',
-  'C',
+  'Poultry Product A',
+  'Poultry Product B',
+  'Poultry Product C',
 ] as const;
 
 const PRIORITY_OPTIONS = [
@@ -90,7 +90,7 @@ const ActiveBatches: React.FC = () => {
   const [batches, setBatches] = useState<Batch[]>([
     { 
       id: 'VC23001', 
-      product: 'A',
+      product: 'Poultry Product A',
       stage: 'Mixing',
       temp: 2.5,
       status: 'status.onTrack',
@@ -99,7 +99,7 @@ const ActiveBatches: React.FC = () => {
     },
     { 
       id: 'VC23002', 
-      product: 'B',
+      product: 'Poultry Product B',
       stage: 'Compression',
       temp: 3.2,
       status: 'status.onTrack',
@@ -185,6 +185,13 @@ const ActiveBatches: React.FC = () => {
       case 'low': return 'green';
       default: return 'gray';
     }
+  };
+
+  const getProgressColor = (progress: number) => {
+    if (progress >= 80) return '#10B981'; // Green for high progress
+    if (progress >= 50) return '#3B82F6'; // Blue for medium progress
+    if (progress >= 30) return '#F59E0B'; // Orange for low progress
+    return '#EF4444'; // Red for very low progress
   };
 
   return (
@@ -381,11 +388,7 @@ const ActiveBatches: React.FC = () => {
                     value={batch.progress} 
                     className="h-2"
                     style={{
-                      backgroundColor: batch.progress > 80 
-                        ? '#10B981' 
-                        : batch.progress > 50 
-                        ? '#3B82F6' 
-                        : '#F59E0B'
+                      backgroundColor: getProgressColor(batch.progress)
                     }}
                   />
                   <Text size="2" weight="medium">{batch.progress}%</Text>
