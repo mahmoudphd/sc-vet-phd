@@ -34,8 +34,7 @@ import {
   CubeIcon,
   MixerHorizontalIcon,
   InfoCircledIcon,
-  CalendarIcon,
-  DashboardIcon
+  CalendarIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -48,7 +47,6 @@ interface InventoryItem {
   location: string;
   unitPrice: number;
   category: 'A' | 'B' | 'C';
-  lastRestock: string;
 }
 
 const EXCHANGE_RATE = 50; // 1 USD = 50 EGP
@@ -61,50 +59,46 @@ const CATEGORY_COLORS = {
 const initialData: InventoryItem[] = [
   {
     id: 'FGI001',
-    name: 'Premium Chicken Breast',
+    name: 'Poultry Product 1',
     quantity: 120,
     reserved: 40,
     storage: '4°C',
     expiry: '2025-08-10',
     location: 'Zone 1',
     unitPrice: 12.5,
-    category: 'A',
-    lastRestock: '2023-05-15'
+    category: 'A'
   },
   {
     id: 'FGI002',
-    name: 'Organic Chicken Wings',
+    name: 'Poultry Product 2',
     quantity: 100,
     reserved: 30,
     storage: '6°C',
     expiry: '2025-09-15',
     location: 'Zone 2',
     unitPrice: 15.0,
-    category: 'B',
-    lastRestock: '2023-06-20'
+    category: 'B'
   },
   {
     id: 'FGI003',
-    name: 'Standard Chicken Thighs',
+    name: 'Poultry Product 3',
     quantity: 80,
     reserved: 20,
     storage: '8°C',
     expiry: '2025-07-28',
     location: 'Zone 2',
     unitPrice: 10.0,
-    category: 'C',
-    lastRestock: '2023-07-10'
+    category: 'C'
   }
 ];
 
-const InventoryDashboard = () => {
+const FinishedGoodsInventory = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
   const [searchQuery, setSearchQuery] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [timeRange, setTimeRange] = useState<'7days' | '30days' | '90days'>('30days');
 
   // Calculate inventory metrics
   const totalValue = data.reduce((sum, item) => 
@@ -127,32 +121,6 @@ const InventoryDashboard = () => {
     fill: CATEGORY_COLORS[item.category]
   }));
 
-  const turnoverData = [
-    { name: 'Jan', value: 45 },
-    { name: 'Feb', value: 52 },
-    { name: 'Mar', value: 48 },
-    { name: 'Apr', value: 58 },
-    { name: 'May', value: 62 },
-    { name: 'Jun', value: 55 },
-  ];
-
-  const expiryStatusData = [
-    { name: 'Expired', value: data.filter(i => new Date(i.expiry) < new Date()).length },
-    { name: 'This Week', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-      return diff > 0 && diff <= 7;
-    }).length },
-    { name: 'Next 30 Days', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-      return diff > 7 && diff <= 30;
-    }).length },
-    { name: 'Safe', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
-      return diff > 30;
-    }).length }
-  ];
-
-  // Helper functions
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'ar-EG', {
       style: 'currency',
@@ -178,13 +146,13 @@ const InventoryDashboard = () => {
         <Flex direction="column" gap="4">
           {/* Header Section */}
           <Flex justify="between" align="center">
-            <Heading size="6">Poultry Inventory Management</Heading>
+            <Heading size="6">Finished Goods Inventory</Heading>
             <Flex gap="3" align="center">
               <TextField.Root
-                placeholder="Search inventory..."
+                placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '220px' }}
+                style={{ width: '200px' }}
               >
                 <TextField.Slot>
                   <MagnifyingGlassIcon />
@@ -237,105 +205,52 @@ const InventoryDashboard = () => {
           </Flex>
 
           {/* Professional Dashboard Charts */}
-          <Flex direction="column" gap="4">
-            <Flex gap="4">
-              <Card style={{ flex: 1 }}>
-                <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={inventoryValueData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      fill="#8884d8"
-                      dataKey="value"
-                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {inventoryValueData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Legend />
-                    <ChartTooltip 
-                      formatter={(value: number) => [formatCurrency(value), 'Value']}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-              </Card>
-
-              <Card style={{ flex: 1 }}>
-                <Heading size="4" mb="2">Inventory Turnover Trend</Heading>
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={turnoverData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <ChartTooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="value" 
-                      stroke="#3b82f6" 
-                      strokeWidth={2}
-                      activeDot={{ r: 6 }} 
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </Card>
-            </Flex>
-
-            <Flex gap="4">
-              <Card style={{ flex: 1 }}>
-                <Heading size="4" mb="2">Expiry Status Overview</Heading>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={expiryStatusData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <ChartTooltip />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#8884d8"
-                      radius={[4, 4, 0, 0]}
-                    >
-                      {expiryStatusData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={
-                            entry.name === 'Expired' ? '#ef4444' :
-                            entry.name === 'This Week' ? '#f59e0b' :
-                            entry.name === 'Next 30 Days' ? '#fbbf24' : '#10b981'
-                          } 
-                        />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
-            </Flex>
+          <Flex gap="4">
+            <Card style={{ flex: 1 }}>
+              <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={inventoryValueData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {inventoryValueData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <ChartTooltip 
+                    formatter={(value: number) => [formatCurrency(value), 'Value']}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
           </Flex>
 
           {/* Inventory Table */}
           <Table.Root>
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Last Restock</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
               {filteredData.map((item) => {
                 const expiryStatus = getExpiryStatus(item.expiry);
-                const itemValue = item.quantity * item.unitPrice;
                 
                 return (
                   <Table.Row 
@@ -344,11 +259,10 @@ const InventoryDashboard = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <Table.Cell>{item.id}</Table.Cell>
+                    <Table.Cell>{item.name}</Table.Cell>
                     <Table.Cell>
-                      <Text weight="bold">{item.name}</Text>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Badge color={item.category === 'A' ? 'blue' : item.category === 'B' ? 'green' : 'gray'}>
+                      <Badge color={item.category === 'A' ? 'blue' : 
+                                   item.category === 'B' ? 'green' : 'gray'}>
                         {item.category}
                       </Badge>
                     </Table.Cell>
@@ -364,7 +278,7 @@ const InventoryDashboard = () => {
                             ));
                           }
                         }}
-                        style={{ width: '70px' }}
+                        style={{ width: '80px' }}
                       />
                     </Table.Cell>
                     <Table.Cell>
@@ -382,23 +296,20 @@ const InventoryDashboard = () => {
                             ));
                           }
                         }}
-                        style={{ width: '70px' }}
+                        style={{ width: '80px' }}
                       />
                     </Table.Cell>
                     <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
-                    <Table.Cell>{formatCurrency(itemValue)}</Table.Cell>
+                    <Table.Cell>{formatCurrency(item.quantity * item.unitPrice)}</Table.Cell>
                     <Table.Cell>{item.storage}</Table.Cell>
                     <Table.Cell>{item.location}</Table.Cell>
                     <Table.Cell>
                       <Flex align="center" gap="2">
-                        <Text>{new Date(item.expiry).toLocaleDateString()}</Text>
+                        <Text>{item.expiry}</Text>
                         <Badge color={expiryStatus.color as any}>
                           {expiryStatus.status}
                         </Badge>
                       </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      {new Date(item.lastRestock).toLocaleDateString()}
                     </Table.Cell>
                   </Table.Row>
                 );
@@ -465,15 +376,11 @@ const InventoryDashboard = () => {
                 <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Expiry Date</Text>
                   <Flex align="center" gap="2">
-                    <Text size="3">{new Date(selectedItem.expiry).toLocaleDateString()}</Text>
+                    <Text size="3">{selectedItem.expiry}</Text>
                     <Badge color={getExpiryStatus(selectedItem.expiry).color as any}>
                       {getExpiryStatus(selectedItem.expiry).status}
                     </Badge>
                   </Flex>
-                </Box>
-                <Box style={{ flex: '1 1 200px' }}>
-                  <Text as="div" size="2" color="gray">Last Restock</Text>
-                  <Text size="3">{new Date(selectedItem.lastRestock).toLocaleDateString()}</Text>
                 </Box>
               </Flex>
 
@@ -496,4 +403,4 @@ const InventoryDashboard = () => {
   );
 };
 
-export default InventoryDashboard;
+export default FinishedGoodsInventory;
