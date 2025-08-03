@@ -7,7 +7,8 @@ import {
   TextField,
   Box,
   Grid,
-  Text
+  Text,
+  Badge
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -18,11 +19,12 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { useState } from 'react';
+import { MagnifyingGlassIcon, CubeIcon } from '@radix-ui/react-icons';
 
 const initialData = [
   {
     id: 'FGI001',
-    name: 'Poultry Product 1',
+    name: 'Poultry Product A',
     quantity: 120,
     reserved: 40,
     storage: '4°C',
@@ -31,7 +33,7 @@ const initialData = [
   },
   {
     id: 'FGI002',
-    name: 'Poultry Product 2',
+    name: 'Poultry Product B',
     quantity: 100,
     reserved: 30,
     storage: '6°C',
@@ -40,7 +42,7 @@ const initialData = [
   },
   {
     id: 'FGI003',
-    name: 'Poultry Product 3',
+    name: 'Poultry Product C',
     quantity: 80,
     reserved: 20,
     storage: '8°C',
@@ -51,6 +53,12 @@ const initialData = [
 
 const FinishedGoodsInventory = () => {
   const [data, setData] = useState(initialData);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredData = data.filter(item =>
+    item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const handleChange = (index: number, field: 'quantity' | 'reserved', value: number) => {
     const newData = [...data];
@@ -77,36 +85,82 @@ const FinishedGoodsInventory = () => {
     );
   };
 
+  // Calculate inventory turnover ratio (simplified calculation)
+  const totalQuantity = data.reduce((sum, item) => sum + item.quantity, 0);
+  const totalReserved = data.reduce((sum, item) => sum + item.reserved, 0);
+  const inventoryTurnoverRatio = totalQuantity > 0 ? (totalReserved / totalQuantity) * 100 : 0;
+
   return (
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
-          <Heading size="6">Finished Goods Inventory</Heading>
+          {/* Header with Search and Blockchain Button */}
+          <Flex justify="between" align="center">
+            <Heading size="6">Finished Goods Inventory</Heading>
+            <Flex gap="3" align="center">
+              <TextField.Root
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-48"
+              >
+                <TextField.Slot>
+                  <MagnifyingGlassIcon />
+                </TextField.Slot>
+              </TextField.Root>
+              <Button
+                variant="solid"
+                color="green"
+                onClick={() => alert('Inventory data submitted to blockchain!')}
+              >
+                <CubeIcon className="mr-2" />
+                Submit to Blockchain
+              </Button>
+            </Flex>
+          </Flex>
 
-          <Grid columns="2" gap="4">
-            <Card style={{ fontWeight: 600 }}>
+          {/* Summary Cards */}
+          <Grid columns="3" gap="4">
+            <Card>
               <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Total SKUs</Text>
+                <Text size="2" color="gray">Total Products</Text>
                 <Text size="5" weight="bold">{data.length}</Text>
               </Flex>
             </Card>
-            <Card style={{ fontWeight: 600 }}>
+            <Card>
               <Flex direction="column" gap="1">
                 <Text size="2" color="gray">Expiring Soon</Text>
                 <Text size="5" weight="bold">
-                  {
-                    data.filter(item => {
-                      const today = new Date();
-                      const expiry = new Date(item.expiry);
-                      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-                      return diffDays < 10;
-                    }).length
-                  }
+                  {data.filter(item => {
+                    const today = new Date();
+                    const expiry = new Date(item.expiry);
+                    return (expiry.getTime() - today.getTime()) < 10 * 24 * 60 * 60 * 1000;
+                  }).length}
                 </Text>
+              </Flex>
+            </Card>
+            <Card>
+              <Flex direction="column" gap="1">
+                <Text size="2" color="gray">Inventory Turnover</Text>
+                <Flex align="center" gap="2">
+                  <Text size="5" weight="bold">
+                    {inventoryTurnoverRatio.toFixed(1)}%
+                  </Text>
+                  <Badge color={
+                    inventoryTurnoverRatio > 50 ? 'green' :
+                    inventoryTurnoverRatio > 30 ? 'amber' : 'red'
+                  }>
+                    {
+                      inventoryTurnoverRatio > 50 ? 'High' :
+                      inventoryTurnoverRatio > 30 ? 'Medium' : 'Low'
+                    }
+                  </Badge>
+                </Flex>
               </Flex>
             </Card>
           </Grid>
 
+          {/* Inventory Table */}
           <Table.Root style={{ fontWeight: 600 }}>
             <Table.Header>
               <Table.Row>
@@ -114,7 +168,7 @@ const FinishedGoodsInventory = () => {
                 <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Free to Use</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                   Storage
                   <div style={{ fontSize: '0.75rem', color: '#3b82f6' }}>Via IoT</div>
@@ -127,7 +181,7 @@ const FinishedGoodsInventory = () => {
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {data.map((item, index) => (
+              {filteredData.map((item, index) => (
                 <Table.Row key={item.id}>
                   <Table.Cell><Text weight="medium">{item.id}</Text></Table.Cell>
                   <Table.Cell><Text weight="medium">{item.name}</Text></Table.Cell>
@@ -167,35 +221,26 @@ const FinishedGoodsInventory = () => {
             </Table.Body>
           </Table.Root>
 
+          {/* Inventory Chart */}
           <Box mt="6">
             <Heading size="5" mb="2">
-              Inventory Overview
+              Inventory Distribution
             </Heading>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={data}>
+              <BarChart data={filteredData}>
                 <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
-                <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
+                <Bar dataKey="quantity" fill="#3b82f6" name="Total Quantity" />
                 <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
                 <Bar
                   dataKey={(entry) => entry.quantity - entry.reserved}
                   fill="#10b981"
-                  name="Free to Use"
+                  name="Available"
                 />
               </BarChart>
             </ResponsiveContainer>
           </Box>
-
-          <Flex justify="end" mt="4">
-            <Button
-              style={{ backgroundColor: '#22c55e', color: 'white', fontWeight: 700 }}
-              size="3"
-              onClick={() => alert('Submitted to Blockchain!')}
-            >
-              Submit to Blockchain
-            </Button>
-          </Flex>
         </Flex>
       </Card>
     </Box>
