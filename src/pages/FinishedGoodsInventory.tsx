@@ -7,10 +7,12 @@ import {
   Button,
   TextField,
   Box,
-  Grid,
   Text,
   Badge,
-  Tooltip
+  Tooltip,
+  Dialog,
+  Select,
+  Switch
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -18,297 +20,484 @@ import {
   XAxis,
   YAxis,
   Tooltip as ChartTooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  LineChart,
+  Line,
+  CartesianGrid
 } from 'recharts';
-import { MagnifyingGlassIcon, CubeIcon, InfoCircledIcon } from '@radix-ui/react-icons';
-
-interface ProductMetrics {
-  annualCOGS: number;
-  avgInventoryValue: number;
-  shelfLifeDays: number;
-  seasonalityFactor: number;
-}
+import { 
+  MagnifyingGlassIcon,
+  CubeIcon,
+  MixerHorizontalIcon,
+  InfoCircledIcon,
+  CalendarIcon,
+  DashboardIcon
+} from '@radix-ui/react-icons';
 
 interface InventoryItem {
   id: string;
   name: string;
   quantity: number;
   reserved: number;
-  storage?: string;
-  expiry?: string;
-  location?: string;
+  storage: string;
+  expiry: string;
+  location: string;
+  unitPrice: number;
+  category: 'A' | 'B' | 'C';
+  lastRestock: string;
 }
 
-const productMetrics: Record<string, ProductMetrics> = {
-  'Poultry Product A': {
-    annualCOGS: 75000,
-    avgInventoryValue: 15000,
-    shelfLifeDays: 90,
-    seasonalityFactor: 1.2
-  },
-  'Poultry Product B': {
-    annualCOGS: 50000,
-    avgInventoryValue: 20000,
-    shelfLifeDays: 180,
-    seasonalityFactor: 1.0
-  },
-  'Poultry Product C': {
-    annualCOGS: 30000,
-    avgInventoryValue: 10000,
-    shelfLifeDays: 60,
-    seasonalityFactor: 1.5
-  }
+const EXCHANGE_RATE = 50; // 1 USD = 50 EGP
+const CATEGORY_COLORS = {
+  A: '#3b82f6', // Blue
+  B: '#10b981', // Green
+  C: '#6b7280'  // Gray
 };
 
-const inventoryData: InventoryItem[] = [
+const initialData: InventoryItem[] = [
   {
     id: 'FGI001',
-    name: 'Poultry Product A',
+    name: 'Premium Chicken Breast',
     quantity: 120,
     reserved: 40,
     storage: '4°C',
     expiry: '2025-08-10',
-    location: 'Zone 1'
+    location: 'Zone 1',
+    unitPrice: 12.5,
+    category: 'A',
+    lastRestock: '2023-05-15'
   },
   {
     id: 'FGI002',
-    name: 'Poultry Product B',
+    name: 'Organic Chicken Wings',
     quantity: 100,
     reserved: 30,
     storage: '6°C',
     expiry: '2025-09-15',
-    location: 'Zone 2'
+    location: 'Zone 2',
+    unitPrice: 15.0,
+    category: 'B',
+    lastRestock: '2023-06-20'
   },
   {
     id: 'FGI003',
-    name: 'Poultry Product C',
+    name: 'Standard Chicken Thighs',
     quantity: 80,
     reserved: 20,
     storage: '8°C',
     expiry: '2025-07-28',
-    location: 'Zone 2'
+    location: 'Zone 2',
+    unitPrice: 10.0,
+    category: 'C',
+    lastRestock: '2023-07-10'
   }
 ];
 
-const calculateTurnoverRate = (productName: string): string => {
-  const metrics = productMetrics[productName];
-  if (!metrics) return '0.0';
-  
-  const baseTurnover = metrics.annualCOGS / metrics.avgInventoryValue;
-  const shelfLifeAdjustment = 365 / metrics.shelfLifeDays;
-  
-  return (baseTurnover * shelfLifeAdjustment * metrics.seasonalityFactor).toFixed(1);
-};
+const InventoryDashboard = () => {
+  const [data, setData] = useState<InventoryItem[]>(initialData);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [timeRange, setTimeRange] = useState<'7days' | '30days' | '90days'>('30days');
 
-const FinishedGoodsInventory: React.FC = () => {
-  const [data, setData] = useState<InventoryItem[]>(inventoryData);
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  // Calculate inventory metrics
+  const totalValue = data.reduce((sum, item) => 
+    sum + (item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1)), 0);
 
-  const filteredData = data.filter(item =>
-    item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredData = data.filter(item => {
+    const matchesSearch = item.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         item.name.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLocation = locationFilter === 'all' || item.location === locationFilter;
+    const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+    
+    return matchesSearch && matchesLocation && matchesCategory;
+  });
 
-  const averageTurnover = (
-    filteredData.reduce((sum, item) => {
-      return sum + parseFloat(calculateTurnoverRate(item.name));
-    }, 0) / filteredData.length
-  ).toFixed(1);
+  // Enhanced data processing for professional charts
+  const inventoryValueData = filteredData.map(item => ({
+    name: item.name,
+    value: item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1),
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category]
+  }));
 
-  const renderProductTooltip = (productId: string) => {
-    const product = data.find(item => item.id === productId);
-    if (!product) return null;
+  const turnoverData = [
+    { name: 'Jan', value: 45 },
+    { name: 'Feb', value: 52 },
+    { name: 'Mar', value: 48 },
+    { name: 'Apr', value: 58 },
+    { name: 'May', value: 62 },
+    { name: 'Jun', value: 55 },
+  ];
 
-    const metrics = productMetrics[product.name] || {
-      annualCOGS: 0,
-      avgInventoryValue: 0,
-      shelfLifeDays: 0,
-      seasonalityFactor: 0
-    };
+  const expiryStatusData = [
+    { name: 'Expired', value: data.filter(i => new Date(i.expiry) < new Date()).length },
+    { name: 'This Week', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 0 && diff <= 7;
+    }).length },
+    { name: 'Next 30 Days', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 7 && diff <= 30;
+    }).length },
+    { name: 'Safe', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 30;
+    }).length }
+  ];
 
-    return (
-      <Box 
-        position="absolute" 
-        p="3" 
-        style={{
-          backgroundColor: 'white',
-          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-          borderRadius: '0.375rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '400px',
-          zIndex: 10
-        }}
-      >
-        <Heading size="4" mb="2">{product.name} Analysis</Heading>
-        <Grid columns="2" gap="2">
-          <Text>Annual COGS:</Text>
-          <Text weight="bold">${metrics.annualCOGS.toLocaleString()}</Text>
-          <Text>Avg Inventory Value:</Text>
-          <Text weight="bold">${metrics.avgInventoryValue.toLocaleString()}</Text>
-          <Text>Shelf Life:</Text>
-          <Text weight="bold">{metrics.shelfLifeDays} days</Text>
-          <Text>Seasonality Factor:</Text>
-          <Text weight="bold">{metrics.seasonalityFactor}x</Text>
-        </Grid>
-      </Box>
-    );
+  // Helper functions
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'ar-EG', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2
+    }).format(currency === 'EGP' ? value * EXCHANGE_RATE : value);
+  };
+
+  const getExpiryStatus = (expiryDate: string) => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return { status: 'Expired', color: 'red' };
+    if (diffDays < 7) return { status: 'Urgent', color: 'red' };
+    if (diffDays < 30) return { status: 'Warning', color: 'amber' };
+    return { status: 'Good', color: 'green' };
   };
 
   return (
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
+          {/* Header Section */}
           <Flex justify="between" align="center">
-            <Heading size="6">Finished Goods Inventory</Heading>
+            <Heading size="6">Poultry Inventory Management</Heading>
             <Flex gap="3" align="center">
               <TextField.Root
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '192px' }}
+                style={{ width: '220px' }}
               >
                 <TextField.Slot>
                   <MagnifyingGlassIcon />
                 </TextField.Slot>
               </TextField.Root>
-              <Button variant="solid" color="green">
+
+              <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
+                <Select.Trigger>
+                  <MixerHorizontalIcon />
+                  Location
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="all">All Locations</Select.Item>
+                  <Select.Item value="Zone 1">Zone 1</Select.Item>
+                  <Select.Item value="Zone 2">Zone 2</Select.Item>
+                </Select.Content>
+              </Select.Root>
+
+              <Select.Root value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select.Trigger>
+                  <MixerHorizontalIcon />
+                  Category
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="all">All Categories</Select.Item>
+                  <Select.Item value="A">Category A</Select.Item>
+                  <Select.Item value="B">Category B</Select.Item>
+                  <Select.Item value="C">Category C</Select.Item>
+                </Select.Content>
+              </Select.Root>
+
+              <Flex align="center" gap="2">
+                <Text>USD</Text>
+                <Switch 
+                  checked={currency === 'EGP'}
+                  onCheckedChange={(checked) => setCurrency(checked ? 'EGP' : 'USD')}
+                />
+                <Text>EGP (1:50)</Text>
+              </Flex>
+
+              <Button
+                variant="solid"
+                color="blue"
+                onClick={() => alert('Data submitted to blockchain ledger')}
+              >
                 <CubeIcon className="mr-2" />
-                Submit to Blockchain
+                Commit to Ledger
               </Button>
             </Flex>
           </Flex>
 
-          <Grid columns="3" gap="4">
-            <Card 
-              onMouseEnter={() => setHoveredItem('turnover')}
-              onMouseLeave={() => setHoveredItem(null)}
-            >
-              <Flex direction="column" gap="1" style={{ position: 'relative' }}>
-                <Flex align="center" gap="2">
-                  <Text size="2" color="gray">Inventory Turnover</Text>
-                  <Tooltip content="Annual inventory turnover rate">
-                    <InfoCircledIcon width="14" height="14" />
-                  </Tooltip>
-                </Flex>
-                <Text size="5" weight="bold">{averageTurnover}x</Text>
-                
-                {hoveredItem === 'turnover' && (
-                  <Box 
-                    style={{
-                      position: 'absolute',
-                      top: '100%',
-                      left: 0,
-                      padding: '12px',
-                      backgroundColor: 'white',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      borderRadius: '0.375rem',
-                      width: '300px',
-                      zIndex: 10
-                    }}
-                  >
-                    <Text size="2" weight="bold">Product Turnover Rates:</Text>
-                    <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                      {filteredData.map(item => (
-                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Text>{item.name}:</Text>
-                          <Text weight="bold">
-                            {calculateTurnoverRate(item.name)}x
-                          </Text>
-                        </div>
+          {/* Professional Dashboard Charts */}
+          <Flex direction="column" gap="4">
+            <Flex gap="4">
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={inventoryValueData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {inventoryValueData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                    </div>
-                  </Box>
-                )}
-              </Flex>
-            </Card>
+                    </Pie>
+                    <Legend />
+                    <ChartTooltip 
+                      formatter={(value: number) => [formatCurrency(value), 'Value']}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
 
-            <Card>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Total Products</Text>
-                <Text size="5" weight="bold">{data.length}</Text>
-              </Flex>
-            </Card>
-            <Card>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Reserved Stock</Text>
-                <Text size="5" weight="bold">
-                  {data.reduce((sum, item) => sum + item.reserved, 0)}
-                </Text>
-              </Flex>
-            </Card>
-          </Grid>
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Inventory Turnover Trend</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={turnoverData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#3b82f6" 
+                      strokeWidth={2}
+                      activeDot={{ r: 6 }} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+            </Flex>
 
+            <Flex gap="4">
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Expiry Status Overview</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={expiryStatusData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip />
+                    <Bar 
+                      dataKey="value" 
+                      fill="#8884d8"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {expiryStatusData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={
+                            entry.name === 'Expired' ? '#ef4444' :
+                            entry.name === 'This Week' ? '#f59e0b' :
+                            entry.name === 'Next 30 Days' ? '#fbbf24' : '#10b981'
+                          } 
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Flex>
+          </Flex>
+
+          {/* Inventory Table */}
           <Table.Root>
             <Table.Header>
               <Table.Row>
-                <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Turnover Rate</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Expiry Date</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Last Restock</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
-              {filteredData.map((item) => (
-                <Table.Row 
-                  key={item.id}
-                  onMouseEnter={() => setHoveredItem(item.id)}
-                  onMouseLeave={() => setHoveredItem(null)}
-                >
-                  <Table.Cell>{item.id}</Table.Cell>
-                  <Table.Cell>{item.name}</Table.Cell>
-                  <Table.Cell>
-                    <Badge 
-                      color={
-                        parseFloat(calculateTurnoverRate(item.name)) > 8 ? 'green' :
-                        parseFloat(calculateTurnoverRate(item.name)) > 4 ? 'amber' : 'red'
-                      }
-                    >
-                      {calculateTurnoverRate(item.name)}x
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>{item.quantity}</Table.Cell>
-                  <Table.Cell>{item.reserved}</Table.Cell>
-                  <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
-                  <Table.Cell>{item.storage}</Table.Cell>
-                  <Table.Cell>{item.location}</Table.Cell>
-                  <Table.Cell>{item.expiry}</Table.Cell>
-                </Table.Row>
-              ))}
+              {filteredData.map((item) => {
+                const expiryStatus = getExpiryStatus(item.expiry);
+                const itemValue = item.quantity * item.unitPrice;
+                
+                return (
+                  <Table.Row 
+                    key={item.id}
+                    onClick={() => setSelectedItem(item)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <Table.Cell>{item.id}</Table.Cell>
+                    <Table.Cell>
+                      <Text weight="bold">{item.name}</Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge color={item.category === 'A' ? 'blue' : item.category === 'B' ? 'green' : 'gray'}>
+                        {item.category}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        value={item.quantity}
+                        type="number"
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            setData(prev => prev.map(i => 
+                              i.id === item.id ? { ...i, quantity: Math.max(0, newValue) } : i
+                            ));
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        value={item.reserved}
+                        type="number"
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            setData(prev => prev.map(i => 
+                              i.id === item.id ? { 
+                                ...i, 
+                                reserved: Math.min(i.quantity, Math.max(0, newValue))
+                              } : i
+                            ));
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
+                    <Table.Cell>{formatCurrency(itemValue)}</Table.Cell>
+                    <Table.Cell>{item.storage}</Table.Cell>
+                    <Table.Cell>{item.location}</Table.Cell>
+                    <Table.Cell>
+                      <Flex align="center" gap="2">
+                        <Text>{new Date(item.expiry).toLocaleDateString()}</Text>
+                        <Badge color={expiryStatus.color as any}>
+                          {expiryStatus.status}
+                        </Badge>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(item.lastRestock).toLocaleDateString()}
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
             </Table.Body>
           </Table.Root>
-
-          {hoveredItem && hoveredItem !== 'turnover' && renderProductTooltip(hoveredItem)}
-
-          <Box mt="6">
-            <Heading size="5" mb="2">Inventory Distribution</Heading>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={filteredData}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <ChartTooltip />
-                <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
-                <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
-                <Bar 
-                  dataKey={(item: InventoryItem) => item.quantity - item.reserved}
-                  fill="#10b981"
-                  name="Available" 
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          </Box>
         </Flex>
       </Card>
+
+      {/* Item Detail Modal */}
+      <Dialog.Root open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        {selectedItem && (
+          <Dialog.Content style={{ maxWidth: '600px' }}>
+            <Dialog.Title>{selectedItem.name}</Dialog.Title>
+            <Flex direction="column" gap="4" mt="4">
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Product ID</Text>
+                  <Text size="3">{selectedItem.id}</Text>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Category</Text>
+                  <Badge color={selectedItem.category === 'A' ? 'blue' : 
+                               selectedItem.category === 'B' ? 'green' : 'gray'}>
+                    {selectedItem.category}
+                  </Badge>
+                </Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Current Stock</Text>
+                  <Text size="3">{selectedItem.quantity} units</Text>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Available</Text>
+                  <Text size="3">{selectedItem.quantity - selectedItem.reserved} units</Text>
+                </Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Unit Price</Text>
+                  <Text size="3">{formatCurrency(selectedItem.unitPrice)}</Text>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Total Value</Text>
+                  <Text size="3">{formatCurrency(selectedItem.quantity * selectedItem.unitPrice)}</Text>
+                </Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Storage</Text>
+                  <Text size="3">{selectedItem.storage}</Text>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Location</Text>
+                  <Text size="3">{selectedItem.location}</Text>
+                </Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Expiry Date</Text>
+                  <Flex align="center" gap="2">
+                    <Text size="3">{new Date(selectedItem.expiry).toLocaleDateString()}</Text>
+                    <Badge color={getExpiryStatus(selectedItem.expiry).color as any}>
+                      {getExpiryStatus(selectedItem.expiry).status}
+                    </Badge>
+                  </Flex>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Last Restock</Text>
+                  <Text size="3">{new Date(selectedItem.lastRestock).toLocaleDateString()}</Text>
+                </Box>
+              </Flex>
+
+              <Flex justify="end" gap="3" mt="4">
+                <Dialog.Close>
+                  <Button variant="soft" color="gray">
+                    Close
+                  </Button>
+                </Dialog.Close>
+                <Button>
+                  <CubeIcon className="mr-2" />
+                  View Blockchain Record
+                </Button>
+              </Flex>
+            </Flex>
+          </Dialog.Content>
+        )}
+      </Dialog.Root>
     </Box>
   );
 };
 
-export default FinishedGoodsInventory;
+export default InventoryDashboard;                       
+
+
 
 
