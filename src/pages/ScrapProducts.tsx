@@ -290,12 +290,11 @@ const ScrapProducts = () => {
               <Table.Cell>
                 <Flex direction="column" gap="1">
                   <Text>{entry.reason}</Text>
-                  <Badge color="blue" variant="soft" className="w-fit">
-                    Via IoT
-                  </Badge>
-                  <Badge color="teal" variant="soft" className="w-fit">
-                    Detected: {entry.detectedAt || new Date().toLocaleString()}
-                  </Badge>
+                  <Tooltip content={`Detected: ${entry.detectedAt || 'N/A'}`}>
+                    <Badge color="blue" variant="soft" className="w-fit cursor-pointer">
+                      Via IoT
+                    </Badge>
+                  </Tooltip>
                 </Flex>
               </Table.Cell>
               <Table.Cell>{entry.date}</Table.Cell>
