@@ -22,8 +22,24 @@ import {
 } from 'recharts';
 import { MagnifyingGlassIcon, CubeIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 
-// Product-specific turnover metrics
-const productMetrics = {
+interface ProductMetrics {
+  annualCOGS: number;
+  avgInventoryValue: number;
+  shelfLifeDays: number;
+  seasonalityFactor: number;
+}
+
+interface InventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  reserved: number;
+  storage?: string;
+  expiry?: string;
+  location?: string;
+}
+
+const productMetrics: Record<string, ProductMetrics> = {
   'Poultry Product A': {
     annualCOGS: 75000,
     avgInventoryValue: 15000,
@@ -44,10 +60,9 @@ const productMetrics = {
   }
 };
 
-// Calculate turnover rate for a specific product
-const calculateTurnoverRate = (productName) => {
+const calculateTurnoverRate = (productName: string): string => {
   const metrics = productMetrics[productName];
-  if (!metrics) return 0;
+  if (!metrics) return '0.0';
   
   const baseTurnover = metrics.annualCOGS / metrics.avgInventoryValue;
   const shelfLifeAdjustment = 365 / metrics.shelfLifeDays;
@@ -55,8 +70,7 @@ const calculateTurnoverRate = (productName) => {
   return (baseTurnover * shelfLifeAdjustment * metrics.seasonalityFactor).toFixed(1);
 };
 
-// Sample inventory data
-const inventoryData = [
+const inventoryData: InventoryItem[] = [
   {
     id: 'FGI001',
     name: 'Poultry Product A',
@@ -86,28 +100,66 @@ const inventoryData = [
   }
 ];
 
-const FinishedGoodsInventory = () => {
-  const [data, setData] = useState(inventoryData);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [hoveredItem, setHoveredItem] = useState(null);
+const FinishedGoodsInventory: React.FC = () => {
+  const [data, setData] = useState<InventoryItem[]>(inventoryData);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   const filteredData = data.filter(item =>
     item.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // Calculate average turnover for all products
   const averageTurnover = (
     filteredData.reduce((sum, item) => {
       return sum + parseFloat(calculateTurnoverRate(item.name));
     }, 0) / filteredData.length
   ).toFixed(1);
 
+  const renderProductTooltip = (productId: string) => {
+    const product = data.find(item => item.id === productId);
+    if (!product) return null;
+
+    const metrics = productMetrics[product.name] || {
+      annualCOGS: 0,
+      avgInventoryValue: 0,
+      shelfLifeDays: 0,
+      seasonalityFactor: 0
+    };
+
+    return (
+      <Box 
+        position="absolute" 
+        p="3" 
+        style={{
+          backgroundColor: 'white',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+          borderRadius: '0.375rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '400px',
+          zIndex: 10
+        }}
+      >
+        <Heading size="4" mb="2">{product.name} Analysis</Heading>
+        <Grid columns="2" gap="2">
+          <Text>Annual COGS:</Text>
+          <Text weight="bold">${metrics.annualCOGS.toLocaleString()}</Text>
+          <Text>Avg Inventory Value:</Text>
+          <Text weight="bold">${metrics.avgInventoryValue.toLocaleString()}</Text>
+          <Text>Shelf Life:</Text>
+          <Text weight="bold">{metrics.shelfLifeDays} days</Text>
+          <Text>Seasonality Factor:</Text>
+          <Text weight="bold">{metrics.seasonalityFactor}x</Text>
+        </Grid>
+      </Box>
+    );
+  };
+
   return (
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
-          {/* Header Section */}
           <Flex justify="between" align="center">
             <Heading size="6">Finished Goods Inventory</Heading>
             <Flex gap="3" align="center">
@@ -115,7 +167,7 @@ const FinishedGoodsInventory = () => {
                 placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-48"
+                style={{ width: '192px' }}
               >
                 <TextField.Slot>
                   <MagnifyingGlassIcon />
@@ -128,14 +180,12 @@ const FinishedGoodsInventory = () => {
             </Flex>
           </Flex>
 
-          {/* Summary Cards */}
           <Grid columns="3" gap="4">
-            {/* Inventory Turnover Card */}
             <Card 
               onMouseEnter={() => setHoveredItem('turnover')}
               onMouseLeave={() => setHoveredItem(null)}
             >
-              <Flex direction="column" gap="1" position="relative">
+              <Flex direction="column" gap="1" style={{ position: 'relative' }}>
                 <Flex align="center" gap="2">
                   <Text size="2" color="gray">Inventory Turnover</Text>
                   <Tooltip content="Annual inventory turnover rate">
@@ -146,30 +196,34 @@ const FinishedGoodsInventory = () => {
                 
                 {hoveredItem === 'turnover' && (
                   <Box 
-                    position="absolute" 
-                    top="100%" 
-                    left="0" 
-                    p="3" 
-                    className="bg-white shadow-lg rounded-md z-10"
-                    style={{ width: '300px' }}
+                    style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      padding: '12px',
+                      backgroundColor: 'white',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      borderRadius: '0.375rem',
+                      width: '300px',
+                      zIndex: 10
+                    }}
                   >
                     <Text size="2" weight="bold">Product Turnover Rates:</Text>
-                    <ul className="mt-2 space-y-1">
+                    <Box as="ul" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       {filteredData.map(item => (
-                        <li key={item.id} className="flex justify-between">
+                        <Box as="li" key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Text>{item.name}:</Text>
                           <Text weight="bold">
                             {calculateTurnoverRate(item.name)}x
                           </Text>
-                        </li>
+                        </Box>
                       ))}
-                    </ul>
+                    </Box>
                   </Box>
                 )}
               </Flex>
             </Card>
 
-            {/* Other Summary Cards */}
             <Card>
               <Flex direction="column" gap="1">
                 <Text size="2" color="gray">Total Products</Text>
@@ -186,7 +240,6 @@ const FinishedGoodsInventory = () => {
             </Card>
           </Grid>
 
-          {/* Inventory Table */}
           <Table.Root>
             <Table.Header>
               <Table.Row>
@@ -213,8 +266,8 @@ const FinishedGoodsInventory = () => {
                   <Table.Cell>
                     <Badge 
                       color={
-                        calculateTurnoverRate(item.name) > 8 ? 'green' :
-                        calculateTurnoverRate(item.name) > 4 ? 'amber' : 'red'
+                        parseFloat(calculateTurnoverRate(item.name)) > 8 ? 'green' :
+                        parseFloat(calculateTurnoverRate(item.name)) > 4 ? 'amber' : 'red'
                       }
                     >
                       {calculateTurnoverRate(item.name)}x
@@ -231,40 +284,8 @@ const FinishedGoodsInventory = () => {
             </Table.Body>
           </Table.Root>
 
-          {/* Product Details Tooltip */}
-          {hoveredItem && hoveredItem !== 'turnover' && {
-            const product = data.find(item => item.id === hoveredItem);
-            return (
-              <Box 
-                position="absolute" 
-                p="3" 
-                className="bg-white shadow-lg rounded-md border"
-                style={{
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: '400px',
-                  zIndex: 10
-                }}
-              >
-                <Heading size="4" mb="2">{product.name} Analysis</Heading>
-                <Grid columns="2" gap="2">
-                  <Text>Annual COGS:</Text>
-                  <Text weight="bold">${productMetrics[product.name]?.annualCOGS.toLocaleString()}</Text>
-                  
-                  <Text>Avg Inventory Value:</Text>
-                  <Text weight="bold">${productMetrics[product.name]?.avgInventoryValue.toLocaleString()}</Text>
-                  
-                  <Text>Shelf Life:</Text>
-                  <Text weight="bold">{productMetrics[product.name]?.shelfLifeDays} days</Text>
-                  
-                  <Text>Seasonality Factor:</Text>
-                  <Text weight="bold">{productMetrics[product.name]?.seasonalityFactor}x</Text>
-                </Grid>
-              </Box>
-            );
-          }}
+          {hoveredItem && hoveredItem !== 'turnover' && renderProductTooltip(hoveredItem)}
 
-          {/* Inventory Distribution Chart */}
           <Box mt="6">
             <Heading size="5" mb="2">Inventory Distribution</Heading>
             <ResponsiveContainer width="100%" height={300}>
@@ -275,7 +296,7 @@ const FinishedGoodsInventory = () => {
                 <Bar dataKey="quantity" fill="#3b82f6" name="Quantity" />
                 <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
                 <Bar 
-                  dataKey={(item) => item.quantity - item.reserved}
+                  dataKey={(item: InventoryItem) => item.quantity - item.reserved}
                   fill="#10b981"
                   name="Available" 
                 />
