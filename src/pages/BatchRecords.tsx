@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react'; // Added useState import
+import React, { useState, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Table,
@@ -22,14 +22,7 @@ import {
   PlusIcon
 } from '@radix-ui/react-icons';
 
-const PRODUCT_FILTER_OPTIONS = [
-  { value: 'all', label: 'filter-all-products' },
-  { value: 'oral', label: 'filter-oral' },
-  { value: 'injectable', label: 'filter-injectable' }
-] as const;
-
 type ApprovalStatus = 'approved' | 'pending' | 'rejected';
-type ProductFilter = typeof PRODUCT_FILTER_OPTIONS[number]['value'];
 
 interface BatchRecord {
   id: string;
@@ -42,7 +35,6 @@ interface BatchRecord {
 const BatchRecords: React.FC = () => {
   const { t } = useTranslation('master-batch-records');
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<ProductFilter>('all');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const records: BatchRecord[] = [
@@ -53,15 +45,21 @@ const BatchRecords: React.FC = () => {
       date: '2025-07-25',
       author: 'QA Auditor 1'
     },
+    { 
+      id: 'BR2023-046', 
+      product: 'Poultry Drug 2',
+      approval: 'pending',
+      date: '2025-07-26',
+      author: 'QA Auditor 2'
+    },
   ];
 
   const filteredRecords = useMemo(() => {
     return records.filter(record =>
-      (filter === 'all' || record.product.toLowerCase().includes(filter)) &&
-      (record.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       record.product.toLowerCase().includes(searchQuery.toLowerCase()))
+      record.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.product.toLowerCase().includes(searchQuery.toLowerCase())
     );
-  }, [records, searchQuery, filter]);
+  }, [records, searchQuery]);
 
   const handleSubmitToBlockchain = useCallback(() => {
     console.log('Submitting to blockchain...');
@@ -94,22 +92,23 @@ const BatchRecords: React.FC = () => {
             </TextField.Slot>
           </TextField.Root>
           
-          <Select.Root 
-            value={filter}
-            onValueChange={(value) => setFilter(value as ProductFilter)}
+          <Button 
+            variant="solid" 
+            color="green"
+            className="bg-green-700 hover:bg-green-800 transition-colors"
+            onClick={handleSubmitToBlockchain}
           >
-            <Select.Trigger />
-            <Select.Content>
-              {PRODUCT_FILTER_OPTIONS.map(option => (
-                <Select.Item key={option.value} value={option.value}>
-                  {t(option.label)}
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
+            <BlockchainIcon className="mr-2" />
+            Submit to Blockchain
+          </Button>
           
-          <Button variant="soft" className="whitespace-nowrap">
-            <MixerHorizontalIcon /> {t('new-record')}
+          <Button 
+            variant="soft" 
+            className="whitespace-nowrap"
+            onClick={() => setIsDialogOpen(true)}
+          >
+            <PlusIcon className="mr-2" />
+            Add Record
           </Button>
         </Flex>
       </Flex>
@@ -142,7 +141,15 @@ const BatchRecords: React.FC = () => {
           {filteredRecords.map((record) => (
             <Table.Row key={record.id} className="hover:bg-gray-50">
               <Table.Cell className="font-medium">{record.id}</Table.Cell>
-              <Table.Cell>{record.product}</Table.Cell>
+              <Table.Cell>
+                <Select.Root defaultValue={record.product}>
+                  <Select.Trigger variant="soft" />
+                  <Select.Content>
+                    <Select.Item value="Poultry Drug 1">Poultry Drug 1</Select.Item>
+                    <Select.Item value="Poultry Drug 2">Poultry Drug 2</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
               <Table.Cell>
                 <Badge 
                   color={getApprovalColor(record.approval)}
@@ -166,22 +173,10 @@ const BatchRecords: React.FC = () => {
         </Table.Body>
       </Table.Root>
 
-      <Flex mt="6" justify="center">
-        <Button 
-          variant="solid" 
-          color="green"
-          className="bg-green-700 hover:bg-green-800 transition-colors"
-          onClick={handleSubmitToBlockchain}
-        >
-          <BlockchainIcon className="mr-2" />
-          {t('submit-to-blockchain', 'Submit to Blockchain')}
-        </Button>
-      </Flex>
-
       <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <Dialog.Content>
-          <Dialog.Title>{t('new-record-dialog.title')}</Dialog.Title>
-          {/* Add your form fields here */}
+          <Dialog.Title>Add New Record</Dialog.Title>
+          {/* Add your form fields here for new record creation */}
         </Dialog.Content>
       </Dialog.Root>
     </Box>
