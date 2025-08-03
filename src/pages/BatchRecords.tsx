@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react'; // Added useState import
 import { useTranslation } from 'react-i18next';
 import {
   Table,
@@ -178,7 +178,6 @@ const BatchRecords: React.FC = () => {
         </Button>
       </Flex>
 
-      {/* Example Dialog - Add your form implementation */}
       <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <Dialog.Content>
           <Dialog.Title>{t('new-record-dialog.title')}</Dialog.Title>
