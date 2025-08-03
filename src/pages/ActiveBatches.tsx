@@ -22,11 +22,11 @@ import {
   CrossCircledIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  CubeIcon
+  CubeIcon,
+  CubeIcon as BlockchainIcon
 } from '@radix-ui/react-icons';
 import { LineChart, Line, ReferenceLine } from 'recharts';
 
-// Constants
 const STAGE_OPTIONS = [
   'Weighting',
   'Mixing',
@@ -167,6 +167,10 @@ const ActiveBatches: React.FC = () => {
     ));
   }, []);
 
+  const handleSubmitToBlockchain = useCallback(() => {
+    toast.success(t('blockchain.submitSuccess'));
+  }, [t]);
+
   const memoizedTempChart = useMemo(() => (
     <LineChart width={100} height={40} data={TEMP_CHART_DATA}>
       <Line 
@@ -191,7 +195,19 @@ const ActiveBatches: React.FC = () => {
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="5" className="gap-4">
-        <Heading size="6">{t('activeBatches.heading')}</Heading>
+        <Flex align="center" gap="4">
+          <Heading size="6">{t('activeBatches.heading')}</Heading>
+          
+          <Button 
+            onClick={handleSubmitToBlockchain}
+            variant="solid" 
+            color="green"
+            className="bg-green-700 hover:bg-green-800 transition-colors"
+          >
+            <BlockchainIcon className="mr-2" />
+            {t('blockchain.submitButton')}
+          </Button>
+        </Flex>
         
         <Flex gap="3" className="w-full max-w-md">
           <TextField.Root
@@ -216,12 +232,16 @@ const ActiveBatches: React.FC = () => {
               <Dialog.Title>{t('dialog.createBatchTitle')}</Dialog.Title>
               
               <Flex direction="column" gap="4" mt="4">
-                <TextField.Root
-                  label={t('form.batchIdentifier')}
-                  value={formData.batchName}
-                  onChange={(e) => handleFormChange('batchName', e.target.value)}
-                  placeholder="VC-2023-001"
-                />
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">
+                    {t('form.batchIdentifier')}
+                  </Text>
+                  <TextField.Root
+                    value={formData.batchName}
+                    onChange={(e) => handleFormChange('batchName', e.target.value)}
+                    placeholder="VC-2023-001"
+                  />
+                </Flex>
 
                 <Select.Root 
                   value={formData.selectedProduct}
@@ -236,12 +256,16 @@ const ActiveBatches: React.FC = () => {
                 </Select.Root>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <TextField.Root
-                    label={t('form.batchSize')}
-                    type="number"
-                    value={formData.batchSize}
-                    onChange={(e) => handleFormChange('batchSize', e.target.value)}
-                  />
+                  <Flex direction="column" gap="2">
+                    <Text as="label" size="2" weight="bold">
+                      {t('form.batchSize')}
+                    </Text>
+                    <TextField.Root
+                      type="number"
+                      value={formData.batchSize}
+                      onChange={(e) => handleFormChange('batchSize', e.target.value)}
+                    />
+                  </Flex>
                   <Select.Root 
                     value={formData.priority}
                     onValueChange={(value) => handleFormChange('priority', value)}
