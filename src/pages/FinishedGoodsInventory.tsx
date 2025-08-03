@@ -139,15 +139,15 @@ const InventoryDashboard = () => {
   const expiryStatusData = [
     { name: 'Expired', value: data.filter(i => new Date(i.expiry) < new Date()).length },
     { name: 'This Week', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return diff > 0 && diff <= 7;
     }).length },
     { name: 'Next 30 Days', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return diff > 7 && diff <= 30;
     }).length },
     { name: 'Safe', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return diff > 30;
     }).length }
   ];
@@ -496,8 +496,4 @@ const InventoryDashboard = () => {
   );
 };
 
-export default InventoryDashboard;                       
-
-
-
-
+export default InventoryDashboard;
