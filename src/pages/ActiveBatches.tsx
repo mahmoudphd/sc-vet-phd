@@ -1,6 +1,4 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
-import { toast } from 'sonner';
 import {
   Table,
   Badge,
@@ -22,8 +20,7 @@ import {
   CrossCircledIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  CubeIcon,
-  CubeIcon as BlockchainIcon
+  CubeIcon
 } from '@radix-ui/react-icons';
 import { LineChart, Line, ReferenceLine } from 'recharts';
 
@@ -87,7 +84,6 @@ const TEMP_CHART_DATA = [
 ];
 
 const ActiveBatches: React.FC = () => {
-  const { t } = useTranslation('active-batches');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
@@ -134,7 +130,7 @@ const ActiveBatches: React.FC = () => {
 
   const handleNewBatch = useCallback(() => {
     if (!validateForm()) {
-      toast.error(t('errors.fillAllFields'));
+      alert('Please fill all fields');
       return;
     }
 
@@ -151,8 +147,8 @@ const ActiveBatches: React.FC = () => {
     setBatches(prev => [...prev, newBatch]);
     resetForm();
     setIsDialogOpen(false);
-    toast.success(t('success.batchCreated'));
-  }, [formData, t, validateForm, resetForm]);
+    alert('Batch created successfully');
+  }, [formData, validateForm, resetForm]);
 
   const handleProductChange = useCallback((batchId: string, newProduct: ProductType) => {
     setBatches(prev => prev.map(batch => 
@@ -167,7 +163,7 @@ const ActiveBatches: React.FC = () => {
   }, []);
 
   const handleSubmitToBlockchain = useCallback(() => {
-    toast.success('Data submitted to blockchain successfully');
+    alert('Data submitted to blockchain successfully');
   }, []);
 
   const memoizedTempChart = useMemo(() => (
@@ -214,7 +210,7 @@ const ActiveBatches: React.FC = () => {
             color="green"
             className="bg-green-700 hover:bg-green-800 transition-colors"
           >
-            <BlockchainIcon className="mr-2" />
+            <CubeIcon className="mr-2" />
             Submit to Blockchain
           </Button>
           
@@ -224,7 +220,77 @@ const ActiveBatches: React.FC = () => {
                 <MixerHorizontalIcon /> New Batch
               </Button>
             </Dialog.Trigger>
-            {/* Dialog content remains the same */}
+
+            <Dialog.Content style={{ maxWidth: 500 }}>
+              <Dialog.Title>Create New Batch</Dialog.Title>
+              <Dialog.Description mb="4">
+                Fill in the details for the new production batch
+              </Dialog.Description>
+              
+              <Flex direction="column" gap="4">
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">
+                    Batch Identifier
+                  </Text>
+                  <TextField.Root
+                    value={formData.batchName}
+                    onChange={(e) => handleFormChange('batchName', e.target.value)}
+                    placeholder="VC-2023-001"
+                  />
+                </Flex>
+
+                <Select.Root 
+                  value={formData.selectedProduct}
+                  onValueChange={(value) => handleFormChange('selectedProduct', value)}
+                >
+                  <Select.Trigger placeholder="Select product" />
+                  <Select.Content>
+                    {PRODUCT_OPTIONS.map(prod => (
+                      <Select.Item key={prod} value={prod}>{prod}</Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Flex direction="column" gap="2">
+                    <Text as="label" size="2" weight="bold">
+                      Batch Size
+                    </Text>
+                    <TextField.Root
+                      type="number"
+                      value={formData.batchSize}
+                      onChange={(e) => handleFormChange('batchSize', e.target.value)}
+                    />
+                  </Flex>
+                  <Select.Root 
+                    value={formData.priority}
+                    onValueChange={(value) => handleFormChange('priority', value)}
+                  >
+                    <Select.Trigger placeholder="Priority" />
+                    <Select.Content>
+                      {PRIORITY_OPTIONS.map(option => (
+                        <Select.Item key={option.value} value={option.value}>
+                          {option.label}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </div>
+
+                <Flex gap="3" justify="end" mt="4">
+                  <Button 
+                    variant="soft" 
+                    color="gray"
+                    onClick={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleNewBatch}>
+                    <PlusIcon className="mr-2" /> Create Batch
+                  </Button>
+                </Flex>
+              </Flex>
+            </Dialog.Content>
           </Dialog.Root>
         </Flex>
       </Flex>
