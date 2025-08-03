@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -10,9 +10,9 @@ import {
   Text,
   Badge,
   Tooltip,
+  Dialog,
   Select,
-  Switch,
-  Dialog
+  Switch
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -21,13 +21,21 @@ import {
   YAxis,
   Tooltip as ChartTooltip,
   ResponsiveContainer,
-  Cell
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  LineChart,
+  Line,
+  CartesianGrid
 } from 'recharts';
 import { 
   MagnifyingGlassIcon,
   CubeIcon,
   MixerHorizontalIcon,
-  InfoCircledIcon
+  InfoCircledIcon,
+  CalendarIcon,
+  DashboardIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -39,54 +47,64 @@ interface InventoryItem {
   expiry: string;
   location: string;
   unitPrice: number;
-  category: string;
+  category: 'A' | 'B' | 'C';
+  lastRestock: string;
 }
 
 const EXCHANGE_RATE = 50; // 1 USD = 50 EGP
+const CATEGORY_COLORS = {
+  A: '#3b82f6', // Blue
+  B: '#10b981', // Green
+  C: '#6b7280'  // Gray
+};
 
 const initialData: InventoryItem[] = [
   {
     id: 'FGI001',
-    name: 'Poultry Product A',
+    name: 'Premium Chicken Breast',
     quantity: 120,
     reserved: 40,
     storage: '4°C',
     expiry: '2025-08-10',
     location: 'Zone 1',
     unitPrice: 12.5,
-    category: 'A'
+    category: 'A',
+    lastRestock: '2023-05-15'
   },
   {
     id: 'FGI002',
-    name: 'Poultry Product B',
+    name: 'Organic Chicken Wings',
     quantity: 100,
     reserved: 30,
     storage: '6°C',
     expiry: '2025-09-15',
     location: 'Zone 2',
     unitPrice: 15.0,
-    category: 'B'
+    category: 'B',
+    lastRestock: '2023-06-20'
   },
   {
     id: 'FGI003',
-    name: 'Poultry Product C',
+    name: 'Standard Chicken Thighs',
     quantity: 80,
     reserved: 20,
     storage: '8°C',
     expiry: '2025-07-28',
     location: 'Zone 2',
     unitPrice: 10.0,
-    category: 'C'
+    category: 'C',
+    lastRestock: '2023-07-10'
   }
 ];
 
-const FinishedGoodsInventory = () => {
+const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
   const [searchQuery, setSearchQuery] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [timeRange, setTimeRange] = useState<'7days' | '30days' | '90days'>('30days');
 
   // Calculate inventory metrics
   const totalValue = data.reduce((sum, item) => 
@@ -101,21 +119,40 @@ const FinishedGoodsInventory = () => {
     return matchesSearch && matchesLocation && matchesCategory;
   });
 
-  const handleQuantityChange = (id: string, value: number) => {
-    setData(prev => prev.map(item => 
-      item.id === id ? { ...item, quantity: Math.max(0, value) } : item
-    ));
-  };
+  // Enhanced data processing for professional charts
+  const inventoryValueData = filteredData.map(item => ({
+    name: item.name,
+    value: item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1),
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category]
+  }));
 
-  const handleReservedChange = (id: string, value: number) => {
-    setData(prev => prev.map(item => 
-      item.id === id ? { 
-        ...item, 
-        reserved: Math.min(item.quantity, Math.max(0, value)) 
-      } : item
-    ));
-  };
+  const turnoverData = [
+    { name: 'Jan', value: 45 },
+    { name: 'Feb', value: 52 },
+    { name: 'Mar', value: 48 },
+    { name: 'Apr', value: 58 },
+    { name: 'May', value: 62 },
+    { name: 'Jun', value: 55 },
+  ];
 
+  const expiryStatusData = [
+    { name: 'Expired', value: data.filter(i => new Date(i.expiry) < new Date()).length },
+    { name: 'This Week', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 0 && diff <= 7;
+    }).length },
+    { name: 'Next 30 Days', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 7 && diff <= 30;
+    }).length },
+    { name: 'Safe', value: data.filter(i => {
+      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+      return diff > 30;
+    }).length }
+  ];
+
+  // Helper functions
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'ar-EG', {
       style: 'currency',
@@ -130,7 +167,7 @@ const FinishedGoodsInventory = () => {
     const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     if (diffDays < 0) return { status: 'Expired', color: 'red' };
-    if (diffDays < 7) return { status: 'Critical', color: 'red' };
+    if (diffDays < 7) return { status: 'Urgent', color: 'red' };
     if (diffDays < 30) return { status: 'Warning', color: 'amber' };
     return { status: 'Good', color: 'green' };
   };
@@ -141,13 +178,13 @@ const FinishedGoodsInventory = () => {
         <Flex direction="column" gap="4">
           {/* Header Section */}
           <Flex justify="between" align="center">
-            <Heading size="6">Finished Goods Inventory</Heading>
+            <Heading size="6">Poultry Inventory Management</Heading>
             <Flex gap="3" align="center">
               <TextField.Root
-                placeholder="Search products..."
+                placeholder="Search inventory..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '200px' }}
+                style={{ width: '220px' }}
               >
                 <TextField.Slot>
                   <MagnifyingGlassIcon />
@@ -185,42 +222,97 @@ const FinishedGoodsInventory = () => {
                   checked={currency === 'EGP'}
                   onCheckedChange={(checked) => setCurrency(checked ? 'EGP' : 'USD')}
                 />
-                <Text>EGP (1 USD = 50 EGP)</Text>
+                <Text>EGP (1:50)</Text>
               </Flex>
 
               <Button
                 variant="solid"
-                color="green"
-                onClick={() => alert('Inventory data submitted to blockchain!')}
+                color="blue"
+                onClick={() => alert('Data submitted to blockchain ledger')}
               >
                 <CubeIcon className="mr-2" />
-                Submit to Blockchain
+                Commit to Ledger
               </Button>
             </Flex>
           </Flex>
 
-          {/* Summary Cards */}
-          <Flex gap="4">
-            <Card style={{ flex: 1 }}>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Total Inventory Value</Text>
-                <Text size="5" weight="bold">{formatCurrency(totalValue)}</Text>
-              </Flex>
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Total Items</Text>
-                <Text size="5" weight="bold">{data.length}</Text>
-              </Flex>
-            </Card>
-            <Card style={{ flex: 1 }}>
-              <Flex direction="column" gap="1">
-                <Text size="2" color="gray">Expiring Soon</Text>
-                <Text size="5" weight="bold">
-                  {data.filter(item => getExpiryStatus(item.expiry).status === 'Critical').length}
-                </Text>
-              </Flex>
-            </Card>
+          {/* Professional Dashboard Charts */}
+          <Flex direction="column" gap="4">
+            <Flex gap="4">
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={inventoryValueData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      fill="#8884d8"
+                      dataKey="value"
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    >
+                      {inventoryValueData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Legend />
+                    <ChartTooltip 
+                      formatter={(value: number) => [formatCurrency(value), 'Value']}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Inventory Turnover Trend</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <LineChart data={turnoverData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip />
+                    <Line 
+                      type="monotone" 
+                      dataKey="value" 
+                      stroke="#3b82f6" 
+                      strokeWidth={2}
+                      activeDot={{ r: 6 }} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </Card>
+            </Flex>
+
+            <Flex gap="4">
+              <Card style={{ flex: 1 }}>
+                <Heading size="4" mb="2">Expiry Status Overview</Heading>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={expiryStatusData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <ChartTooltip />
+                    <Bar 
+                      dataKey="value" 
+                      fill="#8884d8"
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {expiryStatusData.map((entry, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={
+                            entry.name === 'Expired' ? '#ef4444' :
+                            entry.name === 'This Week' ? '#f59e0b' :
+                            entry.name === 'Next 30 Days' ? '#fbbf24' : '#10b981'
+                          } 
+                        />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+            </Flex>
           </Flex>
 
           {/* Inventory Table */}
@@ -228,15 +320,16 @@ const FinishedGoodsInventory = () => {
             <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Expiry Status</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Last Restock</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             <Table.Body>
@@ -251,12 +344,11 @@ const FinishedGoodsInventory = () => {
                     style={{ cursor: 'pointer' }}
                   >
                     <Table.Cell>{item.id}</Table.Cell>
-                    <Table.Cell>{item.name}</Table.Cell>
                     <Table.Cell>
-                      <Badge color={
-                        item.category === 'A' ? 'blue' :
-                        item.category === 'B' ? 'green' : 'gray'
-                      }>
+                      <Text weight="bold">{item.name}</Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge color={item.category === 'A' ? 'blue' : item.category === 'B' ? 'green' : 'gray'}>
                         {item.category}
                       </Badge>
                     </Table.Cell>
@@ -264,16 +356,33 @@ const FinishedGoodsInventory = () => {
                       <TextField.Root
                         value={item.quantity}
                         type="number"
-                        onChange={(e) => handleQuantityChange(item.id, parseInt(e.target.value))}
-                        style={{ width: '80px' }}
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            setData(prev => prev.map(i => 
+                              i.id === item.id ? { ...i, quantity: Math.max(0, newValue) } : i
+                            ));
+                          }
+                        }}
+                        style={{ width: '70px' }}
                       />
                     </Table.Cell>
                     <Table.Cell>
                       <TextField.Root
                         value={item.reserved}
                         type="number"
-                        onChange={(e) => handleReservedChange(item.id, parseInt(e.target.value))}
-                        style={{ width: '80px' }}
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            setData(prev => prev.map(i => 
+                              i.id === item.id ? { 
+                                ...i, 
+                                reserved: Math.min(i.quantity, Math.max(0, newValue))
+                              } : i
+                            ));
+                          }
+                        }}
+                        style={{ width: '70px' }}
                       />
                     </Table.Cell>
                     <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
@@ -281,96 +390,92 @@ const FinishedGoodsInventory = () => {
                     <Table.Cell>{item.storage}</Table.Cell>
                     <Table.Cell>{item.location}</Table.Cell>
                     <Table.Cell>
-                      <Badge color={expiryStatus.color}>
-                        {expiryStatus.status} ({new Date(item.expiry).toLocaleDateString()})
-                      </Badge>
+                      <Flex align="center" gap="2">
+                        <Text>{new Date(item.expiry).toLocaleDateString()}</Text>
+                        <Badge color={expiryStatus.color as any}>
+                          {expiryStatus.status}
+                        </Badge>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(item.lastRestock).toLocaleDateString()}
                     </Table.Cell>
                   </Table.Row>
                 );
               })}
             </Table.Body>
           </Table.Root>
-
-          {/* Inventory Charts */}
-          <Flex gap="4" mt="4">
-            <Card style={{ flex: 1 }}>
-              <Heading size="4" mb="2">Inventory Value by Product ({currency})</Heading>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={filteredData}>
-                  <XAxis dataKey="name" />
-                  <YAxis />
-                  <ChartTooltip 
-                    formatter={(value) => [formatCurrency(Number(value)), 'Value']}
-                  />
-                  <Bar 
-                    dataKey={(item) => item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1)}
-                    name="Value"
-                  >
-                    {filteredData.map((entry, index) => (
-                      <Cell 
-                        key={`cell-${index}`} 
-                        fill={
-                          entry.category === 'A' ? '#3b82f6' :
-                          entry.category === 'B' ? '#10b981' : '#6b7280'
-                        } 
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </Card>
-          </Flex>
         </Flex>
       </Card>
 
-      {/* Item Detail Dialog */}
+      {/* Item Detail Modal */}
       <Dialog.Root open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         {selectedItem && (
           <Dialog.Content style={{ maxWidth: '600px' }}>
             <Dialog.Title>{selectedItem.name}</Dialog.Title>
-            <Flex direction="column" gap="3" mt="4">
-              <Grid columns="2" gap="3">
-                <Box>
+            <Flex direction="column" gap="4" mt="4">
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Product ID</Text>
                   <Text size="3">{selectedItem.id}</Text>
                 </Box>
-                <Box>
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Category</Text>
-                  <Badge color={
-                    selectedItem.category === 'A' ? 'blue' :
-                    selectedItem.category === 'B' ? 'green' : 'gray'
-                  }>
+                  <Badge color={selectedItem.category === 'A' ? 'blue' : 
+                               selectedItem.category === 'B' ? 'green' : 'gray'}>
                     {selectedItem.category}
                   </Badge>
                 </Box>
-                <Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Current Stock</Text>
+                  <Text size="3">{selectedItem.quantity} units</Text>
+                </Box>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Available</Text>
+                  <Text size="3">{selectedItem.quantity - selectedItem.reserved} units</Text>
+                </Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Unit Price</Text>
                   <Text size="3">{formatCurrency(selectedItem.unitPrice)}</Text>
                 </Box>
-                <Box>
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Total Value</Text>
-                  <Text size="3">
-                    {formatCurrency(selectedItem.quantity * selectedItem.unitPrice)}
-                  </Text>
+                  <Text size="3">{formatCurrency(selectedItem.quantity * selectedItem.unitPrice)}</Text>
                 </Box>
-                <Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Storage</Text>
                   <Text size="3">{selectedItem.storage}</Text>
                 </Box>
-                <Box>
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Location</Text>
                   <Text size="3">{selectedItem.location}</Text>
                 </Box>
-                <Box>
+              </Flex>
+
+              <Flex gap="4" wrap="wrap">
+                <Box style={{ flex: '1 1 200px' }}>
                   <Text as="div" size="2" color="gray">Expiry Date</Text>
-                  <Text size="3">
-                    {new Date(selectedItem.expiry).toLocaleDateString()}
-                    <Badge color={getExpiryStatus(selectedItem.expiry).color} ml="2">
+                  <Flex align="center" gap="2">
+                    <Text size="3">{new Date(selectedItem.expiry).toLocaleDateString()}</Text>
+                    <Badge color={getExpiryStatus(selectedItem.expiry).color as any}>
                       {getExpiryStatus(selectedItem.expiry).status}
                     </Badge>
-                  </Text>
+                  </Flex>
                 </Box>
-              </Grid>
+                <Box style={{ flex: '1 1 200px' }}>
+                  <Text as="div" size="2" color="gray">Last Restock</Text>
+                  <Text size="3">{new Date(selectedItem.lastRestock).toLocaleDateString()}</Text>
+                </Box>
+              </Flex>
 
               <Flex justify="end" gap="3" mt="4">
                 <Dialog.Close>
@@ -391,4 +496,4 @@ const FinishedGoodsInventory = () => {
   );
 };
 
-export default FinishedGoodsInventory;
+export default InventoryDashboard;
