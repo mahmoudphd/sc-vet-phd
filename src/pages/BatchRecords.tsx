@@ -40,14 +40,14 @@ const BatchRecords: React.FC = () => {
   const records: BatchRecord[] = [
     { 
       id: 'BR2023-045', 
-      product: 'Poultry Drug 1',
+      product: 'Poultry Product A',
       approval: 'approved',
       date: '2025-07-25',
       author: 'QA Auditor 1'
     },
     { 
       id: 'BR2023-046', 
-      product: 'Poultry Drug 2',
+      product: 'Poultry Product B',
       approval: 'pending',
       date: '2025-07-26',
       author: 'QA Auditor 2'
@@ -145,8 +145,9 @@ const BatchRecords: React.FC = () => {
                 <Select.Root defaultValue={record.product}>
                   <Select.Trigger variant="soft" />
                   <Select.Content>
-                    <Select.Item value="Poultry Drug 1">Poultry Drug 1</Select.Item>
-                    <Select.Item value="Poultry Drug 2">Poultry Drug 2</Select.Item>
+                    <Select.Item value="Poultry Product A">Poultry Product A</Select.Item>
+                    <Select.Item value="Poultry Product B">Poultry Product B</Select.Item>
+                    <Select.Item value="Poultry Product C">Poultry Product C</Select.Item>
                   </Select.Content>
                 </Select.Root>
               </Table.Cell>
