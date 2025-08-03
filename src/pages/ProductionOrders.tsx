@@ -33,13 +33,13 @@ const ProductionOrders = () => {
     productName: '',
     quantity: '',
     priority: 'medium',
-    materialsStatus: 'Allocated' // Default to Allocated
+    materialsStatus: 'Allocated'
   });
 
   const orders = [
     {
       id: 'PO23045',
-      product: 'Poultry Drug 1',
+      product: 'Poultry Product A',
       priority: 'High',
       materials: 'Allocated',
       progress: 65,
@@ -48,7 +48,7 @@ const ProductionOrders = () => {
     },
     {
       id: 'PO23046',
-      product: 'Poultry Drug 2',
+      product: 'Poultry Product B',
       priority: 'Medium',
       materials: 'Pending',
       progress: 30,
@@ -57,7 +57,7 @@ const ProductionOrders = () => {
     },
     {
       id: 'PO23047',
-      product: 'Poultry Drug 3',
+      product: 'Poultry Product C',
       priority: 'Low',
       materials: 'Insufficient Materials',
       progress: 15,
