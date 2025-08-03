@@ -25,7 +25,8 @@ import {
   Cell,
   LineChart,
   Line,
-  CartesianGrid
+  CartesianGrid,
+  Legend // Added missing import
 } from 'recharts';
 
 interface InventoryItem {
