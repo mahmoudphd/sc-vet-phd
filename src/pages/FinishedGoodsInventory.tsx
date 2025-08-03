@@ -60,16 +60,6 @@ const productMetrics: Record<string, ProductMetrics> = {
   }
 };
 
-const calculateTurnoverRate = (productName: string): string => {
-  const metrics = productMetrics[productName];
-  if (!metrics) return '0.0';
-  
-  const baseTurnover = metrics.annualCOGS / metrics.avgInventoryValue;
-  const shelfLifeAdjustment = 365 / metrics.shelfLifeDays;
-  
-  return (baseTurnover * shelfLifeAdjustment * metrics.seasonalityFactor).toFixed(1);
-};
-
 const inventoryData: InventoryItem[] = [
   {
     id: 'FGI001',
@@ -99,6 +89,16 @@ const inventoryData: InventoryItem[] = [
     location: 'Zone 2'
   }
 ];
+
+const calculateTurnoverRate = (productName: string): string => {
+  const metrics = productMetrics[productName];
+  if (!metrics) return '0.0';
+  
+  const baseTurnover = metrics.annualCOGS / metrics.avgInventoryValue;
+  const shelfLifeAdjustment = 365 / metrics.shelfLifeDays;
+  
+  return (baseTurnover * shelfLifeAdjustment * metrics.seasonalityFactor).toFixed(1);
+};
 
 const FinishedGoodsInventory: React.FC = () => {
   const [data, setData] = useState<InventoryItem[]>(inventoryData);
@@ -209,16 +209,16 @@ const FinishedGoodsInventory: React.FC = () => {
                     }}
                   >
                     <Text size="2" weight="bold">Product Turnover Rates:</Text>
-                    <Box as="ul" style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                    <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                       {filteredData.map(item => (
-                        <Box as="li" key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
                           <Text>{item.name}:</Text>
                           <Text weight="bold">
                             {calculateTurnoverRate(item.name)}x
                           </Text>
-                        </Box>
+                        </div>
                       ))}
-                    </Box>
+                    </div>
                   </Box>
                 )}
               </Flex>
