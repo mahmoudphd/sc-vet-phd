@@ -31,6 +31,7 @@ interface ScrapEntry {
   handlingMethod: string;
   reason: string;
   date: string;
+  detectedAt?: string;
 }
 
 const ScrapProducts = () => {
@@ -46,6 +47,7 @@ const ScrapProducts = () => {
       handlingMethod: 'Recycled',
       reason: 'Expiration',
       date: '2025-07-24',
+      detectedAt: '2025-07-24 14:30:45'
     },
     {
       id: '2',
@@ -56,6 +58,7 @@ const ScrapProducts = () => {
       handlingMethod: 'Disposed',
       reason: 'Damage',
       date: '2025-07-24',
+      detectedAt: '2025-07-24 09:15:22'
     },
   ]);
 
@@ -68,6 +71,7 @@ const ScrapProducts = () => {
     handlingMethod: 'Recycled',
     reason: 'Expiration',
     date: new Date().toISOString().split('T')[0],
+    detectedAt: new Date().toLocaleString()
   });
 
   const filteredScraps = useCallback(() => {
@@ -84,7 +88,11 @@ const ScrapProducts = () => {
     }
 
     const newId = (scrapData.length + 1).toString();
-    setScrapData([...scrapData, { ...newEntry, id: newId }]);
+    setScrapData([...scrapData, { 
+      ...newEntry, 
+      id: newId,
+      detectedAt: new Date().toLocaleString()
+    }]);
     setIsDialogOpen(false);
     setNewEntry({
       id: '',
@@ -284,6 +292,9 @@ const ScrapProducts = () => {
                   <Text>{entry.reason}</Text>
                   <Badge color="blue" variant="soft" className="w-fit">
                     Via IoT
+                  </Badge>
+                  <Badge color="teal" variant="soft" className="w-fit">
+                    Detected: {entry.detectedAt || new Date().toLocaleString()}
                   </Badge>
                 </Flex>
               </Table.Cell>
