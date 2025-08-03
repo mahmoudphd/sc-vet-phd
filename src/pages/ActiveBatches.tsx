@@ -38,9 +38,9 @@ const STAGE_OPTIONS = [
 ] as const;
 
 const PRODUCT_OPTIONS = [
-  'Poultry Drug 1',
-  'Poultry Drug 2',
-  'Poultry Drug 3',
+  'A',
+  'B',
+  'C',
 ] as const;
 
 const PRIORITY_OPTIONS = [
@@ -90,7 +90,7 @@ const ActiveBatches: React.FC = () => {
   const [batches, setBatches] = useState<Batch[]>([
     { 
       id: 'VC23001', 
-      product: 'Poultry Drug 1',
+      product: 'A',
       stage: 'Mixing',
       temp: 2.5,
       status: 'status.onTrack',
@@ -99,7 +99,7 @@ const ActiveBatches: React.FC = () => {
     },
     { 
       id: 'VC23002', 
-      product: 'Poultry Drug 2',
+      product: 'B',
       stage: 'Compression',
       temp: 3.2,
       status: 'status.onTrack',
