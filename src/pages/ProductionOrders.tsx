@@ -12,7 +12,7 @@ import {
   Dialog,
   Text,
   Tooltip,
-  IconButton // Added this import
+  IconButton
 } from '@radix-ui/themes';
 import {
   CubeIcon as BlockchainIcon,
@@ -32,7 +32,8 @@ const ProductionOrders = () => {
     productId: '',
     productName: '',
     quantity: '',
-    priority: 'medium'
+    priority: 'medium',
+    materialsStatus: 'Allocated' // Default to Allocated
   });
 
   const orders = [
@@ -40,7 +41,7 @@ const ProductionOrders = () => {
       id: 'PO23045',
       product: 'Poultry Drug 1',
       priority: 'High',
-      status: 'In Production',
+      materials: 'Allocated',
       progress: 65,
       schedule: '2025-07-25',
       batchSize: 5000
@@ -49,7 +50,7 @@ const ProductionOrders = () => {
       id: 'PO23046',
       product: 'Poultry Drug 2',
       priority: 'Medium',
-      status: 'Pending',
+      materials: 'Pending',
       progress: 30,
       schedule: '2025-07-28',
       batchSize: 8000
@@ -58,7 +59,7 @@ const ProductionOrders = () => {
       id: 'PO23047',
       product: 'Poultry Drug 3',
       priority: 'Low',
-      status: 'On Hold',
+      materials: 'Insufficient Materials',
       progress: 15,
       schedule: '2025-08-01',
       batchSize: 6000
@@ -165,6 +166,18 @@ const ProductionOrders = () => {
                   </Select.Content>
                 </Select.Root>
 
+                <Select.Root 
+                  value={formData.materialsStatus}
+                  onValueChange={(value) => handleFormChange('materialsStatus', value)}
+                >
+                  <Select.Trigger placeholder="Materials Status" />
+                  <Select.Content>
+                    <Select.Item value="Allocated">Allocated</Select.Item>
+                    <Select.Item value="Pending">Pending</Select.Item>
+                    <Select.Item value="Insufficient Materials">Insufficient Materials</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+
                 <Flex gap="3" justify="end" mt="4">
                   <Button 
                     variant="soft" 
@@ -189,7 +202,8 @@ const ProductionOrders = () => {
           <Table.Row className="[&>th]:py-2 [&>th]:px-3">
             <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Priority</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Materials Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Schedule</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Batch Size</Table.ColumnHeaderCell>
@@ -203,10 +217,18 @@ const ProductionOrders = () => {
               <Table.Cell>{order.product}</Table.Cell>
               <Table.Cell>
                 <Badge color={
-                  order.status === 'In Production' ? 'green' :
-                  order.status === 'Pending' ? 'amber' : 'red'
+                  order.priority === 'High' ? 'red' :
+                  order.priority === 'Medium' ? 'amber' : 'green'
                 }>
-                  {order.status}
+                  {order.priority}
+                </Badge>
+              </Table.Cell>
+              <Table.Cell>
+                <Badge color={
+                  order.materials === 'Allocated' ? 'green' :
+                  order.materials === 'Pending' ? 'amber' : 'red'
+                }>
+                  {order.materials}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
