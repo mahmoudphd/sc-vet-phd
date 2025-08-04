@@ -101,13 +101,15 @@ const initialData: InventoryItem[] = [
   }
 ];
 
+type SortableKeys = keyof Omit<InventoryItem, 'category' | 'cogs'>;
+
 const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP');
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [sortConfig, setSortConfig] = useState<{key: string, direction: 'asc' | 'desc'} | null>(null);
+  const [sortConfig, setSortConfig] = useState<{key: SortableKeys, direction: 'asc' | 'desc'} | null>(null);
 
   // Calculate metrics
   const totalValue = data.reduce((sum, item) => sum + (item.quantity * item.unitPrice * (currency === 'EGP' ? 1 : 1/EXCHANGE_RATE)), 0);
@@ -131,10 +133,14 @@ const InventoryDashboard = () => {
           const dateB = new Date(b.expiry).getTime();
           return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
         }
-        if (a[sortConfig.key] < b[sortConfig.key]) {
+        
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue < bValue) {
           return sortConfig.direction === 'asc' ? -1 : 1;
         }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
+        if (aValue > bValue) {
           return sortConfig.direction === 'asc' ? 1 : -1;
         }
         return 0;
@@ -143,7 +149,7 @@ const InventoryDashboard = () => {
     return result;
   }, [data, locationFilter, categoryFilter, sortConfig]);
 
-  const requestSort = (key: string) => {
+  const requestSort = (key: SortableKeys) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig?.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -321,14 +327,14 @@ const InventoryDashboard = () => {
 
           {/* Expiry Warning Banner */}
           {data.filter(i => {
-            const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
             return diff <= 7 && diff > 0;
           }).length > 0 && (
             <Card style={{ background: '#fef3c7', borderColor: '#f59e0b' }}>
               <Flex align="center" gap="2">
                 <InfoCircledIcon color="#d97706" />
                 <Text weight="bold" color="amber">Warning: {data.filter(i => {
-                  const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                  const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
                   return diff <= 7 && diff > 0;
                 }).length} items will expire within 7 days!</Text>
               </Flex>
@@ -459,7 +465,7 @@ const InventoryDashboard = () => {
                     style={{ 
                       cursor: 'pointer',
                       background: rowColor,
-                      ':hover': { background: rowColor ? `color-mix(in srgb, ${rowColor} 90%, white)` : undefined }
+                      ...(rowColor ? { ':hover': { background: `color-mix(in srgb, ${rowColor} 90%, white)` } } : {})
                     }}
                   >
                     <Table.Cell>{item.id}</Table.Cell>
@@ -536,7 +542,7 @@ const InventoryDashboard = () => {
             </Dialog.Title>
             
             <Flex gap="4" mt="4">
-              <Box flex="1">
+              <Box style={{ flex: '1 1 200px' }}>
                 <Card>
                   <Heading size="4" mb="3">Inventory Details</Heading>
                   <Flex direction="column" gap="3">
@@ -583,7 +589,7 @@ const InventoryDashboard = () => {
                 </Card>
               </Box>
 
-              <Box flex="1">
+              <Box style={{ flex: '1 1 200px' }}>
                 <Card>
                   <Heading size="4" mb="3">Product Information</Heading>
                   <Flex direction="column" gap="3">
