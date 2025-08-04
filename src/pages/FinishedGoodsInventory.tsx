@@ -29,7 +29,6 @@ import {
   CartesianGrid
 } from 'recharts';
 import { 
-  MagnifyingGlassIcon,
   CubeIcon,
   MixerHorizontalIcon
 } from '@radix-ui/react-icons';
@@ -58,39 +57,39 @@ const CATEGORY_COLORS = {
 const initialData: InventoryItem[] = [
   {
     id: 'FGI001',
-    name: 'Premium Chicken Breast',
+    name: 'Poultry Product A',
     quantity: 120,
     reserved: 40,
     storage: '4°C',
     expiry: '2025-08-10',
     location: 'Zone 1',
-    unitPrice: 12.5,
+    unitPrice: 225,
     category: 'A',
     lastRestock: '2023-05-15',
     cogs: 5000
   },
   {
     id: 'FGI002',
-    name: 'Organic Chicken Wings',
+    name: 'Poultry Product B',
     quantity: 100,
     reserved: 30,
     storage: '6°C',
     expiry: '2025-09-15',
     location: 'Zone 2',
-    unitPrice: 15.0,
+    unitPrice: 215,
     category: 'B',
     lastRestock: '2023-06-20',
     cogs: 4500
   },
   {
     id: 'FGI003',
-    name: 'Standard Chicken Thighs',
+    name: 'Poultry Product C',
     quantity: 80,
     reserved: 20,
     storage: '8°C',
     expiry: '2025-07-28',
     location: 'Zone 2',
-    unitPrice: 10.0,
+    unitPrice: 230,
     category: 'C',
     lastRestock: '2023-07-10',
     cogs: 3000
@@ -99,7 +98,6 @@ const initialData: InventoryItem[] = [
 
 const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
-  const [searchQuery, setSearchQuery] = useState('');
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
@@ -116,12 +114,10 @@ const InventoryDashboard = () => {
   };
 
   const filteredData = data.filter(item => {
-    const matchesSearch = item.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         item.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLocation = locationFilter === 'all' || item.location === locationFilter;
     const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
     
-    return matchesSearch && matchesLocation && matchesCategory;
+    return matchesLocation && matchesCategory;
   });
 
   // Enhanced data processing for professional charts
@@ -182,19 +178,8 @@ const InventoryDashboard = () => {
         <Flex direction="column" gap="4">
           {/* Header Section */}
           <Flex justify="between" align="center">
-            <Heading size="6">Poultry Inventory Management</Heading>
+            <Heading size="6">Finished Good Inventory Overview</Heading>
             <Flex gap="3" align="center">
-              <TextField.Root
-                placeholder="Search inventory..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                style={{ width: '220px' }}
-              >
-                <TextField.Slot>
-                  <MagnifyingGlassIcon />
-                </TextField.Slot>
-              </TextField.Root>
-
               <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
                 <Select.Trigger>
                   <MixerHorizontalIcon />
