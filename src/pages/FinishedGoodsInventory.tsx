@@ -41,7 +41,7 @@ interface InventoryItem {
   storage: string;
   expiry: string;
   location: string;
-  unitPrice: number;
+  unitPrice: number; // Stored in EGP
   category: 'A' | 'B' | 'C';
   lastRestock: string;
   cogs: number; // Cost of Goods Sold
@@ -63,7 +63,7 @@ const initialData: InventoryItem[] = [
     storage: '4°C',
     expiry: '2025-08-10',
     location: 'Zone 1',
-    unitPrice: 225,
+    unitPrice: 225, // EGP
     category: 'A',
     lastRestock: '2023-05-15',
     cogs: 5000
@@ -76,7 +76,7 @@ const initialData: InventoryItem[] = [
     storage: '6°C',
     expiry: '2025-09-15',
     location: 'Zone 2',
-    unitPrice: 215,
+    unitPrice: 215, // EGP
     category: 'B',
     lastRestock: '2023-06-20',
     cogs: 4500
@@ -89,7 +89,7 @@ const initialData: InventoryItem[] = [
     storage: '8°C',
     expiry: '2025-07-28',
     location: 'Zone 2',
-    unitPrice: 230,
+    unitPrice: 230, // EGP
     category: 'C',
     lastRestock: '2023-07-10',
     cogs: 3000
@@ -98,14 +98,10 @@ const initialData: InventoryItem[] = [
 
 const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
-  const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
+  const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP'); // Default to EGP
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-
-  // Calculate inventory metrics
-  const totalValue = data.reduce((sum, item) => 
-    sum + (item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1)), 0);
 
   // Calculate inventory turnover rate for each item
   const calculateTurnoverRate = (item: InventoryItem) => {
@@ -123,7 +119,7 @@ const InventoryDashboard = () => {
   // Enhanced data processing for professional charts
   const inventoryValueData = filteredData.map(item => ({
     name: item.name,
-    value: item.quantity * item.unitPrice * (currency === 'EGP' ? EXCHANGE_RATE : 1),
+    value: item.quantity * item.unitPrice * (currency === 'EGP' ? 1 : 1/EXCHANGE_RATE),
     category: item.category,
     fill: CATEGORY_COLORS[item.category]
   }));
@@ -152,13 +148,13 @@ const InventoryDashboard = () => {
     }).length }
   ];
 
-  // Helper functions
+  // Helper function to format currency
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat(currency === 'USD' ? 'en-US' : 'ar-EG', {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2
-    }).format(currency === 'EGP' ? value * EXCHANGE_RATE : value);
+    }).format(currency === 'EGP' ? value : value / EXCHANGE_RATE);
   };
 
   const getExpiryStatus = (expiryDate: string) => {
@@ -206,12 +202,12 @@ const InventoryDashboard = () => {
               </Select.Root>
 
               <Flex align="center" gap="2">
-                <Text>USD</Text>
+                <Text>EGP</Text>
                 <Switch 
-                  checked={currency === 'EGP'}
-                  onCheckedChange={(checked) => setCurrency(checked ? 'EGP' : 'USD')}
+                  checked={currency === 'USD'}
+                  onCheckedChange={(checked) => setCurrency(checked ? 'USD' : 'EGP')}
                 />
-                <Text>EGP (1:50)</Text>
+                <Text>USD (1:50)</Text>
               </Flex>
 
               <Button
@@ -317,7 +313,6 @@ const InventoryDashboard = () => {
                 <Table.ColumnHeaderCell>Qty</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Value</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Turnover Rate</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Storage</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
@@ -328,7 +323,6 @@ const InventoryDashboard = () => {
             <Table.Body>
               {filteredData.map((item) => {
                 const expiryStatus = getExpiryStatus(item.expiry);
-                const itemValue = item.quantity * item.unitPrice;
                 const turnoverRate = calculateTurnoverRate(item);
                 
                 return (
@@ -380,7 +374,6 @@ const InventoryDashboard = () => {
                       />
                     </Table.Cell>
                     <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
-                    <Table.Cell>{formatCurrency(itemValue)}</Table.Cell>
                     <Table.Cell>{turnoverRate.toFixed(2)}</Table.Cell>
                     <Table.Cell>{item.storage}</Table.Cell>
                     <Table.Cell>{item.location}</Table.Cell>
