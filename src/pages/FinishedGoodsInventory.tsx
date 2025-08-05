@@ -12,7 +12,8 @@ import {
   Dialog,
   Select,
   Switch,
-  Tooltip
+  Tooltip,
+  Grid
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -34,7 +35,8 @@ import {
   MixerHorizontalIcon,
   InfoCircledIcon,
   DashboardIcon,
-  DownloadIcon
+  DownloadIcon,
+  CommitIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -50,6 +52,7 @@ interface InventoryItem {
   category: 'A' | 'B' | 'C';
   lastRestock: string;
   cogs: number;
+  movement?: { month: string; quantity: number }[];
 }
 
 const EXCHANGE_RATE = 50;
@@ -72,7 +75,15 @@ const initialData: InventoryItem[] = [
     unitCost: 171,
     category: 'A',
     lastRestock: '2023-05-15',
-    cogs: 20520
+    cogs: 20520,
+    movement: [
+      { month: 'Jan', quantity: 100 },
+      { month: 'Feb', quantity: 110 },
+      { month: 'Mar', quantity: 95 },
+      { month: 'Apr', quantity: 120 },
+      { month: 'May', quantity: 115 },
+      { month: 'Jun', quantity: 120 }
+    ]
   },
   {
     id: 'DRG002',
@@ -86,7 +97,15 @@ const initialData: InventoryItem[] = [
     unitCost: 160,
     category: 'B',
     lastRestock: '2023-06-20',
-    cogs: 19200
+    cogs: 19200,
+    movement: [
+      { month: 'Jan', quantity: 80 },
+      { month: 'Feb', quantity: 90 },
+      { month: 'Mar', quantity: 85 },
+      { month: 'Apr', quantity: 95 },
+      { month: 'May', quantity: 100 },
+      { month: 'Jun', quantity: 100 }
+    ]
   },
   {
     id: 'DRG003',
@@ -100,11 +119,19 @@ const initialData: InventoryItem[] = [
     unitCost: 171,
     category: 'C',
     lastRestock: '2023-07-10',
-    cogs: 20520
+    cogs: 20520,
+    movement: [
+      { month: 'Jan', quantity: 70 },
+      { month: 'Feb', quantity: 75 },
+      { month: 'Mar', quantity: 80 },
+      { month: 'Apr', quantity: 85 },
+      { month: 'May', quantity: 80 },
+      { month: 'Jun', quantity: 80 }
+    ]
   }
 ];
 
-type SortableKeys = keyof Omit<InventoryItem, 'category'>;
+type SortableKeys = keyof Omit<InventoryItem, 'category' | 'movement'>;
 
 const StatusCircle = ({ color }: { color: 'red' | 'green' | 'orange' }) => (
   <div style={{
@@ -141,6 +168,27 @@ const InventoryDashboard = () => {
     if (diffDays < 30) return { status: 'Warning', color: 'orange' };
     return { status: 'Good', color: 'green' };
   };
+
+  // Calculate summary metrics
+  const totalInventoryValue = useMemo(() => 
+    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
+    [data, currency]
+  );
+
+  const itemsNearExpiry = useMemo(() => 
+    data.filter(item => {
+      const expiry = new Date(item.expiry);
+      const today = new Date();
+      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays < 30;
+    }).length, 
+    [data]
+  );
+
+  const avgTurnoverRate = useMemo(() => {
+    const total = data.reduce((sum, item) => sum + calculateTurnoverRate(item), 0);
+    return data.length > 0 ? total / data.length : 0;
+  }, [data]);
 
   const filteredData = useMemo(() => {
     let result = [...data];
@@ -211,6 +259,40 @@ const InventoryDashboard = () => {
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
+          {/* Summary Cards */}
+          <Grid columns="3" gap="4">
+            <Card>
+              <Flex direction="column" gap="2">
+                <Text color="gray">Total Inventory Value</Text>
+                <Heading size="5">{formatCurrency(totalInventoryValue)}</Heading>
+                <Flex align="center" gap="1">
+                  <Text color="green">↑ 2.5%</Text>
+                  <Text color="gray">vs last month</Text>
+                </Flex>
+              </Flex>
+            </Card>
+            <Card>
+              <Flex direction="column" gap="2">
+                <Text color="gray">Items Near Expiry</Text>
+                <Heading size="5">{itemsNearExpiry}</Heading>
+                <Flex align="center" gap="1">
+                  <Text color="red">↑ 1.2%</Text>
+                  <Text color="gray">vs last month</Text>
+                </Flex>
+              </Flex>
+            </Card>
+            <Card>
+              <Flex direction="column" gap="2">
+                <Text color="gray">Avg. Turnover Rate</Text>
+                <Heading size="5">{avgTurnoverRate.toFixed(2)}</Heading>
+                <Flex align="center" gap="1">
+                  <Text color="green">↑ 0.3</Text>
+                  <Text color="gray">vs last quarter</Text>
+                </Flex>
+              </Flex>
+            </Card>
+          </Grid>
+
           <Flex justify="between" align="center">
             <Heading size="6">Finished Good Inventory Overview</Heading>
             <Flex gap="3" align="center">
@@ -254,15 +336,8 @@ const InventoryDashboard = () => {
             </Flex>
           </Flex>
 
-          <Table.Root variant="surface" style={{ 
-            backgroundColor: 'var(--gray-1)',
-            borderRadius: 'var(--radius-3)',
-            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-          }}>
-            <Table.Header style={{
-              backgroundColor: 'var(--gray-3)',
-              fontWeight: '500'
-            }}>
+          <Table.Root variant="surface">
+            <Table.Header>
               <Table.Row>
                 <Table.ColumnHeaderCell onClick={() => requestSort('id')}>
                   ID {sortConfig?.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -288,9 +363,7 @@ const InventoryDashboard = () => {
               </Table.Row>
             </Table.Header>
 
-            <Table.Body style={{
-              backgroundColor: 'white'
-            }}>
+            <Table.Body>
               {filteredData.map((item) => {
                 const expiryStatus = getExpiryStatus(item.expiry);
                 const rowColor = expiryStatus.color === 'red' ? 'var(--red-2)' : 
@@ -457,6 +530,30 @@ const InventoryDashboard = () => {
                     </Flex>
                   </Flex>
                 </Card>
+
+                {/* Stock Movement Chart */}
+                <Card mt="4">
+                  <Heading size="4" mb="3">Stock Movement (Last 6 Months)</Heading>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={selectedItem.movement}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <ChartTooltip 
+                        formatter={(value: number) => [`${value} units`, 'Quantity']}
+                        labelFormatter={(month) => `Month: ${month}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="quantity" 
+                        stroke={CATEGORY_COLORS[selectedItem.category]} 
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
               </Box>
 
               <Box style={{ flex: '1 1 200px' }}>
@@ -515,6 +612,10 @@ const InventoryDashboard = () => {
               <Button>
                 <CubeIcon className="mr-2" />
                 View Blockchain Record
+              </Button>
+              <Button variant="solid" color="green">
+                <CommitIcon className="mr-2" />
+                Commit to Ledger
               </Button>
             </Flex>
           </Dialog.Content>
