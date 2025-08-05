@@ -148,7 +148,7 @@ const InventoryDashboard = () => {
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
-  const [sortConfig, setSortConfig] = useState<{key: keyof InventoryItem, direction: 'asc' | 'desc'} | null>(null);
+  const [sortConfig, setSortConfig] = useState<{key: keyof Omit<InventoryItem, 'category' | 'movement'>, direction: 'asc' | 'desc'} | null>(null);
   const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const calculateTurnoverRate = (item: InventoryItem) => {
@@ -168,7 +168,7 @@ const InventoryDashboard = () => {
   };
 
   const totalInventoryValue = useMemo(() => 
-    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 
+    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
     [data, currency]
   );
 
@@ -212,7 +212,7 @@ const InventoryDashboard = () => {
     return result;
   }, [data, locationFilter, categoryFilter, sortConfig]);
 
-  const requestSort = (key: keyof InventoryItem) => {
+  const requestSort = (key: keyof Omit<InventoryItem, 'category' | 'movement'>) => {
     let direction: 'asc' | 'desc' = 'asc';
     if (sortConfig?.key === key && sortConfig.direction === 'asc') {
       direction = 'desc';
@@ -623,11 +623,11 @@ const InventoryDashboard = () => {
                 </Button>
               </Dialog.Close>
               <Button>
-                <CubeIcon className="mr-2" />
+                <CubeIcon />
                 View Blockchain Record
               </Button>
               <Button variant="solid" color="green">
-                <CommitIcon className="mr-2" />
+                <CommitIcon />
                 Commit to Ledger
               </Button>
             </Flex>
