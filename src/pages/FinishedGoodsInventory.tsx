@@ -36,7 +36,10 @@ import {
   InfoCircledIcon,
   DashboardIcon,
   DownloadIcon,
-  CommitIcon
+  CommitIcon,
+  DollarSignIcon,
+  ClockIcon,
+  RefreshCwIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -62,8 +65,6 @@ const CATEGORY_COLORS = {
   C: '#6b7280'
 };
 
-const getCurrentDate = () => new Date().toISOString().split('T')[0];
-
 const initialData: InventoryItem[] = [
   {
     id: 'DRG001',
@@ -76,12 +77,9 @@ const initialData: InventoryItem[] = [
     unitPrice: 225,
     unitCost: 171,
     category: 'A',
-    lastRestock: getCurrentDate(),
+    lastRestock: '2023-05-15',
     cogs: 20520,
     movement: [
-      { month: 'Jan', quantity: 100 },
-      { month: 'Feb', quantity: 110 },
-      { month: 'Mar', quantity: 95 },
       { month: 'Apr', quantity: 120 },
       { month: 'May', quantity: 115 },
       { month: 'Jun', quantity: 120 }
@@ -98,12 +96,9 @@ const initialData: InventoryItem[] = [
     unitPrice: 215,
     unitCost: 160,
     category: 'B',
-    lastRestock: getCurrentDate(),
+    lastRestock: '2023-06-20',
     cogs: 19200,
     movement: [
-      { month: 'Jan', quantity: 80 },
-      { month: 'Feb', quantity: 90 },
-      { month: 'Mar', quantity: 85 },
       { month: 'Apr', quantity: 95 },
       { month: 'May', quantity: 100 },
       { month: 'Jun', quantity: 100 }
@@ -120,12 +115,9 @@ const initialData: InventoryItem[] = [
     unitPrice: 230,
     unitCost: 171,
     category: 'C',
-    lastRestock: getCurrentDate(),
+    lastRestock: '2023-07-10',
     cogs: 20520,
     movement: [
-      { month: 'Jan', quantity: 70 },
-      { month: 'Feb', quantity: 75 },
-      { month: 'Mar', quantity: 80 },
       { month: 'Apr', quantity: 85 },
       { month: 'May', quantity: 80 },
       { month: 'Jun', quantity: 80 }
@@ -171,7 +163,7 @@ const InventoryDashboard = () => {
     return { status: 'Good', color: 'green' };
   };
 
-  // KPI Metrics
+  // Calculate summary metrics
   const totalInventoryValue = useMemo(() => 
     data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
     [data, currency]
@@ -263,34 +255,90 @@ const InventoryDashboard = () => {
         <Flex direction="column" gap="4">
           {/* KPI Cards Section */}
           <Grid columns="3" gap="4">
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Total Inventory Value</Text>
-                <Heading size="5">{formatCurrency(totalInventoryValue)}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="green">↑ 2.5%</Text>
-                  <Text color="gray">vs last month</Text>
-                </Flex>
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#3b82f620',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <DollarSignIcon width="24" height="24" color="#3b82f6" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Total Value</Text>
+                  <Heading size="5" mb="1" style={{ color: '#1e40af' }}>
+                    {formatCurrency(totalInventoryValue)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 2.5%</Text>
+                    <Text size="1" color="gray">vs last month</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Items Near Expiry</Text>
-                <Heading size="5">{itemsNearExpiry}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="red">↑ 1.2%</Text>
-                  <Text color="gray">vs last month</Text>
-                </Flex>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#f59e0b20',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ClockIcon width="24" height="24" color="#d97706" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Near Expiry</Text>
+                  <Heading size="5" mb="1" style={{ color: '#92400e' }}>
+                    {itemsNearExpiry}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="red">↑ 1.2%</Text>
+                    <Text size="1" color="gray">Urgent</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Avg. Turnover Rate</Text>
-                <Heading size="5">{avgTurnoverRate.toFixed(2)}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="green">↑ 0.3</Text>
-                  <Text color="gray">vs last quarter</Text>
-                </Flex>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#10b98120',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <RefreshCwIcon width="24" height="24" color="#059669" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Turnover Rate</Text>
+                  <Heading size="5" mb="1" style={{ color: '#065f46' }}>
+                    {avgTurnoverRate.toFixed(2)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 0.3</Text>
+                    <Text size="1" color="gray">vs last quarter</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
           </Grid>
@@ -388,7 +436,16 @@ const InventoryDashboard = () => {
                     <Table.Cell>{item.id}</Table.Cell>
                     <Table.Cell>
                       <Flex direction="column">
-                        <Text weight="bold">{item.name}</Text>
+                        <Text 
+                          weight="bold"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedItem(item);
+                          }}
+                          style={{ cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                          {item.name}
+                        </Text>
                         <Badge color={item.category === 'A' ? 'blue' : item.category === 'B' ? 'green' : 'gray'}>
                           Category {item.category}
                         </Badge>
@@ -533,10 +590,11 @@ const InventoryDashboard = () => {
                   </Flex>
                 </Card>
 
+                {/* Stock Movement Chart - Now showing only 3 months */}
                 <Card mt="4">
-                  <Heading size="4" mb="3">Stock Movement (Last 6 Months)</Heading>
+                  <Heading size="4" mb="3">Stock Movement (Last 3 Months)</Heading>
                   <ResponsiveContainer width="100%" height={250}>
-                    <LineChart data={selectedItem.movement}>
+                    <LineChart data={selectedItem.movement?.slice(-3)}>
                       <CartesianGrid strokeDasharray="3 3" />
                       <XAxis dataKey="month" />
                       <YAxis />
@@ -578,7 +636,7 @@ const InventoryDashboard = () => {
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Last Restock:</Text>
-                      <Text>{selectedItem.lastRestock}</Text>
+                      <Text>{new Date(selectedItem.lastRestock).toLocaleDateString('en-US')}</Text>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Cost of Goods Sold:</Text>
