@@ -28,11 +28,9 @@ import {
   LineChart,
   Line,
   CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  ScatterChart,
+  Scatter,
+  ZAxis
 } from 'recharts';
 import { 
   CubeIcon,
@@ -40,8 +38,7 @@ import {
   InfoCircledIcon,
   DashboardIcon,
   CalendarIcon,
-  DownloadIcon,
-  MagnifyingGlassIcon
+  DownloadIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -56,9 +53,6 @@ interface InventoryItem {
   category: 'A' | 'B' | 'C';
   lastRestock: string;
   cogs: number;
-  annualUsage: number;
-  industryStandard: number;
-  reorderPoint: number;
 }
 
 const EXCHANGE_RATE = 50;
@@ -80,10 +74,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 225,
     category: 'A',
     lastRestock: '2023-05-15',
-    cogs: 5000,
-    annualUsage: 500,
-    industryStandard: 4.5,
-    reorderPoint: 50
+    cogs: 18000 // Increased COGS to boost turnover rate
   },
   {
     id: 'FGI002',
@@ -96,10 +87,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 215,
     category: 'B',
     lastRestock: '2023-06-20',
-    cogs: 4500,
-    annualUsage: 450,
-    industryStandard: 4.0,
-    reorderPoint: 40
+    cogs: 15000 // Increased COGS to boost turnover rate
   },
   {
     id: 'FGI003',
@@ -112,14 +100,11 @@ const initialData: InventoryItem[] = [
     unitPrice: 230,
     category: 'C',
     lastRestock: '2023-07-10',
-    cogs: 3000,
-    annualUsage: 300,
-    industryStandard: 3.5,
-    reorderPoint: 30
+    cogs: 12000 // Increased COGS to boost turnover rate
   }
 ];
 
-type SortableKeys = keyof Omit<InventoryItem, 'category' | 'cogs' | 'annualUsage' | 'industryStandard' | 'reorderPoint'>;
+type SortableKeys = keyof Omit<InventoryItem, 'category' | 'cogs'>;
 
 const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
@@ -128,7 +113,6 @@ const InventoryDashboard = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [sortConfig, setSortConfig] = useState<{key: SortableKeys, direction: 'asc' | 'desc'} | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
 
   // Calculate metrics
   const totalValue = data.reduce((sum, item) => sum + (item.quantity * item.unitPrice * (currency === 'EGP' ? 1 : 1/EXCHANGE_RATE)), 0);
@@ -138,26 +122,11 @@ const InventoryDashboard = () => {
     return avgInventoryValue > 0 ? item.cogs / avgInventoryValue : 0;
   };
 
-  const calculateExtendedTurnoverMetrics = (item: InventoryItem) => {
-    const turnoverRate = calculateTurnoverRate(item);
-    const annualTurnover = turnoverRate * 12;
-    const dio = 365 / annualTurnover;
-    
-    return {
-      turnoverRate,
-      annualTurnover,
-      dio,
-      vsIndustry: annualTurnover / item.industryStandard
-    };
-  };
-
   const filteredData = useMemo(() => {
     let result = data.filter(item => {
       const matchesLocation = locationFilter === 'all' || item.location === locationFilter;
       const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
-      const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           item.id.toLowerCase().includes(searchTerm.toLowerCase());
-      return matchesLocation && matchesCategory && matchesSearch;
+      return matchesLocation && matchesCategory;
     });
 
     if (sortConfig !== null) {
@@ -181,7 +150,7 @@ const InventoryDashboard = () => {
       });
     }
     return result;
-  }, [data, locationFilter, categoryFilter, sortConfig, searchTerm]);
+  }, [data, locationFilter, categoryFilter, sortConfig]);
 
   const requestSort = (key: SortableKeys) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -198,34 +167,25 @@ const InventoryDashboard = () => {
     fill: CATEGORY_COLORS[item.category]
   }));
 
-  const turnoverData = filteredData.map(item => {
-    const metrics = calculateExtendedTurnoverMetrics(item);
+  const turnoverData = filteredData.map(item => ({
+    name: item.name,
+    turnoverRate: calculateTurnoverRate(item),
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category]
+  }));
+
+  const expiryData = filteredData.map(item => {
+    const diff = Math.ceil((new Date(item.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
     return {
       name: item.name,
-      turnoverRate: metrics.turnoverRate,
-      annualTurnover: metrics.annualTurnover,
-      dio: metrics.dio,
-      vsIndustry: metrics.vsIndustry,
+      daysToExpiry: diff,
+      quantity: item.quantity,
       category: item.category,
-      fill: CATEGORY_COLORS[item.category]
+      fill: diff <= 0 ? '#ef4444' : 
+            diff <= 7 ? '#f59e0b' : 
+            diff <= 30 ? '#fbbf24' : '#10b981'
     };
   });
-
-  const expiryStatusData = [
-    { name: 'Expired', value: data.filter(i => new Date(i.expiry) < new Date()).length },
-    { name: 'This Week', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      return diff > 0 && diff <= 7;
-    }).length },
-    { name: 'Next 30 Days', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      return diff > 7 && diff <= 30;
-    }).length },
-    { name: 'Safe', value: data.filter(i => {
-      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-      return diff > 30;
-    }).length }
-  ];
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -233,6 +193,10 @@ const InventoryDashboard = () => {
       currency: currency,
       minimumFractionDigits: 2
     }).format(currency === 'EGP' ? value : value / EXCHANGE_RATE);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
   };
 
   const getExpiryStatus = (expiryDate: string) => {
@@ -270,17 +234,6 @@ const InventoryDashboard = () => {
           <Flex justify="between" align="center">
             <Heading size="6">Finished Good Inventory Overview</Heading>
             <Flex gap="3" align="center">
-              <TextField.Root
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ width: '200px' }}
-              >
-                <TextField.Slot>
-                  <MagnifyingGlassIcon height="16" width="16" />
-                </TextField.Slot>
-              </TextField.Root>
-
               <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
                 <Select.Trigger>
                   <MixerHorizontalIcon />
@@ -353,10 +306,12 @@ const InventoryDashboard = () => {
                 </Box>
                 <Box>
                   <Text as="div" size="2" color="gray">Items Near Expiry</Text>
-                  <Heading size="5">{
-                    expiryStatusData.filter(x => x.name === 'This Week' || x.name === 'Next 30 Days')
-                      .reduce((sum, x) => sum + x.value, 0)
-                  }</Heading>
+                  <Heading size="5">
+                    {formatNumber(data.filter(i => {
+                      const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                      return diff <= 30 && diff > 0;
+                    }).length)}
+                  </Heading>
                 </Box>
               </Flex>
             </Card>
@@ -368,54 +323,32 @@ const InventoryDashboard = () => {
                 </Box>
                 <Box>
                   <Text as="div" size="2" color="gray">Avg. Turnover Rate</Text>
-                  <Heading size="5">{
-                    (turnoverData.reduce((sum, item) => sum + item.turnoverRate, 0) / turnoverData.length).toFixed(2)
-                  }</Heading>
-                </Box>
-              </Flex>
-            </Card>
-
-            <Card style={{ flex: 1 }}>
-              <Flex align="center" gap="3">
-                <Box p="2" style={{ background: '#f59e0b20', borderRadius: '50%' }}>
-                  <InfoCircledIcon width="24" height="24" color="#f59e0b" />
-                </Box>
-                <Box>
-                  <Text as="div" size="2" color="gray">Low Stock Items</Text>
-                  <Heading size="5">{
-                    data.filter(i => i.quantity <= i.reorderPoint).length
-                  }</Heading>
+                  <Heading size="5">
+                    {turnoverData.length > 0 ? 
+                      (turnoverData.reduce((sum, item) => sum + item.turnoverRate, 0) / turnoverData.length
+                        .toFixed(2) : 
+                      '0.00'}
+                  </Heading>
                 </Box>
               </Flex>
             </Card>
           </Flex>
 
-          {/* Warning Banners */}
-          <Flex direction="column" gap="2">
-            {data.filter(i => i.quantity <= i.reorderPoint).length > 0 && (
-              <Card style={{ background: '#fef3c7', borderColor: '#f59e0b' }}>
-                <Flex align="center" gap="2">
-                  <InfoCircledIcon color="#d97706" />
-                  <Text weight="bold" color="amber">Warning: {data.filter(i => i.quantity <= i.reorderPoint).length} items are below reorder point!</Text>
-                </Flex>
-              </Card>
-            )}
-
-            {data.filter(i => {
-              const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-              return diff <= 7 && diff > 0;
-            }).length > 0 && (
-              <Card style={{ background: '#fef3c7', borderColor: '#f59e0b' }}>
-                <Flex align="center" gap="2">
-                  <InfoCircledIcon color="#d97706" />
-                  <Text weight="bold" color="amber">Warning: {data.filter(i => {
-                    const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-                    return diff <= 7 && diff > 0;
-                  }).length} items will expire within 7 days!</Text>
-                </Flex>
-              </Card>
-            )}
-          </Flex>
+          {/* Expiry Warning Banner */}
+          {data.filter(i => {
+            const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+            return diff <= 7 && diff > 0;
+          }).length > 0 && (
+            <Card style={{ background: '#fef3c7', borderColor: '#f59e0b' }}>
+              <Flex align="center" gap="2">
+                <InfoCircledIcon color="#d97706" />
+                <Text weight="bold" color="amber">Warning: {formatNumber(data.filter(i => {
+                  const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+                  return diff <= 7 && diff > 0;
+                }).length)} items will expire within 7 days!</Text>
+              </Flex>
+            </Card>
+          )}
 
           {/* Charts Section */}
           <Flex direction="column" gap="4">
@@ -446,66 +379,64 @@ const InventoryDashboard = () => {
               </Card>
 
               <Card style={{ flex: 1 }}>
-                <Heading size="4" mb="2">Inventory Turnover Metrics</Heading>
+                <Heading size="4" mb="2">Inventory Turnover Rate</Heading>
                 <ResponsiveContainer width="100%" height={300}>
-                  <RadarChart outerRadius={90} data={turnoverData}>
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="name" />
-                    <PolarRadiusAxis angle={30} domain={[0, 5]} />
-                    <Radar
-                      name="Turnover Rate"
-                      dataKey="turnoverRate"
-                      stroke="#8884d8"
+                  <BarChart data={turnoverData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="name" />
+                    <YAxis domain={[0, 5]} /> {/* Adjusted Y-axis to better show higher turnover rates */}
+                    <ChartTooltip 
+                      formatter={(value: number) => [value.toFixed(2), 'Turnover Rate']}
+                    />
+                    <Bar 
+                      dataKey="turnoverRate" 
                       fill="#8884d8"
-                      fillOpacity={0.6}
-                    />
-                    <Radar
-                      name="Annual Turnover"
-                      dataKey="annualTurnover"
-                      stroke="#82ca9d"
-                      fill="#82ca9d"
-                      fillOpacity={0.6}
-                    />
-                    <Radar
-                      name="DIO (Days)"
-                      dataKey="dio"
-                      stroke="#ffc658"
-                      fill="#ffc658"
-                      fillOpacity={0.6}
-                    />
-                    <Legend />
-                    <ChartTooltip />
-                  </RadarChart>
+                      radius={[4, 4, 0, 0]}
+                    >
+                      {turnoverData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </Card>
             </Flex>
 
             <Flex gap="4">
               <Card style={{ flex: 1 }}>
-                <Heading size="4" mb="2">Expiry Status Overview</Heading>
+                <Heading size="4" mb="2">Expiry Status Visualization</Heading>
                 <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={expiryStatusData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <ChartTooltip />
-                    <Bar 
-                      dataKey="value" 
-                      fill="#8884d8"
-                      radius={[4, 4, 0, 0]}
-                    >
-                      {expiryStatusData.map((entry, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={
-                            entry.name === 'Expired' ? '#ef4444' :
-                            entry.name === 'This Week' ? '#f59e0b' :
-                            entry.name === 'Next 30 Days' ? '#fbbf24' : '#10b981'
-                          } 
-                        />
+                  <ScatterChart
+                    margin={{ top: 20, right: 20, bottom: 20, left: 20 }}
+                  >
+                    <CartesianGrid />
+                    <XAxis 
+                      type="number" 
+                      dataKey="daysToExpiry" 
+                      name="Days to Expiry"
+                      label={{ value: 'Days to Expiry', position: 'bottom' }}
+                      domain={['auto', 'auto']}
+                    />
+                    <YAxis 
+                      type="number" 
+                      dataKey="quantity" 
+                      name="Quantity"
+                      label={{ value: 'Quantity', angle: -90, position: 'left' }}
+                    />
+                    <ZAxis range={[50, 300]} />
+                    <ChartTooltip 
+                      formatter={(value: number, name: string) => 
+                        name === 'Days to Expiry' ? 
+                          [`${value} days`, name] : 
+                          [`${formatNumber(value)} units`, name]
+                      }
+                    />
+                    <Scatter name="Inventory Items" data={expiryData} fill="#8884d8">
+                      {expiryData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
                       ))}
-                    </Bar>
-                  </BarChart>
+                    </Scatter>
+                  </ScatterChart>
                 </ResponsiveContainer>
               </Card>
             </Flex>
@@ -542,10 +473,8 @@ const InventoryDashboard = () => {
             <Table.Body>
               {filteredData.map((item) => {
                 const expiryStatus = getExpiryStatus(item.expiry);
-                const isLowStock = item.quantity <= item.reorderPoint;
                 const rowColor = expiryStatus.color === 'red' ? 'var(--red-3)' : 
-                                expiryStatus.color === 'amber' ? 'var(--amber-3)' : 
-                                isLowStock ? 'var(--amber-2)' : undefined;
+                                expiryStatus.color === 'amber' ? 'var(--amber-3)' : undefined;
                 
                 return (
                   <Table.Row 
@@ -567,22 +496,19 @@ const InventoryDashboard = () => {
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
-                      <Flex align="center" gap="2">
-                        <TextField.Root
-                          value={item.quantity}
-                          type="number"
-                          onChange={(e) => {
-                            const newValue = parseInt(e.target.value);
-                            if (!isNaN(newValue)) {
-                              setData(prev => prev.map(i => 
-                                i.id === item.id ? { ...i, quantity: Math.max(0, newValue) } : i
-                              ));
-                            }
-                          }}
-                          style={{ width: '70px' }}
-                        />
-                        {isLowStock && <Badge color="red">Low</Badge>}
-                      </Flex>
+                      <TextField.Root
+                        value={item.quantity}
+                        type="number"
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            setData(prev => prev.map(i => 
+                              i.id === item.id ? { ...i, quantity: Math.max(0, newValue) } : i
+                            ));
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
                     </Table.Cell>
                     <Table.Cell>
                       <TextField.Root
@@ -602,7 +528,7 @@ const InventoryDashboard = () => {
                         style={{ width: '70px' }}
                       />
                     </Table.Cell>
-                    <Table.Cell>{item.quantity - item.reserved}</Table.Cell>
+                    <Table.Cell>{formatNumber(item.quantity - item.reserved)}</Table.Cell>
                     <Table.Cell>
                       {new Date(item.expiry).toLocaleDateString('en-US')}
                     </Table.Cell>
@@ -640,15 +566,11 @@ const InventoryDashboard = () => {
                   <Flex direction="column" gap="3">
                     <Flex justify="between">
                       <Text color="gray">Current Stock:</Text>
-                      <Text weight="bold">{selectedItem.quantity} units</Text>
+                      <Text weight="bold">{formatNumber(selectedItem.quantity)} units</Text>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Available:</Text>
-                      <Text weight="bold">{selectedItem.quantity - selectedItem.reserved} units</Text>
-                    </Flex>
-                    <Flex justify="between">
-                      <Text color="gray">Reorder Point:</Text>
-                      <Text weight="bold">{selectedItem.reorderPoint} units</Text>
+                      <Text weight="bold">{formatNumber(selectedItem.quantity - selectedItem.reserved)} units</Text>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Unit Price:</Text>
@@ -657,6 +579,10 @@ const InventoryDashboard = () => {
                     <Flex justify="between">
                       <Text color="gray">Total Value:</Text>
                       <Text weight="bold">{formatCurrency(selectedItem.quantity * selectedItem.unitPrice)}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Turnover Rate:</Text>
+                      <Text weight="bold">{calculateTurnoverRate(selectedItem).toFixed(2)}</Text>
                     </Flex>
                   </Flex>
                 </Card>
@@ -675,7 +601,7 @@ const InventoryDashboard = () => {
                       <Line type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} />
                       <XAxis dataKey="name" />
                       <YAxis />
-                      <ChartTooltip formatter={(value: number) => [value, 'Quantity']}/>
+                      <ChartTooltip formatter={(value: number) => [formatNumber(value), 'Quantity']}/>
                     </LineChart>
                   </ResponsiveContainer>
                 </Card>
@@ -683,36 +609,6 @@ const InventoryDashboard = () => {
 
               <Box style={{ flex: '1 1 200px' }}>
                 <Card>
-                  <Heading size="4" mb="3">Turnover Metrics</Heading>
-                  <Flex direction="column" gap="3">
-                    <Flex justify="between">
-                      <Text color="gray">Monthly Turnover:</Text>
-                      <Text weight="bold">{calculateTurnoverRate(selectedItem).toFixed(2)}</Text>
-                    </Flex>
-                    <Flex justify="between">
-                      <Text color="gray">Annual Turnover:</Text>
-                      <Text weight="bold">{(calculateTurnoverRate(selectedItem) * 12).toFixed(2)}</Text>
-                    </Flex>
-                    <Flex justify="between">
-                      <Text color="gray">Days Inventory (DIO):</Text>
-                      <Text weight="bold">{(365 / (calculateTurnoverRate(selectedItem) * 12)).toFixed(1)} days</Text>
-                    </Flex>
-                    <Flex justify="between">
-                      <Text color="gray">Industry Standard:</Text>
-                      <Text weight="bold">{selectedItem.industryStandard}</Text>
-                    </Flex>
-                    <Flex justify="between">
-                      <Text color="gray">Performance:</Text>
-                      <Text weight="bold" color={
-                        (calculateTurnoverRate(selectedItem) * 12) / selectedItem.industryStandard > 1 ? 'green' : 'red'
-                      }>
-                        {(((calculateTurnoverRate(selectedItem) * 12) / selectedItem.industryStandard) * 100).toFixed(1)}%
-                      </Text>
-                    </Flex>
-                  </Flex>
-                </Card>
-
-                <Card mt="4">
                   <Heading size="4" mb="3">Product Information</Heading>
                   <Flex direction="column" gap="3">
                     <Flex justify="between">
@@ -734,9 +630,24 @@ const InventoryDashboard = () => {
                       <Text>{new Date(selectedItem.lastRestock).toLocaleDateString('en-US')}</Text>
                     </Flex>
                     <Flex justify="between">
-                      <Text color="gray">Annual Usage:</Text>
-                      <Text weight="bold">{selectedItem.annualUsage} units</Text>
+                      <Text color="gray">Cost of Goods Sold:</Text>
+                      <Text weight="bold">{formatCurrency(selectedItem.cogs)}</Text>
                     </Flex>
+                  </Flex>
+                </Card>
+
+                <Card mt="4">
+                  <Heading size="4" mb="3">Quick Actions</Heading>
+                  <Flex direction="column" gap="2">
+                    <Button variant="soft">
+                      Request Restock
+                    </Button>
+                    <Button variant="soft" color="red">
+                      Mark as Damaged
+                    </Button>
+                    <Button variant="soft" color="amber">
+                      Change Location
+                    </Button>
                   </Flex>
                 </Card>
               </Box>
