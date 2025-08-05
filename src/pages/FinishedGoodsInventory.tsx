@@ -124,6 +124,7 @@ const InventoryDashboard = () => {
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [sortConfig, setSortConfig] = useState<{key: SortableKeys, direction: 'asc' | 'desc'} | null>(null);
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
   const calculateTurnoverRate = (item: InventoryItem) => {
     const avgInventoryValue = (item.quantity * item.unitCost) / 2;
@@ -294,18 +295,19 @@ const InventoryDashboard = () => {
                 const expiryStatus = getExpiryStatus(item.expiry);
                 const rowColor = expiryStatus.color === 'red' ? 'var(--red-2)' : 
                                 expiryStatus.color === 'orange' ? 'var(--orange-2)' : 'white';
+                const hoverColor = expiryStatus.color === 'red' ? 'var(--red-3)' :
+                                  expiryStatus.color === 'orange' ? 'var(--orange-3)' : 'var(--gray-2)';
                 
                 return (
                   <Table.Row 
                     key={item.id}
                     onClick={() => setSelectedItem(item)}
+                    onMouseEnter={() => setHoveredRow(item.id)}
+                    onMouseLeave={() => setHoveredRow(null)}
                     style={{ 
                       cursor: 'pointer',
-                      backgroundColor: rowColor,
-                      ':hover': {
-                        backgroundColor: expiryStatus.color === 'red' ? 'var(--red-3)' :
-                                        expiryStatus.color === 'orange' ? 'var(--orange-3)' : 'var(--gray-2)'
-                      }
+                      backgroundColor: hoveredRow === item.id ? hoverColor : rowColor,
+                      transition: 'background-color 0.2s ease'
                     }}
                   >
                     <Table.Cell>{item.id}</Table.Cell>
