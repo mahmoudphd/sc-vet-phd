@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -376,59 +376,83 @@ const RawMaterialsInventory = () => {
             <Dialog.Title>Configure {selectedMaterial.name}</Dialog.Title>
             
             <Grid columns="2" gap="3" mt="3">
-              <TextField.Root
-                label="Minimum Stock Level"
-                value={selectedMaterial.minStockLevel}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  minStockLevel: Number(e.target.value)
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.minStockLevel}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      minStockLevel: Number(e.target.value)
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
               
-              <TextField.Root
-                label="Reorder Level"
-                value={selectedMaterial.reorderLevel}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  reorderLevel: Number(e.target.value)
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.reorderLevel}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      reorderLevel: Number(e.target.value)
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
               
-              <TextField.Root
-                label="Safety Stock"
-                value={selectedMaterial.safetyStock}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  safetyStock: Number(e.target.value)
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.safetyStock}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      safetyStock: Number(e.target.value)
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
               
-              <TextField.Root
-                label="Lead Time (days)"
-                value={selectedMaterial.leadTime}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  leadTime: Number(e.target.value)
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.leadTime}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      leadTime: Number(e.target.value)
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
               
-              <TextField.Root
-                label="Order Quantity"
-                value={selectedMaterial.orderQuantity}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  orderQuantity: Number(e.target.value)
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.orderQuantity}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      orderQuantity: Number(e.target.value)
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
               
-              <TextField.Root
-                label="Unit"
-                value={selectedMaterial.unit}
-                onChange={(e) => setSelectedMaterial({
-                  ...selectedMaterial,
-                  unit: e.target.value
-                })}
-              />
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
+                <TextField.Root>
+                  <TextField.Input
+                    value={selectedMaterial.unit}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      unit: e.target.value
+                    })}
+                  />
+                </TextField.Root>
+              </Box>
             </Grid>
             
             <Flex gap="3" mt="4" justify="end">
@@ -569,61 +593,81 @@ const RawMaterialsInventory = () => {
           <Dialog.Title>Create Purchase Order</Dialog.Title>
           
           <Grid columns="2" gap="3" mt="3">
-            <Select.Root
-              value={newOrder.materialId}
-              onValueChange={(value) => setNewOrder({
-                ...newOrder,
-                materialId: value,
-                supplier: materials.find(m => m.id === value)?.supplier || ''
-              })}
-            >
-              <Select.Trigger placeholder="Select material" />
-              <Select.Content>
-                {materials.map(material => (
-                  <Select.Item key={material.id} value={material.id}>
-                    {material.name}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Material</Text>
+              <Select.Root
+                value={newOrder.materialId}
+                onValueChange={(value) => setNewOrder({
+                  ...newOrder,
+                  materialId: value,
+                  supplier: materials.find(m => m.id === value)?.supplier || ''
+                })}
+              >
+                <Select.Trigger placeholder="Select material" />
+                <Select.Content>
+                  {materials.map(material => (
+                    <Select.Item key={material.id} value={material.id}>
+                      {material.name}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Quantity"
-              value={newOrder.quantity || ''}
-              onChange={(e) => setNewOrder({
-                ...newOrder,
-                quantity: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Quantity"
+                  value={newOrder.quantity || ''}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    quantity: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Supplier"
-              value={newOrder.supplier || ''}
-              onChange={(e) => setNewOrder({
-                ...newOrder,
-                supplier: e.target.value
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Supplier"
+                  value={newOrder.supplier || ''}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    supplier: e.target.value
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              type="date"
-              placeholder="Expected Delivery"
-              value={newOrder.expectedDelivery?.split('T')[0] || ''}
-              onChange={(e) => setNewOrder({
-                ...newOrder,
-                expectedDelivery: new Date(e.target.value).toISOString()
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
+              <TextField.Root>
+                <TextField.Input
+                  type="date"
+                  placeholder="Expected Delivery"
+                  value={newOrder.expectedDelivery?.split('T')[0] || ''}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    expectedDelivery: new Date(e.target.value).toISOString()
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextArea
-              placeholder="Notes (optional)"
-              value={newOrder.notes || ''}
-              onChange={(e) => setNewOrder({
-                ...newOrder,
-                notes: e.target.value
-              })}
-              style={{ gridColumn: '1 / -1' }}
-            />
+            <Box style={{ gridColumn: '1 / -1' }}>
+              <Text as="div" size="2" mb="1" weight="bold">Notes (optional)</Text>
+              <TextArea
+                placeholder="Notes"
+                value={newOrder.notes || ''}
+                onChange={(e) => setNewOrder({
+                  ...newOrder,
+                  notes: e.target.value
+                })}
+              />
+            </Box>
           </Grid>
           
           <Flex gap="3" mt="4" justify="end">
@@ -650,93 +694,137 @@ const RawMaterialsInventory = () => {
           <Dialog.Title>Add New Material</Dialog.Title>
           
           <Grid columns="2" gap="3" mt="3">
-            <TextField.Root
-              placeholder="Material Name"
-              value={newMaterial.name || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                name: e.target.value
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Material Name"
+                  value={newMaterial.name || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    name: e.target.value
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Supplier"
-              value={newMaterial.supplier || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                supplier: e.target.value
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Supplier"
+                  value={newMaterial.supplier || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    supplier: e.target.value
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Current Stock"
-              type="number"
-              value={newMaterial.currentStock || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                currentStock: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Current Stock</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Current Stock"
+                  type="number"
+                  value={newMaterial.currentStock || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    currentStock: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Unit (kg, g, L, etc.)"
-              value={newMaterial.unit || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                unit: e.target.value
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Unit (kg, g, L, etc.)</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Unit"
+                  value={newMaterial.unit || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    unit: e.target.value
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Minimum Stock Level"
-              type="number"
-              value={newMaterial.minStockLevel || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                minStockLevel: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Minimum Stock Level"
+                  type="number"
+                  value={newMaterial.minStockLevel || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    minStockLevel: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Reorder Level"
-              type="number"
-              value={newMaterial.reorderLevel || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                reorderLevel: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Reorder Level"
+                  type="number"
+                  value={newMaterial.reorderLevel || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    reorderLevel: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Safety Stock"
-              type="number"
-              value={newMaterial.safetyStock || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                safetyStock: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Safety Stock"
+                  type="number"
+                  value={newMaterial.safetyStock || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    safetyStock: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Lead Time (days)"
-              type="number"
-              value={newMaterial.leadTime || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                leadTime: Number(e.target.value)
-              })}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Lead Time"
+                  type="number"
+                  value={newMaterial.leadTime || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    leadTime: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
             
-            <TextField.Root
-              placeholder="Order Quantity"
-              type="number"
-              value={newMaterial.orderQuantity || ''}
-              onChange={(e) => setNewMaterial({
-                ...newMaterial,
-                orderQuantity: Number(e.target.value)
-              })}
-              style={{ gridColumn: '1 / -1' }}
-            />
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
+              <TextField.Root>
+                <TextField.Input
+                  placeholder="Order Quantity"
+                  type="number"
+                  value={newMaterial.orderQuantity || ''}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    orderQuantity: Number(e.target.value)
+                  })}
+                />
+              </TextField.Root>
+            </Box>
           </Grid>
           
           <Flex gap="3" mt="4" justify="end">
