@@ -67,6 +67,7 @@ interface PurchaseOrder {
   orderDate: string;
   notes?: string;
   blockchainTx?: string;
+  relatedTxHash?: string; // Added to link order and delivery
   shippingConditions?: {
     temperature?: number;
     humidity?: number;
@@ -79,15 +80,16 @@ interface BlockchainTransaction {
   materialId: string;
   action: 'order' | 'delivery' | 'adjustment';
   participants: string[];
+  relatedTxHash?: string;
+  quantity?: number;
 }
 
 // Mock IoT Service
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
-    // In a real app, this would connect to actual IoT devices
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(Math.random() > 0.2); // 80% success rate for demo
+        resolve(Math.random() > 0.2);
       }, 500);
     });
   }
@@ -96,26 +98,46 @@ class IoTSensorService {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
-          temperature: 22 + Math.floor(Math.random() * 10) - 5, // 17-27°C
-          humidity: 45 + Math.floor(Math.random() * 20) - 10, // 35-65%
-          weight: 100 + Math.floor(Math.random() * 50) - 25 // Simulate weight fluctuation
+          temperature: 22 + Math.floor(Math.random() * 10) - 5,
+          humidity: 45 + Math.floor(Math.random() * 20) - 10,
+          weight: 100 + Math.floor(Math.random() * 50) - 25
         });
       }, 800);
     });
   }
 }
 
-// Mock Blockchain Service
+// Enhanced Blockchain Service
 class BlockchainService {
+  private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
+
   static async recordTransaction(
     materialId: string,
     action: string,
     quantity: number,
-    participants: string[]
+    participants: string[],
+    relatedTxHash?: string
   ): Promise<string> {
     return new Promise((resolve) => {
       setTimeout(() => {
         const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        const timestamp = new Date().toISOString();
+        
+        const transaction: BlockchainTransaction = {
+          txHash,
+          timestamp,
+          materialId,
+          action: action as any,
+          participants,
+          relatedTxHash,
+          quantity
+        };
+
+        if (!this.transactionHistory[materialId]) {
+          this.transactionHistory[materialId] = [];
+        }
+        
+        this.transactionHistory[materialId].push(transaction);
         resolve(txHash);
       }, 1000);
     });
@@ -124,7 +146,7 @@ class BlockchainService {
   static async verifyTransaction(txHash: string): Promise<boolean> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve(true); // Always verified in this mock
+        resolve(true);
       }, 500);
     });
   }
@@ -132,22 +154,14 @@ class BlockchainService {
   static async getTransactionHistory(materialId: string): Promise<BlockchainTransaction[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        resolve([
-          {
-            txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-            timestamp: new Date(Date.now() - 86400000).toISOString(),
-            materialId,
-            action: 'order',
-            participants: ['Supplier X', 'Warehouse A']
-          },
-          {
-            txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-            timestamp: new Date(Date.now() - 172800000).toISOString(),
-            materialId,
-            action: 'delivery',
-            participants: ['Supplier X', 'Warehouse A']
-          }
-        ]);
+        const history = this.transactionHistory[materialId] || [];
+        
+        // Sort by timestamp to ensure correct sequence
+        const sortedHistory = [...history].sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+        
+        resolve(sortedHistory);
       }, 1200);
     });
   }
@@ -251,12 +265,11 @@ const RawMaterialsInventory = () => {
         
         setSensorStatus(prev => ({ ...prev, [materialId]: true }));
         
-        // Update stock based on sensor weight reading if available
         if (readings.weight) {
           const material = materials.find(m => m.id === materialId);
           if (material) {
             const newStock = Math.round(readings.weight);
-            if (Math.abs(newStock - material.currentStock) > 5) { // Only update if significant change
+            if (Math.abs(newStock - material.currentStock) > 5) {
               setMaterials(materials.map(m => 
                 m.id === materialId ? { ...m, currentStock: newStock } : m
               ));
@@ -276,13 +289,15 @@ const RawMaterialsInventory = () => {
     materialId: string,
     action: string,
     quantity: number,
-    participants: string[]
+    participants: string[],
+    relatedTxHash?: string
   ) => {
     const txHash = await BlockchainService.recordTransaction(
       materialId,
       action,
       quantity,
-      participants
+      participants,
+      relatedTxHash
     );
     return txHash;
   };
@@ -327,7 +342,7 @@ const RawMaterialsInventory = () => {
           orderDate: today
         };
 
-        // Record on blockchain
+        // Record order on blockchain
         const txHash = await recordBlockchainTransaction(
           material.id,
           'order',
@@ -342,6 +357,31 @@ const RawMaterialsInventory = () => {
           pendingOrders: material.pendingOrders + orderQuantity,
           lastOrderDate: today
         };
+
+        // Simulate delivery after lead time (for demo purposes)
+        setTimeout(async () => {
+          if (newOrder.status === 'pending' || newOrder.status === 'approved') {
+            const deliveryTxHash = await recordBlockchainTransaction(
+              material.id,
+              'delivery',
+              orderQuantity,
+              [material.supplier, 'Warehouse Manager'],
+              txHash
+            );
+            
+            setOrders(prevOrders => prevOrders.map(o => 
+              o.id === newOrder.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
+            ));
+            
+            setMaterials(prevMaterials => prevMaterials.map(m => 
+              m.id === material.id ? { 
+                ...m, 
+                currentStock: m.currentStock + orderQuantity,
+                pendingOrders: m.pendingOrders - orderQuantity
+              } : m
+            ));
+          }
+        }, material.leadTime * 86400000); // Convert lead time days to milliseconds
       }
     }
 
@@ -355,27 +395,24 @@ const RawMaterialsInventory = () => {
       if (order.id === orderId) {
         const updatedOrder = { ...order, status };
         
-        // When delivered, update stock and record on blockchain
-        if (status === 'delivered') {
-          const material = materials.find(m => m.id === order.materialId);
-          if (material) {
-            recordBlockchainTransaction(
-              order.materialId,
-              'delivery',
-              order.quantity,
-              [order.supplier, 'Warehouse Manager']
-            ).then(txHash => {
-              updatedOrder.blockchainTx = txHash;
-            });
-            
-            setMaterials(materials.map(m => 
-              m.id === order.materialId ? { 
-                ...m, 
-                currentStock: m.currentStock + order.quantity,
-                pendingOrders: m.pendingOrders - order.quantity
-              } : m
-            ));
-          }
+        if (status === 'delivered' && order.blockchainTx) {
+          recordBlockchainTransaction(
+            order.materialId,
+            'delivery',
+            order.quantity,
+            [order.supplier, 'Warehouse Manager'],
+            order.blockchainTx
+          ).then(txHash => {
+            updatedOrder.blockchainTx = txHash;
+          });
+          
+          setMaterials(materials.map(m => 
+            m.id === order.materialId ? { 
+              ...m, 
+              currentStock: m.currentStock + order.quantity,
+              pendingOrders: m.pendingOrders - order.quantity
+            } : m
+          ));
         }
         
         return updatedOrder;
@@ -412,7 +449,7 @@ const RawMaterialsInventory = () => {
       }
     };
 
-    // Record on blockchain
+    // Record order on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'order',
@@ -425,6 +462,30 @@ const RawMaterialsInventory = () => {
     setMaterials(materials.map(m => 
       m.id === material.id ? { ...m, pendingOrders: m.pendingOrders + order.quantity } : m
     ));
+    
+    // Simulate delivery after lead time (for demo purposes)
+    setTimeout(async () => {
+      const deliveryTxHash = await recordBlockchainTransaction(
+        material.id,
+        'delivery',
+        order.quantity,
+        [order.supplier, 'Warehouse Manager'],
+        txHash
+      );
+      
+      setOrders(prevOrders => prevOrders.map(o => 
+        o.id === order.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
+      ));
+      
+      setMaterials(prevMaterials => prevMaterials.map(m => 
+        m.id === material.id ? { 
+          ...m, 
+          currentStock: m.currentStock + order.quantity,
+          pendingOrders: m.pendingOrders - order.quantity
+        } : m
+      ));
+    }, material.leadTime * 86400000); // Convert lead time days to milliseconds
+
     setShowOrderDialog(false);
     setNewOrder({ status: 'pending', orderDate: today });
   };
@@ -443,14 +504,14 @@ const RawMaterialsInventory = () => {
       safetyStock: newMaterial.safetyStock || 0,
       leadTime: newMaterial.leadTime || 0,
       supplier: newMaterial.supplier,
-      supplierRating: 0, // New suppliers start with 0 rating
+      supplierRating: 0,
       orderQuantity: newMaterial.orderQuantity || 0,
       pendingOrders: 0,
       unit: newMaterial.unit || 'kg',
       sensorConnected: false
     };
 
-    // Record on blockchain
+    // Record initial stock on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'adjustment',
@@ -464,7 +525,7 @@ const RawMaterialsInventory = () => {
     setNewMaterial({ unit: 'kg', sensorConnected: false });
   };
 
-  // Handle input changes with proper typing
+  // Handle input changes
   const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
     if (!selectedMaterial) return;
     setSelectedMaterial({
@@ -509,12 +570,12 @@ const RawMaterialsInventory = () => {
   const connectedSensors = materials.filter(m => m.sensorConnected).length;
 
   return (
-    <Container size="3" px="4" py="6">
+    <Container size="3" px="4" py="6" className="inventory-container">
       {/* Inventory Dashboard */}
       <Grid columns="4" gap="4" mb="4">
-        <Card>
+        <Card className="dashboard-card">
           <Flex align="center" gap="3">
-            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <Box className="icon-box warning">
               <ExclamationTriangleIcon width={24} height={24} color="red" />
             </Box>
             <Box>
@@ -524,9 +585,9 @@ const RawMaterialsInventory = () => {
           </Flex>
         </Card>
         
-        <Card>
+        <Card className="dashboard-card">
           <Flex align="center" gap="3">
-            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <Box className="icon-box">
               <ClockIcon width={24} height={24} />
             </Box>
             <Box>
@@ -536,9 +597,9 @@ const RawMaterialsInventory = () => {
           </Flex>
         </Card>
         
-        <Card>
+        <Card className="dashboard-card">
           <Flex align="center" gap="3">
-            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <Box className="icon-box">
               <CubeIcon width={24} height={24} />
             </Box>
             <Box>
@@ -548,9 +609,9 @@ const RawMaterialsInventory = () => {
           </Flex>
         </Card>
         
-        <Card>
+        <Card className="dashboard-card">
           <Flex align="center" gap="3">
-            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <Box className="icon-box success">
               <LightningBoltIcon width={24} height={24} color="green" />
             </Box>
             <Box>
@@ -562,32 +623,33 @@ const RawMaterialsInventory = () => {
       </Grid>
 
       {/* Action Buttons */}
-      <Flex gap="3" mb="4" wrap="wrap">
-        <Button onClick={generateAutoOrders}>
+      <Flex gap="3" mb="4" wrap="wrap" className="action-buttons">
+        <Button onClick={generateAutoOrders} className="primary-button">
           Generate Auto Orders
         </Button>
-        <Button onClick={() => setShowOrderDialog(true)}>
+        <Button onClick={() => setShowOrderDialog(true)} className="primary-button">
           Create Manual Order
         </Button>
-        <Button onClick={() => setShowMaterialDialog(true)}>
+        <Button onClick={() => setShowMaterialDialog(true)} className="primary-button">
           Add New Material
         </Button>
-        <Flex align="center" gap="2">
+        <Flex align="center" gap="2" className="toggle-container">
           <Switch 
             checked={showReorderOnly}
             onCheckedChange={setShowReorderOnly}
+            className="reorder-switch"
           />
           <Text>Show Only Materials Needing Reorder</Text>
         </Flex>
       </Flex>
 
       {/* Materials Table */}
-      <Card mb="4">
-        <Flex justify="between" align="center" mb="3">
+      <Card mb="4" className="materials-card">
+        <Flex justify="between" align="center" mb="3" className="table-header">
           <Heading size="5">Raw Materials Inventory</Heading>
           <Text color="gray">{materials.length} materials registered</Text>
         </Flex>
-        <Table.Root>
+        <Table.Root className="inventory-table">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
@@ -610,9 +672,9 @@ const RawMaterialsInventory = () => {
                 const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
                 
                 return (
-                  <Table.Row key={material.id} style={{
-                    backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
-                  }}>
+                  <Table.Row key={material.id} className={`material-row ${
+                    isCritical ? 'critical' : needsReorder ? 'reorder' : ''
+                  }`}>
                     <Table.Cell>
                       <Flex align="center" gap="2">
                         {material.name}
@@ -622,14 +684,14 @@ const RawMaterialsInventory = () => {
                     <Table.Cell>
                       <Flex direction="column" gap="1">
                         <Text>{material.currentStock} {material.unit}</Text>
-                        <Progress value={Math.min(stockPercentage, 100)} />
+                        <Progress value={Math.min(stockPercentage, 100)} className="stock-progress" />
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
                     <Table.Cell>{available} {material.unit}</Table.Cell>
                     <Table.Cell>
                       {material.sensorConnected ? (
-                        <Flex align="center" gap="1">
+                        <Flex align="center" gap="1" className="sensor-connected">
                           <Link2Icon color="green" />
                           <Text color="green">Connected</Text>
                           {material.sensorReadings?.temperature && (
@@ -642,6 +704,7 @@ const RawMaterialsInventory = () => {
                           variant="soft"
                           onClick={() => connectToSensor(material.id)}
                           disabled={isConnectingSensor}
+                          className="sensor-button"
                         >
                           {isConnectingSensor ? 'Connecting...' : 'Connect Sensor'}
                         </Button>
@@ -649,22 +712,23 @@ const RawMaterialsInventory = () => {
                     </Table.Cell>
                     <Table.Cell>
                       {isCritical ? (
-                        <Badge color="red">Critical</Badge>
+                        <Badge color="red" className="status-badge">Critical</Badge>
                       ) : needsReorder ? (
-                        <Badge color="orange">Reorder Needed</Badge>
+                        <Badge color="orange" className="status-badge">Reorder Needed</Badge>
                       ) : (
-                        <Badge color="green">OK</Badge>
+                        <Badge color="green" className="status-badge">OK</Badge>
                       )}
                     </Table.Cell>
                     <Table.Cell>
-                      <Flex gap="2">
-                        <Button size="1" onClick={() => setSelectedMaterial(material)}>
+                      <Flex gap="2" className="action-buttons">
+                        <Button size="1" onClick={() => setSelectedMaterial(material)} className="config-button">
                           Configure
                         </Button>
                         <Button 
                           size="1" 
                           variant="soft" 
                           onClick={() => fetchBlockchainHistory(material.id)}
+                          className="blockchain-button"
                         >
                           Blockchain
                         </Button>
@@ -678,12 +742,12 @@ const RawMaterialsInventory = () => {
       </Card>
 
       {/* Purchase Orders Table */}
-      <Card>
-        <Flex justify="between" align="center" mb="3">
+      <Card className="orders-card">
+        <Flex justify="between" align="center" mb="3" className="table-header">
           <Heading size="5">Purchase Orders</Heading>
           <Text color="gray">{orders.length} orders in system</Text>
         </Flex>
-        <Table.Root>
+        <Table.Root className="orders-table">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
@@ -700,8 +764,8 @@ const RawMaterialsInventory = () => {
             {orders.map(order => {
               const material = materials.find(m => m.id === order.materialId);
               return (
-                <Table.Row key={order.id}>
-                  <Table.Cell>{order.id}</Table.Cell>
+                <Table.Row key={order.id} className="order-row">
+                  <Table.Cell className="order-id">{order.id}</Table.Cell>
                   <Table.Cell>{order.materialName}</Table.Cell>
                   <Table.Cell>{order.quantity} {material?.unit}</Table.Cell>
                   <Table.Cell>
@@ -711,7 +775,7 @@ const RawMaterialsInventory = () => {
                         <Badge color={
                           material.supplierRating > 4 ? 'green' : 
                           material.supplierRating > 3 ? 'yellow' : 'red'
-                        }>
+                        } className="rating-badge">
                           {material.supplierRating.toFixed(1)}
                         </Badge>
                       )}
@@ -724,23 +788,23 @@ const RawMaterialsInventory = () => {
                       order.status === 'shipped' ? 'blue' : 
                       order.status === 'approved' ? 'purple' : 
                       order.status === 'cancelled' ? 'red' : 'orange'
-                    }>
+                    } className="status-badge">
                       {order.status}
                     </Badge>
                   </Table.Cell>
                   <Table.Cell>
                     {order.blockchainTx ? (
-                      <Badge color="blue">
+                      <Badge color="blue" className="blockchain-badge">
                         Verified
                       </Badge>
                     ) : (
-                      <Badge color="gray">
+                      <Badge color="gray" className="blockchain-badge">
                         Pending
                       </Badge>
                     )}
                   </Table.Cell>
                   <Table.Cell>
-                    <Button size="1" onClick={() => setSelectedOrder(order)}>
+                    <Button size="1" onClick={() => setSelectedOrder(order)} className="view-button">
                       View
                     </Button>
                   </Table.Cell>
@@ -754,19 +818,19 @@ const RawMaterialsInventory = () => {
       {/* Material Configuration Dialog */}
       {selectedMaterial && (
         <Dialog.Root open onOpenChange={() => setSelectedMaterial(null)}>
-          <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Content style={{ maxWidth: '700px' }} className="material-dialog">
             <Dialog.Title>
               <Flex align="center" gap="2">
                 Configure {selectedMaterial.name}
                 {selectedMaterial.sensorConnected && (
-                  <Badge color="green">
+                  <Badge color="green" className="sensor-badge">
                     <Link2Icon /> IoT Connected
                   </Badge>
                 )}
               </Flex>
             </Dialog.Title>
             
-            <Grid columns="2" gap="3" mt="3">
+            <Grid columns="2" gap="3" mt="3" className="material-grid">
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
                 <TextField.Root>
@@ -861,11 +925,12 @@ const RawMaterialsInventory = () => {
               )}
             </Grid>
             
-            <Flex gap="3" mt="4" justify="end">
+            <Flex gap="3" mt="4" justify="end" className="dialog-buttons">
               <Button 
                 variant="soft" 
                 color="gray"
                 onClick={() => setSelectedMaterial(null)}
+                className="cancel-button"
               >
                 Cancel
               </Button>
@@ -874,7 +939,7 @@ const RawMaterialsInventory = () => {
                   m.id === selectedMaterial.id ? selectedMaterial : m
                 ));
                 setSelectedMaterial(null);
-              }}>
+              }} className="save-button">
                 Save Changes
               </Button>
             </Flex>
@@ -885,10 +950,10 @@ const RawMaterialsInventory = () => {
       {/* Order Details Dialog */}
       {selectedOrder && (
         <Dialog.Root open onOpenChange={() => setSelectedOrder(null)}>
-          <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Content style={{ maxWidth: '700px' }} className="order-dialog">
             <Dialog.Title>Order {selectedOrder.id}</Dialog.Title>
             
-            <Grid columns="2" gap="3" mt="3">
+            <Grid columns="2" gap="3" mt="3" className="order-grid">
               <Box>
                 <Text as="div" size="2" color="gray">Material</Text>
                 <Text>{selectedOrder.materialName}</Text>
@@ -922,16 +987,16 @@ const RawMaterialsInventory = () => {
                     selectedOrder.status === 'shipped' ? 'blue' : 
                     selectedOrder.status === 'approved' ? 'purple' : 
                     selectedOrder.status === 'cancelled' ? 'red' : 'orange'
-                  }>
+                  } className="status-badge">
                     {selectedOrder.status}
                   </Badge>
                 </Text>
               </Box>
 
               {selectedOrder.blockchainTx && (
-                <Box style={{ gridColumn: '1 / -1' }}>
+                <Box style={{ gridColumn: '1 / -1' }} className="blockchain-info">
                   <Text as="div" size="2" color="gray">Blockchain Transaction</Text>
-                  <Text style={{ wordBreak: 'break-all' }}>{selectedOrder.blockchainTx}</Text>
+                  <Text style={{ wordBreak: 'break-all' }} className="tx-hash">{selectedOrder.blockchainTx}</Text>
                 </Box>
               )}
 
@@ -950,13 +1015,13 @@ const RawMaterialsInventory = () => {
             </Grid>
             
             {selectedOrder.notes && (
-              <Box mt="3">
+              <Box mt="3" className="notes-section">
                 <Text as="div" size="2" color="gray">Notes</Text>
                 <Text>{selectedOrder.notes}</Text>
               </Box>
             )}
             
-            <Flex gap="3" mt="4" justify="end">
+            <Flex gap="3" mt="4" justify="end" className="dialog-buttons">
               {selectedOrder.status === 'pending' && (
                 <>
                   <Button 
@@ -965,6 +1030,7 @@ const RawMaterialsInventory = () => {
                       updateOrderStatus(selectedOrder.id, 'approved');
                       setSelectedOrder(null);
                     }}
+                    className="approve-button"
                   >
                     Approve
                   </Button>
@@ -974,6 +1040,7 @@ const RawMaterialsInventory = () => {
                       updateOrderStatus(selectedOrder.id, 'cancelled');
                       setSelectedOrder(null);
                     }}
+                    className="cancel-button"
                   >
                     Cancel
                   </Button>
@@ -986,6 +1053,7 @@ const RawMaterialsInventory = () => {
                     updateOrderStatus(selectedOrder.id, 'shipped');
                     setSelectedOrder(null);
                   }}
+                  className="ship-button"
                 >
                   Mark as Shipped
                 </Button>
@@ -997,6 +1065,7 @@ const RawMaterialsInventory = () => {
                     updateOrderStatus(selectedOrder.id, 'delivered');
                     setSelectedOrder(null);
                   }}
+                  className="deliver-button"
                 >
                   Mark as Delivered
                 </Button>
@@ -1005,6 +1074,7 @@ const RawMaterialsInventory = () => {
                 variant="soft" 
                 color="gray"
                 onClick={() => setSelectedOrder(null)}
+                className="close-button"
               >
                 Close
               </Button>
@@ -1015,10 +1085,10 @@ const RawMaterialsInventory = () => {
 
       {/* Create Order Dialog */}
       <Dialog.Root open={showOrderDialog} onOpenChange={setShowOrderDialog}>
-        <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Content style={{ maxWidth: '700px' }} className="create-order-dialog">
           <Dialog.Title>Create Purchase Order</Dialog.Title>
           
-          <Grid columns="2" gap="3" mt="3">
+          <Grid columns="2" gap="3" mt="3" className="order-form-grid">
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Material</Text>
               <Select.Root
@@ -1031,11 +1101,12 @@ const RawMaterialsInventory = () => {
                     supplier: material?.supplier || ''
                   });
                 }}
+                className="material-select"
               >
                 <Select.Trigger placeholder="Select material" />
                 <Select.Content>
                   {materials.map(material => (
-                    <Select.Item key={material.id} value={material.id}>
+                    <Select.Item key={material.id} value={material.id} className="select-item">
                       {material.name} ({material.currentStock - material.reserved} {material.unit} available)
                     </Select.Item>
                   ))}
@@ -1091,11 +1162,12 @@ const RawMaterialsInventory = () => {
                 placeholder="Notes"
                 value={newOrder.notes || ''}
                 onChange={(e) => handleNewOrderInputChange(e, 'notes')}
+                className="notes-textarea"
               />
             </Box>
           </Grid>
           
-          <Flex gap="3" mt="4" justify="end">
+          <Flex gap="3" mt="4" justify="end" className="dialog-buttons">
             <Button 
               variant="soft" 
               color="gray"
@@ -1103,10 +1175,11 @@ const RawMaterialsInventory = () => {
                 setShowOrderDialog(false);
                 setNewOrder({ status: 'pending', orderDate: today });
               }}
+              className="cancel-button"
             >
               Cancel
             </Button>
-            <Button onClick={createManualOrder}>
+            <Button onClick={createManualOrder} className="create-button">
               Create Order
             </Button>
           </Flex>
@@ -1115,10 +1188,10 @@ const RawMaterialsInventory = () => {
 
       {/* Add Material Dialog */}
       <Dialog.Root open={showMaterialDialog} onOpenChange={setShowMaterialDialog}>
-        <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Content style={{ maxWidth: '700px' }} className="add-material-dialog">
           <Dialog.Title>Add New Material</Dialog.Title>
           
-          <Grid columns="2" gap="3" mt="3">
+          <Grid columns="2" gap="3" mt="3" className="material-form-grid">
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
               <TextField.Root>
@@ -1238,20 +1311,21 @@ const RawMaterialsInventory = () => {
 
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">IoT Sensor</Text>
-              <Flex gap="2" align="center">
+              <Flex gap="2" align="center" className="sensor-toggle">
                 <Switch 
                   checked={newMaterial.sensorConnected || false}
                   onCheckedChange={(checked) => setNewMaterial({
                     ...newMaterial,
                     sensorConnected: checked
                   })}
+                  className="sensor-switch"
                 />
                 <Text>Connect IoT Sensor</Text>
               </Flex>
             </Box>
           </Grid>
           
-          <Flex gap="3" mt="4" justify="end">
+          <Flex gap="3" mt="4" justify="end" className="dialog-buttons">
             <Button 
               variant="soft" 
               color="gray"
@@ -1259,10 +1333,11 @@ const RawMaterialsInventory = () => {
                 setShowMaterialDialog(false);
                 setNewMaterial({ unit: 'kg', sensorConnected: false });
               }}
+              className="cancel-button"
             >
               Cancel
             </Button>
-            <Button onClick={addNewMaterial}>
+            <Button onClick={addNewMaterial} className="add-button">
               Add Material
             </Button>
           </Flex>
@@ -1271,7 +1346,7 @@ const RawMaterialsInventory = () => {
 
       {/* Blockchain History Dialog */}
       <Dialog.Root open={showBlockchainDialog} onOpenChange={setShowBlockchainDialog}>
-        <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Content style={{ maxWidth: '700px' }} className="blockchain-dialog">
           <Dialog.Title>
             <Flex align="center" gap="2">
               <TokensIcon /> Blockchain History
@@ -1280,39 +1355,53 @@ const RawMaterialsInventory = () => {
           </Dialog.Title>
           
           {isLoadingBlockchain ? (
-            <Flex justify="center" py="5">
+            <Flex justify="center" py="5" className="loading-state">
               <Text>Loading blockchain data...</Text>
             </Flex>
           ) : (
-            <Table.Root>
+            <Table.Root className="blockchain-table">
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>Transaction Hash</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Related TX</Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {blockchainData.map((tx, index) => (
-                  <Table.Row key={index}>
-                    <Table.Cell style={{ wordBreak: 'break-all' }}>
+                  <Table.Row key={index} className="blockchain-row">
+                    <Table.Cell style={{ wordBreak: 'break-all' }} className="tx-hash">
                       <Text size="1">{tx.txHash}</Text>
                     </Table.Cell>
                     <Table.Cell>
-                      <Badge>
+                      <Badge className="action-badge">
                         {tx.action}
                       </Badge>
                     </Table.Cell>
-                    <Table.Cell>
+                    <Table.Cell className="tx-date">
                       {new Date(tx.timestamp).toLocaleString()}
                     </Table.Cell>
-                    <Table.Cell>
+                    <Table.Cell className="tx-quantity">
+                      {tx.quantity || 'N/A'}
+                    </Table.Cell>
+                    <Table.Cell className="tx-participants">
                       <Flex direction="column" gap="1">
                         {tx.participants.map((p, i) => (
                           <Text key={i} size="1">{p}</Text>
                         ))}
                       </Flex>
+                    </Table.Cell>
+                    <Table.Cell className="related-tx">
+                      {tx.relatedTxHash ? (
+                        <Text size="1" style={{ wordBreak: 'break-all' }}>
+                          {tx.relatedTxHash}
+                        </Text>
+                      ) : (
+                        <Text size="1" color="gray">None</Text>
+                      )}
                     </Table.Cell>
                   </Table.Row>
                 ))}
@@ -1320,11 +1409,12 @@ const RawMaterialsInventory = () => {
             </Table.Root>
           )}
           
-          <Flex gap="3" mt="4" justify="end">
+          <Flex gap="3" mt="4" justify="end" className="dialog-buttons">
             <Button 
               variant="soft" 
               color="gray"
               onClick={() => setShowBlockchainDialog(false)}
+              className="close-button"
             >
               Close
             </Button>
