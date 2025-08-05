@@ -130,7 +130,7 @@ const InventoryDashboard = () => {
     return avgInventoryValue > 0 ? item.cogs / avgInventoryValue : 0;
   };
 
-  const getExpiryStatus = (expiryDate: string) => {
+  const getExpiryStatus = (expiryDate: string): { status: string; color: 'red' | 'green' | 'orange' } => {
     const today = new Date();
     const expiry = new Date(expiryDate);
     const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
@@ -210,9 +210,8 @@ const InventoryDashboard = () => {
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
-          {/* Header Section */}
           <Flex justify="between" align="center">
-            <Heading size="6">Poultry Drugs Inventory Dashboard</Heading>
+            <Heading size="6">Finished Good Inventory Overview</Heading>
             <Flex gap="3" align="center">
               <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
                 <Select.Trigger>
@@ -254,9 +253,15 @@ const InventoryDashboard = () => {
             </Flex>
           </Flex>
 
-          {/* Inventory Table */}
-          <Table.Root variant="surface">
-            <Table.Header>
+          <Table.Root variant="surface" style={{ 
+            backgroundColor: 'var(--gray-1)',
+            borderRadius: 'var(--radius-3)',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+          }}>
+            <Table.Header style={{
+              backgroundColor: 'var(--gray-3)',
+              fontWeight: '500'
+            }}>
               <Table.Row>
                 <Table.ColumnHeaderCell onClick={() => requestSort('id')}>
                   ID {sortConfig?.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
@@ -282,14 +287,26 @@ const InventoryDashboard = () => {
               </Table.Row>
             </Table.Header>
 
-            <Table.Body>
+            <Table.Body style={{
+              backgroundColor: 'white'
+            }}>
               {filteredData.map((item) => {
                 const expiryStatus = getExpiryStatus(item.expiry);
+                const rowColor = expiryStatus.color === 'red' ? 'var(--red-2)' : 
+                                expiryStatus.color === 'orange' ? 'var(--orange-2)' : 'white';
+                
                 return (
                   <Table.Row 
                     key={item.id}
                     onClick={() => setSelectedItem(item)}
-                    style={{ cursor: 'pointer' }}
+                    style={{ 
+                      cursor: 'pointer',
+                      backgroundColor: rowColor,
+                      ':hover': {
+                        backgroundColor: expiryStatus.color === 'red' ? 'var(--red-3)' :
+                                        expiryStatus.color === 'orange' ? 'var(--orange-3)' : 'var(--gray-2)'
+                      }
+                    }}
                   >
                     <Table.Cell>{item.id}</Table.Cell>
                     <Table.Cell>
@@ -342,7 +359,6 @@ const InventoryDashboard = () => {
             </Table.Body>
           </Table.Root>
 
-          {/* Charts Section */}
           <Flex gap="4">
             <Card style={{ flex: 1 }}>
               <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
@@ -395,7 +411,6 @@ const InventoryDashboard = () => {
         </Flex>
       </Card>
 
-      {/* Item Detail Dialog */}
       <Dialog.Root open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
         {selectedItem && (
           <Dialog.Content style={{ maxWidth: '700px' }}>
