@@ -168,7 +168,7 @@ const InventoryDashboard = () => {
   };
 
   const totalInventoryValue = useMemo(() => 
-    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
+    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 
     [data, currency]
   );
 
@@ -310,34 +310,90 @@ const InventoryDashboard = () => {
           </Flex>
 
           <Grid columns="3" gap="4">
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Total Inventory Value</Text>
-                <Heading size="5">{formatCurrency(totalInventoryValue)}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="green">↑ 2.5%</Text>
-                  <Text color="gray">vs last month</Text>
-                </Flex>
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#3b82f620',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <SymbolIcon width="24" height="24" color="#3b82f6" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Total Value</Text>
+                  <Heading size="5" mb="1" style={{ color: '#1e40af' }}>
+                    {formatCurrency(totalInventoryValue)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 2.5%</Text>
+                    <Text size="1" color="gray">vs last month</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Items Near Expiry</Text>
-                <Heading size="5">{itemsNearExpiry}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="red">↑ 1.2%</Text>
-                  <Text color="gray">vs last month</Text>
-                </Flex>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#f59e0b20',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ClockIcon width="24" height="24" color="#d97706" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Near Expiry</Text>
+                  <Heading size="5" mb="1" style={{ color: '#92400e' }}>
+                    {itemsNearExpiry}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="red">↑ 1.2%</Text>
+                    <Text size="1" color="gray">Urgent</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
-            <Card>
-              <Flex direction="column" gap="2">
-                <Text color="gray">Avg. Turnover Rate</Text>
-                <Heading size="5">{avgTurnoverRate.toFixed(2)}</Heading>
-                <Flex align="center" gap="1">
-                  <Text color="green">↑ 0.3</Text>
-                  <Text color="gray">vs last quarter</Text>
-                </Flex>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#10b98120',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <UpdateIcon width="24" height="24" color="#059669" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Turnover Rate</Text>
+                  <Heading size="5" mb="1" style={{ color: '#065f46' }}>
+                    {avgTurnoverRate.toFixed(2)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 0.3</Text>
+                    <Text size="1" color="gray">vs last quarter</Text>
+                  </Flex>
+                </Box>
               </Flex>
             </Card>
           </Grid>
