@@ -26,7 +26,8 @@ import {
 import { 
   MixerHorizontalIcon,
   DownloadIcon,
-  CubeIcon
+  CubeIcon,
+  ClockIcon
 } from '@radix-ui/react-icons';
 
 interface RawMaterial {
