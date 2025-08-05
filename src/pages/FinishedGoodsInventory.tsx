@@ -168,7 +168,7 @@ const InventoryDashboard = () => {
   };
 
   const totalInventoryValue = useMemo(() => 
-    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 
+    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
     [data, currency]
   );
 
