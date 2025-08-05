@@ -62,6 +62,8 @@ const CATEGORY_COLORS = {
   C: '#6b7280'
 };
 
+const getCurrentDate = () => new Date().toISOString().split('T')[0];
+
 const initialData: InventoryItem[] = [
   {
     id: 'DRG001',
@@ -74,7 +76,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 225,
     unitCost: 171,
     category: 'A',
-    lastRestock: '2023-05-15',
+    lastRestock: getCurrentDate(),
     cogs: 20520,
     movement: [
       { month: 'Jan', quantity: 100 },
@@ -96,7 +98,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 215,
     unitCost: 160,
     category: 'B',
-    lastRestock: '2023-06-20',
+    lastRestock: getCurrentDate(),
     cogs: 19200,
     movement: [
       { month: 'Jan', quantity: 80 },
@@ -118,7 +120,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 230,
     unitCost: 171,
     category: 'C',
-    lastRestock: '2023-07-10',
+    lastRestock: getCurrentDate(),
     cogs: 20520,
     movement: [
       { month: 'Jan', quantity: 70 },
@@ -169,7 +171,7 @@ const InventoryDashboard = () => {
     return { status: 'Good', color: 'green' };
   };
 
-  // Calculate summary metrics
+  // KPI Metrics
   const totalInventoryValue = useMemo(() => 
     data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
     [data, currency]
@@ -259,7 +261,7 @@ const InventoryDashboard = () => {
     <Box p="4">
       <Card>
         <Flex direction="column" gap="4">
-          {/* Summary Cards */}
+          {/* KPI Cards Section */}
           <Grid columns="3" gap="4">
             <Card>
               <Flex direction="column" gap="2">
@@ -531,7 +533,6 @@ const InventoryDashboard = () => {
                   </Flex>
                 </Card>
 
-                {/* Stock Movement Chart */}
                 <Card mt="4">
                   <Heading size="4" mb="3">Stock Movement (Last 6 Months)</Heading>
                   <ResponsiveContainer width="100%" height={250}>
@@ -577,7 +578,7 @@ const InventoryDashboard = () => {
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Last Restock:</Text>
-                      <Text>{new Date(selectedItem.lastRestock).toLocaleDateString('en-US')}</Text>
+                      <Text>{selectedItem.lastRestock}</Text>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Cost of Goods Sold:</Text>
@@ -626,7 +627,3 @@ const InventoryDashboard = () => {
 };
 
 export default InventoryDashboard;
-
-
-
-	
