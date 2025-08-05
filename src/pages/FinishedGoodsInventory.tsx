@@ -402,14 +402,14 @@ const InventoryDashboard = () => {
             )}
 
             {data.filter(i => {
-              const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+              const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
               return diff <= 7 && diff > 0;
             }).length > 0 && (
               <Card style={{ background: '#fef3c7', borderColor: '#f59e0b' }}>
                 <Flex align="center" gap="2">
                   <InfoCircledIcon color="#d97706" />
                   <Text weight="bold" color="amber">Warning: {data.filter(i => {
-                    const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
+                    const diff = Math.ceil((new Date(i.expiry).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
                     return diff <= 7 && diff > 0;
                   }).length} items will expire within 7 days!</Text>
                 </Flex>
@@ -695,7 +695,7 @@ const InventoryDashboard = () => {
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Days Inventory (DIO):</Text>
-                      <Text weight="bold">{(365 / (calculateTurnoverRate(selectedItem) * 12).toFixed(1)} days</Text>
+                      <Text weight="bold">{(365 / (calculateTurnoverRate(selectedItem) * 12)).toFixed(1)} days</Text>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Industry Standard:</Text>
