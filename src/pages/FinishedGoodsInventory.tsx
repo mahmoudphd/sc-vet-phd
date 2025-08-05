@@ -37,9 +37,9 @@ import {
   DashboardIcon,
   DownloadIcon,
   CommitIcon,
-  DollarSignIcon,
+  SymbolIcon,
   ClockIcon,
-  RefreshCwIcon
+  UpdateIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -218,9 +218,19 @@ const InventoryDashboard = () => {
   };
 
   const updateItemField = (id: string, field: keyof InventoryItem, value: any) => {
-    setData(prev => prev.map(item => 
-      item.id === id ? { ...item, [field]: value } : item
-    ));
+    setData(prev => prev.map(item => {
+      if (item.id === id) {
+        const updatedItem = { ...item, [field]: value };
+        
+        // Update lastRestock date when quantity increases
+        if (field === 'quantity' && value > item.quantity) {
+          updatedItem.lastRestock = new Date().toISOString().split('T')[0];
+        }
+        
+        return updatedItem;
+      }
+      return item;
+    }));
   };
 
   const formatCurrency = (value: number) => {
@@ -269,7 +279,7 @@ const InventoryDashboard = () => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <DollarSignIcon width="24" height="24" color="#3b82f6" />
+                  <SymbolIcon width="24" height="24" color="#3b82f6" />
                 </Box>
                 <Box>
                   <Text as="div" size="2" color="gray" mb="1">Total Value</Text>
@@ -327,7 +337,7 @@ const InventoryDashboard = () => {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  <RefreshCwIcon width="24" height="24" color="#059669" />
+                  <UpdateIcon width="24" height="24" color="#059669" />
                 </Box>
                 <Box>
                   <Text as="div" size="2" color="gray" mb="1">Turnover Rate</Text>
