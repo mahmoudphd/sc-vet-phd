@@ -74,7 +74,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 225,
     category: 'A',
     lastRestock: '2023-05-15',
-    cogs: 18000 // Increased COGS to boost turnover rate
+    cogs: 18000
   },
   {
     id: 'FGI002',
@@ -87,7 +87,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 215,
     category: 'B',
     lastRestock: '2023-06-20',
-    cogs: 15000 // Increased COGS to boost turnover rate
+    cogs: 15000
   },
   {
     id: 'FGI003',
@@ -100,7 +100,7 @@ const initialData: InventoryItem[] = [
     unitPrice: 230,
     category: 'C',
     lastRestock: '2023-07-10',
-    cogs: 12000 // Increased COGS to boost turnover rate
+    cogs: 12000
   }
 ];
 
@@ -325,7 +325,7 @@ const InventoryDashboard = () => {
                   <Text as="div" size="2" color="gray">Avg. Turnover Rate</Text>
                   <Heading size="5">
                     {turnoverData.length > 0 ? 
-                      (turnoverData.reduce((sum, item) => sum + item.turnoverRate, 0) / turnoverData.length
+                      (turnoverData.reduce((sum, item) => sum + item.turnoverRate, 0) / turnoverData.length)
                         .toFixed(2) : 
                       '0.00'}
                   </Heading>
@@ -384,7 +384,7 @@ const InventoryDashboard = () => {
                   <BarChart data={turnoverData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="name" />
-                    <YAxis domain={[0, 5]} /> {/* Adjusted Y-axis to better show higher turnover rates */}
+                    <YAxis domain={[0, 5]} />
                     <ChartTooltip 
                       formatter={(value: number) => [value.toFixed(2), 'Turnover Rate']}
                     />
