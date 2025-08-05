@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import {
   Card,
   Flex,
@@ -74,7 +74,34 @@ const initialMaterials: RawMaterial[] = [
     pendingOrders: 0,
     unit: 'kg'
   },
-  // Add more materials as needed
+  {
+    id: generateId('MAT'),
+    name: 'Vitamin B2',
+    currentStock: 90,
+    reserved: 30,
+    minStockLevel: 60,
+    reorderLevel: 90,
+    safetyStock: 40,
+    leadTime: 5,
+    supplier: 'Supplier Y',
+    orderQuantity: 120,
+    pendingOrders: 0,
+    unit: 'kg'
+  },
+  {
+    id: generateId('MAT'),
+    name: 'Nicotinamide B3',
+    currentStock: 70,
+    reserved: 20,
+    minStockLevel: 40,
+    reorderLevel: 60,
+    safetyStock: 20,
+    leadTime: 10,
+    supplier: 'Supplier Z',
+    orderQuantity: 80,
+    pendingOrders: 0,
+    unit: 'kg'
+  }
 ];
 
 const RawMaterialsInventory = () => {
@@ -192,6 +219,33 @@ const RawMaterialsInventory = () => {
     setMaterials([...materials, material]);
     setShowMaterialDialog(false);
     setNewMaterial({ unit: 'kg' });
+  };
+
+  // Handle input changes with proper typing
+  const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+    if (!selectedMaterial) return;
+    setSelectedMaterial({
+      ...selectedMaterial,
+      [field]: field === 'unit' ? e.target.value : Number(e.target.value)
+    });
+  };
+
+  const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+    setNewMaterial({
+      ...newMaterial,
+      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
+        ? e.target.value 
+        : Number(e.target.value)
+    });
+  };
+
+  const handleNewOrderInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof PurchaseOrder) => {
+    setNewOrder({
+      ...newOrder,
+      [field]: field === 'notes' || field === 'supplier' || field === 'materialId'
+        ? e.target.value
+        : Number(e.target.value)
+    });
   };
 
   // Calculate inventory metrics
@@ -379,12 +433,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="number"
                     value={selectedMaterial.minStockLevel}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      minStockLevel: Number(e.target.value)
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'minStockLevel')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -392,12 +445,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="number"
                     value={selectedMaterial.reorderLevel}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      reorderLevel: Number(e.target.value)
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'reorderLevel')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -405,12 +457,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="number"
                     value={selectedMaterial.safetyStock}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      safetyStock: Number(e.target.value)
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'safetyStock')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -418,12 +469,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="number"
                     value={selectedMaterial.leadTime}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      leadTime: Number(e.target.value)
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'leadTime')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -431,12 +481,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="number"
                     value={selectedMaterial.orderQuantity}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      orderQuantity: Number(e.target.value)
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'orderQuantity')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -444,12 +493,11 @@ const RawMaterialsInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
+                    type="text"
                     value={selectedMaterial.unit}
-                    onChange={(e) => setSelectedMaterial({
-                      ...selectedMaterial,
-                      unit: e.target.value
-                    })}
+                    onChange={(e) => handleMaterialInputChange(e, 'unit')}
+                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -617,13 +665,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
+                  type="number"
                   placeholder="Quantity"
                   value={newOrder.quantity || ''}
-                  onChange={(e) => setNewOrder({
-                    ...newOrder,
-                    quantity: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewOrderInputChange(e, 'quantity')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -631,13 +678,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
+                  type="text"
                   placeholder="Supplier"
                   value={newOrder.supplier || ''}
-                  onChange={(e) => setNewOrder({
-                    ...newOrder,
-                    supplier: e.target.value
-                  })}
+                  onChange={(e) => handleNewOrderInputChange(e, 'supplier')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -645,7 +691,7 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
                   type="date"
                   placeholder="Expected Delivery"
                   value={newOrder.expectedDelivery?.split('T')[0] || ''}
@@ -653,6 +699,7 @@ const RawMaterialsInventory = () => {
                     ...newOrder,
                     expectedDelivery: new Date(e.target.value).toISOString()
                   })}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -662,10 +709,7 @@ const RawMaterialsInventory = () => {
               <TextArea
                 placeholder="Notes"
                 value={newOrder.notes || ''}
-                onChange={(e) => setNewOrder({
-                  ...newOrder,
-                  notes: e.target.value
-                })}
+                onChange={(e) => handleNewOrderInputChange(e, 'notes')}
               />
             </Box>
           </Grid>
@@ -697,13 +741,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
+                  type="text"
                   placeholder="Material Name"
                   value={newMaterial.name || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    name: e.target.value
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'name')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -711,13 +754,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
+                  type="text"
                   placeholder="Supplier"
                   value={newMaterial.supplier || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    supplier: e.target.value
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'supplier')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -725,14 +767,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Current Stock</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Current Stock"
+                <input
                   type="number"
+                  placeholder="Current Stock"
                   value={newMaterial.currentStock || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    currentStock: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'currentStock')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -740,13 +780,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Unit (kg, g, L, etc.)</Text>
               <TextField.Root>
-                <TextField.Input
+                <input
+                  type="text"
                   placeholder="Unit"
                   value={newMaterial.unit || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    unit: e.target.value
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'unit')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -754,14 +793,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Minimum Stock Level"
+                <input
                   type="number"
+                  placeholder="Minimum Stock Level"
                   value={newMaterial.minStockLevel || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    minStockLevel: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'minStockLevel')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -769,14 +806,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Reorder Level"
+                <input
                   type="number"
+                  placeholder="Reorder Level"
                   value={newMaterial.reorderLevel || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    reorderLevel: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'reorderLevel')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -784,14 +819,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Safety Stock"
+                <input
                   type="number"
+                  placeholder="Safety Stock"
                   value={newMaterial.safetyStock || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    safetyStock: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'safetyStock')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -799,14 +832,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Lead Time"
+                <input
                   type="number"
+                  placeholder="Lead Time"
                   value={newMaterial.leadTime || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    leadTime: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'leadTime')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -814,14 +845,12 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
               <TextField.Root>
-                <TextField.Input
-                  placeholder="Order Quantity"
+                <input
                   type="number"
+                  placeholder="Order Quantity"
                   value={newMaterial.orderQuantity || ''}
-                  onChange={(e) => setNewMaterial({
-                    ...newMaterial,
-                    orderQuantity: Number(e.target.value)
-                  })}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'orderQuantity')}
+                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
