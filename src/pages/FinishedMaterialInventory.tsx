@@ -322,7 +322,7 @@ const FinishedMaterialInventory = () => {
     return materials.filter(m => m.supplierId === supplierId);
   };
 
-  // Connect to IoT sensor
+  // Connect to IoT sensor - Fixed version
   const connectToSensor = async (materialId: string) => {
     setIsConnectingSensor(true);
     try {
