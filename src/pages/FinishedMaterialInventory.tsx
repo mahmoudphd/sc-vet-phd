@@ -27,10 +27,28 @@ import {
   LightningBoltIcon,
   LinkBreak2Icon,
   Link2Icon,
-  TokensIcon
+  TokensIcon,
+  PersonIcon,
+  EnvelopeClosedIcon,
+  PhoneIcon,
+  FileTextIcon
 } from '@radix-ui/react-icons';
 
 // Types
+interface Supplier {
+  id: string;
+  name: string;
+  contactPerson: string;
+  email: string;
+  phone: string;
+  rating: number;
+  materialsSupplied: string[];
+  leadTime: number;
+  reliability: number;
+  contractTerms: string;
+  blockchainAddress?: string;
+}
+
 interface RawMaterial {
   id: string;
   name: string;
@@ -40,8 +58,7 @@ interface RawMaterial {
   reorderLevel: number;
   safetyStock: number;
   leadTime: number;
-  supplier: string;
-  supplierRating: number;
+  supplierId: string;
   orderQuantity: number;
   pendingOrders: number;
   lastOrderDate?: string;
@@ -61,7 +78,7 @@ interface PurchaseOrder {
   materialId: string;
   materialName: string;
   quantity: number;
-  supplier: string;
+  supplierId: string;
   expectedDelivery: string;
   status: 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
   orderDate: string;
@@ -168,67 +185,122 @@ class BlockchainService {
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 const today = new Date().toISOString().split('T')[0];
 
-// Initial Data
-const initialMaterials: RawMaterial[] = [
-  {
-    id: generateId('MAT'),
-    name: 'Vitamin B1',
-    currentStock: 120,
-    reserved: 40,
-    minStockLevel: 50,
-    reorderLevel: 80,
-    safetyStock: 30,
-    leadTime: 7,
-    supplier: 'Supplier X',
-    supplierRating: 4.5,
-    orderQuantity: 100,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  },
-  {
-    id: generateId('MAT'),
-    name: 'Vitamin B2',
-    currentStock: 90,
-    reserved: 30,
-    minStockLevel: 60,
-    reorderLevel: 90,
-    safetyStock: 40,
-    leadTime: 5,
-    supplier: 'Supplier Y',
-    supplierRating: 3.8,
-    orderQuantity: 120,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  },
-  {
-    id: generateId('MAT'),
-    name: 'Nicotinamide B3',
-    currentStock: 70,
-    reserved: 20,
-    minStockLevel: 40,
-    reorderLevel: 60,
-    safetyStock: 20,
-    leadTime: 10,
-    supplier: 'Supplier Z',
-    supplierRating: 4.2,
-    orderQuantity: 80,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  }
-];
+// Color scheme for UI
+const statusColors = {
+  critical: 'var(--red-3)',
+  reorder: 'var(--orange-3)',
+  ok: 'var(--green-3)',
+  header: 'var(--gray-2)',
+  rowEven: 'var(--gray-1)',
+  rowOdd: 'white'
+};
 
 const RawMaterialsInventory = () => {
+  // Initial Suppliers Data
+  const initialSuppliers: Supplier[] = [
+    {
+      id: generateId('SUP'),
+      name: 'NutriSupplies Inc.',
+      contactPerson: 'John Smith',
+      email: 'john@nutrisupplies.com',
+      phone: '+1 (555) 123-4567',
+      rating: 4.5,
+      materialsSupplied: [],
+      leadTime: 7,
+      reliability: 95,
+      contractTerms: 'Net 30 days'
+    },
+    {
+      id: generateId('SUP'),
+      name: 'Vitamin World',
+      contactPerson: 'Sarah Johnson',
+      email: 'sarah@vitaminworld.com',
+      phone: '+1 (555) 987-6543',
+      rating: 4.2,
+      materialsSupplied: [],
+      leadTime: 5,
+      reliability: 92,
+      contractTerms: 'Net 45 days'
+    },
+    {
+      id: generateId('SUP'),
+      name: 'Pure Ingredients Co.',
+      contactPerson: 'Michael Chen',
+      email: 'michael@pureingredients.com',
+      phone: '+1 (555) 456-7890',
+      rating: 3.8,
+      materialsSupplied: [],
+      leadTime: 10,
+      reliability: 85,
+      contractTerms: '50% advance payment'
+    }
+  ];
+
+  // Initial Materials Data
+  const initialMaterials: RawMaterial[] = [
+    {
+      id: generateId('MAT'),
+      name: 'Vitamin B1 (Thiamine)',
+      currentStock: 120,
+      reserved: 40,
+      minStockLevel: 50,
+      reorderLevel: 80,
+      safetyStock: 30,
+      leadTime: 7,
+      supplierId: initialSuppliers[0].id,
+      orderQuantity: 100,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false
+    },
+    {
+      id: generateId('MAT'),
+      name: 'Vitamin B2 (Riboflavin)',
+      currentStock: 90,
+      reserved: 30,
+      minStockLevel: 60,
+      reorderLevel: 90,
+      safetyStock: 40,
+      leadTime: 5,
+      supplierId: initialSuppliers[1].id,
+      orderQuantity: 120,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false
+    },
+    {
+      id: generateId('MAT'),
+      name: 'Vitamin B3 (Niacinamide)',
+      currentStock: 70,
+      reserved: 20,
+      minStockLevel: 40,
+      reorderLevel: 60,
+      safetyStock: 20,
+      leadTime: 10,
+      supplierId: initialSuppliers[2].id,
+      orderQuantity: 80,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false
+    }
+  ];
+
+  // Update suppliers with their materials
+  initialSuppliers[0].materialsSupplied = [initialMaterials[0].id];
+  initialSuppliers[1].materialsSupplied = [initialMaterials[1].id];
+  initialSuppliers[2].materialsSupplied = [initialMaterials[2].id];
+
   // State
+  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [materials, setMaterials] = useState<RawMaterial[]>(initialMaterials);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<RawMaterial | null>(null);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const [showReorderOnly, setShowReorderOnly] = useState(false);
   const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showMaterialDialog, setShowMaterialDialog] = useState(false);
+  const [showSupplierDialog, setShowSupplierDialog] = useState(false);
   const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
   const [newOrder, setNewOrder] = useState<Partial<PurchaseOrder>>({
     status: 'pending',
@@ -238,10 +310,35 @@ const RawMaterialsInventory = () => {
     unit: 'kg',
     sensorConnected: false
   });
+  const [newSupplier, setNewSupplier] = useState<Omit<Supplier, 'id'>>({
+    name: '',
+    contactPerson: '',
+    email: '',
+    phone: '',
+    rating: 0,
+    materialsSupplied: [],
+    leadTime: 0,
+    reliability: 0,
+    contractTerms: ''
+  });
   const [blockchainData, setBlockchainData] = useState<BlockchainTransaction[]>([]);
   const [isLoadingBlockchain, setIsLoadingBlockchain] = useState(false);
   const [sensorStatus, setSensorStatus] = useState<Record<string, boolean>>({});
   const [isConnectingSensor, setIsConnectingSensor] = useState(false);
+
+  // Helper functions
+  const getSupplierName = (supplierId: string) => {
+    const supplier = suppliers.find(s => s.id === supplierId);
+    return supplier ? supplier.name : 'Unknown Supplier';
+  };
+
+  const getSupplierDetails = (supplierId: string) => {
+    return suppliers.find(s => s.id === supplierId);
+  };
+
+  const getMaterialsBySupplier = (supplierId: string) => {
+    return materials.filter(m => m.supplierId === supplierId);
+  };
 
   // Connect to IoT sensor
   const connectToSensor = async (materialId: string) => {
@@ -326,12 +423,15 @@ const RawMaterialsInventory = () => {
           material.minStockLevel + material.safetyStock - availableStock
         );
 
+        const supplier = getSupplierDetails(material.supplierId);
+        if (!supplier) continue;
+
         const newOrder: PurchaseOrder = {
           id: generateId('PO'),
           materialId: material.id,
           materialName: material.name,
           quantity: orderQuantity,
-          supplier: material.supplier,
+          supplierId: material.supplierId,
           expectedDelivery: new Date(
             new Date().setDate(new Date().getDate() + material.leadTime)
           ).toISOString(),
@@ -344,7 +444,7 @@ const RawMaterialsInventory = () => {
           material.id,
           'order',
           orderQuantity,
-          [material.supplier, 'Warehouse Manager']
+          [supplier.name, 'Warehouse Manager']
         );
 
         newOrder.blockchainTx = txHash;
@@ -362,7 +462,7 @@ const RawMaterialsInventory = () => {
               material.id,
               'delivery',
               orderQuantity,
-              [material.supplier, 'Warehouse Manager'],
+              [supplier.name, 'Warehouse Manager'],
               txHash
             );
             
@@ -393,15 +493,18 @@ const RawMaterialsInventory = () => {
         const updatedOrder = { ...order, status };
         
         if (status === 'delivered' && order.blockchainTx) {
-          recordBlockchainTransaction(
-            order.materialId,
-            'delivery',
-            order.quantity,
-            [order.supplier, 'Warehouse Manager'],
-            order.blockchainTx
-          ).then(txHash => {
-            updatedOrder.blockchainTx = txHash;
-          });
+          const supplier = getSupplierDetails(order.supplierId);
+          if (supplier) {
+            recordBlockchainTransaction(
+              order.materialId,
+              'delivery',
+              order.quantity,
+              [supplier.name, 'Warehouse Manager'],
+              order.blockchainTx
+            ).then(txHash => {
+              updatedOrder.blockchainTx = txHash;
+            });
+          }
           
           setMaterials(materials.map(m => 
             m.id === order.materialId ? { 
@@ -427,12 +530,15 @@ const RawMaterialsInventory = () => {
     const material = materials.find(m => m.id === newOrder.materialId);
     if (!material) return;
 
+    const supplier = getSupplierDetails(material.supplierId);
+    if (!supplier) return;
+
     const order: PurchaseOrder = {
       id: generateId('PO'),
       materialId: material.id,
       materialName: material.name,
       quantity: Number(newOrder.quantity),
-      supplier: newOrder.supplier || material.supplier,
+      supplierId: material.supplierId,
       expectedDelivery: newOrder.expectedDelivery || 
         new Date(
           new Date().setDate(new Date().getDate() + material.leadTime)
@@ -451,7 +557,7 @@ const RawMaterialsInventory = () => {
       material.id,
       'order',
       order.quantity,
-      [order.supplier, 'Warehouse Manager']
+      [supplier.name, 'Warehouse Manager']
     );
     order.blockchainTx = txHash;
 
@@ -466,7 +572,7 @@ const RawMaterialsInventory = () => {
         material.id,
         'delivery',
         order.quantity,
-        [order.supplier, 'Warehouse Manager'],
+        [supplier.name, 'Warehouse Manager'],
         txHash
       );
       
@@ -489,7 +595,7 @@ const RawMaterialsInventory = () => {
 
   // Add new material
   const addNewMaterial = async () => {
-    if (!newMaterial.name || !newMaterial.supplier) return;
+    if (!newMaterial.name || !newMaterial.supplierId) return;
 
     const material: RawMaterial = {
       id: generateId('MAT'),
@@ -500,8 +606,7 @@ const RawMaterialsInventory = () => {
       reorderLevel: newMaterial.reorderLevel || 0,
       safetyStock: newMaterial.safetyStock || 0,
       leadTime: newMaterial.leadTime || 0,
-      supplier: newMaterial.supplier,
-      supplierRating: 0,
+      supplierId: newMaterial.supplierId,
       orderQuantity: newMaterial.orderQuantity || 0,
       pendingOrders: 0,
       unit: newMaterial.unit || 'kg',
@@ -517,9 +622,40 @@ const RawMaterialsInventory = () => {
     );
     material.blockchainTx = txHash;
 
+    // Update supplier's materials list
+    setSuppliers(suppliers.map(s => 
+      s.id === material.supplierId 
+        ? { ...s, materialsSupplied: [...s.materialsSupplied, material.id] }
+        : s
+    );
+
     setMaterials([...materials, material]);
     setShowMaterialDialog(false);
     setNewMaterial({ unit: 'kg', sensorConnected: false });
+  };
+
+  // Add new supplier
+  const addNewSupplier = () => {
+    if (!newSupplier.name || !newSupplier.contactPerson) return;
+
+    const supplier: Supplier = {
+      ...newSupplier,
+      id: generateId('SUP')
+    };
+
+    setSuppliers([...suppliers, supplier]);
+    setShowSupplierDialog(false);
+    setNewSupplier({
+      name: '',
+      contactPerson: '',
+      email: '',
+      phone: '',
+      rating: 0,
+      materialsSupplied: [],
+      leadTime: 0,
+      reliability: 0,
+      contractTerms: ''
+    });
   };
 
   // Handle input changes
@@ -527,7 +663,7 @@ const RawMaterialsInventory = () => {
     if (!selectedMaterial) return;
     setSelectedMaterial({
       ...selectedMaterial,
-      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
+      [field]: field === 'unit' || field === 'name' 
         ? e.target.value 
         : Number(e.target.value)
     });
@@ -536,7 +672,7 @@ const RawMaterialsInventory = () => {
   const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
     setNewMaterial({
       ...newMaterial,
-      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
+      [field]: field === 'unit' || field === 'name'
         ? e.target.value 
         : Number(e.target.value)
     });
@@ -545,10 +681,32 @@ const RawMaterialsInventory = () => {
   const handleNewOrderInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof PurchaseOrder) => {
     setNewOrder({
       ...newOrder,
-      [field]: field === 'notes' || field === 'supplier' || field === 'materialId'
+      [field]: field === 'notes' || field === 'materialId'
         ? e.target.value
         : Number(e.target.value)
     });
+  };
+
+  const handleSupplierInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof Supplier) => {
+    if (selectedSupplier) {
+      setSelectedSupplier({
+        ...selectedSupplier,
+        [field]: field === 'name' || field === 'contactPerson' || 
+                field === 'email' || field === 'phone' || 
+                field === 'contractTerms'
+          ? e.target.value
+          : Number(e.target.value)
+      });
+    } else {
+      setNewSupplier({
+        ...newSupplier,
+        [field]: field === 'name' || field === 'contactPerson' || 
+                field === 'email' || field === 'phone' || 
+                field === 'contractTerms'
+          ? e.target.value
+          : Number(e.target.value)
+      });
+    }
   };
 
   // Calculate inventory metrics
@@ -565,6 +723,31 @@ const RawMaterialsInventory = () => {
   ).length;
 
   const connectedSensors = materials.filter(m => m.sensorConnected).length;
+
+  // Custom table row with styling
+  const TableRowWithStatus = ({ 
+    children, 
+    status 
+  }: { 
+    children: React.ReactNode, 
+    status?: 'critical' | 'reorder' | 'ok' 
+  }) => {
+    let backgroundColor = 'white';
+    if (status === 'critical') backgroundColor = statusColors.critical;
+    else if (status === 'reorder') backgroundColor = statusColors.reorder;
+    else if (status === 'ok') backgroundColor = statusColors.ok;
+    
+    return (
+      <Table.Row style={{ 
+        backgroundColor,
+        '&:hover': {
+          filter: 'brightness(0.98)'
+        }
+      }}>
+        {children}
+      </Table.Row>
+    );
+  };
 
   return (
     <Container size="3" px="4" py="6">
@@ -619,6 +802,71 @@ const RawMaterialsInventory = () => {
         </Card>
       </Grid>
 
+      {/* Suppliers Table */}
+      <Card mb="4">
+        <Flex justify="between" align="center" mb="3">
+          <Heading size="5">Suppliers Management</Heading>
+          <Button onClick={() => setShowSupplierDialog(true)}>
+            Add New Supplier
+          </Button>
+        </Flex>
+        <Table.Root>
+          <Table.Header style={{ backgroundColor: statusColors.header }}>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Supplier Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Contact</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Materials Supplied</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {suppliers.map((supplier, index) => (
+              <TableRowWithStatus key={supplier.id} status={undefined}>
+                <Table.Cell>
+                  <Text weight="bold">{supplier.name}</Text>
+                </Table.Cell>
+                <Table.Cell>
+                  <Flex direction="column">
+                    <Text>{supplier.contactPerson}</Text>
+                    <Text size="1" color="gray">{supplier.email}</Text>
+                  </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge color={
+                    supplier.rating > 4 ? 'green' : 
+                    supplier.rating > 3 ? 'yellow' : 'red'
+                  }>
+                    {supplier.rating.toFixed(1)}
+                  </Badge>
+                </Table.Cell>
+                <Table.Cell>
+                  <Text>
+                    {supplier.materialsSupplied.length > 0 
+                      ? supplier.materialsSupplied.map(id => 
+                          materials.find(m => m.id === id)?.name
+                        ).join(', ')
+                      : 'No materials assigned'}
+                  </Text>
+                </Table.Cell>
+                <Table.Cell>
+                  <Flex align="center" gap="2">
+                    <Progress value={supplier.reliability} />
+                    <Text>{supplier.reliability}%</Text>
+                  </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Button size="1" onClick={() => setSelectedSupplier(supplier)}>
+                    Details
+                  </Button>
+                </Table.Cell>
+              </TableRowWithStatus>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Card>
+
       {/* Action Buttons */}
       <Flex gap="3" mb="4" wrap="wrap">
         <Button onClick={generateAutoOrders}>
@@ -646,12 +894,13 @@ const RawMaterialsInventory = () => {
           <Text color="gray">{materials.length} materials registered</Text>
         </Flex>
         <Table.Root>
-          <Table.Header>
+          <Table.Header style={{ backgroundColor: statusColors.header }}>
             <Table.Row>
               <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Current Stock</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>IoT Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
@@ -661,16 +910,15 @@ const RawMaterialsInventory = () => {
             {materials
               .filter(material => !showReorderOnly || 
                 (material.currentStock - material.reserved) <= material.reorderLevel)
-              .map(material => {
+              .map((material, index) => {
                 const available = material.currentStock - material.reserved;
                 const isCritical = available <= material.safetyStock;
                 const needsReorder = available <= material.reorderLevel;
+                const status = isCritical ? 'critical' : needsReorder ? 'reorder' : 'ok';
                 const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
                 
                 return (
-                  <Table.Row key={material.id} style={{
-                    backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
-                  }}>
+                  <TableRowWithStatus key={material.id} status={status}>
                     <Table.Cell>
                       <Flex align="center" gap="2">
                         {material.name}
@@ -685,6 +933,17 @@ const RawMaterialsInventory = () => {
                     </Table.Cell>
                     <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
                     <Table.Cell>{available} {material.unit}</Table.Cell>
+                    <Table.Cell>
+                      <Flex align="center" gap="2">
+                        {getSupplierName(material.supplierId)}
+                        <Badge color={
+                          getSupplierDetails(material.supplierId)?.rating > 4 ? 'green' : 
+                          getSupplierDetails(material.supplierId)?.rating > 3 ? 'yellow' : 'red'
+                        }>
+                          {getSupplierDetails(material.supplierId)?.rating.toFixed(1)}
+                        </Badge>
+                      </Flex>
+                    </Table.Cell>
                     <Table.Cell>
                       {material.sensorConnected ? (
                         <Flex align="center" gap="1">
@@ -728,7 +987,7 @@ const RawMaterialsInventory = () => {
                         </Button>
                       </Flex>
                     </Table.Cell>
-                  </Table.Row>
+                  </TableRowWithStatus>
                 );
               })}
           </Table.Body>
@@ -742,7 +1001,7 @@ const RawMaterialsInventory = () => {
           <Text color="gray">{orders.length} orders in system</Text>
         </Flex>
         <Table.Root>
-          <Table.Header>
+          <Table.Header style={{ backgroundColor: statusColors.header }}>
             <Table.Row>
               <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
@@ -757,20 +1016,22 @@ const RawMaterialsInventory = () => {
           <Table.Body>
             {orders.map(order => {
               const material = materials.find(m => m.id === order.materialId);
+              const supplier = getSupplierDetails(order.supplierId);
+              
               return (
-                <Table.Row key={order.id}>
+                <TableRowWithStatus key={order.id} status={undefined}>
                   <Table.Cell>{order.id}</Table.Cell>
                   <Table.Cell>{order.materialName}</Table.Cell>
                   <Table.Cell>{order.quantity} {material?.unit}</Table.Cell>
                   <Table.Cell>
                     <Flex align="center" gap="1">
-                      {order.supplier}
-                      {material?.supplierRating && (
+                      {supplier?.name}
+                      {supplier?.rating && (
                         <Badge color={
-                          material.supplierRating > 4 ? 'green' : 
-                          material.supplierRating > 3 ? 'yellow' : 'red'
+                          supplier.rating > 4 ? 'green' : 
+                          supplier.rating > 3 ? 'yellow' : 'red'
                         }>
-                          {material.supplierRating.toFixed(1)}
+                          {supplier.rating.toFixed(1)}
                         </Badge>
                       )}
                     </Flex>
@@ -802,7 +1063,7 @@ const RawMaterialsInventory = () => {
                       View
                     </Button>
                   </Table.Cell>
-                </Table.Row>
+                </TableRowWithStatus>
               );
             })}
           </Table.Body>
@@ -897,6 +1158,26 @@ const RawMaterialsInventory = () => {
                 </TextField.Root>
               </Box>
 
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+                <Select.Root
+                  value={selectedMaterial.supplierId}
+                  onValueChange={(value) => setSelectedMaterial({
+                    ...selectedMaterial,
+                    supplierId: value
+                  })}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {suppliers.map(supplier => (
+                      <Select.Item key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Box>
+
               {selectedMaterial.sensorConnected && selectedMaterial.sensorReadings && (
                 <>
                   <Box>
@@ -940,6 +1221,101 @@ const RawMaterialsInventory = () => {
         </Dialog.Root>
       )}
 
+      {/* Supplier Details Dialog */}
+      {selectedSupplier && (
+        <Dialog.Root open onOpenChange={() => setSelectedSupplier(null)}>
+          <Dialog.Content style={{ maxWidth: '700px' }}>
+            <Dialog.Title>
+              <Flex align="center" gap="2">
+                <PersonIcon /> {selectedSupplier.name}
+              </Flex>
+            </Dialog.Title>
+            
+            <Grid columns="2" gap="3" mt="3">
+              <Box>
+                <Text as="div" size="2" color="gray">Contact Person</Text>
+                <Text>{selectedSupplier.contactPerson}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Email</Text>
+                <Flex align="center" gap="1">
+                  <EnvelopeClosedIcon />
+                  <Text>{selectedSupplier.email}</Text>
+                </Flex>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Phone</Text>
+                <Flex align="center" gap="1">
+                  <PhoneIcon />
+                  <Text>{selectedSupplier.phone}</Text>
+                </Flex>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Rating</Text>
+                <Badge color={
+                  selectedSupplier.rating > 4 ? 'green' : 
+                  selectedSupplier.rating > 3 ? 'yellow' : 'red'
+                }>
+                  {selectedSupplier.rating.toFixed(1)}
+                </Badge>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Lead Time (days)</Text>
+                <Text>{selectedSupplier.leadTime}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Reliability</Text>
+                <Flex align="center" gap="2">
+                  <Progress value={selectedSupplier.reliability} />
+                  <Text>{selectedSupplier.reliability}%</Text>
+                </Flex>
+              </Box>
+
+              <Box style={{ gridColumn: '1 / -1' }}>
+                <Text as="div" size="2" color="gray">Contract Terms</Text>
+                <Flex align="center" gap="1">
+                  <FileTextIcon />
+                  <Text>{selectedSupplier.contractTerms}</Text>
+                </Flex>
+              </Box>
+
+              <Box style={{ gridColumn: '1 / -1' }}>
+                <Text as="div" size="2" color="gray">Materials Supplied</Text>
+                {selectedSupplier.materialsSupplied.length > 0 ? (
+                  <Flex wrap="wrap" gap="2" mt="2">
+                    {selectedSupplier.materialsSupplied.map(materialId => {
+                      const material = materials.find(m => m.id === materialId);
+                      return material ? (
+                        <Badge key={materialId} variant="soft">
+                          {material.name}
+                        </Badge>
+                      ) : null;
+                    })}
+                  </Flex>
+                ) : (
+                  <Text color="gray">No materials assigned</Text>
+                )}
+              </Box>
+            </Grid>
+            
+            <Flex gap="3" mt="4" justify="end">
+              <Button 
+                variant="soft" 
+                color="gray"
+                onClick={() => setSelectedSupplier(null)}
+              >
+                Close
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      )}
+
       {/* Order Details Dialog */}
       {selectedOrder && (
         <Dialog.Root open onOpenChange={() => setSelectedOrder(null)}>
@@ -959,7 +1335,7 @@ const RawMaterialsInventory = () => {
               
               <Box>
                 <Text as="div" size="2" color="gray">Supplier</Text>
-                <Text>{selectedOrder.supplier}</Text>
+                <Text>{getSupplierName(selectedOrder.supplierId)}</Text>
               </Box>
               
               <Box>
@@ -1086,7 +1462,7 @@ const RawMaterialsInventory = () => {
                   setNewOrder({
                     ...newOrder,
                     materialId: value,
-                    supplier: material?.supplier || ''
+                    supplierId: material?.supplierId || ''
                   });
                 }}
               >
@@ -1116,15 +1492,25 @@ const RawMaterialsInventory = () => {
             
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
-              <TextField.Root>
-                <input
-                  type="text"
-                  placeholder="Supplier"
-                  value={newOrder.supplier || ''}
-                  onChange={(e) => handleNewOrderInputChange(e, 'supplier')}
-                  className="rt-TextFieldInput"
-                />
-              </TextField.Root>
+              <Select.Root
+                value={newOrder.supplierId}
+                onValueChange={(value) => setNewOrder({
+                  ...newOrder,
+                  supplierId: value
+                })}
+                disabled={!newOrder.materialId}
+              >
+                <Select.Trigger placeholder={newOrder.materialId ? "Select supplier" : "Select material first"} />
+                <Select.Content>
+                  {newOrder.materialId && suppliers.filter(s => 
+                    s.materialsSupplied.includes(newOrder.materialId as string)
+                  ).map(supplier => (
+                    <Select.Item key={supplier.id} value={supplier.id}>
+                      {supplier.name} (Rating: {supplier.rating.toFixed(1)})
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
             </Box>
             
             <Box>
@@ -1192,15 +1578,22 @@ const RawMaterialsInventory = () => {
             
             <Box>
               <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
-              <TextField.Root>
-                <input
-                  type="text"
-                  placeholder="Supplier"
-                  value={newMaterial.supplier || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'supplier')}
-                  className="rt-TextFieldInput"
-                />
-              </TextField.Root>
+              <Select.Root
+                value={newMaterial.supplierId}
+                onValueChange={(value) => setNewMaterial({
+                  ...newMaterial,
+                  supplierId: value
+                })}
+              >
+                <Select.Trigger placeholder="Select supplier" />
+                <Select.Content>
+                  {suppliers.map(supplier => (
+                    <Select.Item key={supplier.id} value={supplier.id}>
+                      {supplier.name}
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
             </Box>
             
             <Box>
@@ -1327,6 +1720,149 @@ const RawMaterialsInventory = () => {
         </Dialog.Content>
       </Dialog.Root>
 
+      {/* Add Supplier Dialog */}
+      <Dialog.Root open={showSupplierDialog} onOpenChange={setShowSupplierDialog}>
+        <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Title>Add New Supplier</Dialog.Title>
+          
+          <Grid columns="2" gap="3" mt="3">
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Supplier Name</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Supplier Name"
+                  value={newSupplier.name}
+                  onChange={(e) => handleSupplierInputChange(e, 'name')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Contact Person</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Contact Person"
+                  value={newSupplier.contactPerson}
+                  onChange={(e) => handleSupplierInputChange(e, 'contactPerson')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Email</Text>
+              <TextField.Root>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={newSupplier.email}
+                  onChange={(e) => handleSupplierInputChange(e, 'email')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Phone</Text>
+              <TextField.Root>
+                <input
+                  type="tel"
+                  placeholder="Phone"
+                  value={newSupplier.phone}
+                  onChange={(e) => handleSupplierInputChange(e, 'phone')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Rating (1-5)</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  min="1"
+                  max="5"
+                  step="0.1"
+                  placeholder="Rating"
+                  value={newSupplier.rating}
+                  onChange={(e) => handleSupplierInputChange(e, 'rating')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Lead Time"
+                  value={newSupplier.leadTime}
+                  onChange={(e) => handleSupplierInputChange(e, 'leadTime')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Reliability (%)</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  placeholder="Reliability"
+                  value={newSupplier.reliability}
+                  onChange={(e) => handleSupplierInputChange(e, 'reliability')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box style={{ gridColumn: '1 / -1' }}>
+              <Text as="div" size="2" mb="1" weight="bold">Contract Terms</Text>
+              <TextArea
+                placeholder="Contract Terms"
+                value={newSupplier.contractTerms}
+                onChange={(e) => setNewSupplier({
+                  ...newSupplier,
+                  contractTerms: e.target.value
+                })}
+              />
+            </Box>
+          </Grid>
+          
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray"
+              onClick={() => {
+                setShowSupplierDialog(false);
+                setNewSupplier({
+                  name: '',
+                  contactPerson: '',
+                  email: '',
+                  phone: '',
+                  rating: 0,
+                  materialsSupplied: [],
+                  leadTime: 0,
+                  reliability: 0,
+                  contractTerms: ''
+                });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={addNewSupplier}>
+              Add Supplier
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
       {/* Blockchain History Dialog */}
       <Dialog.Root open={showBlockchainDialog} onOpenChange={setShowBlockchainDialog}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
@@ -1343,7 +1879,7 @@ const RawMaterialsInventory = () => {
             </Flex>
           ) : (
             <Table.Root>
-              <Table.Header>
+              <Table.Header style={{ backgroundColor: statusColors.header }}>
                 <Table.Row>
                   <Table.ColumnHeaderCell>Transaction Hash</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
@@ -1355,7 +1891,7 @@ const RawMaterialsInventory = () => {
               </Table.Header>
               <Table.Body>
                 {blockchainData.map((tx, index) => (
-                  <Table.Row key={index}>
+                  <TableRowWithStatus key={index} status={undefined}>
                     <Table.Cell style={{ wordBreak: 'break-all' }}>
                       <Text size="1">{tx.txHash}</Text>
                     </Table.Cell>
@@ -1386,7 +1922,7 @@ const RawMaterialsInventory = () => {
                         <Text size="1" color="gray">None</Text>
                       )}
                     </Table.Cell>
-                  </Table.Row>
+                  </TableRowWithStatus>
                 ))}
               </Table.Body>
             </Table.Root>
