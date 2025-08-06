@@ -390,7 +390,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: User) => void }) => {
   );
 };
 
-const RawMaterialsInventory = () => {
+const FinishedMaterialInventory = () => {
   // State
   const [user, setUser] = useState<User | null>(null);
   const [darkMode, setDarkMode] = useState(false);
@@ -426,7 +426,7 @@ const RawMaterialsInventory = () => {
         const readings = await IoTSensorService.getSensorReadings(materialId);
         
         // Check for environmental alerts
-        const alerts = [];
+        const alerts: string[] = [];
         if (readings.temperature && (readings.temperature < 15 || readings.temperature > 30)) {
           alerts.push(`Temperature out of range (${readings.temperature}°C)`);
         }
@@ -498,6 +498,20 @@ const RawMaterialsInventory = () => {
       relatedTxHash
     );
     return txHash;
+  }, []);
+
+  // Fetch blockchain history
+  const fetchBlockchainHistory = useCallback(async (materialId: string) => {
+    setIsLoadingBlockchain(true);
+    try {
+      const history = await BlockchainService.getTransactionHistory(materialId);
+      setBlockchainData(history);
+      setShowBlockchainDialog(true);
+    } catch (error) {
+      console.error('Failed to fetch blockchain data:', error);
+    } finally {
+      setIsLoadingBlockchain(false);
+    }
   }, []);
 
   // Generate purchase orders automatically
@@ -855,9 +869,7 @@ const RawMaterialsInventory = () => {
                           <Button 
                             size="1" 
                             variant="soft" 
-                            onClick={() => {
-                              fetchBlockchainHistory(material.id);
-                            }}
+                            onClick={() => fetchBlockchainHistory(material.id)}
                           >
                             Blockchain
                           </Button>
@@ -975,7 +987,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="number"
                       value={selectedMaterial.minStockLevel}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         minStockLevel: Number(e.target.value)
                       })}
@@ -989,7 +1001,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="number"
                       value={selectedMaterial.reorderLevel}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         reorderLevel: Number(e.target.value)
                       })}
@@ -1003,7 +1015,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="number"
                       value={selectedMaterial.safetyStock}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         safetyStock: Number(e.target.value)
                       })}
@@ -1017,7 +1029,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="number"
                       value={selectedMaterial.leadTime}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         leadTime: Number(e.target.value)
                       })}
@@ -1031,7 +1043,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="number"
                       value={selectedMaterial.orderQuantity}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         orderQuantity: Number(e.target.value)
                       })}
@@ -1046,7 +1058,7 @@ const RawMaterialsInventory = () => {
                       type="number"
                       step="0.01"
                       value={selectedMaterial.unitPrice}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         unitPrice: Number(e.target.value)
                       })}
@@ -1060,7 +1072,7 @@ const RawMaterialsInventory = () => {
                     <TextField.Input
                       type="text"
                       value={selectedMaterial.unit}
-                      onChange={(e) => setSelectedMaterial({
+                      onChange={(e: ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
                         ...selectedMaterial,
                         unit: e.target.value
                       })}
@@ -1279,7 +1291,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Quantity"
                     value={newOrder.quantity || ''}
-                    onChange={(e) => setNewOrder({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewOrder({
                       ...newOrder,
                       quantity: Number(e.target.value)
                     })}
@@ -1294,7 +1306,7 @@ const RawMaterialsInventory = () => {
                     type="text"
                     placeholder="Supplier"
                     value={newOrder.supplier || ''}
-                    onChange={(e) => setNewOrder({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewOrder({
                       ...newOrder,
                       supplier: e.target.value
                     })}
@@ -1309,7 +1321,7 @@ const RawMaterialsInventory = () => {
                     type="date"
                     placeholder="Expected Delivery"
                     value={newOrder.expectedDelivery?.split('T')[0] || ''}
-                    onChange={(e) => setNewOrder({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewOrder({
                       ...newOrder,
                       expectedDelivery: new Date(e.target.value).toISOString()
                     })}
@@ -1322,7 +1334,7 @@ const RawMaterialsInventory = () => {
                 <TextArea
                   placeholder="Notes"
                   value={newOrder.notes || ''}
-                  onChange={(e) => setNewOrder({
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setNewOrder({
                     ...newOrder,
                     notes: e.target.value
                   })}
@@ -1425,7 +1437,7 @@ const RawMaterialsInventory = () => {
                     type="text"
                     placeholder="Material Name"
                     value={newMaterial.name || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       name: e.target.value
                     })}
@@ -1440,7 +1452,7 @@ const RawMaterialsInventory = () => {
                     type="text"
                     placeholder="Supplier"
                     value={newMaterial.supplier || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       supplier: e.target.value
                     })}
@@ -1455,7 +1467,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Current Stock"
                     value={newMaterial.currentStock || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       currentStock: Number(e.target.value)
                     })}
@@ -1470,7 +1482,7 @@ const RawMaterialsInventory = () => {
                     type="text"
                     placeholder="Unit"
                     value={newMaterial.unit || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       unit: e.target.value
                     })}
@@ -1486,7 +1498,7 @@ const RawMaterialsInventory = () => {
                     step="0.01"
                     placeholder="Unit Price"
                     value={newMaterial.unitPrice || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       unitPrice: Number(e.target.value)
                     })}
@@ -1501,7 +1513,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Minimum Stock Level"
                     value={newMaterial.minStockLevel || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       minStockLevel: Number(e.target.value)
                     })}
@@ -1516,7 +1528,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Reorder Level"
                     value={newMaterial.reorderLevel || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       reorderLevel: Number(e.target.value)
                     })}
@@ -1531,7 +1543,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Safety Stock"
                     value={newMaterial.safetyStock || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       safetyStock: Number(e.target.value)
                     })}
@@ -1546,7 +1558,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Lead Time"
                     value={newMaterial.leadTime || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       leadTime: Number(e.target.value)
                     })}
@@ -1561,7 +1573,7 @@ const RawMaterialsInventory = () => {
                     type="number"
                     placeholder="Order Quantity"
                     value={newMaterial.orderQuantity || ''}
-                    onChange={(e) => setNewMaterial({
+                    onChange={(e: ChangeEvent<HTMLInputElement>) => setNewMaterial({
                       ...newMaterial,
                       orderQuantity: Number(e.target.value)
                     })}
@@ -1720,4 +1732,4 @@ const RawMaterialsInventory = () => {
   );
 };
 
-export default RawMaterialsInventory;
+export default FinishedMaterialInventory;
