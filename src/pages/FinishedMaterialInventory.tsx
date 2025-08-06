@@ -632,7 +632,7 @@ const FinishedMaterialInventory = () => {
       s.id === material.supplierId 
         ? { ...s, materialsSupplied: [...s.materialsSupplied, material.id] }
         : s
-    );
+    ));
 
     setMaterials([...materials, material]);
     setShowMaterialDialog(false);
