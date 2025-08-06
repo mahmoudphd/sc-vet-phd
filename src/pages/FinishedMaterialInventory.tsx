@@ -30,7 +30,7 @@ import {
   TokensIcon,
   PersonIcon,
   EnvelopeClosedIcon,
-  PhoneIcon,
+  Phone,
   FileTextIcon
 } from '@radix-ui/react-icons';
 
@@ -322,7 +322,7 @@ const FinishedMaterialInventory = () => {
     return materials.filter(m => m.supplierId === supplierId);
   };
 
-  // Connect to IoT sensor - Fixed version
+  // Connect to IoT sensor
   const connectToSensor = async (materialId: string) => {
     setIsConnectingSensor(true);
     try {
@@ -743,12 +743,7 @@ const FinishedMaterialInventory = () => {
     else if (status === 'ok') backgroundColor = statusColors.ok;
     
     return (
-      <Table.Row style={{ 
-        backgroundColor,
-        '&:hover': {
-          filter: 'brightness(0.98)'
-        }
-      }}>
+      <Table.Row style={{ backgroundColor }}>
         {children}
       </Table.Row>
     );
@@ -1225,11 +1220,11 @@ const FinishedMaterialInventory = () => {
                 <>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Temperature</Text>
-                    <Text>{selectedMaterial.sensorReadings.temperature}°C</Text>
+                    <Text>{selectedMaterial.sensorReadings?.temperature || 'N/A'}°C</Text>
                   </Box>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Humidity</Text>
-                    <Text>{selectedMaterial.sensorReadings.humidity}%</Text>
+                    <Text>{selectedMaterial.sensorReadings?.humidity || 'N/A'}%</Text>
                   </Box>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Last Sensor Update</Text>
@@ -1291,7 +1286,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" color="gray">Phone</Text>
                 <Flex align="center" gap="1">
-                  <PhoneIcon />
+                  <Phone />
                   <Text>{selectedSupplier.phone}</Text>
                 </Flex>
               </Box>
