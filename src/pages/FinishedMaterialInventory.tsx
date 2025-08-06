@@ -347,7 +347,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: User) => void }) => {
                   Username
                 </Text>
                 <TextField.Root mt="1">
-                  <TextField.Input
+                  <input
                     id="username"
                     value={username}
                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
@@ -361,7 +361,7 @@ const LoginScreen = ({ onLogin }: { onLogin: (user: User) => void }) => {
                   Password
                 </Text>
                 <TextField.Root mt="1">
-                  <TextField.Input
+                  <input
                     id="password"
                     type="password"
                     value={password}
@@ -984,7 +984,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       value={selectedMaterial.minStockLevel}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -998,7 +998,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       value={selectedMaterial.reorderLevel}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -1012,7 +1012,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       value={selectedMaterial.safetyStock}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -1026,7 +1026,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       value={selectedMaterial.leadTime}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -1040,7 +1040,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       value={selectedMaterial.orderQuantity}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -1054,7 +1054,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Unit Price</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="number"
                       step="0.01"
                       value={selectedMaterial.unitPrice}
@@ -1069,7 +1069,7 @@ const FinishedMaterialInventory = () => {
                 <Box>
                   <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
                   <TextField.Root>
-                    <TextField.Input
+                    <input
                       type="text"
                       value={selectedMaterial.unit}
                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSelectedMaterial({
@@ -1287,7 +1287,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Quantity"
                     value={newOrder.quantity || ''}
@@ -1302,7 +1302,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="text"
                     placeholder="Supplier"
                     value={newOrder.supplier || ''}
@@ -1317,7 +1317,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="date"
                     placeholder="Expected Delivery"
                     value={newOrder.expectedDelivery?.split('T')[0] || ''}
@@ -1433,7 +1433,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="text"
                     placeholder="Material Name"
                     value={newMaterial.name || ''}
@@ -1448,7 +1448,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="text"
                     placeholder="Supplier"
                     value={newMaterial.supplier || ''}
@@ -1463,7 +1463,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Current Stock</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Current Stock"
                     value={newMaterial.currentStock || ''}
@@ -1478,7 +1478,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Unit (kg, g, L, etc.)</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="text"
                     placeholder="Unit"
                     value={newMaterial.unit || ''}
@@ -1493,7 +1493,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Unit Price</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     step="0.01"
                     placeholder="Unit Price"
@@ -1509,7 +1509,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Minimum Stock Level"
                     value={newMaterial.minStockLevel || ''}
@@ -1524,7 +1524,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Reorder Level"
                     value={newMaterial.reorderLevel || ''}
@@ -1539,7 +1539,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Safety Stock"
                     value={newMaterial.safetyStock || ''}
@@ -1554,7 +1554,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Lead Time"
                     value={newMaterial.leadTime || ''}
@@ -1569,7 +1569,7 @@ const FinishedMaterialInventory = () => {
               <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
                 <TextField.Root>
-                  <TextField.Input
+                  <input
                     type="number"
                     placeholder="Order Quantity"
                     value={newMaterial.orderQuantity || ''}
