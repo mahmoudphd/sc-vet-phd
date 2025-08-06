@@ -27,9 +27,7 @@ import {
   TokensIcon,
   SunIcon,
   MoonIcon,
-  BarChartIcon,
-  LockClosedIcon,
-  PersonIcon
+  BarChartIcon
 } from '@radix-ui/react-icons';
 
 // Types
@@ -85,11 +83,6 @@ interface BlockchainTransaction {
   participants: string[];
   relatedTxHash?: string;
   quantity?: number;
-}
-
-interface User {
-  name: string;
-  role: 'admin' | 'manager' | 'viewer';
 }
 
 // Mock IoT Service
@@ -310,89 +303,8 @@ const BlockchainVisualization = ({ transactions }: { transactions: BlockchainTra
   );
 };
 
-const LoginScreen = ({ onLogin }: { onLogin: (user: User) => void }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Simple authentication
-    if (username === 'admin' && password === 'SecurePass123!') {
-      onLogin({ name: 'Admin User', role: 'admin' });
-    } else if (username === 'manager' && password === 'ManagerPass456!') {
-      onLogin({ name: 'Inventory Manager', role: 'manager' });
-    } else {
-      setError('Invalid credentials. Please try again.');
-    }
-  };
-  
-  return (
-    <Container size="1" className="login-container" style={{
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      height: '100vh'
-    }}>
-      <Card style={{ width: '380px', padding: '24px' }}>
-        <Flex direction="column" align="center" gap="4">
-          <LockClosedIcon width={32} height={32} />
-          <Heading size="5" mb="2">Inventory Management System</Heading>
-          
-          <form onSubmit={handleSubmit} style={{ width: '100%' }}>
-            <Flex direction="column" gap="3">
-              <Box>
-                <Text as="label" size="2" weight="bold" htmlFor="username">
-                  Username
-                </Text>
-                <TextField.Root mt="1">
-                  <input
-                    id="username"
-                    value={username}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
-                    placeholder="Enter your username"
-                  />
-                </TextField.Root>
-              </Box>
-              
-              <Box>
-                <Text as="label" size="2" weight="bold" htmlFor="password">
-                  Password
-                </Text>
-                <TextField.Root mt="1">
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                  />
-                </TextField.Root>
-              </Box>
-              
-              {error && (
-                <Text color="red" size="2">{error}</Text>
-              )}
-              
-              <Button type="submit" mt="2">
-                Sign In
-              </Button>
-            </Flex>
-          </form>
-          
-          <Text size="2" color="gray" mt="3">
-            Demo credentials: admin/SecurePass123! or manager/ManagerPass456!
-          </Text>
-        </Flex>
-      </Card>
-    </Container>
-  );
-};
-
 const FinishedMaterialInventory = () => {
   // State
-  const [user, setUser] = useState<User | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [materials, setMaterials] = useState<RawMaterial[]>(initialMaterials);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
@@ -640,11 +552,6 @@ const FinishedMaterialInventory = () => {
     sum + (m.currentStock * m.unitPrice), 0
   );
 
-  // Show login screen if no user
-  if (!user) {
-    return <LoginScreen onLogin={setUser} />;
-  }
-
   return (
     <Theme appearance={darkMode ? "dark" : "light"}>
       <Container size="3" px="4" py="6">
@@ -656,23 +563,12 @@ const FinishedMaterialInventory = () => {
           </Flex>
           
           <Flex align="center" gap="3">
-            <Flex align="center" gap="1" className="user-info">
-              <PersonIcon />
-              <Text>{user.name} ({user.role})</Text>
-            </Flex>
             <Button 
               variant="soft" 
               onClick={() => setDarkMode(!darkMode)}
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? <SunIcon /> : <MoonIcon />}
-            </Button>
-            <Button 
-              variant="soft" 
-              color="red"
-              onClick={() => setUser(null)}
-            >
-              Logout
             </Button>
           </Flex>
         </Flex>
@@ -756,16 +652,12 @@ const FinishedMaterialInventory = () => {
             Generate Auto Orders
           </Button>
           
-          {user.role !== 'viewer' && (
-            <>
-              <Button onClick={() => setShowOrderDialog(true)}>
-                Create Manual Order
-              </Button>
-              <Button onClick={() => setShowMaterialDialog(true)}>
-                Add New Material
-              </Button>
-            </>
-          )}
+          <Button onClick={() => setShowOrderDialog(true)}>
+            Create Manual Order
+          </Button>
+          <Button onClick={() => setShowMaterialDialog(true)}>
+            Add New Material
+          </Button>
           
           <Flex align="center" gap="2">
             <Switch 
@@ -862,7 +754,6 @@ const FinishedMaterialInventory = () => {
                           <Button 
                             size="1" 
                             onClick={() => setSelectedMaterial(material)}
-                            disabled={user.role === 'viewer'}
                           >
                             Configure
                           </Button>
@@ -948,7 +839,6 @@ const FinishedMaterialInventory = () => {
                       <Button 
                         size="1" 
                         onClick={() => setSelectedOrder(order)}
-                        disabled={user.role === 'viewer' && order.status !== 'pending'}
                       >
                         View
                       </Button>
@@ -1198,7 +1088,7 @@ const FinishedMaterialInventory = () => {
               )}
               
               <Flex gap="3" mt="4" justify="end">
-                {selectedOrder.status === 'pending' && user.role !== 'viewer' && (
+                {selectedOrder.status === 'pending' && (
                   <>
                     <Button 
                       color="green"
@@ -1220,7 +1110,7 @@ const FinishedMaterialInventory = () => {
                     </Button>
                   </>
                 )}
-                {selectedOrder.status === 'approved' && user.role !== 'viewer' && (
+                {selectedOrder.status === 'approved' && (
                   <Button 
                     color="blue"
                     onClick={() => {
@@ -1231,7 +1121,7 @@ const FinishedMaterialInventory = () => {
                     Mark as Shipped
                   </Button>
                 )}
-                {selectedOrder.status === 'shipped' && user.role !== 'viewer' && (
+                {selectedOrder.status === 'shipped' && (
                   <Button 
                     color="green"
                     onClick={() => {
