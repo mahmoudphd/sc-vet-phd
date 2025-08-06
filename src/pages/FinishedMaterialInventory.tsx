@@ -49,7 +49,7 @@ interface Supplier {
   blockchainAddress?: string;
 }
 
-interface RawMaterial {
+interface FinishedMaterial {
   id: string;
   name: string;
   currentStock: number;
@@ -71,6 +71,9 @@ interface RawMaterial {
     weight?: number;
   };
   blockchainTx?: string;
+  expiryDate?: string;
+  batchNumber: string;
+  qualityStatus: 'approved' | 'pending' | 'rejected';
 }
 
 interface PurchaseOrder {
@@ -95,7 +98,7 @@ interface BlockchainTransaction {
   txHash: string;
   timestamp: string;
   materialId: string;
-  action: 'order' | 'delivery' | 'adjustment';
+  action: 'order' | 'delivery' | 'adjustment' | 'quality_check';
   participants: string[];
   relatedTxHash?: string;
   quantity?: number;
@@ -195,7 +198,7 @@ const statusColors = {
   rowOdd: 'white'
 };
 
-const RawMaterialsInventory = () => {
+const FinishedMaterialInventory = () => {
   // Initial Suppliers Data
   const initialSuppliers: Supplier[] = [
     {
@@ -221,80 +224,58 @@ const RawMaterialsInventory = () => {
       leadTime: 5,
       reliability: 92,
       contractTerms: 'Net 45 days'
-    },
-    {
-      id: generateId('SUP'),
-      name: 'Pure Ingredients Co.',
-      contactPerson: 'Michael Chen',
-      email: 'michael@pureingredients.com',
-      phone: '+1 (555) 456-7890',
-      rating: 3.8,
-      materialsSupplied: [],
-      leadTime: 10,
-      reliability: 85,
-      contractTerms: '50% advance payment'
     }
   ];
 
   // Initial Materials Data
-  const initialMaterials: RawMaterial[] = [
+  const initialMaterials: FinishedMaterial[] = [
     {
       id: generateId('MAT'),
-      name: 'Vitamin B1 (Thiamine)',
-      currentStock: 120,
-      reserved: 40,
-      minStockLevel: 50,
-      reorderLevel: 80,
-      safetyStock: 30,
+      name: 'Vitamin B1 (Thiamine) Capsules',
+      currentStock: 5000,
+      reserved: 1000,
+      minStockLevel: 1000,
+      reorderLevel: 2000,
+      safetyStock: 500,
       leadTime: 7,
       supplierId: initialSuppliers[0].id,
-      orderQuantity: 100,
+      orderQuantity: 3000,
       pendingOrders: 0,
-      unit: 'kg',
-      sensorConnected: false
+      unit: 'units',
+      sensorConnected: false,
+      batchNumber: 'BATCH-2023-001',
+      expiryDate: '2024-12-31',
+      qualityStatus: 'approved'
     },
     {
       id: generateId('MAT'),
-      name: 'Vitamin B2 (Riboflavin)',
-      currentStock: 90,
-      reserved: 30,
-      minStockLevel: 60,
-      reorderLevel: 90,
-      safetyStock: 40,
+      name: 'Vitamin B2 (Riboflavin) Tablets',
+      currentStock: 8000,
+      reserved: 2000,
+      minStockLevel: 1500,
+      reorderLevel: 3000,
+      safetyStock: 750,
       leadTime: 5,
       supplierId: initialSuppliers[1].id,
-      orderQuantity: 120,
+      orderQuantity: 4000,
       pendingOrders: 0,
-      unit: 'kg',
-      sensorConnected: false
-    },
-    {
-      id: generateId('MAT'),
-      name: 'Vitamin B3 (Niacinamide)',
-      currentStock: 70,
-      reserved: 20,
-      minStockLevel: 40,
-      reorderLevel: 60,
-      safetyStock: 20,
-      leadTime: 10,
-      supplierId: initialSuppliers[2].id,
-      orderQuantity: 80,
-      pendingOrders: 0,
-      unit: 'kg',
-      sensorConnected: false
+      unit: 'units',
+      sensorConnected: false,
+      batchNumber: 'BATCH-2023-002',
+      expiryDate: '2025-06-30',
+      qualityStatus: 'approved'
     }
   ];
 
   // Update suppliers with their materials
   initialSuppliers[0].materialsSupplied = [initialMaterials[0].id];
   initialSuppliers[1].materialsSupplied = [initialMaterials[1].id];
-  initialSuppliers[2].materialsSupplied = [initialMaterials[2].id];
 
   // State
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
-  const [materials, setMaterials] = useState<RawMaterial[]>(initialMaterials);
+  const [materials, setMaterials] = useState<FinishedMaterial[]>(initialMaterials);
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<RawMaterial | null>(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<FinishedMaterial | null>(null);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
   const [showReorderOnly, setShowReorderOnly] = useState(false);
@@ -306,9 +287,10 @@ const RawMaterialsInventory = () => {
     status: 'pending',
     orderDate: today
   });
-  const [newMaterial, setNewMaterial] = useState<Partial<RawMaterial>>({
-    unit: 'kg',
-    sensorConnected: false
+  const [newMaterial, setNewMaterial] = useState<Partial<FinishedMaterial>>({
+    unit: 'units',
+    sensorConnected: false,
+    qualityStatus: 'pending'
   });
   const [newSupplier, setNewSupplier] = useState<Omit<Supplier, 'id'>>({
     name: '',
@@ -523,6 +505,24 @@ const RawMaterialsInventory = () => {
     setOrders(updatedOrders);
   };
 
+  // Update material quality status
+  const updateQualityStatus = async (materialId: string, status: 'approved' | 'rejected') => {
+    setMaterials(materials.map(m => 
+      m.id === materialId ? { ...m, qualityStatus: status } : m
+    ));
+
+    const material = materials.find(m => m.id === materialId);
+    if (material) {
+      await recordBlockchainTransaction(
+        materialId,
+        'quality_check',
+        0,
+        ['Quality Control', 'Warehouse Manager'],
+        material.blockchainTx
+      );
+    }
+  };
+
   // Create manual order
   const createManualOrder = async () => {
     if (!newOrder.materialId || !newOrder.quantity) return;
@@ -597,7 +597,7 @@ const RawMaterialsInventory = () => {
   const addNewMaterial = async () => {
     if (!newMaterial.name || !newMaterial.supplierId) return;
 
-    const material: RawMaterial = {
+    const material: FinishedMaterial = {
       id: generateId('MAT'),
       name: newMaterial.name,
       currentStock: newMaterial.currentStock || 0,
@@ -609,8 +609,13 @@ const RawMaterialsInventory = () => {
       supplierId: newMaterial.supplierId,
       orderQuantity: newMaterial.orderQuantity || 0,
       pendingOrders: 0,
-      unit: newMaterial.unit || 'kg',
-      sensorConnected: false
+      unit: newMaterial.unit || 'units',
+      sensorConnected: false,
+      batchNumber: newMaterial.batchNumber || `BATCH-${new Date().getFullYear()}-${Math.floor(Math.random() * 1000)}`,
+      expiryDate: newMaterial.expiryDate || new Date(
+        new Date().setFullYear(new Date().getFullYear() + 1)
+      ).toISOString().split('T')[0],
+      qualityStatus: newMaterial.qualityStatus || 'pending'
     };
 
     // Record initial stock on blockchain
@@ -631,7 +636,7 @@ const RawMaterialsInventory = () => {
 
     setMaterials([...materials, material]);
     setShowMaterialDialog(false);
-    setNewMaterial({ unit: 'kg', sensorConnected: false });
+    setNewMaterial({ unit: 'units', sensorConnected: false, qualityStatus: 'pending' });
   };
 
   // Add new supplier
@@ -659,20 +664,20 @@ const RawMaterialsInventory = () => {
   };
 
   // Handle input changes
-  const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+  const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof FinishedMaterial) => {
     if (!selectedMaterial) return;
     setSelectedMaterial({
       ...selectedMaterial,
-      [field]: field === 'unit' || field === 'name' 
+      [field]: field === 'unit' || field === 'name' || field === 'batchNumber' || field === 'expiryDate'
         ? e.target.value 
         : Number(e.target.value)
     });
   };
 
-  const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+  const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof FinishedMaterial) => {
     setNewMaterial({
       ...newMaterial,
-      [field]: field === 'unit' || field === 'name'
+      [field]: field === 'unit' || field === 'name' || field === 'batchNumber' || field === 'expiryDate'
         ? e.target.value 
         : Number(e.target.value)
     });
@@ -890,18 +895,20 @@ const RawMaterialsInventory = () => {
       {/* Materials Table */}
       <Card mb="4">
         <Flex justify="between" align="center" mb="3">
-          <Heading size="5">Raw Materials Inventory</Heading>
+          <Heading size="5">Finished Materials Inventory</Heading>
           <Text color="gray">{materials.length} materials registered</Text>
         </Flex>
         <Table.Root>
           <Table.Header style={{ backgroundColor: statusColors.header }}>
             <Table.Row>
               <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Batch</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Current Stock</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>IoT Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quality</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
             </Table.Row>
@@ -926,6 +933,12 @@ const RawMaterialsInventory = () => {
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
+                      <Text>{material.batchNumber}</Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Text>{material.expiryDate}</Text>
+                    </Table.Cell>
+                    <Table.Cell>
                       <Flex direction="column" gap="1">
                         <Text>{material.currentStock} {material.unit}</Text>
                         <Progress value={Math.min(stockPercentage, 100)} />
@@ -945,24 +958,12 @@ const RawMaterialsInventory = () => {
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
-                      {material.sensorConnected ? (
-                        <Flex align="center" gap="1">
-                          <Link2Icon color="green" />
-                          <Text color="green">Connected</Text>
-                          {material.sensorReadings?.temperature && (
-                            <Text color="gray" size="1">{material.sensorReadings.temperature}°C</Text>
-                          )}
-                        </Flex>
-                      ) : (
-                        <Button 
-                          size="1" 
-                          variant="soft"
-                          onClick={() => connectToSensor(material.id)}
-                          disabled={isConnectingSensor}
-                        >
-                          {isConnectingSensor ? 'Connecting...' : 'Connect Sensor'}
-                        </Button>
-                      )}
+                      <Badge color={
+                        material.qualityStatus === 'approved' ? 'green' :
+                        material.qualityStatus === 'rejected' ? 'red' : 'orange'
+                      }>
+                        {material.qualityStatus}
+                      </Badge>
                     </Table.Cell>
                     <Table.Cell>
                       {isCritical ? (
@@ -1087,6 +1088,68 @@ const RawMaterialsInventory = () => {
             
             <Grid columns="2" gap="3" mt="3">
               <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Batch Number</Text>
+                <TextField.Root>
+                  <input
+                    type="text"
+                    value={selectedMaterial.batchNumber}
+                    onChange={(e) => handleMaterialInputChange(e, 'batchNumber')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+                <TextField.Root>
+                  <input
+                    type="date"
+                    value={selectedMaterial.expiryDate}
+                    onChange={(e) => handleMaterialInputChange(e, 'expiryDate')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Quality Status</Text>
+                <Select.Root
+                  value={selectedMaterial.qualityStatus}
+                  onValueChange={(value) => setSelectedMaterial({
+                    ...selectedMaterial,
+                    qualityStatus: value as 'approved' | 'pending' | 'rejected'
+                  })}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Item value="approved">Approved</Select.Item>
+                    <Select.Item value="pending">Pending</Select.Item>
+                    <Select.Item value="rejected">Rejected</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+                <Select.Root
+                  value={selectedMaterial.supplierId}
+                  onValueChange={(value) => setSelectedMaterial({
+                    ...selectedMaterial,
+                    supplierId: value
+                  })}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    {suppliers.map(supplier => (
+                      <Select.Item key={supplier.id} value={supplier.id}>
+                        {supplier.name}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Box>
+
+              <Box>
                 <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
                 <TextField.Root>
                   <input
@@ -1156,26 +1219,6 @@ const RawMaterialsInventory = () => {
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
-              </Box>
-
-              <Box>
-                <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
-                <Select.Root
-                  value={selectedMaterial.supplierId}
-                  onValueChange={(value) => setSelectedMaterial({
-                    ...selectedMaterial,
-                    supplierId: value
-                  })}
-                >
-                  <Select.Trigger />
-                  <Select.Content>
-                    {suppliers.map(supplier => (
-                      <Select.Item key={supplier.id} value={supplier.id}>
-                        {supplier.name}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
               </Box>
 
               {selectedMaterial.sensorConnected && selectedMaterial.sensorReadings && (
@@ -1560,7 +1603,7 @@ const RawMaterialsInventory = () => {
       {/* Add Material Dialog */}
       <Dialog.Root open={showMaterialDialog} onOpenChange={setShowMaterialDialog}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
-          <Dialog.Title>Add New Material</Dialog.Title>
+          <Dialog.Title>Add New Finished Material</Dialog.Title>
           
           <Grid columns="2" gap="3" mt="3">
             <Box>
@@ -1610,16 +1653,60 @@ const RawMaterialsInventory = () => {
             </Box>
             
             <Box>
-              <Text as="div" size="2" mb="1" weight="bold">Unit (kg, g, L, etc.)</Text>
+              <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
               <TextField.Root>
                 <input
                   type="text"
-                  placeholder="Unit"
+                  placeholder="Unit (units, kg, etc.)"
                   value={newMaterial.unit || ''}
                   onChange={(e) => handleNewMaterialInputChange(e, 'unit')}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Batch Number</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Batch Number"
+                  value={newMaterial.batchNumber || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'batchNumber')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+              <TextField.Root>
+                <input
+                  type="date"
+                  placeholder="Expiry Date"
+                  value={newMaterial.expiryDate || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'expiryDate')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Quality Status</Text>
+              <Select.Root
+                value={newMaterial.qualityStatus}
+                onValueChange={(value) => setNewMaterial({
+                  ...newMaterial,
+                  qualityStatus: value as 'approved' | 'pending' | 'rejected'
+                })}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  <Select.Item value="approved">Approved</Select.Item>
+                  <Select.Item value="pending">Pending</Select.Item>
+                  <Select.Item value="rejected">Rejected</Select.Item>
+                </Select.Content>
+              </Select.Root>
             </Box>
             
             <Box>
@@ -1708,7 +1795,7 @@ const RawMaterialsInventory = () => {
               color="gray"
               onClick={() => {
                 setShowMaterialDialog(false);
-                setNewMaterial({ unit: 'kg', sensorConnected: false });
+                setNewMaterial({ unit: 'units', sensorConnected: false, qualityStatus: 'pending' });
               }}
             >
               Cancel
@@ -1943,4 +2030,4 @@ const RawMaterialsInventory = () => {
   );
 };
 
-export default RawMaterialsInventory;
+export default FinishedMaterialInventory;
