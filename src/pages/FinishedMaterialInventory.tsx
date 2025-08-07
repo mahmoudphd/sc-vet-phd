@@ -182,20 +182,8 @@ class BlockchainService {
   }
 }
 
-// Sequential ID generators
-let poCounter = 1;
-let matCounter = 1;
-let supCounter = 1;
-
-const generateId = (prefix: string) => {
-  switch(prefix) {
-    case 'PO': return `${prefix}-${poCounter++}`;
-    case 'MAT': return `${prefix}-${matCounter++}`;
-    case 'SUP': return `${prefix}-${supCounter++}`;
-    default: return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
-  }
-};
-
+// Utility functions
+const generateId = (prefix: string) => `${prefix}-${Math.floor(Math.random() * 1000) + 1}`;
 const today = new Date().toISOString().split('T')[0];
 
 // Color scheme for UI
@@ -209,13 +197,13 @@ const statusColors = {
 };
 
 const FinishedMaterialInventory = () => {
-  // Initial Suppliers Data
+  // Initial Suppliers Data with Supplier A/B
   const initialSuppliers: Supplier[] = [
     {
-      id: generateId('SUP'),
-      name: 'NutriSupplies Inc.',
+      id: 'SUP-1',
+      name: 'Supplier A',
       contactPerson: 'John Smith',
-      email: 'john@nutrisupplies.com',
+      email: 'john@supplierA.com',
       rating: 4.5,
       materialsSupplied: [],
       leadTime: 7,
@@ -223,10 +211,10 @@ const FinishedMaterialInventory = () => {
       contractTerms: 'Net 30 days'
     },
     {
-      id: generateId('SUP'),
-      name: 'Vitamin World',
+      id: 'SUP-2',
+      name: 'Supplier B',
       contactPerson: 'Sarah Johnson',
-      email: 'sarah@vitaminworld.com',
+      email: 'sarah@supplierB.com',
       rating: 4.2,
       materialsSupplied: [],
       leadTime: 5,
@@ -238,7 +226,7 @@ const FinishedMaterialInventory = () => {
   // Initial Materials Data
   const initialMaterials: FinishedMaterial[] = [
     {
-      id: generateId('MAT'),
+      id: 'MAT-1',
       name: 'Vitamin B1 (Thiamine) Capsules',
       currentStock: 5000,
       reserved: 1000,
@@ -246,7 +234,7 @@ const FinishedMaterialInventory = () => {
       reorderLevel: 2000,
       safetyStock: 500,
       leadTime: 7,
-      supplierId: initialSuppliers[0].id,
+      supplierId: 'SUP-1',
       orderQuantity: 3000,
       pendingOrders: 0,
       unit: 'units',
@@ -256,7 +244,7 @@ const FinishedMaterialInventory = () => {
       qualityStatus: 'approved'
     },
     {
-      id: generateId('MAT'),
+      id: 'MAT-2',
       name: 'Vitamin B2 (Riboflavin) Tablets',
       currentStock: 8000,
       reserved: 2000,
@@ -264,7 +252,7 @@ const FinishedMaterialInventory = () => {
       reorderLevel: 3000,
       safetyStock: 750,
       leadTime: 5,
-      supplierId: initialSuppliers[1].id,
+      supplierId: 'SUP-2',
       orderQuantity: 4000,
       pendingOrders: 0,
       unit: 'units',
@@ -276,13 +264,56 @@ const FinishedMaterialInventory = () => {
   ];
 
   // Update suppliers with their materials
-  initialSuppliers[0].materialsSupplied = [initialMaterials[0].id];
-  initialSuppliers[1].materialsSupplied = [initialMaterials[1].id];
+  initialSuppliers[0].materialsSupplied = ['MAT-1'];
+  initialSuppliers[1].materialsSupplied = ['MAT-2'];
+
+  // Initial Orders with PO-1/2/3
+  const initialOrders: PurchaseOrder[] = [
+    {
+      id: 'PO-1',
+      materialId: 'MAT-1',
+      materialName: 'Vitamin B1 (Thiamine) Capsules',
+      quantity: 3000,
+      supplierId: 'SUP-1',
+      expectedDelivery: new Date(
+        new Date().setDate(new Date().getDate() + 7)
+      ).toISOString(),
+      status: 'pending',
+      orderDate: today
+    },
+    {
+      id: 'PO-2',
+      materialId: 'MAT-2',
+      materialName: 'Vitamin B2 (Riboflavin) Tablets',
+      quantity: 4000,
+      supplierId: 'SUP-2',
+      expectedDelivery: new Date(
+        new Date().setDate(new Date().getDate() + 5)
+      ).toISOString(),
+      status: 'approved',
+      orderDate: today
+    },
+    {
+      id: 'PO-3',
+      materialId: 'MAT-1',
+      materialName: 'Vitamin B1 (Thiamine) Capsules',
+      quantity: 2000,
+      supplierId: 'SUP-1',
+      expectedDelivery: new Date(
+        new Date().setDate(new Date().getDate() + 7)
+      ).toISOString(),
+      status: 'delivered',
+      orderDate: new Date(
+        new Date().setDate(new Date().getDate() - 10)
+      ).toISOString(),
+      blockchainTx: '0x1234567890abcdef'
+    }
+  ];
 
   // State
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [materials, setMaterials] = useState<FinishedMaterial[]>(initialMaterials);
-  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
+  const [orders, setOrders] = useState<PurchaseOrder[]>(initialOrders);
   const [selectedMaterial, setSelectedMaterial] = useState<FinishedMaterial | null>(null);
   const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
@@ -416,7 +447,7 @@ const FinishedMaterialInventory = () => {
         if (!supplier) continue;
 
         const newOrder: PurchaseOrder = {
-          id: generateId('PO'),
+          id: `PO-${orders.length + newOrders.length + 1}`,
           materialId: material.id,
           materialName: material.name,
           quantity: orderQuantity,
@@ -541,7 +572,7 @@ const FinishedMaterialInventory = () => {
     if (!supplier) return;
 
     const order: PurchaseOrder = {
-      id: generateId('PO'),
+      id: `PO-${orders.length + 1}`,
       materialId: material.id,
       materialName: material.name,
       quantity: Number(newOrder.quantity),
@@ -605,7 +636,7 @@ const FinishedMaterialInventory = () => {
     if (!newMaterial.name || !newMaterial.supplierId) return;
 
     const material: FinishedMaterial = {
-      id: generateId('MAT'),
+      id: `MAT-${materials.length + 1}`,
       name: newMaterial.name,
       currentStock: newMaterial.currentStock || 0,
       reserved: newMaterial.reserved || 0,
@@ -652,7 +683,7 @@ const FinishedMaterialInventory = () => {
 
     const supplier: Supplier = {
       ...newSupplier,
-      id: generateId('SUP')
+      id: `SUP-${suppliers.length + 1}`
     };
 
     setSuppliers([...suppliers, supplier]);
@@ -1224,11 +1255,11 @@ const FinishedMaterialInventory = () => {
                 <>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Temperature</Text>
-                    <Text>{selectedMaterial.sensorReadings?.temperature || 'N/A'}°C</Text>
+                    <Text>{selectedMaterial.sensorReadings.temperature || 'N/A'}°C</Text>
                   </Box>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Humidity</Text>
-                    <Text>{selectedMaterial.sensorReadings?.humidity || 'N/A'}%</Text>
+                    <Text>{selectedMaterial.sensorReadings.humidity || 'N/A'}%</Text>
                   </Box>
                   <Box>
                     <Text as="div" size="2" mb="1" weight="bold">Last Sensor Update</Text>
@@ -1276,14 +1307,14 @@ const FinishedMaterialInventory = () => {
             <Grid columns="2" gap="3" mt="3">
               <Box>
                 <Text as="div" size="2" color="gray">Contact Person</Text>
-                <Text>{selectedSupplier.contactPerson || 'Not specified'}</Text>
+                <Text>{selectedSupplier.contactPerson}</Text>
               </Box>
               
               <Box>
                 <Text as="div" size="2" color="gray">Email</Text>
                 <Flex align="center" gap="1">
                   <EnvelopeClosedIcon />
-                  <Text>{selectedSupplier.email || 'Not specified'}</Text>
+                  <Text>{selectedSupplier.email}</Text>
                 </Flex>
               </Box>
               
@@ -1314,7 +1345,7 @@ const FinishedMaterialInventory = () => {
                 <Text as="div" size="2" color="gray">Contract Terms</Text>
                 <Flex align="center" gap="1">
                   <FileTextIcon />
-                  <Text>{selectedSupplier.contractTerms || 'No terms specified'}</Text>
+                  <Text>{selectedSupplier.contractTerms}</Text>
                 </Flex>
               </Box>
 
@@ -1407,11 +1438,11 @@ const FinishedMaterialInventory = () => {
                 <>
                   <Box>
                     <Text as="div" size="2" color="gray">Shipping Temperature</Text>
-                    <Text>{selectedOrder.shippingConditions.temperature}°C</Text>
+                    <Text>{selectedOrder.shippingConditions.temperature || 'N/A'}°C</Text>
                   </Box>
                   <Box>
                     <Text as="div" size="2" color="gray">Shipping Humidity</Text>
-                    <Text>{selectedOrder.shippingConditions.humidity}%</Text>
+                    <Text>{selectedOrder.shippingConditions.humidity || 'N/A'}%</Text>
                   </Box>
                 </>
               )}
