@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -97,6 +97,107 @@ interface BlockchainTransaction {
   quantity?: number;
 }
 
+// Mock Data
+const today = new Date().toISOString().split('T')[0];
+
+const initialSuppliers: Supplier[] = [
+  {
+    id: 'SUP-1',
+    name: 'Supplier A',
+    contactPerson: 'John Smith',
+    email: 'john@supplierA.com',
+    rating: 4.5,
+    materialsSupplied: ['MAT-1'],
+    leadTime: 7,
+    reliability: 95,
+    contractTerms: 'Net 30 days'
+  },
+  {
+    id: 'SUP-2',
+    name: 'Supplier B',
+    contactPerson: 'Sarah Johnson',
+    email: 'sarah@supplierB.com',
+    rating: 4.2,
+    materialsSupplied: ['MAT-2'],
+    leadTime: 5,
+    reliability: 92,
+    contractTerms: 'Net 45 days'
+  }
+];
+
+const initialMaterials: FinishedMaterial[] = [
+  {
+    id: 'MAT-1',
+    name: 'Vitamin B1 (Thiamine) Capsules',
+    currentStock: 5000,
+    reserved: 1000,
+    minStockLevel: 1000,
+    reorderLevel: 2000,
+    safetyStock: 500,
+    leadTime: 7,
+    supplierId: 'SUP-1',
+    orderQuantity: 3000,
+    pendingOrders: 0,
+    unit: 'units',
+    sensorConnected: false,
+    batchNumber: 'BATCH-2023-001',
+    expiryDate: '2024-12-31',
+    qualityStatus: 'approved'
+  },
+  {
+    id: 'MAT-2',
+    name: 'Vitamin B2 (Riboflavin) Tablets',
+    currentStock: 8000,
+    reserved: 2000,
+    minStockLevel: 1500,
+    reorderLevel: 3000,
+    safetyStock: 750,
+    leadTime: 5,
+    supplierId: 'SUP-2',
+    orderQuantity: 4000,
+    pendingOrders: 0,
+    unit: 'units',
+    sensorConnected: false,
+    batchNumber: 'BATCH-2023-002',
+    expiryDate: '2025-06-30',
+    qualityStatus: 'approved'
+  }
+];
+
+const initialOrders: PurchaseOrder[] = [
+  {
+    id: 'PO-1',
+    materialId: 'MAT-1',
+    materialName: 'Vitamin B1 (Thiamine) Capsules',
+    quantity: 3000,
+    supplierId: 'SUP-1',
+    expectedDelivery: new Date(Date.now() + 7 * 86400000).toISOString(),
+    status: 'pending',
+    orderDate: today
+  },
+  {
+    id: 'PO-2',
+    materialId: 'MAT-2',
+    materialName: 'Vitamin B2 (Riboflavin) Tablets',
+    quantity: 4000,
+    supplierId: 'SUP-2',
+    expectedDelivery: new Date(Date.now() + 5 * 86400000).toISOString(),
+    status: 'approved',
+    orderDate: today
+  },
+  {
+    id: 'PO-3',
+    materialId: 'MAT-1',
+    materialName: 'Vitamin B1 (Thiamine) Capsules',
+    quantity: 2000,
+    supplierId: 'SUP-1',
+    expectedDelivery: new Date(Date.now() - 3 * 86400000).toISOString(),
+    status: 'delivered',
+    orderDate: new Date(Date.now() - 10 * 86400000).toISOString(),
+    blockchainTx: '0x1234567890abcdef'
+  }
+];
+
 // Mock Services
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
@@ -166,116 +267,7 @@ class BlockchainService {
   }
 }
 
-// Utility functions
-const today = new Date().toISOString().split('T')[0];
-const statusColors = {
-  critical: 'var(--red-3)',
-  reorder: 'var(--orange-3)',
-  ok: 'var(--green-3)',
-  header: 'var(--gray-2)'
-};
-
 const FinishedMaterialInventory = () => {
-  // Initial Data
-  const initialSuppliers: Supplier[] = [
-    {
-      id: 'SUP-1',
-      name: 'Supplier A',
-      contactPerson: 'John Smith',
-      email: 'john@supplierA.com',
-      rating: 4.5,
-      materialsSupplied: ['MAT-1'],
-      leadTime: 7,
-      reliability: 95,
-      contractTerms: 'Net 30 days'
-    },
-    {
-      id: 'SUP-2',
-      name: 'Supplier B',
-      contactPerson: 'Sarah Johnson',
-      email: 'sarah@supplierB.com',
-      rating: 4.2,
-      materialsSupplied: ['MAT-2'],
-      leadTime: 5,
-      reliability: 92,
-      contractTerms: 'Net 45 days'
-    }
-  ];
-
-  const initialMaterials: FinishedMaterial[] = [
-    {
-      id: 'MAT-1',
-      name: 'Vitamin B1 (Thiamine) Capsules',
-      currentStock: 5000,
-      reserved: 1000,
-      minStockLevel: 1000,
-      reorderLevel: 2000,
-      safetyStock: 500,
-      leadTime: 7,
-      supplierId: 'SUP-1',
-      orderQuantity: 3000,
-      pendingOrders: 0,
-      unit: 'units',
-      sensorConnected: false,
-      batchNumber: 'BATCH-2023-001',
-      expiryDate: '2024-12-31',
-      qualityStatus: 'approved'
-    },
-    {
-      id: 'MAT-2',
-      name: 'Vitamin B2 (Riboflavin) Tablets',
-      currentStock: 8000,
-      reserved: 2000,
-      minStockLevel: 1500,
-      reorderLevel: 3000,
-      safetyStock: 750,
-      leadTime: 5,
-      supplierId: 'SUP-2',
-      orderQuantity: 4000,
-      pendingOrders: 0,
-      unit: 'units',
-      sensorConnected: false,
-      batchNumber: 'BATCH-2023-002',
-      expiryDate: '2025-06-30',
-      qualityStatus: 'approved'
-    }
-  ];
-
-  const initialOrders: PurchaseOrder[] = [
-    {
-      id: 'PO-1',
-      materialId: 'MAT-1',
-      materialName: 'Vitamin B1 (Thiamine) Capsules',
-      quantity: 3000,
-      supplierId: 'SUP-1',
-      expectedDelivery: new Date(Date.now() + 7 * 86400000).toISOString(),
-      status: 'pending',
-      orderDate: today
-    },
-    {
-      id: 'PO-2',
-      materialId: 'MAT-2',
-      materialName: 'Vitamin B2 (Riboflavin) Tablets',
-      quantity: 4000,
-      supplierId: 'SUP-2',
-      expectedDelivery: new Date(Date.now() + 5 * 86400000).toISOString(),
-      status: 'approved',
-      orderDate: today
-    },
-    {
-      id: 'PO-3',
-      materialId: 'MAT-1',
-      materialName: 'Vitamin B1 (Thiamine) Capsules',
-      quantity: 2000,
-      supplierId: 'SUP-1',
-      expectedDelivery: new Date(Date.now() - 3 * 86400000).toISOString(),
-      status: 'delivered',
-      orderDate: new Date(Date.now() - 10 * 86400000).toISOString(),
-      blockchainTx: '0x1234567890abcdef'
-    }
-  ];
-
-  // State
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers);
   const [materials, setMaterials] = useState<FinishedMaterial[]>(initialMaterials);
   const [orders, setOrders] = useState<PurchaseOrder[]>(initialOrders);
@@ -310,12 +302,11 @@ const FinishedMaterialInventory = () => {
   const [isLoadingBlockchain, setIsLoadingBlockchain] = useState(false);
   const [isConnectingSensor, setIsConnectingSensor] = useState(false);
 
-  // Helper functions
   const getSupplierName = (supplierId: string) => {
     return suppliers.find(s => s.id === supplierId)?.name || 'Unknown Supplier';
   };
 
-  const getSupplierDetails = (supplierId: string) => {
+  const getSupplierDetails = (supplierId: string): Supplier | undefined => {
     return suppliers.find(s => s.id === supplierId);
   };
 
@@ -616,6 +607,13 @@ const FinishedMaterialInventory = () => {
 
   const connectedSensors = materials.filter(m => m.sensorConnected).length;
 
+  const statusColors = {
+    critical: 'var(--red-3)',
+    reorder: 'var(--orange-3)',
+    ok: 'var(--green-3)',
+    header: 'var(--gray-2)'
+  };
+
   const TableRowWithStatus = ({ 
     children, 
     status 
@@ -644,6 +642,20 @@ const FinishedMaterialInventory = () => {
           <Text>{shippingConditions.humidity !== undefined ? `${shippingConditions.humidity}%` : 'N/A'}</Text>
         </Box>
       </>
+    );
+  };
+
+  const renderSupplierRating = (supplierId: string) => {
+    const supplier = getSupplierDetails(supplierId);
+    const rating = supplier?.rating ?? 0;
+    
+    return (
+      <Badge color={
+        rating > 4 ? 'green' : 
+        rating > 3 ? 'yellow' : 'red'
+      }>
+        {rating.toFixed(1)}
+      </Badge>
     );
   };
 
@@ -783,12 +795,7 @@ const FinishedMaterialInventory = () => {
                     <Table.Cell>
                       <Flex align="center" gap="2">
                         {getSupplierName(material.supplierId)}
-                        <Badge color={
-                          getSupplierDetails(material.supplierId)?.rating > 4 ? 'green' : 
-                          getSupplierDetails(material.supplierId)?.rating > 3 ? 'yellow' : 'red'
-                        }>
-                          {getSupplierDetails(material.supplierId)?.rating.toFixed(1)}
-                        </Badge>
+                        {renderSupplierRating(material.supplierId)}
                       </Flex>
                     </Table.Cell>
                     <Table.Cell>
@@ -1446,7 +1453,7 @@ const FinishedMaterialInventory = () => {
               </Table.Header>
               <Table.Body>
                 {blockchainData.map((tx) => (
-                  <TableRowWithStatus key={tx.txHash}>
+                  <Table.Row key={tx.txHash}>
                     <Table.Cell style={{ wordBreak: 'break-all' }}>
                       <Text size="1">{tx.txHash}</Text>
                     </Table.Cell>
@@ -1473,7 +1480,7 @@ const FinishedMaterialInventory = () => {
                         <Text size="1" color="gray">None</Text>
                       )}
                     </Table.Cell>
-                  </TableRowWithStatus>
+                  </Table.Row>
                 ))}
               </Table.Body>
             </Table.Root>
