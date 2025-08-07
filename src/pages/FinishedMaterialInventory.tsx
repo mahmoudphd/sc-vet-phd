@@ -30,7 +30,6 @@ import {
   TokensIcon,
   PersonIcon,
   EnvelopeClosedIcon,
-  Phone,
   FileTextIcon
 } from '@radix-ui/react-icons';
 
@@ -40,7 +39,6 @@ interface Supplier {
   name: string;
   contactPerson: string;
   email: string;
-  phone: string;
   rating: number;
   materialsSupplied: string[];
   leadTime: number;
@@ -206,7 +204,6 @@ const FinishedMaterialInventory = () => {
       name: 'NutriSupplies Inc.',
       contactPerson: 'John Smith',
       email: 'john@nutrisupplies.com',
-      phone: '+1 (555) 123-4567',
       rating: 4.5,
       materialsSupplied: [],
       leadTime: 7,
@@ -218,7 +215,6 @@ const FinishedMaterialInventory = () => {
       name: 'Vitamin World',
       contactPerson: 'Sarah Johnson',
       email: 'sarah@vitaminworld.com',
-      phone: '+1 (555) 987-6543',
       rating: 4.2,
       materialsSupplied: [],
       leadTime: 5,
@@ -296,7 +292,6 @@ const FinishedMaterialInventory = () => {
     name: '',
     contactPerson: '',
     email: '',
-    phone: '',
     rating: 0,
     materialsSupplied: [],
     leadTime: 0,
@@ -654,7 +649,6 @@ const FinishedMaterialInventory = () => {
       name: '',
       contactPerson: '',
       email: '',
-      phone: '',
       rating: 0,
       materialsSupplied: [],
       leadTime: 0,
@@ -697,8 +691,7 @@ const FinishedMaterialInventory = () => {
       setSelectedSupplier({
         ...selectedSupplier,
         [field]: field === 'name' || field === 'contactPerson' || 
-                field === 'email' || field === 'phone' || 
-                field === 'contractTerms'
+                field === 'email' || field === 'contractTerms'
           ? e.target.value
           : Number(e.target.value)
       });
@@ -706,8 +699,7 @@ const FinishedMaterialInventory = () => {
       setNewSupplier({
         ...newSupplier,
         [field]: field === 'name' || field === 'contactPerson' || 
-                field === 'email' || field === 'phone' || 
-                field === 'contractTerms'
+                field === 'email' || field === 'contractTerms'
           ? e.target.value
           : Number(e.target.value)
       });
@@ -1284,14 +1276,6 @@ const FinishedMaterialInventory = () => {
               </Box>
               
               <Box>
-                <Text as="div" size="2" color="gray">Phone</Text>
-                <Flex align="center" gap="1">
-                  <Phone />
-                  <Text>{selectedSupplier.phone}</Text>
-                </Flex>
-              </Box>
-              
-              <Box>
                 <Text as="div" size="2" color="gray">Rating</Text>
                 <Badge color={
                   selectedSupplier.rating > 4 ? 'green' : 
@@ -1848,19 +1832,6 @@ const FinishedMaterialInventory = () => {
             </Box>
             
             <Box>
-              <Text as="div" size="2" mb="1" weight="bold">Phone</Text>
-              <TextField.Root>
-                <input
-                  type="tel"
-                  placeholder="Phone"
-                  value={newSupplier.phone}
-                  onChange={(e) => handleSupplierInputChange(e, 'phone')}
-                  className="rt-TextFieldInput"
-                />
-              </TextField.Root>
-            </Box>
-            
-            <Box>
               <Text as="div" size="2" mb="1" weight="bold">Rating (1-5)</Text>
               <TextField.Root>
                 <input
@@ -1927,7 +1898,6 @@ const FinishedMaterialInventory = () => {
                   name: '',
                   contactPerson: '',
                   email: '',
-                  phone: '',
                   rating: 0,
                   materialsSupplied: [],
                   leadTime: 0,
