@@ -627,6 +627,26 @@ const FinishedMaterialInventory = () => {
     return <Table.Row style={{ backgroundColor }}>{children}</Table.Row>;
   };
 
+  const renderShippingConditions = (shippingConditions?: {
+    temperature?: number;
+    humidity?: number;
+  }) => {
+    if (!shippingConditions) return null;
+
+    return (
+      <>
+        <Box>
+          <Text as="div" size="2" color="gray">Shipping Temperature</Text>
+          <Text>{shippingConditions.temperature !== undefined ? `${shippingConditions.temperature}°C` : 'N/A'}</Text>
+        </Box>
+        <Box>
+          <Text as="div" size="2" color="gray">Shipping Humidity</Text>
+          <Text>{shippingConditions.humidity !== undefined ? `${shippingConditions.humidity}%` : 'N/A'}</Text>
+        </Box>
+      </>
+    );
+  };
+
   return (
     <Container size="3" px="4" py="6">
       {/* Inventory Dashboard */}
@@ -1083,18 +1103,7 @@ const FinishedMaterialInventory = () => {
                 </Box>
               )}
 
-              {selectedOrder.shippingConditions && (
-                <>
-                  <Box>
-                    <Text as="div" size="2" color="gray">Shipping Temperature</Text>
-                    <Text>{selectedOrder.shippingConditions.temperature ?? 'N/A'}°C</Text>
-                  </Box>
-                  <Box>
-                    <Text as="div" size="2" color="gray">Shipping Humidity</Text>
-                    <Text>{selectedOrder.shippingConditions.humidity ?? 'N/A'}%</Text>
-                  </Box>
-                </>
-              )}
+              {renderShippingConditions(selectedOrder.shippingConditions)}
             </Grid>
             
             {selectedOrder.notes && (
