@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import {
   Card,
   Flex,
@@ -15,45 +15,23 @@ import {
   Switch,
   TextArea,
   Container,
-  Progress,
-  ScrollArea,
-  AlertDialog,
-  Em,
-  Strong
+  Progress
 } from '@radix-ui/themes';
 import {
   CubeIcon,
+  MixerHorizontalIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  LightningBoltIcon,
-  Link2Icon,
-  TokensIcon,
-  PersonIcon,
-  EnvelopeClosedIcon,
-  FileTextIcon,
   CheckCircledIcon,
   CrossCircledIcon,
-  Pencil1Icon,
-  CheckIcon,
-  Cross1Icon,
-  DownloadIcon,
-  UpdateIcon,
-  TrashIcon,
-  PlusIcon,
-  MagnifyingGlassIcon
+  LightningBoltIcon,
+  LinkBreak2Icon,
+  Link2Icon,
+  TokensIcon
 } from '@radix-ui/react-icons';
 
-// ==================== TYPES ====================
-interface Supplier {
-  id: string;
-  name: string;
-  rating: number;
-  materialsSupplied: string[];
-  leadTime: number;
-  reliability: number;
-}
-
-interface FinishedMaterial {
+// Types
+interface RawMaterial {
   id: string;
   name: string;
   currentStock: number;
@@ -62,725 +40,1371 @@ interface FinishedMaterial {
   reorderLevel: number;
   safetyStock: number;
   leadTime: number;
-  supplierId: string;
+  supplier: string;
+  supplierRating: number;
   orderQuantity: number;
   pendingOrders: number;
+  lastOrderDate?: string;
   unit: string;
   sensorConnected: boolean;
-  batchNumber: string;
-  expiryDate?: string;
-  lastUpdate?: string;
+  lastSensorUpdate?: string;
+  sensorReadings?: {
+    temperature?: number;
+    humidity?: number;
+    weight?: number;
+  };
   blockchainTx?: string;
+}
+
+interface PurchaseOrder {
+  id: string;
+  materialId: string;
+  materialName: string;
+  quantity: number;
+  supplier: string;
+  expectedDelivery: string;
+  status: 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
+  orderDate: string;
+  notes?: string;
+  blockchainTx?: string;
+  relatedTxHash?: string;
+  shippingConditions?: {
+    temperature?: number;
+    humidity?: number;
+  };
 }
 
 interface BlockchainTransaction {
   txHash: string;
   timestamp: string;
   materialId: string;
-  action: string;
+  action: 'order' | 'delivery' | 'adjustment';
   participants: string[];
+  relatedTxHash?: string;
   quantity?: number;
 }
 
-interface MaterialEditLog {
-  id: string;
-  materialId: string;
-  changes: {
-    field: string;
-    oldValue: any;
-    newValue: any;
-  }[];
-  editedBy: string;
-  timestamp: string;
-  blockchainTx?: string;
-}
-
-// ==================== MOCK DATA ====================
-const initialSuppliers: Supplier[] = [
-  {
-    id: 'sup-1',
-    name: 'Global Pharma',
-    rating: 4.7,
-    materialsSupplied: ['mat-1', 'mat-3'],
-    leadTime: 7,
-    reliability: 95
-  },
-  {
-    id: 'sup-2',
-    name: 'BioTech Solutions',
-    rating: 4.3,
-    materialsSupplied: ['mat-2', 'mat-4'],
-    leadTime: 5,
-    reliability: 92
-  }
-];
-
-const initialMaterials: FinishedMaterial[] = [
-  {
-    id: 'mat-1',
-    name: 'Vitamin B12 Injections',
-    currentStock: 1500,
-    reserved: 300,
-    minStockLevel: 200,
-    reorderLevel: 500,
-    safetyStock: 100,
-    leadTime: 7,
-    supplierId: 'sup-1',
-    orderQuantity: 1000,
-    pendingOrders: 0,
-    unit: 'vials',
-    sensorConnected: true,
-    batchNumber: 'BATCH-2023-001',
-    expiryDate: '2024-06-30'
-  },
-  {
-    id: 'mat-2',
-    name: 'Insulin Pens',
-    currentStock: 3000,
-    reserved: 750,
-    minStockLevel: 500,
-    reorderLevel: 1000,
-    safetyStock: 250,
-    leadTime: 5,
-    supplierId: 'sup-2',
-    orderQuantity: 1500,
-    pendingOrders: 0,
-    unit: 'units',
-    sensorConnected: false,
-    batchNumber: 'BATCH-2023-002',
-    expiryDate: '2024-12-31'
-  }
-];
-
-// ==================== SERVICES ====================
-class InventoryService {
-  static async recordEdit(editLog: MaterialEditLog): Promise<void> {
-    // In a real app, this would call your backend API
-    return new Promise(resolve => setTimeout(resolve, 300));
+// Mock IoT Service
+class IoTSensorService {
+  static async connectToSensor(materialId: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(Math.random() > 0.2);
+      }, 500);
+    });
   }
 
-  static async getEditHistory(materialId: string): Promise<MaterialEditLog[]> {
-    // Mock implementation
-    return new Promise(resolve => setTimeout(() => resolve([]), 300));
+  static async getSensorReadings(materialId: string): Promise<any> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          temperature: 22 + Math.floor(Math.random() * 10) - 5,
+          humidity: 45 + Math.floor(Math.random() * 20) - 10,
+          weight: 100 + Math.floor(Math.random() * 50) - 25
+        });
+      }, 800);
+    });
   }
 }
 
+// Enhanced Blockchain Service
 class BlockchainService {
+  private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
+
   static async recordTransaction(
     materialId: string,
     action: string,
+    quantity: number,
     participants: string[],
-    quantity?: number
+    relatedTxHash?: string
   ): Promise<string> {
-    // Mock implementation - returns a fake transaction hash
-    return new Promise(resolve => 
-      setTimeout(() => resolve(`0x${Math.random().toString(16).substring(2, 18)}`), 500)
-    );
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        const timestamp = new Date().toISOString();
+        
+        const transaction: BlockchainTransaction = {
+          txHash,
+          timestamp,
+          materialId,
+          action: action as any,
+          participants,
+          relatedTxHash,
+          quantity
+        };
+
+        if (!this.transactionHistory[materialId]) {
+          this.transactionHistory[materialId] = [];
+        }
+        
+        this.transactionHistory[materialId].push(transaction);
+        resolve(txHash);
+      }, 1000);
+    });
+  }
+
+  static async verifyTransaction(txHash: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 500);
+    });
+  }
+
+  static async getTransactionHistory(materialId: string): Promise<BlockchainTransaction[]> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const history = this.transactionHistory[materialId] || [];
+        const sortedHistory = [...history].sort((a, b) => 
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+        resolve(sortedHistory);
+      }, 1200);
+    });
   }
 }
 
-// ==================== MAIN COMPONENT ====================
-const FinishedMaterialInventory: React.FC = () => {
+// Utility functions
+const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+const today = new Date().toISOString().split('T')[0];
+
+// Initial Data
+const initialMaterials: RawMaterial[] = [
+  {
+    id: generateId('MAT'),
+    name: 'Vitamin B1',
+    currentStock: 120,
+    reserved: 40,
+    minStockLevel: 50,
+    reorderLevel: 80,
+    safetyStock: 30,
+    leadTime: 7,
+    supplier: 'Supplier X',
+    supplierRating: 4.5,
+    orderQuantity: 100,
+    pendingOrders: 0,
+    unit: 'kg',
+    sensorConnected: false
+  },
+  {
+    id: generateId('MAT'),
+    name: 'Vitamin B2',
+    currentStock: 90,
+    reserved: 30,
+    minStockLevel: 60,
+    reorderLevel: 90,
+    safetyStock: 40,
+    leadTime: 5,
+    supplier: 'Supplier Y',
+    supplierRating: 3.8,
+    orderQuantity: 120,
+    pendingOrders: 0,
+    unit: 'kg',
+    sensorConnected: false
+  },
+  {
+    id: generateId('MAT'),
+    name: 'Nicotinamide B3',
+    currentStock: 70,
+    reserved: 20,
+    minStockLevel: 40,
+    reorderLevel: 60,
+    safetyStock: 20,
+    leadTime: 10,
+    supplier: 'Supplier Z',
+    supplierRating: 4.2,
+    orderQuantity: 80,
+    pendingOrders: 0,
+    unit: 'kg',
+    sensorConnected: false
+  }
+];
+
+const RawMaterialsInventory = () => {
   // State
-  const [suppliers] = useState<Supplier[]>(initialSuppliers);
-  const [materials, setMaterials] = useState<FinishedMaterial[]>(initialMaterials);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValues, setEditValues] = useState<{
-    currentStock: number;
-    reserved: number;
-  }>({ currentStock: 0, reserved: 0 });
-  const [editLogs, setEditLogs] = useState<MaterialEditLog[]>([]);
-  const [selectedMaterial, setSelectedMaterial] = useState<FinishedMaterial | null>(null);
+  const [materials, setMaterials] = useState<RawMaterial[]>(initialMaterials);
+  const [orders, setOrders] = useState<PurchaseOrder[]>([]);
+  const [selectedMaterial, setSelectedMaterial] = useState<RawMaterial | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
+  const [showReorderOnly, setShowReorderOnly] = useState(false);
+  const [showOrderDialog, setShowOrderDialog] = useState(false);
   const [showMaterialDialog, setShowMaterialDialog] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [materialToDelete, setMaterialToDelete] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
+  const [newOrder, setNewOrder] = useState<Partial<PurchaseOrder>>({
+    status: 'pending',
+    orderDate: today
+  });
+  const [newMaterial, setNewMaterial] = useState<Partial<RawMaterial>>({
+    unit: 'kg',
+    sensorConnected: false
+  });
+  const [blockchainData, setBlockchainData] = useState<BlockchainTransaction[]>([]);
+  const [isLoadingBlockchain, setIsLoadingBlockchain] = useState(false);
+  const [sensorStatus, setSensorStatus] = useState<Record<string, boolean>>({});
+  const [isConnectingSensor, setIsConnectingSensor] = useState(false);
 
-  // Filter materials based on search
-  const filteredMaterials = materials.filter(material =>
-    material.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    material.batchNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
-  // Handle edit changes
-  const handleEditChange = (field: 'currentStock' | 'reserved', value: string) => {
-    const numValue = parseInt(value) || 0;
-    setEditValues(prev => ({
-      ...prev,
-      [field]: numValue
-    }));
+  // Connect to IoT sensor
+  const connectToSensor = async (materialId: string) => {
+    setIsConnectingSensor(true);
+    try {
+      const connected = await IoTSensorService.connectToSensor(materialId);
+      if (connected) {
+        const readings = await IoTSensorService.getSensorReadings(materialId);
+        
+        setMaterials(materials.map(m => 
+          m.id === materialId ? { 
+            ...m, 
+            sensorConnected: true,
+            lastSensorUpdate: new Date().toISOString(),
+            sensorReadings: readings
+          } : m
+        ));
+        
+        setSensorStatus(prev => ({ ...prev, [materialId]: true }));
+        
+        if (readings.weight) {
+          const material = materials.find(m => m.id === materialId);
+          if (material) {
+            const newStock = Math.round(readings.weight);
+            if (Math.abs(newStock - material.currentStock) > 5) {
+              setMaterials(materials.map(m => 
+                m.id === materialId ? { ...m, currentStock: newStock } : m
+              ));
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Sensor connection failed:', error);
+    } finally {
+      setIsConnectingSensor(false);
+    }
   };
 
-  // Validate edit
-  const validateEdit = (material: FinishedMaterial) => {
-    return editValues.reserved <= editValues.currentStock;
+  // Record transaction on blockchain
+  const recordBlockchainTransaction = async (
+    materialId: string,
+    action: string,
+    quantity: number,
+    participants: string[],
+    relatedTxHash?: string
+  ) => {
+    const txHash = await BlockchainService.recordTransaction(
+      materialId,
+      action,
+      quantity,
+      participants,
+      relatedTxHash
+    );
+    return txHash;
   };
 
-  // Save edit
-  const saveEdit = async (materialId: string) => {
-    const material = materials.find(m => m.id === materialId);
+  // Fetch blockchain history
+  const fetchBlockchainHistory = async (materialId: string) => {
+    setIsLoadingBlockchain(true);
+    try {
+      const history = await BlockchainService.getTransactionHistory(materialId);
+      setBlockchainData(history);
+      setShowBlockchainDialog(true);
+    } catch (error) {
+      console.error('Failed to fetch blockchain data:', error);
+    } finally {
+      setIsLoadingBlockchain(false);
+    }
+  };
+
+  // Generate purchase orders automatically
+  const generateAutoOrders = async () => {
+    const newOrders: PurchaseOrder[] = [];
+    const updatedMaterials = [...materials];
+
+    for (const [index, material] of materials.entries()) {
+      const availableStock = material.currentStock - material.reserved;
+      if (availableStock <= material.reorderLevel && material.pendingOrders === 0) {
+        const orderQuantity = Math.max(
+          material.orderQuantity,
+          material.minStockLevel + material.safetyStock - availableStock
+        );
+
+        const newOrder: PurchaseOrder = {
+          id: generateId('PO'),
+          materialId: material.id,
+          materialName: material.name,
+          quantity: orderQuantity,
+          supplier: material.supplier,
+          expectedDelivery: new Date(
+            new Date().setDate(new Date().getDate() + material.leadTime)
+          ).toISOString(),
+          status: 'pending',
+          orderDate: today
+        };
+
+        // Record order on blockchain
+        const txHash = await recordBlockchainTransaction(
+          material.id,
+          'order',
+          orderQuantity,
+          [material.supplier, 'Warehouse Manager']
+        );
+
+        newOrder.blockchainTx = txHash;
+        newOrders.push(newOrder);
+        updatedMaterials[index] = {
+          ...material,
+          pendingOrders: material.pendingOrders + orderQuantity,
+          lastOrderDate: today
+        };
+
+        // Simulate delivery after lead time (for demo purposes)
+        setTimeout(async () => {
+          if (newOrder.status === 'pending' || newOrder.status === 'approved') {
+            const deliveryTxHash = await recordBlockchainTransaction(
+              material.id,
+              'delivery',
+              orderQuantity,
+              [material.supplier, 'Warehouse Manager'],
+              txHash
+            );
+            
+            setOrders(prevOrders => prevOrders.map(o => 
+              o.id === newOrder.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
+            ));
+            
+            setMaterials(prevMaterials => prevMaterials.map(m => 
+              m.id === material.id ? { 
+                ...m, 
+                currentStock: m.currentStock + orderQuantity,
+                pendingOrders: m.pendingOrders - orderQuantity
+              } : m
+            ));
+          }
+        }, material.leadTime * 86400000);
+      }
+    }
+
+    setOrders([...orders, ...newOrders]);
+    setMaterials(updatedMaterials);
+  };
+
+  // Update order status
+  const updateOrderStatus = async (orderId: string, status: PurchaseOrder['status']) => {
+    const updatedOrders = orders.map(order => {
+      if (order.id === orderId) {
+        const updatedOrder = { ...order, status };
+        
+        if (status === 'delivered' && order.blockchainTx) {
+          recordBlockchainTransaction(
+            order.materialId,
+            'delivery',
+            order.quantity,
+            [order.supplier, 'Warehouse Manager'],
+            order.blockchainTx
+          ).then(txHash => {
+            updatedOrder.blockchainTx = txHash;
+          });
+          
+          setMaterials(materials.map(m => 
+            m.id === order.materialId ? { 
+              ...m, 
+              currentStock: m.currentStock + order.quantity,
+              pendingOrders: m.pendingOrders - order.quantity
+            } : m
+          ));
+        }
+        
+        return updatedOrder;
+      }
+      return order;
+    });
+
+    setOrders(updatedOrders);
+  };
+
+  // Create manual order
+  const createManualOrder = async () => {
+    if (!newOrder.materialId || !newOrder.quantity) return;
+
+    const material = materials.find(m => m.id === newOrder.materialId);
     if (!material) return;
 
-    if (!validateEdit(material)) {
-      alert('Reserved quantity cannot exceed current stock');
-      return;
-    }
+    const order: PurchaseOrder = {
+      id: generateId('PO'),
+      materialId: material.id,
+      materialName: material.name,
+      quantity: Number(newOrder.quantity),
+      supplier: newOrder.supplier || material.supplier,
+      expectedDelivery: newOrder.expectedDelivery || 
+        new Date(
+          new Date().setDate(new Date().getDate() + material.leadTime)
+        ).toISOString(),
+      status: 'pending',
+      orderDate: today,
+      notes: newOrder.notes,
+      shippingConditions: {
+        temperature: material.sensorReadings?.temperature,
+        humidity: material.sensorReadings?.humidity
+      }
+    };
 
-    try {
-      // Record blockchain transaction
-      const txHash = await BlockchainService.recordTransaction(
-        materialId,
-        'manual_adjustment',
-        ['System Admin'],
-        editValues.currentStock - material.currentStock
+    // Record order on blockchain
+    const txHash = await recordBlockchainTransaction(
+      material.id,
+      'order',
+      order.quantity,
+      [order.supplier, 'Warehouse Manager']
+    );
+    order.blockchainTx = txHash;
+
+    setOrders([...orders, order]);
+    setMaterials(materials.map(m => 
+      m.id === material.id ? { ...m, pendingOrders: m.pendingOrders + order.quantity } : m
+    ));
+    
+    // Simulate delivery after lead time (for demo purposes)
+    setTimeout(async () => {
+      const deliveryTxHash = await recordBlockchainTransaction(
+        material.id,
+        'delivery',
+        order.quantity,
+        [order.supplier, 'Warehouse Manager'],
+        txHash
       );
-
-      // Create edit log
-      const changes = [];
-      if (material.currentStock !== editValues.currentStock) {
-        changes.push({
-          field: 'currentStock',
-          oldValue: material.currentStock,
-          newValue: editValues.currentStock
-        });
-      }
-      if (material.reserved !== editValues.reserved) {
-        changes.push({
-          field: 'reserved',
-          oldValue: material.reserved,
-          newValue: editValues.reserved
-        });
-      }
-
-      const newLog: MaterialEditLog = {
-        id: `log-${Date.now()}`,
-        materialId,
-        changes,
-        editedBy: 'Current User',
-        timestamp: new Date().toISOString(),
-        blockchainTx: txHash
-      };
-
-      // Save edit log
-      await InventoryService.recordEdit(newLog);
-
-      // Update state
-      setMaterials(materials.map(m => 
-        m.id === materialId ? { 
+      
+      setOrders(prevOrders => prevOrders.map(o => 
+        o.id === order.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
+      ));
+      
+      setMaterials(prevMaterials => prevMaterials.map(m => 
+        m.id === material.id ? { 
           ...m, 
-          currentStock: editValues.currentStock,
-          reserved: editValues.reserved,
-          lastUpdate: new Date().toISOString()
+          currentStock: m.currentStock + order.quantity,
+          pendingOrders: m.pendingOrders - order.quantity
         } : m
       ));
-      setEditLogs([newLog, ...editLogs]);
-      setEditingId(null);
-    } catch (error) {
-      console.error('Failed to save edit:', error);
-      alert('Failed to save changes. Please try again.');
-    }
+    }, material.leadTime * 86400000);
+
+    setShowOrderDialog(false);
+    setNewOrder({ status: 'pending', orderDate: today });
   };
 
-  // Load edit history when material is selected
-  useEffect(() => {
-    if (selectedMaterial) {
-      const loadEditHistory = async () => {
-        const logs = await InventoryService.getEditHistory(selectedMaterial.id);
-        setEditLogs(logs);
-      };
-      loadEditHistory();
-    }
-  }, [selectedMaterial]);
+  // Add new material
+  const addNewMaterial = async () => {
+    if (!newMaterial.name || !newMaterial.supplier) return;
 
-  // Delete material
-  const confirmDelete = async () => {
-    if (!materialToDelete) return;
-    
-    try {
-      // In a real app, you would call an API to delete
-      setMaterials(materials.filter(m => m.id !== materialToDelete));
-      setMaterialToDelete(null);
-      setShowDeleteConfirm(false);
-    } catch (error) {
-      console.error('Failed to delete material:', error);
-      alert('Failed to delete material. Please try again.');
-    }
-  };
+    const material: RawMaterial = {
+      id: generateId('MAT'),
+      name: newMaterial.name,
+      currentStock: newMaterial.currentStock || 0,
+      reserved: newMaterial.reserved || 0,
+      minStockLevel: newMaterial.minStockLevel || 0,
+      reorderLevel: newMaterial.reorderLevel || 0,
+      safetyStock: newMaterial.safetyStock || 0,
+      leadTime: newMaterial.leadTime || 0,
+      supplier: newMaterial.supplier,
+      supplierRating: 0,
+      orderQuantity: newMaterial.orderQuantity || 0,
+      pendingOrders: 0,
+      unit: newMaterial.unit || 'kg',
+      sensorConnected: false
+    };
 
-  // ==================== UI COMPONENTS ====================
-
-  // Dashboard Cards
-  const renderDashboardCards = () => {
-    const criticalCount = materials.filter(m => 
-      (m.currentStock - m.reserved) <= m.safetyStock
-    ).length;
-    
-    const reorderCount = materials.filter(m => 
-      (m.currentStock - m.reserved) <= m.reorderLevel
-    ).length;
-    
-    const connectedSensors = materials.filter(m => m.sensorConnected).length;
-
-    return (
-      <Grid columns="4" gap="4" mb="4">
-        {[
-          { 
-            icon: <ExclamationTriangleIcon />, 
-            label: 'Critical Stock', 
-            value: criticalCount,
-            color: 'red'
-          },
-          { 
-            icon: <ClockIcon />, 
-            label: 'Need Reorder', 
-            value: reorderCount,
-            color: 'orange'
-          },
-          { 
-            icon: <CubeIcon />, 
-            label: 'Total Materials', 
-            value: materials.length,
-            color: 'blue'
-          },
-          { 
-            icon: <LightningBoltIcon />, 
-            label: 'Connected Sensors', 
-            value: `${connectedSensors}/${materials.length}`,
-            color: 'green'
-          }
-        ].map((item, index) => (
-          <Card key={index} style={{ 
-            background: `var(--${item.color}-1)`,
-            border: `1px solid var(--${item.color}-3)`
-          }}>
-            <Flex align="center" gap="3">
-              <Box style={{
-                background: `var(--${item.color}-3)`,
-                padding: '12px',
-                borderRadius: '50%',
-                color: `var(--${item.color}-11)`
-              }}>
-                {item.icon}
-              </Box>
-              <Box>
-                <Text as="div" size="2" color="gray">{item.label}</Text>
-                <Heading size="5" style={{ color: `var(--${item.color}-11)` }}>
-                  {item.value}
-                </Heading>
-              </Box>
-            </Flex>
-          </Card>
-        ))}
-      </Grid>
+    // Record initial stock on blockchain
+    const txHash = await recordBlockchainTransaction(
+      material.id,
+      'adjustment',
+      material.currentStock,
+      ['System', 'Warehouse Manager']
     );
+    material.blockchainTx = txHash;
+
+    setMaterials([...materials, material]);
+    setShowMaterialDialog(false);
+    setNewMaterial({ unit: 'kg', sensorConnected: false });
   };
 
-  // Materials Table
-  const renderMaterialsTable = () => (
-    <Table.Root variant="surface" style={{ borderRadius: 8 }}>
-      <Table.Header>
-        <Table.Row>
-          <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Current Stock</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-          <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body>
-        {filteredMaterials.map(material => {
-          const available = material.currentStock - material.reserved;
-          const status = available <= material.safetyStock ? 'critical' : 
-                        available <= material.reorderLevel ? 'reorder' : 'ok';
-
-          return (
-            <React.Fragment key={material.id}>
-              <Table.Row>
-                <Table.Cell>
-                  <Flex direction="column">
-                    <Text weight="bold">{material.name}</Text>
-                    <Flex gap="2" mt="1">
-                      <Badge variant="soft">{material.batchNumber}</Badge>
-                      {material.expiryDate && (
-                        <Badge 
-                          color={getExpiryStatusColor(material.expiryDate)}
-                          variant="soft"
-                        >
-                          Exp: {material.expiryDate}
-                        </Badge>
-                      )}
-                    </Flex>
-                  </Flex>
-                </Table.Cell>
-                
-                {/* Current Stock */}
-                <Table.Cell>
-                  {editingId === material.id ? (
-                    <TextField.Root>
-                      <input
-                        type="number"
-                        value={editValues.currentStock}
-                        onChange={(e) => handleEditChange('currentStock', e.target.value)}
-                        className="rt-TextFieldInput"
-                        min={0}
-                      />
-                    </TextField.Root>
-                  ) : (
-                    <Text 
-                      onClick={() => {
-                        setEditingId(material.id);
-                        setEditValues({
-                          currentStock: material.currentStock,
-                          reserved: material.reserved
-                        });
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {material.currentStock} {material.unit}
-                    </Text>
-                  )}
-                </Table.Cell>
-                
-                {/* Reserved */}
-                <Table.Cell>
-                  {editingId === material.id ? (
-                    <TextField.Root>
-                      <input
-                        type="number"
-                        value={editValues.reserved}
-                        onChange={(e) => handleEditChange('reserved', e.target.value)}
-                        className="rt-TextFieldInput"
-                        min={0}
-                        max={editValues.currentStock}
-                      />
-                    </TextField.Root>
-                  ) : (
-                    <Text 
-                      onClick={() => {
-                        setEditingId(material.id);
-                        setEditValues({
-                          currentStock: material.currentStock,
-                          reserved: material.reserved
-                        });
-                      }}
-                      style={{ cursor: 'pointer' }}
-                    >
-                      {material.reserved} {material.unit}
-                    </Text>
-                  )}
-                </Table.Cell>
-                
-                {/* Available */}
-                <Table.Cell>
-                  <Text weight="bold">
-                    {editingId === material.id 
-                      ? editValues.currentStock - editValues.reserved
-                      : available} {material.unit}
-                  </Text>
-                </Table.Cell>
-                
-                {/* Status */}
-                <Table.Cell>
-                  <Flex gap="2" align="center">
-                    <Badge color={
-                      status === 'critical' ? 'red' : 
-                      status === 'reorder' ? 'orange' : 'green'
-                    }>
-                      {status.toUpperCase()}
-                    </Badge>
-                    {material.sensorConnected && (
-                      <Badge color="green" variant="outline">
-                        <Link2Icon /> IoT
-                      </Badge>
-                    )}
-                  </Flex>
-                </Table.Cell>
-                
-                {/* Actions */}
-                <Table.Cell>
-                  <Flex gap="2">
-                    {editingId === material.id ? (
-                      <>
-                        <Button size="1" onClick={() => saveEdit(material.id)}>
-                          <CheckIcon /> Save
-                        </Button>
-                        <Button 
-                          size="1" 
-                          variant="soft" 
-                          color="gray" 
-                          onClick={() => setEditingId(null)}
-                        >
-                          <Cross1Icon /> Cancel
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button 
-                          size="1" 
-                          variant="soft"
-                          onClick={() => {
-                            setSelectedMaterial(material);
-                            setShowMaterialDialog(true);
-                          }}
-                        >
-                          Details
-                        </Button>
-                        <Button 
-                          size="1" 
-                          variant="soft"
-                          onClick={() => {
-                            setEditingId(material.id);
-                            setEditValues({
-                              currentStock: material.currentStock,
-                              reserved: material.reserved
-                            });
-                          }}
-                        >
-                          <Pencil1Icon /> Edit
-                        </Button>
-                        <Button 
-                          size="1" 
-                          variant="soft" 
-                          color="red"
-                          onClick={() => {
-                            setMaterialToDelete(material.id);
-                            setShowDeleteConfirm(true);
-                          }}
-                        >
-                          <TrashIcon />
-                        </Button>
-                      </>
-                    )}
-                  </Flex>
-                </Table.Cell>
-              </Table.Row>
-              
-              {editingId === material.id && (
-                <Table.Row style={{ background: 'var(--green-1)' }}>
-                  <Table.Cell colSpan={6}>
-                    <Flex align="center" gap="3" justify="center">
-                      <Text color="green">
-                        <Flex align="center" gap="1">
-                          <UpdateIcon />
-                          Editing this material
-                        </Flex>
-                      </Text>
-                      <Text size="1" color="gray">
-                        Available after edit: {editValues.currentStock - editValues.reserved} {material.unit}
-                      </Text>
-                    </Flex>
-                  </Table.Cell>
-                </Table.Row>
-              )}
-            </React.Fragment>
-          );
-        })}
-      </Table.Body>
-    </Table.Root>
-  );
-
-  // Material Details Dialog
-  const renderMaterialDialog = () => (
-    <Dialog.Root open={showMaterialDialog} onOpenChange={setShowMaterialDialog}>
-      <Dialog.Content style={{ maxWidth: 800 }}>
-        <Dialog.Title>
-          <Flex align="center" gap="2">
-            <CubeIcon /> {selectedMaterial?.name} Details
-          </Flex>
-        </Dialog.Title>
-        
-        <Grid columns="2" gap="3" mt="3">
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Batch Number</Text>
-            <Text>{selectedMaterial?.batchNumber}</Text>
-          </Box>
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Expiry Date</Text>
-            <Badge color={getExpiryStatusColor(selectedMaterial?.expiryDate)}>
-              {selectedMaterial?.expiryDate || 'N/A'}
-            </Badge>
-          </Box>
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Current Stock</Text>
-            <Text>{selectedMaterial?.currentStock} {selectedMaterial?.unit}</Text>
-          </Box>
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Reserved</Text>
-            <Text>{selectedMaterial?.reserved} {selectedMaterial?.unit}</Text>
-          </Box>
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Available</Text>
-            <Text weight="bold">
-              {(selectedMaterial?.currentStock || 0) - (selectedMaterial?.reserved || 0)} {selectedMaterial?.unit}
-            </Text>
-          </Box>
-          <Box>
-            <Text as="div" size="2" color="gray" mb="1">Supplier</Text>
-            <Text>
-              {suppliers.find(s => s.id === selectedMaterial?.supplierId)?.name || 'Unknown'}
-            </Text>
-          </Box>
-        </Grid>
-        
-        {/* Edit History */}
-        <Card mt="4">
-          <Heading size="4" mb="3">Edit History</Heading>
-          {editLogs.length > 0 ? (
-            <ScrollArea style={{ maxHeight: 300 }}>
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Changes</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Verified</Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {editLogs.map(log => (
-                    <Table.Row key={log.id}>
-                      <Table.Cell>
-                        {new Date(log.timestamp).toLocaleString()}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Flex direction="column" gap="1">
-                          {log.changes.map((change, i) => (
-                            <Text key={i} size="2">
-                              {change.field}: {change.oldValue} → {change.newValue}
-                            </Text>
-                          ))}
-                        </Flex>
-                      </Table.Cell>
-                      <Table.Cell>
-                        {log.blockchainTx ? (
-                          <Badge color="green">
-                            <TokensIcon /> Verified
-                          </Badge>
-                        ) : (
-                          <Badge color="gray">Pending</Badge>
-                        )}
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </ScrollArea>
-          ) : (
-            <Text color="gray" style={{ fontStyle: 'italic' }}>
-              No edit history available
-            </Text>
-          )}
-        </Card>
-        
-        <Flex gap="3" mt="4" justify="end">
-          <Button variant="soft" color="gray" onClick={() => setShowMaterialDialog(false)}>
-            Close
-          </Button>
-          <Button onClick={() => {
-            if (selectedMaterial) {
-              setEditingId(selectedMaterial.id);
-              setEditValues({
-                currentStock: selectedMaterial.currentStock,
-                reserved: selectedMaterial.reserved
-              });
-              setShowMaterialDialog(false);
-            }
-          }}>
-            <Pencil1Icon /> Edit Material
-          </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-
-  // Delete Confirmation Dialog
-  const renderDeleteDialog = () => (
-    <AlertDialog.Root open={showDeleteConfirm}>
-      <AlertDialog.Content style={{ maxWidth: 450 }}>
-        <AlertDialog.Title>Confirm Deletion</AlertDialog.Title>
-        <AlertDialog.Description size="2">
-          Are you sure you want to delete this material? This action cannot be undone.
-        </AlertDialog.Description>
-
-        <Flex gap="3" mt="4" justify="end">
-          <AlertDialog.Cancel>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </AlertDialog.Cancel>
-          <AlertDialog.Action>
-            <Button variant="solid" color="red" onClick={confirmDelete}>
-              Delete
-            </Button>
-          </AlertDialog.Action>
-        </Flex>
-      </AlertDialog.Content>
-    </AlertDialog.Root>
-  );
-
-  // Helper function for expiry status color
-  const getExpiryStatusColor = (expiryDate?: string) => {
-    if (!expiryDate) return 'gray';
-    
-    const expiry = new Date(expiryDate);
-    const today = new Date();
-    const diffTime = expiry.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays < 0) return 'red'; // Expired
-    if (diffDays < 30) return 'orange'; // Expiring soon
-    if (diffDays < 90) return 'yellow'; // Near expiry
-    return 'green'; // Good
+  // Handle input changes
+  const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+    if (!selectedMaterial) return;
+    setSelectedMaterial({
+      ...selectedMaterial,
+      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
+        ? e.target.value 
+        : Number(e.target.value)
+    });
   };
+
+  const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
+    setNewMaterial({
+      ...newMaterial,
+      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
+        ? e.target.value 
+        : Number(e.target.value)
+    });
+  };
+
+  const handleNewOrderInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof PurchaseOrder) => {
+    setNewOrder({
+      ...newOrder,
+      [field]: field === 'notes' || field === 'supplier' || field === 'materialId'
+        ? e.target.value
+        : Number(e.target.value)
+    });
+  };
+
+  // Calculate inventory metrics
+  const criticalMaterials = materials.filter(m => 
+    (m.currentStock - m.reserved) <= m.safetyStock
+  ).length;
+
+  const reorderNeeded = materials.filter(m => 
+    (m.currentStock - m.reserved) <= m.reorderLevel
+  ).length;
+
+  const pendingOrdersCount = orders.filter(o => 
+    o.status === 'pending' || o.status === 'approved'
+  ).length;
+
+  const connectedSensors = materials.filter(m => m.sensorConnected).length;
 
   return (
     <Container size="3" px="4" py="6">
-      {/* Header */}
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="7">Finished Material Inventory</Heading>
-        <Flex gap="2">
-          <Button variant="solid">
-            <PlusIcon /> Add Material
-          </Button>
-          <Button variant="soft">
-            <DownloadIcon /> Export
-          </Button>
+      {/* Inventory Dashboard */}
+      <Grid columns="4" gap="4" mb="4">
+        <Card>
+          <Flex align="center" gap="3">
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+              <ExclamationTriangleIcon width={24} height={24} color="red" />
+            </Box>
+            <Box>
+              <Text as="div" size="2" color="gray">Critical Materials</Text>
+              <Heading size="5">{criticalMaterials}</Heading>
+            </Box>
+          </Flex>
+        </Card>
+        
+        <Card>
+          <Flex align="center" gap="3">
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+              <ClockIcon width={24} height={24} />
+            </Box>
+            <Box>
+              <Text as="div" size="2" color="gray">Need Reorder</Text>
+              <Heading size="5">{reorderNeeded}</Heading>
+            </Box>
+          </Flex>
+        </Card>
+        
+        <Card>
+          <Flex align="center" gap="3">
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+              <CubeIcon width={24} height={24} />
+            </Box>
+            <Box>
+              <Text as="div" size="2" color="gray">Pending Orders</Text>
+              <Heading size="5">{pendingOrdersCount}</Heading>
+            </Box>
+          </Flex>
+        </Card>
+        
+        <Card>
+          <Flex align="center" gap="3">
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+              <LightningBoltIcon width={24} height={24} color="green" />
+            </Box>
+            <Box>
+              <Text as="div" size="2" color="gray">Connected Sensors</Text>
+              <Heading size="5">{connectedSensors}/{materials.length}</Heading>
+            </Box>
+          </Flex>
+        </Card>
+      </Grid>
+
+      {/* Action Buttons */}
+      <Flex gap="3" mb="4" wrap="wrap">
+        <Button onClick={generateAutoOrders}>
+          Generate Auto Orders
+        </Button>
+        <Button onClick={() => setShowOrderDialog(true)}>
+          Create Manual Order
+        </Button>
+        <Button onClick={() => setShowMaterialDialog(true)}>
+          Add New Material
+        </Button>
+        <Flex align="center" gap="2">
+          <Switch 
+            checked={showReorderOnly}
+            onCheckedChange={setShowReorderOnly}
+          />
+          <Text>Show Only Materials Needing Reorder</Text>
         </Flex>
       </Flex>
-      
-      {/* Search Bar */}
-      <Box mb="4">
-        <TextField.Root>
-          <TextField.Slot>
-            <MagnifyingGlassIcon />
-          </TextField.Slot>
-          <TextField.Input 
-            placeholder="Search materials by name or batch number..." 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-        </TextField.Root>
-      </Box>
-      
-      {/* Dashboard Cards */}
-      {renderDashboardCards()}
-      
-      {/* Main Materials Table */}
+
+      {/* Materials Table */}
+      <Card mb="4">
+        <Flex justify="between" align="center" mb="3">
+          <Heading size="5">Raw Materials Inventory</Heading>
+          <Text color="gray">{materials.length} materials registered</Text>
+        </Flex>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Current Stock</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>IoT Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {materials
+              .filter(material => !showReorderOnly || 
+                (material.currentStock - material.reserved) <= material.reorderLevel)
+              .map(material => {
+                const available = material.currentStock - material.reserved;
+                const isCritical = available <= material.safetyStock;
+                const needsReorder = available <= material.reorderLevel;
+                const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
+                
+                return (
+                  <Table.Row key={material.id} style={{
+                    backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
+                  }}>
+                    <Table.Cell>
+                      <Flex align="center" gap="2">
+                        {material.name}
+                        {material.blockchainTx && <TokensIcon color="blue" />}
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Flex direction="column" gap="1">
+                        <Text>{material.currentStock} {material.unit}</Text>
+                        <Progress value={Math.min(stockPercentage, 100)} />
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
+                    <Table.Cell>{available} {material.unit}</Table.Cell>
+                    <Table.Cell>
+                      {material.sensorConnected ? (
+                        <Flex align="center" gap="1">
+                          <Link2Icon color="green" />
+                          <Text color="green">Connected</Text>
+                          {material.sensorReadings?.temperature && (
+                            <Text color="gray" size="1">{material.sensorReadings.temperature}°C</Text>
+                          )}
+                        </Flex>
+                      ) : (
+                        <Button 
+                          size="1" 
+                          variant="soft"
+                          onClick={() => connectToSensor(material.id)}
+                          disabled={isConnectingSensor}
+                        >
+                          {isConnectingSensor ? 'Connecting...' : 'Connect Sensor'}
+                        </Button>
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {isCritical ? (
+                        <Badge color="red">Critical</Badge>
+                      ) : needsReorder ? (
+                        <Badge color="orange">Reorder Needed</Badge>
+                      ) : (
+                        <Badge color="green">OK</Badge>
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Flex gap="2">
+                        <Button size="1" onClick={() => setSelectedMaterial(material)}>
+                          Configure
+                        </Button>
+                        <Button 
+                          size="1" 
+                          variant="soft" 
+                          onClick={() => fetchBlockchainHistory(material.id)}
+                        >
+                          Blockchain
+                        </Button>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+          </Table.Body>
+        </Table.Root>
+      </Card>
+
+      {/* Purchase Orders Table */}
       <Card>
         <Flex justify="between" align="center" mb="3">
-          <Heading size="5">Materials Inventory</Heading>
-          <Text color="gray">
-            Showing {filteredMaterials.length} of {materials.length} materials
-          </Text>
+          <Heading size="5">Purchase Orders</Heading>
+          <Text color="gray">{orders.length} orders in system</Text>
         </Flex>
-        {renderMaterialsTable()}
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Order Date</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {orders.map(order => {
+              const material = materials.find(m => m.id === order.materialId);
+              return (
+                <Table.Row key={order.id}>
+                  <Table.Cell>{order.id}</Table.Cell>
+                  <Table.Cell>{order.materialName}</Table.Cell>
+                  <Table.Cell>{order.quantity} {material?.unit}</Table.Cell>
+                  <Table.Cell>
+                    <Flex align="center" gap="1">
+                      {order.supplier}
+                      {material?.supplierRating && (
+                        <Badge color={
+                          material.supplierRating > 4 ? 'green' : 
+                          material.supplierRating > 3 ? 'yellow' : 'red'
+                        }>
+                          {material.supplierRating.toFixed(1)}
+                        </Badge>
+                      )}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>{new Date(order.orderDate).toLocaleDateString()}</Table.Cell>
+                  <Table.Cell>
+                    <Badge color={
+                      order.status === 'delivered' ? 'green' : 
+                      order.status === 'shipped' ? 'blue' : 
+                      order.status === 'approved' ? 'purple' : 
+                      order.status === 'cancelled' ? 'red' : 'orange'
+                    }>
+                      {order.status}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {order.blockchainTx ? (
+                      <Badge color="blue">
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge color="gray">
+                        Pending
+                      </Badge>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Button size="1" onClick={() => setSelectedOrder(order)}>
+                      View
+                    </Button>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
+          </Table.Body>
+        </Table.Root>
       </Card>
-      
-      {/* Dialogs */}
-      {renderMaterialDialog()}
-      {renderDeleteDialog()}
+
+      {/* Material Configuration Dialog */}
+      {selectedMaterial && (
+        <Dialog.Root open onOpenChange={() => setSelectedMaterial(null)}>
+          <Dialog.Content style={{ maxWidth: '700px' }}>
+            <Dialog.Title>
+              <Flex align="center" gap="2">
+                Configure {selectedMaterial.name}
+                {selectedMaterial.sensorConnected && (
+                  <Badge color="green">
+                    <Link2Icon /> IoT Connected
+                  </Badge>
+                )}
+              </Flex>
+            </Dialog.Title>
+            
+            <Grid columns="2" gap="3" mt="3">
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={selectedMaterial.minStockLevel}
+                    onChange={(e) => handleMaterialInputChange(e, 'minStockLevel')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={selectedMaterial.reorderLevel}
+                    onChange={(e) => handleMaterialInputChange(e, 'reorderLevel')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={selectedMaterial.safetyStock}
+                    onChange={(e) => handleMaterialInputChange(e, 'safetyStock')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={selectedMaterial.leadTime}
+                    onChange={(e) => handleMaterialInputChange(e, 'leadTime')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
+                <TextField.Root>
+                  <input
+                    type="number"
+                    value={selectedMaterial.orderQuantity}
+                    onChange={(e) => handleMaterialInputChange(e, 'orderQuantity')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
+                <TextField.Root>
+                  <input
+                    type="text"
+                    value={selectedMaterial.unit}
+                    onChange={(e) => handleMaterialInputChange(e, 'unit')}
+                    className="rt-TextFieldInput"
+                  />
+                </TextField.Root>
+              </Box>
+
+              {selectedMaterial.sensorConnected && selectedMaterial.sensorReadings && (
+                <>
+                  <Box>
+                    <Text as="div" size="2" mb="1" weight="bold">Temperature</Text>
+                    <Text>{selectedMaterial.sensorReadings.temperature}°C</Text>
+                  </Box>
+                  <Box>
+                    <Text as="div" size="2" mb="1" weight="bold">Humidity</Text>
+                    <Text>{selectedMaterial.sensorReadings.humidity}%</Text>
+                  </Box>
+                  <Box>
+                    <Text as="div" size="2" mb="1" weight="bold">Last Sensor Update</Text>
+                    <Text>
+                      {selectedMaterial.lastSensorUpdate ? 
+                        new Date(selectedMaterial.lastSensorUpdate).toLocaleString() : 
+                        'N/A'}
+                    </Text>
+                  </Box>
+                </>
+              )}
+            </Grid>
+            
+            <Flex gap="3" mt="4" justify="end">
+              <Button 
+                variant="soft" 
+                color="gray"
+                onClick={() => setSelectedMaterial(null)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                setMaterials(materials.map(m => 
+                  m.id === selectedMaterial.id ? selectedMaterial : m
+                ));
+                setSelectedMaterial(null);
+              }}>
+                Save Changes
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      )}
+
+      {/* Order Details Dialog */}
+      {selectedOrder && (
+        <Dialog.Root open onOpenChange={() => setSelectedOrder(null)}>
+          <Dialog.Content style={{ maxWidth: '700px' }}>
+            <Dialog.Title>Order {selectedOrder.id}</Dialog.Title>
+            
+            <Grid columns="2" gap="3" mt="3">
+              <Box>
+                <Text as="div" size="2" color="gray">Material</Text>
+                <Text>{selectedOrder.materialName}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Quantity</Text>
+                <Text>{selectedOrder.quantity}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Supplier</Text>
+                <Text>{selectedOrder.supplier}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Order Date</Text>
+                <Text>{new Date(selectedOrder.orderDate).toLocaleDateString()}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Expected Delivery</Text>
+                <Text>{new Date(selectedOrder.expectedDelivery).toLocaleDateString()}</Text>
+              </Box>
+              
+              <Box>
+                <Text as="div" size="2" color="gray">Status</Text>
+                <Text>
+                  <Badge color={
+                    selectedOrder.status === 'delivered' ? 'green' : 
+                    selectedOrder.status === 'shipped' ? 'blue' : 
+                    selectedOrder.status === 'approved' ? 'purple' : 
+                    selectedOrder.status === 'cancelled' ? 'red' : 'orange'
+                  }>
+                    {selectedOrder.status}
+                  </Badge>
+                </Text>
+              </Box>
+
+              {selectedOrder.blockchainTx && (
+                <Box style={{ gridColumn: '1 / -1' }}>
+                  <Text as="div" size="2" color="gray">Blockchain Transaction</Text>
+                  <Text style={{ wordBreak: 'break-all' }}>{selectedOrder.blockchainTx}</Text>
+                </Box>
+              )}
+
+              {selectedOrder.shippingConditions && (
+                <>
+                  <Box>
+                    <Text as="div" size="2" color="gray">Shipping Temperature</Text>
+                    <Text>{selectedOrder.shippingConditions.temperature}°C</Text>
+                  </Box>
+                  <Box>
+                    <Text as="div" size="2" color="gray">Shipping Humidity</Text>
+                    <Text>{selectedOrder.shippingConditions.humidity}%</Text>
+                  </Box>
+                </>
+              )}
+            </Grid>
+            
+            {selectedOrder.notes && (
+              <Box mt="3">
+                <Text as="div" size="2" color="gray">Notes</Text>
+                <Text>{selectedOrder.notes}</Text>
+              </Box>
+            )}
+            
+            <Flex gap="3" mt="4" justify="end">
+              {selectedOrder.status === 'pending' && (
+                <>
+                  <Button 
+                    color="green"
+                    onClick={() => {
+                      updateOrderStatus(selectedOrder.id, 'approved');
+                      setSelectedOrder(null);
+                    }}
+                  >
+                    Approve
+                  </Button>
+                  <Button 
+                    color="red"
+                    onClick={() => {
+                      updateOrderStatus(selectedOrder.id, 'cancelled');
+                      setSelectedOrder(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                </>
+              )}
+              {selectedOrder.status === 'approved' && (
+                <Button 
+                  color="blue"
+                  onClick={() => {
+                    updateOrderStatus(selectedOrder.id, 'shipped');
+                    setSelectedOrder(null);
+                  }}
+                >
+                  Mark as Shipped
+                </Button>
+              )}
+              {selectedOrder.status === 'shipped' && (
+                <Button 
+                  color="green"
+                  onClick={() => {
+                    updateOrderStatus(selectedOrder.id, 'delivered');
+                    setSelectedOrder(null);
+                  }}
+                >
+                  Mark as Delivered
+                </Button>
+              )}
+              <Button 
+                variant="soft" 
+                color="gray"
+                onClick={() => setSelectedOrder(null)}
+              >
+                Close
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      )}
+
+      {/* Create Order Dialog */}
+      <Dialog.Root open={showOrderDialog} onOpenChange={setShowOrderDialog}>
+        <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Title>Create Purchase Order</Dialog.Title>
+          
+          <Grid columns="2" gap="3" mt="3">
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Material</Text>
+              <Select.Root
+                value={newOrder.materialId}
+                onValueChange={(value) => {
+                  const material = materials.find(m => m.id === value);
+                  setNewOrder({
+                    ...newOrder,
+                    materialId: value,
+                    supplier: material?.supplier || ''
+                  });
+                }}
+              >
+                <Select.Trigger placeholder="Select material" />
+                <Select.Content>
+                  {materials.map(material => (
+                    <Select.Item key={material.id} value={material.id}>
+                      {material.name} ({material.currentStock - material.reserved} {material.unit} available)
+                    </Select.Item>
+                  ))}
+                </Select.Content>
+              </Select.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Quantity"
+                  value={newOrder.quantity || ''}
+                  onChange={(e) => handleNewOrderInputChange(e, 'quantity')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Supplier"
+                  value={newOrder.supplier || ''}
+                  onChange={(e) => handleNewOrderInputChange(e, 'supplier')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
+              <TextField.Root>
+                <input
+                  type="date"
+                  placeholder="Expected Delivery"
+                  value={newOrder.expectedDelivery?.split('T')[0] || ''}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    expectedDelivery: new Date(e.target.value).toISOString()
+                  })}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box style={{ gridColumn: '1 / -1' }}>
+              <Text as="div" size="2" mb="1" weight="bold">Notes (optional)</Text>
+              <TextArea
+                placeholder="Notes"
+                value={newOrder.notes || ''}
+                onChange={(e) => handleNewOrderInputChange(e, 'notes')}
+              />
+            </Box>
+          </Grid>
+          
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray"
+              onClick={() => {
+                setShowOrderDialog(false);
+                setNewOrder({ status: 'pending', orderDate: today });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={createManualOrder}>
+              Create Order
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Add Material Dialog */}
+      <Dialog.Root open={showMaterialDialog} onOpenChange={setShowMaterialDialog}>
+        <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Title>Add New Material</Dialog.Title>
+          
+          <Grid columns="2" gap="3" mt="3">
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Material Name"
+                  value={newMaterial.name || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'name')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Supplier"
+                  value={newMaterial.supplier || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'supplier')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Current Stock</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Current Stock"
+                  value={newMaterial.currentStock || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'currentStock')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Unit (kg, g, L, etc.)</Text>
+              <TextField.Root>
+                <input
+                  type="text"
+                  placeholder="Unit"
+                  value={newMaterial.unit || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'unit')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Minimum Stock Level"
+                  value={newMaterial.minStockLevel || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'minStockLevel')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Reorder Level"
+                  value={newMaterial.reorderLevel || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'reorderLevel')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Safety Stock"
+                  value={newMaterial.safetyStock || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'safetyStock')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Lead Time"
+                  value={newMaterial.leadTime || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'leadTime')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+            
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
+              <TextField.Root>
+                <input
+                  type="number"
+                  placeholder="Order Quantity"
+                  value={newMaterial.orderQuantity || ''}
+                  onChange={(e) => handleNewMaterialInputChange(e, 'orderQuantity')}
+                  className="rt-TextFieldInput"
+                />
+              </TextField.Root>
+            </Box>
+
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">IoT Sensor</Text>
+              <Flex gap="2" align="center">
+                <Switch 
+                  checked={newMaterial.sensorConnected || false}
+                  onCheckedChange={(checked) => setNewMaterial({
+                    ...newMaterial,
+                    sensorConnected: checked
+                  })}
+                />
+                <Text>Connect IoT Sensor</Text>
+              </Flex>
+            </Box>
+          </Grid>
+          
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray"
+              onClick={() => {
+                setShowMaterialDialog(false);
+                setNewMaterial({ unit: 'kg', sensorConnected: false });
+              }}
+            >
+              Cancel
+            </Button>
+            <Button onClick={addNewMaterial}>
+              Add Material
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Blockchain History Dialog */}
+      <Dialog.Root open={showBlockchainDialog} onOpenChange={setShowBlockchainDialog}>
+        <Dialog.Content style={{ maxWidth: '700px' }}>
+          <Dialog.Title>
+            <Flex align="center" gap="2">
+              <TokensIcon /> Blockchain History
+              {isLoadingBlockchain && <Text size="2">Loading...</Text>}
+            </Flex>
+          </Dialog.Title>
+          
+          {isLoadingBlockchain ? (
+            <Flex justify="center" py="5">
+              <Text>Loading blockchain data...</Text>
+            </Flex>
+          ) : (
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>Transaction Hash</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Related TX</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {blockchainData.map((tx, index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell style={{ wordBreak: 'break-all' }}>
+                      <Text size="1">{tx.txHash}</Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Badge>
+                        {tx.action}
+                      </Badge>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {new Date(tx.timestamp).toLocaleString()}
+                    </Table.Cell>
+                    <Table.Cell>
+                      {tx.quantity || 'N/A'}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Flex direction="column" gap="1">
+                        {tx.participants.map((p, i) => (
+                          <Text key={i} size="1">{p}</Text>
+                        ))}
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {tx.relatedTxHash ? (
+                        <Text size="1" style={{ wordBreak: 'break-all' }}>
+                          {tx.relatedTxHash}
+                        </Text>
+                      ) : (
+                        <Text size="1" color="gray">None</Text>
+                      )}
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          )}
+          
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray"
+              onClick={() => setShowBlockchainDialog(false)}
+            >
+              Close
+            </Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
     </Container>
   );
 };
 
-export default FinishedMaterialInventory;
+export default RawMaterialsInventory;
