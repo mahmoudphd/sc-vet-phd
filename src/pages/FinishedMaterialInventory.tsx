@@ -182,8 +182,20 @@ class BlockchainService {
   }
 }
 
-// Utility functions
-const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+// Sequential ID generators
+let poCounter = 1;
+let matCounter = 1;
+let supCounter = 1;
+
+const generateId = (prefix: string) => {
+  switch(prefix) {
+    case 'PO': return `${prefix}-${poCounter++}`;
+    case 'MAT': return `${prefix}-${matCounter++}`;
+    case 'SUP': return `${prefix}-${supCounter++}`;
+    default: return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+  }
+};
+
 const today = new Date().toISOString().split('T')[0];
 
 // Color scheme for UI
@@ -1264,14 +1276,14 @@ const FinishedMaterialInventory = () => {
             <Grid columns="2" gap="3" mt="3">
               <Box>
                 <Text as="div" size="2" color="gray">Contact Person</Text>
-                <Text>{selectedSupplier.contactPerson}</Text>
+                <Text>{selectedSupplier.contactPerson || 'Not specified'}</Text>
               </Box>
               
               <Box>
                 <Text as="div" size="2" color="gray">Email</Text>
                 <Flex align="center" gap="1">
                   <EnvelopeClosedIcon />
-                  <Text>{selectedSupplier.email}</Text>
+                  <Text>{selectedSupplier.email || 'Not specified'}</Text>
                 </Flex>
               </Box>
               
@@ -1302,7 +1314,7 @@ const FinishedMaterialInventory = () => {
                 <Text as="div" size="2" color="gray">Contract Terms</Text>
                 <Flex align="center" gap="1">
                   <FileTextIcon />
-                  <Text>{selectedSupplier.contractTerms}</Text>
+                  <Text>{selectedSupplier.contractTerms || 'No terms specified'}</Text>
                 </Flex>
               </Box>
 
