@@ -27,7 +27,8 @@ import {
   PieChart,
   Pie,
   Legend,
-  CartesianGrid
+  CartesianGrid,
+  Tooltip
 } from 'recharts';
 import {
   CubeIcon,
@@ -175,6 +176,14 @@ const CATEGORY_COLORS = {
   B: '#10b981',
   C: '#6b7280'
 };
+
+interface InventoryValueData {
+  name: string;
+  value: number;
+  category: 'A' | 'B' | 'C';
+  fill: string;
+  unit: string;
+}
 
 const RawMaterialsInventory = () => {
   const [materials, setMaterials] = useState<RawMaterial[]>([
@@ -586,7 +595,7 @@ const RawMaterialsInventory = () => {
     setSortConfig({ key, direction });
   };
 
-  const inventoryValueData = filteredData.map(item => ({
+  const inventoryValueData: InventoryValueData[] = filteredData.map(item => ({
     name: item.name,
     value: item.currentStock * item.orderQuantity,
     category: item.category,
@@ -863,6 +872,12 @@ const RawMaterialsInventory = () => {
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
+              <Tooltip<number, string>
+                formatter={(value, name, props) => {
+                  const payload = props.payload as InventoryValueData;
+                  return [`${value} ${payload.unit}`, payload.name];
+                }}
+              />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
@@ -875,6 +890,7 @@ const RawMaterialsInventory = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
+              <Tooltip />
               <Legend />
               <Bar dataKey="currentStock" fill="#3b82f6" name="Current Stock" />
               <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
