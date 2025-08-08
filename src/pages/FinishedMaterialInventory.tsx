@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -18,19 +18,29 @@ import {
   Progress
 } from '@radix-ui/themes';
 import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  CartesianGrid
+} from 'recharts';
+import {
   CubeIcon,
   MixerHorizontalIcon,
   ExclamationTriangleIcon,
   ClockIcon,
-  CheckCircledIcon,
-  CrossCircledIcon,
   LightningBoltIcon,
-  LinkBreak2Icon,
   Link2Icon,
-  TokensIcon
+  TokensIcon,
+  DownloadIcon
 } from '@radix-ui/react-icons';
 
-// Types
 interface RawMaterial {
   id: string;
   name: string;
@@ -54,6 +64,8 @@ interface RawMaterial {
     weight?: number;
   };
   blockchainTx?: string;
+  location: string;
+  category: 'A' | 'B' | 'C';
 }
 
 interface PurchaseOrder {
@@ -84,7 +96,6 @@ interface BlockchainTransaction {
   quantity?: number;
 }
 
-// Mock IoT Service
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -94,7 +105,11 @@ class IoTSensorService {
     });
   }
 
-  static async getSensorReadings(materialId: string): Promise<any> {
+  static async getSensorReadings(materialId: string): Promise<{
+    temperature?: number;
+    humidity?: number;
+    weight?: number;
+  }> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -107,27 +122,26 @@ class IoTSensorService {
   }
 }
 
-// Enhanced Blockchain Service
 class BlockchainService {
   private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
 
   static async recordTransaction(
     materialId: string,
-    action: string,
+    action: 'order' | 'delivery' | 'adjustment',
     quantity: number,
     participants: string[],
     relatedTxHash?: string
   ): Promise<string> {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const txHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+        const txHash = `0x${Array(64).fill(0).map(() => Math.floor(Math.random() * 16).toString(16)).join('')}`;
         const timestamp = new Date().toISOString();
         
         const transaction: BlockchainTransaction = {
           txHash,
           timestamp,
           materialId,
-          action: action as any,
+          action,
           participants,
           relatedTxHash,
           quantity
@@ -143,86 +157,84 @@ class BlockchainService {
     });
   }
 
-  static async verifyTransaction(txHash: string): Promise<boolean> {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(true);
-      }, 500);
-    });
-  }
-
   static async getTransactionHistory(materialId: string): Promise<BlockchainTransaction[]> {
     return new Promise((resolve) => {
       setTimeout(() => {
         const history = this.transactionHistory[materialId] || [];
-        const sortedHistory = [...history].sort((a, b) => 
+        resolve([...history].sort((a, b) => 
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-        resolve(sortedHistory);
+        ));
       }, 1200);
     });
   }
 }
 
-// Utility functions
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 const today = new Date().toISOString().split('T')[0];
-
-// Initial Data
-const initialMaterials: RawMaterial[] = [
-  {
-    id: generateId('MAT'),
-    name: 'Vitamin B1',
-    currentStock: 120,
-    reserved: 40,
-    minStockLevel: 50,
-    reorderLevel: 80,
-    safetyStock: 30,
-    leadTime: 7,
-    supplier: 'Supplier X',
-    supplierRating: 4.5,
-    orderQuantity: 100,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  },
-  {
-    id: generateId('MAT'),
-    name: 'Vitamin B2',
-    currentStock: 90,
-    reserved: 30,
-    minStockLevel: 60,
-    reorderLevel: 90,
-    safetyStock: 40,
-    leadTime: 5,
-    supplier: 'Supplier Y',
-    supplierRating: 3.8,
-    orderQuantity: 120,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  },
-  {
-    id: generateId('MAT'),
-    name: 'Nicotinamide B3',
-    currentStock: 70,
-    reserved: 20,
-    minStockLevel: 40,
-    reorderLevel: 60,
-    safetyStock: 20,
-    leadTime: 10,
-    supplier: 'Supplier Z',
-    supplierRating: 4.2,
-    orderQuantity: 80,
-    pendingOrders: 0,
-    unit: 'kg',
-    sensorConnected: false
-  }
-];
+const CATEGORY_COLORS = {
+  A: '#3b82f6',
+  B: '#10b981',
+  C: '#6b7280'
+};
 
 const RawMaterialsInventory = () => {
-  // State
-  const [materials, setMaterials] = useState<RawMaterial[]>(initialMaterials);
+  const [materials, setMaterials] = useState<RawMaterial[]>([
+    {
+      id: generateId('MAT'),
+      name: 'Vitamin B1',
+      currentStock: 120,
+      reserved: 40,
+      minStockLevel: 50,
+      reorderLevel: 80,
+      safetyStock: 30,
+      leadTime: 7,
+      supplier: 'Supplier X',
+      supplierRating: 4.5,
+      orderQuantity: 100,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false,
+      location: 'Zone 1',
+      category: 'A'
+    },
+    {
+      id: generateId('MAT'),
+      name: 'Vitamin B2',
+      currentStock: 90,
+      reserved: 30,
+      minStockLevel: 60,
+      reorderLevel: 90,
+      safetyStock: 40,
+      leadTime: 5,
+      supplier: 'Supplier Y',
+      supplierRating: 3.8,
+      orderQuantity: 120,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false,
+      location: 'Zone 2',
+      category: 'B'
+    },
+    {
+      id: generateId('MAT'),
+      name: 'Nicotinamide B3',
+      currentStock: 70,
+      reserved: 20,
+      minStockLevel: 40,
+      reorderLevel: 60,
+      safetyStock: 20,
+      leadTime: 10,
+      supplier: 'Supplier Z',
+      supplierRating: 4.2,
+      orderQuantity: 80,
+      pendingOrders: 0,
+      unit: 'kg',
+      sensorConnected: false,
+      location: 'Zone 1',
+      category: 'C'
+    }
+  ]);
+  
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [selectedMaterial, setSelectedMaterial] = useState<RawMaterial | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<PurchaseOrder | null>(null);
@@ -236,22 +248,23 @@ const RawMaterialsInventory = () => {
   });
   const [newMaterial, setNewMaterial] = useState<Partial<RawMaterial>>({
     unit: 'kg',
-    sensorConnected: false
+    sensorConnected: false,
+    category: 'A'
   });
   const [blockchainData, setBlockchainData] = useState<BlockchainTransaction[]>([]);
   const [isLoadingBlockchain, setIsLoadingBlockchain] = useState(false);
-  const [sensorStatus, setSensorStatus] = useState<Record<string, boolean>>({});
   const [isConnectingSensor, setIsConnectingSensor] = useState(false);
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [sortConfig, setSortConfig] = useState<{key: keyof RawMaterial, direction: 'asc' | 'desc'} | null>(null);
 
-  // Connect to IoT sensor
   const connectToSensor = async (materialId: string) => {
     setIsConnectingSensor(true);
     try {
       const connected = await IoTSensorService.connectToSensor(materialId);
       if (connected) {
         const readings = await IoTSensorService.getSensorReadings(materialId);
-        
-        setMaterials(materials.map(m => 
+        setMaterials(prevMaterials => prevMaterials.map(m => 
           m.id === materialId ? { 
             ...m, 
             sensorConnected: true,
@@ -260,18 +273,18 @@ const RawMaterialsInventory = () => {
           } : m
         ));
         
-        setSensorStatus(prev => ({ ...prev, [materialId]: true }));
-        
         if (readings.weight) {
-          const material = materials.find(m => m.id === materialId);
-          if (material) {
-            const newStock = Math.round(readings.weight);
-            if (Math.abs(newStock - material.currentStock) > 5) {
-              setMaterials(materials.map(m => 
-                m.id === materialId ? { ...m, currentStock: newStock } : m
-              ));
-            }
-          }
+          setMaterials(prevMaterials => {
+            return prevMaterials.map(m => {
+              if (m.id === materialId) {
+                const newStock = Math.round(readings.weight!);
+                if (Math.abs(newStock - m.currentStock) > 5) {
+                  return { ...m, currentStock: newStock };
+                }
+              }
+              return m;
+            });
+          });
         }
       }
     } catch (error) {
@@ -281,25 +294,22 @@ const RawMaterialsInventory = () => {
     }
   };
 
-  // Record transaction on blockchain
   const recordBlockchainTransaction = async (
     materialId: string,
-    action: string,
+    action: 'order' | 'delivery' | 'adjustment',
     quantity: number,
     participants: string[],
     relatedTxHash?: string
   ) => {
-    const txHash = await BlockchainService.recordTransaction(
+    return await BlockchainService.recordTransaction(
       materialId,
       action,
       quantity,
       participants,
       relatedTxHash
     );
-    return txHash;
   };
 
-  // Fetch blockchain history
   const fetchBlockchainHistory = async (materialId: string) => {
     setIsLoadingBlockchain(true);
     try {
@@ -313,7 +323,6 @@ const RawMaterialsInventory = () => {
     }
   };
 
-  // Generate purchase orders automatically
   const generateAutoOrders = async () => {
     const newOrders: PurchaseOrder[] = [];
     const updatedMaterials = [...materials];
@@ -339,7 +348,6 @@ const RawMaterialsInventory = () => {
           orderDate: today
         };
 
-        // Record order on blockchain
         const txHash = await recordBlockchainTransaction(
           material.id,
           'order',
@@ -355,38 +363,44 @@ const RawMaterialsInventory = () => {
           lastOrderDate: today
         };
 
-        // Simulate delivery after lead time (for demo purposes)
         setTimeout(async () => {
-          if (newOrder.status === 'pending' || newOrder.status === 'approved') {
-            const deliveryTxHash = await recordBlockchainTransaction(
-              material.id,
-              'delivery',
-              orderQuantity,
-              [material.supplier, 'Warehouse Manager'],
-              txHash
-            );
+          setOrders(prevOrders => {
+            const orderExists = prevOrders.find(o => o.id === newOrder.id);
+            if (!orderExists) return prevOrders;
             
-            setOrders(prevOrders => prevOrders.map(o => 
-              o.id === newOrder.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
-            ));
-            
-            setMaterials(prevMaterials => prevMaterials.map(m => 
-              m.id === material.id ? { 
-                ...m, 
-                currentStock: m.currentStock + orderQuantity,
-                pendingOrders: m.pendingOrders - orderQuantity
-              } : m
-            ));
-          }
+            return prevOrders.map(o => {
+              if (o.id === newOrder.id && (o.status === 'pending' || o.status === 'approved')) {
+                recordBlockchainTransaction(
+                  material.id,
+                  'delivery',
+                  orderQuantity,
+                  [material.supplier, 'Warehouse Manager'],
+                  txHash
+                ).then(deliveryTxHash => {
+                  setOrders(prev => prev.map(ord => 
+                    ord.id === newOrder.id ? { ...ord, status: 'delivered', blockchainTx: deliveryTxHash } : ord
+                  ));
+                  
+                  setMaterials(prev => prev.map(m => 
+                    m.id === material.id ? { 
+                      ...m, 
+                      currentStock: m.currentStock + orderQuantity,
+                      pendingOrders: m.pendingOrders - orderQuantity
+                    } : m
+                  ));
+                });
+              }
+              return o;
+            });
+          });
         }, material.leadTime * 86400000);
       }
     }
 
-    setOrders([...orders, ...newOrders]);
+    setOrders(prevOrders => [...prevOrders, ...newOrders]);
     setMaterials(updatedMaterials);
   };
 
-  // Update order status
   const updateOrderStatus = async (orderId: string, status: PurchaseOrder['status']) => {
     const updatedOrders = orders.map(order => {
       if (order.id === orderId) {
@@ -400,10 +414,12 @@ const RawMaterialsInventory = () => {
             [order.supplier, 'Warehouse Manager'],
             order.blockchainTx
           ).then(txHash => {
-            updatedOrder.blockchainTx = txHash;
+            setOrders(prev => prev.map(o => 
+              o.id === orderId ? { ...o, blockchainTx: txHash } : o
+            ));
           });
           
-          setMaterials(materials.map(m => 
+          setMaterials(prev => prev.map(m => 
             m.id === order.materialId ? { 
               ...m, 
               currentStock: m.currentStock + order.quantity,
@@ -420,7 +436,6 @@ const RawMaterialsInventory = () => {
     setOrders(updatedOrders);
   };
 
-  // Create manual order
   const createManualOrder = async () => {
     if (!newOrder.materialId || !newOrder.quantity) return;
 
@@ -446,7 +461,6 @@ const RawMaterialsInventory = () => {
       }
     };
 
-    // Record order on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'order',
@@ -455,39 +469,47 @@ const RawMaterialsInventory = () => {
     );
     order.blockchainTx = txHash;
 
-    setOrders([...orders, order]);
-    setMaterials(materials.map(m => 
+    setOrders(prev => [...prev, order]);
+    setMaterials(prev => prev.map(m => 
       m.id === material.id ? { ...m, pendingOrders: m.pendingOrders + order.quantity } : m
     ));
     
-    // Simulate delivery after lead time (for demo purposes)
     setTimeout(async () => {
-      const deliveryTxHash = await recordBlockchainTransaction(
-        material.id,
-        'delivery',
-        order.quantity,
-        [order.supplier, 'Warehouse Manager'],
-        txHash
-      );
-      
-      setOrders(prevOrders => prevOrders.map(o => 
-        o.id === order.id ? { ...o, status: 'delivered', blockchainTx: deliveryTxHash } : o
-      ));
-      
-      setMaterials(prevMaterials => prevMaterials.map(m => 
-        m.id === material.id ? { 
-          ...m, 
-          currentStock: m.currentStock + order.quantity,
-          pendingOrders: m.pendingOrders - order.quantity
-        } : m
-      ));
+      setOrders(prev => {
+        const existingOrder = prev.find(o => o.id === order.id);
+        if (!existingOrder) return prev;
+        
+        return prev.map(o => {
+          if (o.id === order.id && (o.status === 'pending' || o.status === 'approved')) {
+            recordBlockchainTransaction(
+              material.id,
+              'delivery',
+              order.quantity,
+              [order.supplier, 'Warehouse Manager'],
+              txHash
+            ).then(deliveryTxHash => {
+              setOrders(prevOrders => prevOrders.map(ord => 
+                ord.id === order.id ? { ...ord, status: 'delivered', blockchainTx: deliveryTxHash } : ord
+              ));
+              
+              setMaterials(prevMaterials => prevMaterials.map(m => 
+                m.id === material.id ? { 
+                  ...m, 
+                  currentStock: m.currentStock + order.quantity,
+                  pendingOrders: m.pendingOrders - order.quantity
+                } : m
+              ));
+            });
+          }
+          return o;
+        });
+      });
     }, material.leadTime * 86400000);
 
     setShowOrderDialog(false);
     setNewOrder({ status: 'pending', orderDate: today });
   };
 
-  // Add new material
   const addNewMaterial = async () => {
     if (!newMaterial.name || !newMaterial.supplier) return;
 
@@ -505,10 +527,11 @@ const RawMaterialsInventory = () => {
       orderQuantity: newMaterial.orderQuantity || 0,
       pendingOrders: 0,
       unit: newMaterial.unit || 'kg',
-      sensorConnected: false
+      sensorConnected: false,
+      location: newMaterial.location || 'Zone 1',
+      category: newMaterial.category || 'A'
     };
 
-    // Record initial stock on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'adjustment',
@@ -517,41 +540,70 @@ const RawMaterialsInventory = () => {
     );
     material.blockchainTx = txHash;
 
-    setMaterials([...materials, material]);
+    setMaterials(prev => [...prev, material]);
     setShowMaterialDialog(false);
-    setNewMaterial({ unit: 'kg', sensorConnected: false });
+    setNewMaterial({ unit: 'kg', sensorConnected: false, category: 'A' });
   };
 
-  // Handle input changes
-  const handleMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
-    if (!selectedMaterial) return;
-    setSelectedMaterial({
-      ...selectedMaterial,
-      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
-        ? e.target.value 
-        : Number(e.target.value)
+  const filteredData = materials
+    .filter(material => {
+      if (showReorderOnly && (material.currentStock - material.reserved) > material.reorderLevel) {
+        return false;
+      }
+      if (locationFilter !== 'all' && material.location !== locationFilter) {
+        return false;
+      }
+      if (categoryFilter !== 'all' && material.category !== categoryFilter) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      if (!sortConfig) return 0;
+      
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+      
+      if (aValue === undefined || bValue === undefined) return 0;
+      
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return sortConfig.direction === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortConfig.direction === 'asc' 
+          ? aValue.localeCompare(bValue) 
+          : bValue.localeCompare(aValue);
+      }
+      
+      return 0;
     });
+
+  const requestSort = (key: keyof RawMaterial) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig?.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
   };
 
-  const handleNewMaterialInputChange = (e: ChangeEvent<HTMLInputElement>, field: keyof RawMaterial) => {
-    setNewMaterial({
-      ...newMaterial,
-      [field]: field === 'unit' || field === 'name' || field === 'supplier' 
-        ? e.target.value 
-        : Number(e.target.value)
-    });
-  };
+  const inventoryValueData = filteredData.map(item => ({
+    name: item.name,
+    value: item.currentStock * item.orderQuantity,
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category],
+    unit: item.unit
+  }));
 
-  const handleNewOrderInputChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: keyof PurchaseOrder) => {
-    setNewOrder({
-      ...newOrder,
-      [field]: field === 'notes' || field === 'supplier' || field === 'materialId'
-        ? e.target.value
-        : Number(e.target.value)
-    });
-  };
+  const stockLevelData = filteredData.map(item => ({
+    name: item.name,
+    currentStock: item.currentStock,
+    reserved: item.reserved,
+    available: item.currentStock - item.reserved,
+    reorderLevel: item.reorderLevel,
+    safetyStock: item.safetyStock
+  }));
 
-  // Calculate inventory metrics
   const criticalMaterials = materials.filter(m => 
     (m.currentStock - m.reserved) <= m.safetyStock
   ).length;
@@ -568,7 +620,7 @@ const RawMaterialsInventory = () => {
 
   return (
     <Container size="3" px="4" py="6">
-      {/* Inventory Dashboard */}
+      {/* Dashboard Cards */}
       <Grid columns="4" gap="4" mb="4">
         <Card>
           <Flex align="center" gap="3">
@@ -637,103 +689,210 @@ const RawMaterialsInventory = () => {
           />
           <Text>Show Only Materials Needing Reorder</Text>
         </Flex>
+        
+        <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
+          <Select.Trigger>
+            <MixerHorizontalIcon />
+            Location
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="all">All Locations</Select.Item>
+            <Select.Item value="Zone 1">Zone 1</Select.Item>
+            <Select.Item value="Zone 2">Zone 2</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <Select.Root value={categoryFilter} onValueChange={setCategoryFilter}>
+          <Select.Trigger>
+            <MixerHorizontalIcon />
+            Category
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="all">All Categories</Select.Item>
+            <Select.Item value="A">Category A</Select.Item>
+            <Select.Item value="B">Category B</Select.Item>
+            <Select.Item value="C">Category C</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <Button variant="soft" onClick={() => alert('Export functionality would go here')}>
+          <DownloadIcon />
+          Export Data
+        </Button>
       </Flex>
 
       {/* Materials Table */}
       <Card mb="4">
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Raw Materials Inventory</Heading>
-          <Text color="gray">{materials.length} materials registered</Text>
+          <Text color="gray">{filteredData.length} materials filtered</Text>
         </Flex>
         <Table.Root>
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Current Stock</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Reserved</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Available</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>IoT Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => requestSort('name')}>
+                Material {sortConfig?.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => requestSort('currentStock')}>
+                Current Stock {sortConfig?.key === 'currentStock' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell onClick={() => requestSort('reserved')}>
+                Reserved {sortConfig?.key === 'reserved' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Available
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                IoT Status
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Status
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Category
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Location
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                Actions
+              </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {materials
-              .filter(material => !showReorderOnly || 
-                (material.currentStock - material.reserved) <= material.reorderLevel)
-              .map(material => {
-                const available = material.currentStock - material.reserved;
-                const isCritical = available <= material.safetyStock;
-                const needsReorder = available <= material.reorderLevel;
-                const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
-                
-                return (
-                  <Table.Row key={material.id} style={{
+            {filteredData.map(material => {
+              const available = material.currentStock - material.reserved;
+              const isCritical = available <= material.safetyStock;
+              const needsReorder = available <= material.reorderLevel;
+              const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
+              
+              return (
+                <Table.Row 
+                  key={material.id} 
+                  style={{
                     backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
-                  }}>
-                    <Table.Cell>
-                      <Flex align="center" gap="2">
-                        {material.name}
-                        {material.blockchainTx && <TokensIcon color="blue" />}
+                  }}
+                >
+                  <Table.Cell>
+                    <Flex align="center" gap="2">
+                      {material.name}
+                      {material.blockchainTx && <TokensIcon color="blue" />}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex direction="column" gap="1">
+                      <Text>{material.currentStock} {material.unit}</Text>
+                      <Progress value={Math.min(stockPercentage, 100)} />
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
+                  <Table.Cell>{available} {material.unit}</Table.Cell>
+                  <Table.Cell>
+                    {material.sensorConnected ? (
+                      <Flex align="center" gap="1">
+                        <Link2Icon color="green" />
+                        <Text color="green">Connected</Text>
+                        {material.sensorReadings?.temperature && (
+                          <Text color="gray" size="1">{material.sensorReadings.temperature}°C</Text>
+                        )}
                       </Flex>
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Flex direction="column" gap="1">
-                        <Text>{material.currentStock} {material.unit}</Text>
-                        <Progress value={Math.min(stockPercentage, 100)} />
-                      </Flex>
-                    </Table.Cell>
-                    <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
-                    <Table.Cell>{available} {material.unit}</Table.Cell>
-                    <Table.Cell>
-                      {material.sensorConnected ? (
-                        <Flex align="center" gap="1">
-                          <Link2Icon color="green" />
-                          <Text color="green">Connected</Text>
-                          {material.sensorReadings?.temperature && (
-                            <Text color="gray" size="1">{material.sensorReadings.temperature}°C</Text>
-                          )}
-                        </Flex>
-                      ) : (
-                        <Button 
-                          size="1" 
-                          variant="soft"
-                          onClick={() => connectToSensor(material.id)}
-                          disabled={isConnectingSensor}
-                        >
-                          {isConnectingSensor ? 'Connecting...' : 'Connect Sensor'}
-                        </Button>
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {isCritical ? (
-                        <Badge color="red">Critical</Badge>
-                      ) : needsReorder ? (
-                        <Badge color="orange">Reorder Needed</Badge>
-                      ) : (
-                        <Badge color="green">OK</Badge>
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Flex gap="2">
-                        <Button size="1" onClick={() => setSelectedMaterial(material)}>
-                          Configure
-                        </Button>
-                        <Button 
-                          size="1" 
-                          variant="soft" 
-                          onClick={() => fetchBlockchainHistory(material.id)}
-                        >
-                          Blockchain
-                        </Button>
-                      </Flex>
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
+                    ) : (
+                      <Button 
+                        size="1" 
+                        variant="soft"
+                        onClick={() => connectToSensor(material.id)}
+                        disabled={isConnectingSensor}
+                      >
+                        {isConnectingSensor ? 'Connecting...' : 'Connect Sensor'}
+                      </Button>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {isCritical ? (
+                      <Badge color="red">Critical</Badge>
+                    ) : needsReorder ? (
+                      <Badge color="orange">Reorder Needed</Badge>
+                    ) : (
+                      <Badge color="green">OK</Badge>
+                    )}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Badge color={material.category === 'A' ? 'blue' : material.category === 'B' ? 'green' : 'gray'}>
+                      {material.category}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {material.location}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex gap="2">
+                      <Button size="1" onClick={() => setSelectedMaterial(material)}>
+                        Configure
+                      </Button>
+                      <Button 
+                        size="1" 
+                        variant="soft" 
+                        onClick={() => fetchBlockchainHistory(material.id)}
+                      >
+                        Blockchain
+                      </Button>
+                    </Flex>
+                  </Table.Cell>
+                </Table.Row>
+              );
+            })}
           </Table.Body>
         </Table.Root>
       </Card>
+
+      {/* Charts Section */}
+      <Grid columns="2" gap="4" mb="4">
+        <Card>
+          <Heading size="4" mb="3">Inventory Value by Category</Heading>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={inventoryValueData}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+              >
+                {inventoryValueData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Legend />
+              <ChartTooltip 
+                formatter={(value: number) => [
+                  `${value.toLocaleString()}`,
+                  'Value'
+                ]}
+              />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
+
+        <Card>
+          <Heading size="4" mb="3">Stock Levels Overview</Heading>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={stockLevelData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <ChartTooltip />
+              <Legend />
+              <Bar dataKey="currentStock" fill="#3b82f6" name="Current Stock" />
+              <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
+              <Bar dataKey="available" fill="#10b981" name="Available" />
+              <Bar dataKey="reorderLevel" fill="#ef4444" name="Reorder Level" />
+              <Bar dataKey="safetyStock" fill="#8b5cf6" name="Safety Stock" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+      </Grid>
 
       {/* Purchase Orders Table */}
       <Card>
@@ -831,7 +990,10 @@ const RawMaterialsInventory = () => {
                   <input
                     type="number"
                     value={selectedMaterial.minStockLevel}
-                    onChange={(e) => handleMaterialInputChange(e, 'minStockLevel')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      minStockLevel: parseInt(e.target.value) || 0
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
@@ -843,7 +1005,10 @@ const RawMaterialsInventory = () => {
                   <input
                     type="number"
                     value={selectedMaterial.reorderLevel}
-                    onChange={(e) => handleMaterialInputChange(e, 'reorderLevel')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      reorderLevel: parseInt(e.target.value) || 0
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
@@ -855,7 +1020,10 @@ const RawMaterialsInventory = () => {
                   <input
                     type="number"
                     value={selectedMaterial.safetyStock}
-                    onChange={(e) => handleMaterialInputChange(e, 'safetyStock')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      safetyStock: parseInt(e.target.value) || 0
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
@@ -867,7 +1035,10 @@ const RawMaterialsInventory = () => {
                   <input
                     type="number"
                     value={selectedMaterial.leadTime}
-                    onChange={(e) => handleMaterialInputChange(e, 'leadTime')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      leadTime: parseInt(e.target.value) || 0
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
@@ -879,7 +1050,10 @@ const RawMaterialsInventory = () => {
                   <input
                     type="number"
                     value={selectedMaterial.orderQuantity}
-                    onChange={(e) => handleMaterialInputChange(e, 'orderQuantity')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      orderQuantity: parseInt(e.target.value) || 0
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
@@ -891,10 +1065,48 @@ const RawMaterialsInventory = () => {
                   <input
                     type="text"
                     value={selectedMaterial.unit}
-                    onChange={(e) => handleMaterialInputChange(e, 'unit')}
+                    onChange={(e) => setSelectedMaterial({
+                      ...selectedMaterial,
+                      unit: e.target.value
+                    })}
                     className="rt-TextFieldInput"
                   />
                 </TextField.Root>
+              </Box>
+
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Location</Text>
+                <Select.Root
+                  value={selectedMaterial.location}
+                  onValueChange={(value) => setSelectedMaterial({
+                    ...selectedMaterial,
+                    location: value
+                  })}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Item value="Zone 1">Zone 1</Select.Item>
+                    <Select.Item value="Zone 2">Zone 2</Select.Item>
+                  </Select.Content>
+                </Select.Root>
+              </Box>
+
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Category</Text>
+                <Select.Root
+                  value={selectedMaterial.category}
+                  onValueChange={(value) => setSelectedMaterial({
+                    ...selectedMaterial,
+                    category: value as 'A' | 'B' | 'C'
+                  })}
+                >
+                  <Select.Trigger />
+                  <Select.Content>
+                    <Select.Item value="A">Category A</Select.Item>
+                    <Select.Item value="B">Category B</Select.Item>
+                    <Select.Item value="C">Category C</Select.Item>
+                  </Select.Content>
+                </Select.Root>
               </Box>
 
               {selectedMaterial.sensorConnected && selectedMaterial.sensorReadings && (
@@ -928,7 +1140,7 @@ const RawMaterialsInventory = () => {
                 Cancel
               </Button>
               <Button onClick={() => {
-                setMaterials(materials.map(m => 
+                setMaterials(prev => prev.map(m => 
                   m.id === selectedMaterial.id ? selectedMaterial : m
                 ));
                 setSelectedMaterial(null);
@@ -1108,7 +1320,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Quantity"
                   value={newOrder.quantity || ''}
-                  onChange={(e) => handleNewOrderInputChange(e, 'quantity')}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    quantity: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1121,7 +1336,10 @@ const RawMaterialsInventory = () => {
                   type="text"
                   placeholder="Supplier"
                   value={newOrder.supplier || ''}
-                  onChange={(e) => handleNewOrderInputChange(e, 'supplier')}
+                  onChange={(e) => setNewOrder({
+                    ...newOrder,
+                    supplier: e.target.value
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1148,7 +1366,10 @@ const RawMaterialsInventory = () => {
               <TextArea
                 placeholder="Notes"
                 value={newOrder.notes || ''}
-                onChange={(e) => handleNewOrderInputChange(e, 'notes')}
+                onChange={(e) => setNewOrder({
+                  ...newOrder,
+                  notes: e.target.value
+                })}
               />
             </Box>
           </Grid>
@@ -1184,7 +1405,10 @@ const RawMaterialsInventory = () => {
                   type="text"
                   placeholder="Material Name"
                   value={newMaterial.name || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'name')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    name: e.target.value
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1197,7 +1421,10 @@ const RawMaterialsInventory = () => {
                   type="text"
                   placeholder="Supplier"
                   value={newMaterial.supplier || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'supplier')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    supplier: e.target.value
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1210,7 +1437,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Current Stock"
                   value={newMaterial.currentStock || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'currentStock')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    currentStock: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1223,7 +1453,10 @@ const RawMaterialsInventory = () => {
                   type="text"
                   placeholder="Unit"
                   value={newMaterial.unit || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'unit')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    unit: e.target.value
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1236,7 +1469,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Minimum Stock Level"
                   value={newMaterial.minStockLevel || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'minStockLevel')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    minStockLevel: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1249,7 +1485,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Reorder Level"
                   value={newMaterial.reorderLevel || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'reorderLevel')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    reorderLevel: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1262,7 +1501,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Safety Stock"
                   value={newMaterial.safetyStock || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'safetyStock')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    safetyStock: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1275,7 +1517,10 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Lead Time"
                   value={newMaterial.leadTime || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'leadTime')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    leadTime: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
@@ -1288,10 +1533,48 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Order Quantity"
                   value={newMaterial.orderQuantity || ''}
-                  onChange={(e) => handleNewMaterialInputChange(e, 'orderQuantity')}
+                  onChange={(e) => setNewMaterial({
+                    ...newMaterial,
+                    orderQuantity: parseInt(e.target.value) || 0
+                  })}
                   className="rt-TextFieldInput"
                 />
               </TextField.Root>
+            </Box>
+
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Location</Text>
+              <Select.Root
+                value={newMaterial.location || 'Zone 1'}
+                onValueChange={(value) => setNewMaterial({
+                  ...newMaterial,
+                  location: value
+                })}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  <Select.Item value="Zone 1">Zone 1</Select.Item>
+                  <Select.Item value="Zone 2">Zone 2</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </Box>
+
+            <Box>
+              <Text as="div" size="2" mb="1" weight="bold">Category</Text>
+              <Select.Root
+                value={newMaterial.category || 'A'}
+                onValueChange={(value) => setNewMaterial({
+                  ...newMaterial,
+                  category: value as 'A' | 'B' | 'C'
+                })}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  <Select.Item value="A">Category A</Select.Item>
+                  <Select.Item value="B">Category B</Select.Item>
+                  <Select.Item value="C">Category C</Select.Item>
+                </Select.Content>
+              </Select.Root>
             </Box>
 
             <Box>
@@ -1315,7 +1598,7 @@ const RawMaterialsInventory = () => {
               color="gray"
               onClick={() => {
                 setShowMaterialDialog(false);
-                setNewMaterial({ unit: 'kg', sensorConnected: false });
+                setNewMaterial({ unit: 'kg', sensorConnected: false, category: 'A' });
               }}
             >
               Cancel
