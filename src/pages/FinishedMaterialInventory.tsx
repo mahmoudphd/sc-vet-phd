@@ -22,7 +22,6 @@ import {
   Bar,
   XAxis,
   YAxis,
-  Tooltip as ChartTooltip,
   ResponsiveContainer,
   Cell,
   PieChart,
@@ -865,12 +864,6 @@ const RawMaterialsInventory = () => {
                 ))}
               </Pie>
               <Legend />
-              <ChartTooltip 
-                formatter={(value: number, name: string, entry: any) => [
-                  `${value.toLocaleString()}`,
-                  'Value'
-                ]}
-              />
             </PieChart>
           </ResponsiveContainer>
         </Card>
@@ -882,7 +875,6 @@ const RawMaterialsInventory = () => {
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
               <YAxis />
-              <ChartTooltip />
               <Legend />
               <Bar dataKey="currentStock" fill="#3b82f6" name="Current Stock" />
               <Bar dataKey="reserved" fill="#f59e0b" name="Reserved" />
