@@ -78,7 +78,7 @@ interface PurchaseOrder {
   status: 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
   orderDate: string;
   notes?: string;
-  blockchain极?: string;
+  blockchainTx?: string;
   relatedTxHash?: string;
   shippingConditions?: {
     temperature?: number;
@@ -200,7 +200,7 @@ const RawMaterialsInventory = () => {
     {
       id: generateId('MAT'),
       name: 'Vitamin B2',
-      currentStock极: 90,
+      currentStock: 90,
       reserved: 30,
       minStockLevel: 60,
       reorderLevel: 90,
@@ -636,7 +636,7 @@ const RawMaterialsInventory = () => {
         
         <Card>
           <Flex align="center" gap="3">
-            <Box style={{ background: '#极8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
               <ClockIcon width={24} height={24} />
             </Box>
             <Box>
@@ -905,7 +905,7 @@ const RawMaterialsInventory = () => {
             <Table.Row>
               <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Quantity</Table.Column极ll>
+              <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Order Date</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
@@ -1543,7 +1543,7 @@ const RawMaterialsInventory = () => {
             </Box>
 
             <Box>
-              <Text as="div" size="2极" mb="1" weight="bold">Location</Text>
+              <Text as="div" size="2" mb="1" weight="bold">Location</Text>
               <Select.Root
                 value={newMaterial.location || 'Zone 1'}
                 onValueChange={(value) => setNewMaterial({
