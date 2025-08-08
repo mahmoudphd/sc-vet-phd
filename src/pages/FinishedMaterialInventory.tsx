@@ -41,6 +41,7 @@ import {
   DownloadIcon
 } from '@radix-ui/react-icons';
 
+// Interfaces
 interface RawMaterial {
   id: string;
   name: string;
@@ -96,7 +97,7 @@ interface BlockchainTransaction {
   quantity?: number;
 }
 
-interface InventoryValueData {
+interface InventoryValueItem {
   name: string;
   value: number;
   category: 'A' | 'B' | 'C';
@@ -104,6 +105,7 @@ interface InventoryValueData {
   unit: string;
 }
 
+// Services
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -177,15 +179,15 @@ class BlockchainService {
   }
 }
 
+// Helper Functions
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 const today = new Date().toISOString().split('T')[0];
 const CATEGORY_COLORS = {
   A: '#3b82f6',
   B: '#10b981',
   C: '#6b7280'
-};
-
-const RawMaterialsInventory = () => {
+};const RawMaterialsInventory = () => {
+  // State initialization
   const [materials, setMaterials] = useState<RawMaterial[]>([
     {
       id: generateId('MAT'),
@@ -264,8 +266,7 @@ const RawMaterialsInventory = () => {
   const [isConnectingSensor, setIsConnectingSensor] = useState(false);
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
-  const [sortConfig, setSortConfig] = useState<{key: keyof RawMaterial, direction: 'asc' | 'desc'} | null>(null);
-
+  const [sortConfig, setSortConfig] = useState<{key: keyof RawMaterial, direction: 'asc' | 'desc'} | null>(null);  // Functions
   const connectToSensor = async (materialId: string) => {
     setIsConnectingSensor(true);
     try {
@@ -407,9 +408,7 @@ const RawMaterialsInventory = () => {
 
     setOrders(prevOrders => [...prevOrders, ...newOrders]);
     setMaterials(updatedMaterials);
-  };
-
-  const updateOrderStatus = async (orderId: string, status: PurchaseOrder['status']) => {
+  };  const updateOrderStatus = async (orderId: string, status: PurchaseOrder['status']) => {
     const updatedOrders = orders.map(order => {
       if (order.id === orderId) {
         const updatedOrder = { ...order, status };
@@ -551,9 +550,7 @@ const RawMaterialsInventory = () => {
     setMaterials(prev => [...prev, material]);
     setShowMaterialDialog(false);
     setNewMaterial({ unit: 'kg', sensorConnected: false, category: 'A' });
-  };
-
-  const filteredData = materials
+  };  const filteredData = materials
     .filter(material => {
       if (showReorderOnly && (material.currentStock - material.reserved) > material.reorderLevel) {
         return false;
@@ -595,7 +592,7 @@ const RawMaterialsInventory = () => {
     setSortConfig({ key, direction });
   };
 
-  const inventoryValueData: InventoryValueData[] = filteredData.map(item => ({
+  const inventoryValueData: InventoryValueItem[] = filteredData.map(item => ({
     name: item.name,
     value: item.currentStock * item.orderQuantity,
     category: item.category,
@@ -624,9 +621,7 @@ const RawMaterialsInventory = () => {
     o.status === 'pending' || o.status === 'approved'
   ).length;
 
-  const connectedSensors = materials.filter(m => m.sensorConnected).length;
-
-  return (
+  const connectedSensors = materials.filter(m => m.sensorConnected).length;  return (
     <Container size="3" px="4" py="6">
       {/* Dashboard Cards */}
       <Grid columns="4" gap="4" mb="4">
@@ -727,9 +722,7 @@ const RawMaterialsInventory = () => {
           <DownloadIcon />
           Export Data
         </Button>
-      </Flex>
-
-      {/* Materials Table */}
+      </Flex>      {/* Materials Table */}
       <Card mb="4">
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Raw Materials Inventory</Heading>
@@ -851,9 +844,7 @@ const RawMaterialsInventory = () => {
             })}
           </Table.Body>
         </Table.Root>
-      </Card>
-
-      {/* Charts Section */}
+      </Card>      {/* Charts Section */}
       <Grid columns="2" gap="4" mb="4">
         <Card>
           <Heading size="4" mb="3">Inventory Value by Category</Heading>
@@ -872,11 +863,24 @@ const RawMaterialsInventory = () => {
                   <Cell key={`cell-${index}`} fill={entry.fill} />
                 ))}
               </Pie>
-              <Tooltip<number, string>
-                formatter={(value, name, props) => {
-                  const payload = props.payload as InventoryValueData | undefined;
-                  if (!payload) return [value.toString(), name];
-                  return [`${value} ${payload.unit}`, payload.name];
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (!active || !payload || payload.length === 0) return null;
+                  
+                  const data = payload[0].payload as InventoryValueItem;
+                  
+                  return (
+                    <div style={{
+                      backgroundColor: '#fff',
+                      padding: '10px',
+                      border: '1px solid #ccc',
+                      borderRadius: '4px'
+                    }}>
+                      <p style={{ fontWeight: 'bold' }}>{data.name}</p>
+                      <p>{`Value: ${data.value}`}</p>
+                      <p>{`Unit: ${data.unit}`}</p>
+                    </div>
+                  );
                 }}
               />
               <Legend />
@@ -901,9 +905,7 @@ const RawMaterialsInventory = () => {
             </BarChart>
           </ResponsiveContainer>
         </Card>
-      </Grid>
-
-      {/* Purchase Orders Table */}
+      </Grid>      {/* Purchase Orders Table */}
       <Card>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Purchase Orders</Heading>
@@ -975,9 +977,7 @@ const RawMaterialsInventory = () => {
             })}
           </Table.Body>
         </Table.Root>
-      </Card>
-
-      {/* Material Configuration Dialog */}
+      </Card>      {/* Material Configuration Dialog */}
       {selectedMaterial && (
         <Dialog.Root open onOpenChange={() => setSelectedMaterial(null)}>
           <Dialog.Content style={{ maxWidth: '700px' }}>
@@ -1003,7 +1003,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       minStockLevel: parseInt(e.target.value) || 0
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1018,7 +1017,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       reorderLevel: parseInt(e.target.value) || 0
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1033,7 +1031,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       safetyStock: parseInt(e.target.value) || 0
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1048,7 +1045,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       leadTime: parseInt(e.target.value) || 0
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1063,7 +1059,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       orderQuantity: parseInt(e.target.value) || 0
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1078,7 +1073,6 @@ const RawMaterialsInventory = () => {
                       ...selectedMaterial,
                       unit: e.target.value
                     })}
-                    className="rt-TextFieldInput"
                   />
                 </TextField.Root>
               </Box>
@@ -1290,9 +1284,7 @@ const RawMaterialsInventory = () => {
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      {/* Create Order Dialog */}
+      )}      {/* Create Order Dialog */}
       <Dialog.Root open={showOrderDialog} onOpenChange={setShowOrderDialog}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
           <Dialog.Title>Create Purchase Order</Dialog.Title>
@@ -1333,7 +1325,6 @@ const RawMaterialsInventory = () => {
                     ...newOrder,
                     quantity: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1349,7 +1340,6 @@ const RawMaterialsInventory = () => {
                     ...newOrder,
                     supplier: e.target.value
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1365,7 +1355,6 @@ const RawMaterialsInventory = () => {
                     ...newOrder,
                     expectedDelivery: new Date(e.target.value).toISOString()
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1418,7 +1407,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     name: e.target.value
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1434,7 +1422,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     supplier: e.target.value
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1450,7 +1437,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     currentStock: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1466,7 +1452,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     unit: e.target.value
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1482,7 +1467,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     minStockLevel: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1498,7 +1482,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     reorderLevel: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1514,7 +1497,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     safetyStock: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1530,7 +1512,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     leadTime: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
@@ -1546,7 +1527,6 @@ const RawMaterialsInventory = () => {
                     ...newMaterial,
                     orderQuantity: parseInt(e.target.value) || 0
                   })}
-                  className="rt-TextFieldInput"
                 />
               </TextField.Root>
             </Box>
