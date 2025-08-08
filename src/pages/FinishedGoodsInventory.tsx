@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
@@ -36,13 +36,11 @@ import {
   ExclamationTriangleIcon,
   ClockIcon,
   LightningBoltIcon,
-  LinkBreak2Icon,
   Link2Icon,
   TokensIcon,
   DownloadIcon
 } from '@radix-ui/react-icons';
 
-// Types
 interface RawMaterial {
   id: string;
   name: string;
@@ -98,7 +96,6 @@ interface BlockchainTransaction {
   quantity?: number;
 }
 
-// Mock IoT Service
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -108,7 +105,11 @@ class IoTSensorService {
     });
   }
 
-  static async getSensorReadings(materialId: string): Promise<any> {
+  static async getSensorReadings(materialId: string): Promise<{
+    temperature?: number;
+    humidity?: number;
+    weight?: number;
+  }> {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve({
@@ -121,7 +122,6 @@ class IoTSensorService {
   }
 }
 
-// Enhanced Blockchain Service
 class BlockchainService {
   private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
 
@@ -161,16 +161,14 @@ class BlockchainService {
     return new Promise((resolve) => {
       setTimeout(() => {
         const history = this.transactionHistory[materialId] || [];
-        const sortedHistory = [...history].sort((a, b) => 
+        resolve([...history].sort((a, b) => 
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-        resolve(sortedHistory);
+        ));
       }, 1200);
     });
   }
 }
 
-// Utility functions
 const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 const today = new Date().toISOString().split('T')[0];
 const CATEGORY_COLORS = {
@@ -179,19 +177,7 @@ const CATEGORY_COLORS = {
   C: '#6b7280'
 };
 
-const StatusCircle = ({ color }: { color: 'red' | 'green' | 'orange' }) => (
-  <div style={{
-    width: '16px',
-    height: '16px',
-    borderRadius: '50%',
-    backgroundColor: color,
-    display: 'inline-block',
-    marginRight: '8px'
-  }} />
-);
-
 const RawMaterialsInventory = () => {
-  // State
   const [materials, setMaterials] = useState<RawMaterial[]>([
     {
       id: generateId('MAT'),
@@ -267,21 +253,17 @@ const RawMaterialsInventory = () => {
   });
   const [blockchainData, setBlockchainData] = useState<BlockchainTransaction[]>([]);
   const [isLoadingBlockchain, setIsLoadingBlockchain] = useState(false);
-  const [sensorStatus, setSensorStatus] = useState<Record<string, boolean>>({});
   const [isConnectingSensor, setIsConnectingSensor] = useState(false);
   const [locationFilter, setLocationFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortConfig, setSortConfig] = useState<{key: keyof RawMaterial, direction: 'asc' | 'desc'} | null>(null);
-  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
 
-  // Connect to IoT sensor
   const connectToSensor = async (materialId: string) => {
     setIsConnectingSensor(true);
     try {
       const connected = await IoTSensorService.connectToSensor(materialId);
       if (connected) {
         const readings = await IoTSensorService.getSensorReadings(materialId);
-        
         setMaterials(materials.map(m => 
           m.id === materialId ? { 
             ...m, 
@@ -290,8 +272,6 @@ const RawMaterialsInventory = () => {
             sensorReadings: readings
           } : m
         ));
-        
-        setSensorStatus(prev => ({ ...prev, [materialId]: true }));
         
         if (readings.weight) {
           const material = materials.find(m => m.id === materialId);
@@ -312,7 +292,6 @@ const RawMaterialsInventory = () => {
     }
   };
 
-  // Record transaction on blockchain
   const recordBlockchainTransaction = async (
     materialId: string,
     action: 'order' | 'delivery' | 'adjustment',
@@ -320,17 +299,15 @@ const RawMaterialsInventory = () => {
     participants: string[],
     relatedTxHash?: string
   ) => {
-    const txHash = await BlockchainService.recordTransaction(
+    return await BlockchainService.recordTransaction(
       materialId,
       action,
       quantity,
       participants,
       relatedTxHash
     );
-    return txHash;
   };
 
-  // Fetch blockchain history
   const fetchBlockchainHistory = async (materialId: string) => {
     setIsLoadingBlockchain(true);
     try {
@@ -344,7 +321,6 @@ const RawMaterialsInventory = () => {
     }
   };
 
-  // Generate purchase orders automatically
   const generateAutoOrders = async () => {
     const newOrders: PurchaseOrder[] = [];
     const updatedMaterials = [...materials];
@@ -370,7 +346,6 @@ const RawMaterialsInventory = () => {
           orderDate: today
         };
 
-        // Record order on blockchain
         const txHash = await recordBlockchainTransaction(
           material.id,
           'order',
@@ -386,7 +361,6 @@ const RawMaterialsInventory = () => {
           lastOrderDate: today
         };
 
-        // Simulate delivery after lead time (for demo purposes)
         setTimeout(async () => {
           if (newOrder.status === 'pending' || newOrder.status === 'approved') {
             const deliveryTxHash = await recordBlockchainTransaction(
@@ -417,7 +391,6 @@ const RawMaterialsInventory = () => {
     setMaterials(updatedMaterials);
   };
 
-  // Update order status
   const updateOrderStatus = async (orderId: string, status: PurchaseOrder['status']) => {
     const updatedOrders = orders.map(order => {
       if (order.id === orderId) {
@@ -451,7 +424,6 @@ const RawMaterialsInventory = () => {
     setOrders(updatedOrders);
   };
 
-  // Create manual order
   const createManualOrder = async () => {
     if (!newOrder.materialId || !newOrder.quantity) return;
 
@@ -477,7 +449,6 @@ const RawMaterialsInventory = () => {
       }
     };
 
-    // Record order on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'order',
@@ -491,7 +462,6 @@ const RawMaterialsInventory = () => {
       m.id === material.id ? { ...m, pendingOrders: m.pendingOrders + order.quantity } : m
     ));
     
-    // Simulate delivery after lead time (for demo purposes)
     setTimeout(async () => {
       const deliveryTxHash = await recordBlockchainTransaction(
         material.id,
@@ -518,7 +488,6 @@ const RawMaterialsInventory = () => {
     setNewOrder({ status: 'pending', orderDate: today });
   };
 
-  // Add new material
   const addNewMaterial = async () => {
     if (!newMaterial.name || !newMaterial.supplier) return;
 
@@ -541,7 +510,6 @@ const RawMaterialsInventory = () => {
       category: newMaterial.category || 'A'
     };
 
-    // Record initial stock on blockchain
     const txHash = await recordBlockchainTransaction(
       material.id,
       'adjustment',
@@ -555,22 +523,6 @@ const RawMaterialsInventory = () => {
     setNewMaterial({ unit: 'kg', sensorConnected: false, category: 'A' });
   };
 
-  // Calculate inventory metrics
-  const criticalMaterials = materials.filter(m => 
-    (m.currentStock - m.reserved) <= m.safetyStock
-  ).length;
-
-  const reorderNeeded = materials.filter(m => 
-    (m.currentStock - m.reserved) <= m.reorderLevel
-  ).length;
-
-  const pendingOrdersCount = orders.filter(o => 
-    o.status === 'pending' || o.status === 'approved'
-  ).length;
-
-  const connectedSensors = materials.filter(m => m.sensorConnected).length;
-
-  // Filter and sort data
   const filteredData = materials
     .filter(material => {
       if (showReorderOnly && (material.currentStock - material.reserved) > material.reorderLevel) {
@@ -613,12 +565,12 @@ const RawMaterialsInventory = () => {
     setSortConfig({ key, direction });
   };
 
-  // Chart data
   const inventoryValueData = filteredData.map(item => ({
     name: item.name,
     value: item.currentStock * item.orderQuantity,
     category: item.category,
-    fill: CATEGORY_COLORS[item.category]
+    fill: CATEGORY_COLORS[item.category],
+    unit: item.unit
   }));
 
   const stockLevelData = filteredData.map(item => ({
@@ -630,9 +582,23 @@ const RawMaterialsInventory = () => {
     safetyStock: item.safetyStock
   }));
 
+  const criticalMaterials = materials.filter(m => 
+    (m.currentStock - m.reserved) <= m.safetyStock
+  ).length;
+
+  const reorderNeeded = materials.filter(m => 
+    (m.currentStock - m.reserved) <= m.reorderLevel
+  ).length;
+
+  const pendingOrdersCount = orders.filter(o => 
+    o.status === 'pending' || o.status === 'approved'
+  ).length;
+
+  const connectedSensors = materials.filter(m => m.sensorConnected).length;
+
   return (
     <Container size="3" px="4" py="6">
-      {/* Inventory Dashboard */}
+      {/* Dashboard Cards */}
       <Grid columns="4" gap="4" mb="4">
         <Card>
           <Flex align="center" gap="3">
@@ -784,8 +750,6 @@ const RawMaterialsInventory = () => {
                   style={{
                     backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
                   }}
-                  onMouseEnter={() => setHoveredRow(material.id)}
-                  onMouseLeave={() => setHoveredRow(null)}
                 >
                   <Table.Cell>
                     <Flex align="center" gap="2">
@@ -880,7 +844,10 @@ const RawMaterialsInventory = () => {
               </Pie>
               <Legend />
               <ChartTooltip 
-                formatter={(value: number) => [`${value.toLocaleString()} ${materials.find(m => m.name === name)?.unit}`, 'Value']}
+                formatter={(value: number, name: string, props: { payload: typeof inventoryValueData[0] }) => [
+                  `${value.toLocaleString()} ${props.payload.unit}`,
+                  'Value'
+                ]}
               />
             </PieChart>
           </ResponsiveContainer>
