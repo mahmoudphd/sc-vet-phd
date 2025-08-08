@@ -96,6 +96,14 @@ interface BlockchainTransaction {
   quantity?: number;
 }
 
+interface InventoryValueData {
+  name: string;
+  value: number;
+  category: 'A' | 'B' | 'C';
+  fill: string;
+  unit: string;
+}
+
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -176,14 +184,6 @@ const CATEGORY_COLORS = {
   B: '#10b981',
   C: '#6b7280'
 };
-
-interface InventoryValueData {
-  name: string;
-  value: number;
-  category: 'A' | 'B' | 'C';
-  fill: string;
-  unit: string;
-}
 
 const RawMaterialsInventory = () => {
   const [materials, setMaterials] = useState<RawMaterial[]>([
@@ -874,7 +874,8 @@ const RawMaterialsInventory = () => {
               </Pie>
               <Tooltip<number, string>
                 formatter={(value, name, props) => {
-                  const payload = props.payload as InventoryValueData;
+                  const payload = props.payload as InventoryValueData | undefined;
+                  if (!payload) return [value.toString(), name];
                   return [`${value} ${payload.unit}`, payload.name];
                 }}
               />
