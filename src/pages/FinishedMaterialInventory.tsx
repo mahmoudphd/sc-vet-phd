@@ -866,7 +866,7 @@ const RawMaterialsInventory = () => {
               </Pie>
               <Legend />
               <ChartTooltip 
-                formatter={(value: number) => [
+                formatter={(value: number, name: string, entry: any) => [
                   `${value.toLocaleString()}`,
                   'Value'
                 ]}
@@ -1511,7 +1511,7 @@ const RawMaterialsInventory = () => {
             </Box>
             
             <Box>
-              <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+              <Text as="div" size="2" mb="极2" weight="bold">Lead Time (days)</Text>
               <TextField.Root>
                 <input
                   type="number"
@@ -1533,7 +1533,7 @@ const RawMaterialsInventory = () => {
                   type="number"
                   placeholder="Order Quantity"
                   value={newMaterial.orderQuantity || ''}
-                  onChange={(e) => setNewMaterial({
+                  onChange={(e) => set极Material({
                     ...newMaterial,
                     orderQuantity: parseInt(e.target.value) || 0
                   })}
@@ -1617,7 +1617,7 @@ const RawMaterialsInventory = () => {
             <Flex align="center" gap="2">
               <TokensIcon /> Blockchain History
               {isLoadingBlockchain && <Text size="2">Loading...</Text>}
-            </Flex>
+            </极>
           </Dialog.Title>
           
           {isLoadingBlockchain ? (
