@@ -43,9 +43,6 @@ import {
   CrossCircledIcon
 } from '@radix-ui/react-icons';
 
-/**
- * Inventory Management Types
- */
 type MaterialCategory = 'A' | 'B' | 'C';
 type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
 type BlockchainAction = 'order' | 'delivery' | 'adjustment';
@@ -118,7 +115,6 @@ interface InventoryValueItem {
   unit: string;
 }
 
-// Helper Utilities
 let poCounter = 1;
 const generateId = (prefix: string) => {
   if (prefix === 'PO') {
@@ -156,7 +152,6 @@ const getDaysRemaining = (expiryDate: string) => {
   return Math.floor((expiry - now) / (1000 * 60 * 60 * 24));
 };
 
-// Services
 class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
@@ -262,7 +257,6 @@ const RawMaterialsInventory = () => {
     }
   });
 
-  // Initialize with sample data
   useEffect(() => {
     poCounter = 1;
     setState(prev => ({
@@ -329,7 +323,6 @@ const RawMaterialsInventory = () => {
     }));
   }, []);
 
-  // Filtered and sorted materials
   const filteredMaterials = useMemo(() => {
     let result = [...state.materials];
     
@@ -379,7 +372,6 @@ const RawMaterialsInventory = () => {
     return result;
   }, [state.materials, state.filters, state.sortConfig]);
 
-  // Derived statistics
   const { criticalMaterials, reorderNeeded, pendingOrdersCount, connectedSensors } = useMemo(() => {
     return {
       criticalMaterials: state.materials.filter(m => 
@@ -395,7 +387,6 @@ const RawMaterialsInventory = () => {
     };
   }, [state.materials, state.orders]);
 
-  // Chart data
   const { inventoryValueData, stockLevelData } = useMemo(() => {
     return {
       inventoryValueData: filteredMaterials.map(item => ({
@@ -416,7 +407,6 @@ const RawMaterialsInventory = () => {
     };
   }, [filteredMaterials]);
 
-  // Handlers
   const handlers = {
     connectToSensor: async (materialId: string) => {
       setState(prev => ({ ...prev, loading: { ...prev.loading, sensor: true } }));
@@ -1461,7 +1451,7 @@ const RawMaterialsInventory = () => {
               <Button 
                 variant="soft" 
                 color="gray"
-                onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } ))}
+                onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } }))}
               >
                 Close
               </Button>
