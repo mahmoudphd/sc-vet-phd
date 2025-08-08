@@ -127,7 +127,7 @@ class BlockchainService {
 
   static async recordTransaction(
     materialId: string,
-    action: string,
+    action: 'order' | 'delivery' | 'adjustment',
     quantity: number,
     participants: string[],
     relatedTxHash?: string
@@ -141,7 +141,7 @@ class BlockchainService {
           txHash,
           timestamp,
           materialId,
-          action: action as any,
+          action,
           participants,
           relatedTxHash,
           quantity
@@ -315,7 +315,7 @@ const RawMaterialsInventory = () => {
   // Record transaction on blockchain
   const recordBlockchainTransaction = async (
     materialId: string,
-    action: string,
+    action: 'order' | 'delivery' | 'adjustment',
     quantity: number,
     participants: string[],
     relatedTxHash?: string
