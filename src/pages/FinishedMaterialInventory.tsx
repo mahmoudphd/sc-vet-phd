@@ -15,7 +15,8 @@ import {
   Switch,
   TextArea,
   Container,
-  Progress
+  Progress,
+  styled
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -38,9 +39,7 @@ import {
   LightningBoltIcon,
   Link2Icon,
   TokensIcon,
-  DownloadIcon,
-  CheckCircledIcon,
-  CrossCircledIcon
+  DownloadIcon
 } from '@radix-ui/react-icons';
 
 type MaterialCategory = 'A' | 'B' | 'C';
@@ -114,6 +113,12 @@ interface InventoryValueItem {
   fill: string;
   unit: string;
 }
+
+const StyledTableRow = styled('tr', {
+  '&:hover': {
+    backgroundColor: '#f5f7fa'
+  }
+});
 
 let poCounter = 1;
 const generateId = (prefix: string) => {
@@ -711,7 +716,6 @@ const RawMaterialsInventory = () => {
 
   return (
     <Container size="3" px="4" py="6">
-      {/* Dashboard Cards */}
       <Grid columns="4" gap="4" mb="4">
         <Card>
           <Flex align="center" gap="3">
@@ -762,7 +766,6 @@ const RawMaterialsInventory = () => {
         </Card>
       </Grid>
 
-      {/* Action Buttons */}
       <Flex gap="3" mb="4" wrap="wrap">
         <Button onClick={handlers.generateAutoOrders}>
           Generate Auto Orders
@@ -827,7 +830,6 @@ const RawMaterialsInventory = () => {
         </Button>
       </Flex>
 
-      {/* Materials Table */}
       <Card mb="4" style={{ overflow: 'hidden' }}>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Raw Materials Inventory</Heading>
@@ -888,14 +890,11 @@ const RawMaterialsInventory = () => {
               const daysRemaining = getDaysRemaining(material.expiryDate);
               
               return (
-                <Table.Row 
+                <StyledTableRow 
                   key={material.id}
                   style={{
                     backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
                     borderBottom: '1px solid #f0f0f0',
-                    ':hover': {
-                      backgroundColor: '#f5f7fa'
-                    },
                     borderLeft: isCritical ? '3px solid #ef4444' : needsReorder ? '3px solid #f59e0b' : '3px solid transparent'
                   }}
                 >
@@ -970,14 +969,13 @@ const RawMaterialsInventory = () => {
                       </Button>
                     </Flex>
                   </Table.Cell>
-                </Table.Row>
+                </StyledTableRow>
               );
             })}
           </Table.Body>
         </Table.Root>
       </Card>
 
-      {/* Charts Section */}
       <Grid columns="2" gap="4" mb="4">
         <Card>
           <Heading size="4" mb="3">Inventory Value by Category</Heading>
@@ -1040,7 +1038,6 @@ const RawMaterialsInventory = () => {
         </Card>
       </Grid>
 
-      {/* Purchase Orders Table */}
       <Card>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Purchase Orders</Heading>
@@ -1109,7 +1106,6 @@ const RawMaterialsInventory = () => {
         </Table.Root>
       </Card>
 
-      {/* Material Configuration Dialog */}
       {state.selected.material && (
         <Dialog.Root open onOpenChange={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material: null } }))}>
           <Dialog.Content style={{ maxWidth: '700px' }}>
@@ -1334,7 +1330,6 @@ const RawMaterialsInventory = () => {
         </Dialog.Root>
       )}
 
-      {/* Order Details Dialog */}
       {state.selected.order && (
         <Dialog.Root open onOpenChange={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } }))}>
           <Dialog.Content style={{ maxWidth: '700px' }}>
@@ -1460,7 +1455,6 @@ const RawMaterialsInventory = () => {
         </Dialog.Root>
       )}
 
-      {/* Create Order Dialog */}
       <Dialog.Root open={state.dialogs.order} onOpenChange={(open) => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, order: open } }))}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
           <Dialog.Title>Create Purchase Order</Dialog.Title>
@@ -1582,7 +1576,6 @@ const RawMaterialsInventory = () => {
         </Dialog.Content>
       </Dialog.Root>
 
-      {/* Add Material Dialog */}
       <Dialog.Root open={state.dialogs.material} onOpenChange={(open) => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, material: open } }))}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
           <Dialog.Title>Add New Material</Dialog.Title>
@@ -1824,7 +1817,6 @@ const RawMaterialsInventory = () => {
         </Dialog.Content>
       </Dialog.Root>
 
-      {/* Blockchain History Dialog */}
       <Dialog.Root open={state.dialogs.blockchain} onOpenChange={(open) => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, blockchain: open } }))}>
         <Dialog.Content style={{ maxWidth: '700px' }}>
           <Dialog.Title>
