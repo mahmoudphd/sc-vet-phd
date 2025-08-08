@@ -27,10 +27,7 @@ import {
   Cell,
   PieChart,
   Pie,
-  Legend,
-  LineChart,
-  Line,
-  CartesianGrid
+  Legend
 } from 'recharts';
 import {
   CubeIcon,
@@ -589,8 +586,9 @@ const RawMaterialsInventory = () => {
     .sort((a, b) => {
       if (!sortConfig) return 0;
       
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
+      // Handle undefined values by providing defaults
+      const aValue = a[sortConfig.key] ?? 0;
+      const bValue = b[sortConfig.key] ?? 0;
       
       if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
       if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
