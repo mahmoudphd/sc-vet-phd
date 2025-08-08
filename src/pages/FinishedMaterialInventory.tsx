@@ -38,7 +38,9 @@ import {
   LightningBoltIcon,
   Link2Icon,
   TokensIcon,
-  DownloadIcon
+  DownloadIcon,
+  CheckCircledIcon,
+  CrossCircledIcon
 } from '@radix-ui/react-icons';
 
 /**
@@ -80,6 +82,7 @@ interface RawMaterial {
   blockchainTx?: string;
   location: string;
   category: MaterialCategory;
+  expiryDate: string;
 }
 
 interface PurchaseOrder {
@@ -116,7 +119,14 @@ interface InventoryValueItem {
 }
 
 // Helper Utilities
-const generateId = (prefix: string) => `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+let poCounter = 1;
+const generateId = (prefix: string) => {
+  if (prefix === 'PO') {
+    return `PO-${poCounter++}`;
+  }
+  return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
+};
+
 const today = new Date().toISOString().split('T')[0];
 
 const CATEGORY_COLORS = {
@@ -136,7 +146,14 @@ const getStatusColor = (status: OrderStatus) => {
 };
 
 const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString();
+  const date = new Date(dateString);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+};
+
+const getDaysRemaining = (expiryDate: string) => {
+  const expiry = new Date(expiryDate).getTime();
+  const now = Date.now();
+  return Math.floor((expiry - now) / (1000 * 60 * 60 * 24));
 };
 
 // Services
@@ -210,7 +227,6 @@ class BlockchainService {
 }
 
 const RawMaterialsInventory = () => {
-  // State management
   const [state, setState] = useState({
     materials: [] as RawMaterial[],
     orders: [] as PurchaseOrder[],
@@ -236,7 +252,8 @@ const RawMaterialsInventory = () => {
     newMaterial: {
       unit: 'kg',
       sensorConnected: false,
-      category: 'A' as MaterialCategory
+      category: 'A' as MaterialCategory,
+      expiryDate: '2025-12-31'
     } as Partial<RawMaterial>,
     blockchainData: [] as BlockchainTransaction[],
     loading: {
@@ -247,6 +264,7 @@ const RawMaterialsInventory = () => {
 
   // Initialize with sample data
   useEffect(() => {
+    poCounter = 1;
     setState(prev => ({
       ...prev,
       materials: [
@@ -259,14 +277,15 @@ const RawMaterialsInventory = () => {
           reorderLevel: 80,
           safetyStock: 30,
           leadTime: 7,
-          supplier: 'Supplier X',
+          supplier: 'Supplier A',
           supplierRating: 4.5,
           orderQuantity: 100,
           pendingOrders: 0,
           unit: 'kg',
           sensorConnected: false,
           location: 'Zone 1',
-          category: 'A'
+          category: 'A',
+          expiryDate: '2025-03-15'
         },
         {
           id: generateId('MAT'),
@@ -277,14 +296,15 @@ const RawMaterialsInventory = () => {
           reorderLevel: 90,
           safetyStock: 40,
           leadTime: 5,
-          supplier: 'Supplier Y',
+          supplier: 'Supplier B',
           supplierRating: 3.8,
           orderQuantity: 120,
           pendingOrders: 0,
           unit: 'kg',
           sensorConnected: false,
           location: 'Zone 2',
-          category: 'B'
+          category: 'B',
+          expiryDate: '2025-08-20'
         },
         {
           id: generateId('MAT'),
@@ -295,14 +315,15 @@ const RawMaterialsInventory = () => {
           reorderLevel: 60,
           safetyStock: 20,
           leadTime: 10,
-          supplier: 'Supplier Z',
+          supplier: 'Supplier C',
           supplierRating: 4.2,
           orderQuantity: 80,
           pendingOrders: 0,
           unit: 'kg',
           sensorConnected: false,
           location: 'Zone 1',
-          category: 'C'
+          category: 'C',
+          expiryDate: '2025-12-31'
         }
       ]
     }));
@@ -312,7 +333,6 @@ const RawMaterialsInventory = () => {
   const filteredMaterials = useMemo(() => {
     let result = [...state.materials];
     
-    // Apply filters
     if (state.filters.showReorderOnly) {
       result = result.filter(m => 
         (m.currentStock - m.reserved) <= m.reorderLevel
@@ -327,9 +347,14 @@ const RawMaterialsInventory = () => {
       result = result.filter(m => m.category === state.filters.category);
     }
     
-    // Apply sorting
     if (state.sortConfig) {
       result.sort((a, b) => {
+        if (state.sortConfig?.key === 'expiryDate') {
+          const aDate = new Date(a.expiryDate).getTime();
+          const bDate = new Date(b.expiryDate).getTime();
+          return state.sortConfig.direction === 'asc' ? aDate - bDate : bDate - aDate;
+        }
+        
         const aValue = a[state.sortConfig!.key];
         const bValue = b[state.sortConfig!.key];
         
@@ -606,9 +631,10 @@ const RawMaterialsInventory = () => {
         orderQuantity: state.newMaterial.orderQuantity || 0,
         pendingOrders: 0,
         unit: state.newMaterial.unit || 'kg',
-        sensorConnected: false,
+        sensorConnected: state.newMaterial.sensorConnected || false,
         location: state.newMaterial.location || 'Zone 1',
-        category: state.newMaterial.category || 'A'
+        category: state.newMaterial.category || 'A',
+        expiryDate: state.newMaterial.expiryDate || '2025-12-31'
       };
 
       const txHash = await BlockchainService.recordTransaction(
@@ -623,7 +649,7 @@ const RawMaterialsInventory = () => {
         ...prev,
         materials: [...prev.materials, material],
         dialogs: { ...prev.dialogs, material: false },
-        newMaterial: { unit: 'kg', sensorConnected: false, category: 'A' }
+        newMaterial: { unit: 'kg', sensorConnected: false, category: 'A', expiryDate: '2025-12-31' }
       }));
     },
     
@@ -693,7 +719,6 @@ const RawMaterialsInventory = () => {
     }
   };
 
-  // Component rendering
   return (
     <Container size="3" px="4" py="6">
       {/* Dashboard Cards */}
@@ -813,72 +838,96 @@ const RawMaterialsInventory = () => {
       </Flex>
 
       {/* Materials Table */}
-      <Card mb="4">
+      <Card mb="4" style={{ overflow: 'hidden' }}>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Raw Materials Inventory</Heading>
           <Text color="gray">{filteredMaterials.length} materials filtered</Text>
         </Flex>
-        <Table.Root>
+        <Table.Root style={{ width: '100%', borderCollapse: 'separate', borderSpacing: 0 }}>
           <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell onClick={() => handlers.requestSort('name')}>
+            <Table.Row style={{ 
+              backgroundColor: '#3b82f6', 
+              color: 'white',
+              fontWeight: 600,
+              textTransform: 'uppercase'
+            }}>
+              <Table.ColumnHeaderCell 
+                onClick={() => handlers.requestSort('name')}
+                style={{ borderTopLeftRadius: '8px', padding: '12px 16px' }}
+              >
                 Material {state.sortConfig?.key === 'name' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell onClick={() => handlers.requestSort('currentStock')}>
+              <Table.ColumnHeaderCell 
+                onClick={() => handlers.requestSort('currentStock')}
+                style={{ padding: '12px 16px' }}
+              >
                 Current Stock {state.sortConfig?.key === 'currentStock' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell onClick={() => handlers.requestSort('reserved')}>
+              <Table.ColumnHeaderCell 
+                onClick={() => handlers.requestSort('reserved')}
+                style={{ padding: '12px 16px' }}
+              >
                 Reserved {state.sortConfig?.key === 'reserved' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell style={{ padding: '12px 16px' }}>
                 Available
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell style={{ padding: '12px 16px' }}>
                 IoT Status
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                Status
+              <Table.ColumnHeaderCell 
+                onClick={() => handlers.requestSort('expiryDate')}
+                style={{ padding: '12px 16px' }}
+              >
+                Expiry D {state.sortConfig?.key === 'expiryDate' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                Category
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell style={{ padding: '12px 16px' }}>
                 Location
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell style={{ borderTopRightRadius: '8px', padding: '12px 16px' }}>
                 Actions
               </Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {filteredMaterials.map(material => {
+            {filteredMaterials.map((material, index) => {
               const available = material.currentStock - material.reserved;
               const isCritical = available <= material.safetyStock;
               const needsReorder = available <= material.reorderLevel;
               const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
+              const daysRemaining = getDaysRemaining(material.expiryDate);
               
               return (
                 <Table.Row 
-                  key={material.id} 
+                  key={material.id}
                   style={{
-                    backgroundColor: isCritical ? '#fee2e2' : needsReorder ? '#fef3c7' : 'inherit'
+                    backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
+                    borderBottom: '1px solid #f0f0f0',
+                    ':hover': {
+                      backgroundColor: '#f5f7fa'
+                    },
+                    borderLeft: isCritical ? '3px solid #ef4444' : needsReorder ? '3px solid #f59e0b' : '3px solid transparent'
                   }}
                 >
-                  <Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
                     <Flex align="center" gap="2">
                       {material.name}
                       {material.blockchainTx && <TokensIcon color="blue" />}
                     </Flex>
                   </Table.Cell>
-                  <Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
                     <Flex direction="column" gap="1">
                       <Text>{material.currentStock} {material.unit}</Text>
                       <Progress value={Math.min(stockPercentage, 100)} />
                     </Flex>
                   </Table.Cell>
-                  <Table.Cell>{material.reserved} {material.unit}</Table.Cell>
-                  <Table.Cell>{available} {material.unit}</Table.Cell>
-                  <Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    {material.reserved} {material.unit}
+                  </Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    {available} {material.unit}
+                  </Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
                     {material.sensorConnected ? (
                       <Flex align="center" gap="1">
                         <Link2Icon color="green" />
@@ -898,26 +947,28 @@ const RawMaterialsInventory = () => {
                       </Button>
                     )}
                   </Table.Cell>
-                  <Table.Cell>
-                    {isCritical ? (
-                      <Badge color="red">Critical</Badge>
-                    ) : needsReorder ? (
-                      <Badge color="orange">Reorder Needed</Badge>
-                    ) : (
-                      <Badge color="green">OK</Badge>
-                    )}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Badge color={material.category === 'A' ? 'blue' : material.category === 'B' ? 'green' : 'gray'}>
-                      {material.category}
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    <Badge 
+                      color={
+                        daysRemaining <= 90 ? 'red' :
+                        daysRemaining <= 180 ? 'orange' : 'green'
+                      }
+                      style={{ 
+                        padding: '4px 8px',
+                        borderRadius: '12px',
+                        fontSize: '12px'
+                      }}
+                    >
+                      {formatDate(material.expiryDate)}
+                      {daysRemaining <= 90 && <ExclamationTriangleIcon style={{ marginLeft: '4px' }} />}
                     </Badge>
                   </Table.Cell>
-                  <Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
                     {material.location}
                   </Table.Cell>
-                  <Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px' }}>
                     <Flex gap="2">
-                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))}>
+                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } })}>
                         Configure
                       </Button>
                       <Button 
@@ -1228,27 +1279,23 @@ const RawMaterialsInventory = () => {
               </Box>
 
               <Box>
-                <Text as="div" size="2" mb="1" weight="bold">Category</Text>
-                <Select.Root
-                  value={state.selected.material.category}
-                  onValueChange={(value) => setState(prev => ({
-                    ...prev,
-                    selected: {
-                      ...prev.selected,
-                      material: {
-                        ...prev.selected.material!,
-                        category: value as MaterialCategory
+                <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+                <TextField.Root>
+                  <input
+                    type="date"
+                    value={state.selected.material.expiryDate.split('T')[0]}
+                    onChange={(e) => setState(prev => ({
+                      ...prev,
+                      selected: {
+                        ...prev.selected,
+                        material: {
+                          ...prev.selected.material!,
+                          expiryDate: e.target.value
+                        }
                       }
-                    }
-                  }))}
-                >
-                  <Select.Trigger />
-                  <Select.Content>
-                    <Select.Item value="A">Category A</Select.Item>
-                    <Select.Item value="B">Category B</Select.Item>
-                    <Select.Item value="C">Category C</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                    }))}
+                  />
+                </TextField.Root>
               </Box>
 
               {state.selected.material.sensorConnected && state.selected.material.sensorReadings && (
@@ -1734,24 +1781,20 @@ const RawMaterialsInventory = () => {
             </Box>
 
             <Box>
-              <Text as="div" size="2" mb="1" weight="bold">Category</Text>
-              <Select.Root
-                value={state.newMaterial.category || 'A'}
-                onValueChange={(value) => setState(prev => ({
-                  ...prev,
-                  newMaterial: {
-                    ...prev.newMaterial,
-                    category: value as MaterialCategory
-                  }
-                }))}
-              >
-                <Select.Trigger />
-                <Select.Content>
-                  <Select.Item value="A">Category A</Select.Item>
-                  <Select.Item value="B">Category B</Select.Item>
-                  <Select.Item value="C">Category C</Select.Item>
-                </Select.Content>
-              </Select.Root>
+              <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+              <TextField.Root>
+                <input
+                  type="date"
+                  value={state.newMaterial.expiryDate?.split('T')[0] || '2025-12-31'}
+                  onChange={(e) => setState(prev => ({
+                    ...prev,
+                    newMaterial: {
+                      ...prev.newMaterial,
+                      expiryDate: e.target.value
+                    }
+                  }))}
+                />
+              </TextField.Root>
             </Box>
 
             <Box>
@@ -1779,7 +1822,7 @@ const RawMaterialsInventory = () => {
               onClick={() => setState(prev => ({
                 ...prev,
                 dialogs: { ...prev.dialogs, material: false },
-                newMaterial: { unit: 'kg', sensorConnected: false, category: 'A' }
+                newMaterial: { unit: 'kg', sensorConnected: false, category: 'A', expiryDate: '2025-12-31' }
               }))}
             >
               Cancel
