@@ -15,8 +15,7 @@ import {
   Switch,
   TextArea,
   Container,
-  Progress,
-  styled
+  Progress
 } from '@radix-ui/themes';
 import {
   BarChart,
@@ -113,12 +112,6 @@ interface InventoryValueItem {
   fill: string;
   unit: string;
 }
-
-const StyledTableRow = styled('tr', {
-  '&:hover': {
-    backgroundColor: '#f5f7fa'
-  }
-});
 
 let poCounter = 1;
 const generateId = (prefix: string) => {
@@ -890,7 +883,7 @@ const RawMaterialsInventory = () => {
               const daysRemaining = getDaysRemaining(material.expiryDate);
               
               return (
-                <StyledTableRow 
+                <Table.Row 
                   key={material.id}
                   style={{
                     backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
@@ -969,7 +962,7 @@ const RawMaterialsInventory = () => {
                       </Button>
                     </Flex>
                   </Table.Cell>
-                </StyledTableRow>
+                </Table.Row>
               );
             })}
           </Table.Body>
