@@ -280,7 +280,7 @@ const RawMaterialsInventory = () => {
             if (Math.abs(newStock - material.currentStock) > 5) {
               setMaterials(materials.map(m => 
                 m.id === materialId ? { ...m, currentStock: newStock } : m
-              ));
+              );
             }
           }
         }
@@ -844,8 +844,8 @@ const RawMaterialsInventory = () => {
               </Pie>
               <Legend />
               <ChartTooltip 
-                formatter={(value: number, name: string, props: { payload: typeof inventoryValueData[0] }) => [
-                  `${value.toLocaleString()} ${props.payload.unit}`,
+                formatter={(value: number) => [
+                  `${value.toLocaleString()}`,
                   'Value'
                 ]}
               />
