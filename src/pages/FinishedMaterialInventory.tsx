@@ -968,7 +968,7 @@ const RawMaterialsInventory = () => {
                   </Table.Cell>
                   <Table.Cell style={{ padding: '12px 16px' }}>
                     <Flex gap="2">
-                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } })}>
+                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))}>
                         Configure
                       </Button>
                       <Button 
@@ -1461,7 +1461,7 @@ const RawMaterialsInventory = () => {
               <Button 
                 variant="soft" 
                 color="gray"
-                onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } }))}
+                onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } ))}
               >
                 Close
               </Button>
