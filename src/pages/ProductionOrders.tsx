@@ -28,7 +28,7 @@ import { toast } from 'sonner';
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
-const ProductionOrders = () => {
+const ProductionOrdersDashboard = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState({
@@ -115,8 +115,8 @@ const ProductionOrders = () => {
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="6">
         <div>
-          <Heading size="6" className="text-gray-800 font-bold">Pharmaceutical Production</Heading>
-          <Text size="2" className="text-gray-500">Batch manufacturing orders</Text>
+          <Heading size="6" className="text-gray-800 font-bold">Production Orders Dashboard</Heading>
+          <Text size="2" className="text-gray-500">Pharmaceutical manufacturing orders</Text>
         </div>
         
         <Flex gap="3" align="center">
@@ -246,7 +246,7 @@ const ProductionOrders = () => {
         </Flex>
       </Flex>
 
-      {/* Enhanced Table */}
+      {/* Orders Table */}
       <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200 mb-6">
         <Table.Header className="bg-gray-50">
           <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
@@ -322,7 +322,7 @@ const ProductionOrders = () => {
         </Table.Body>
       </Table.Root>
 
-      {/* Enhanced Pie Chart */}
+      {/* Production Distribution Chart */}
       <Box className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
         <Heading size="5" className="text-gray-800 mb-4">Production Distribution</Heading>
         <div className="h-64">
@@ -370,4 +370,4 @@ const ProductionOrders = () => {
   );
 };
 
-export default ProductionOrders;
+export default ProductionOrdersDashboard;
