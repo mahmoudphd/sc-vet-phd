@@ -1,3 +1,4 @@
+// src/types/inventoryTypes.ts
 export type MaterialCategory = 'A' | 'B' | 'C';
 export type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
 export type BlockchainAction = 'order' | 'delivery' | 'adjustment';
@@ -68,7 +69,10 @@ export interface InventoryValueItem {
   category: MaterialCategory;
   fill: string;
   unit: string;
-}export const generateId = (prefix: string): string => {
+}
+
+// src/utils/helpers.ts
+export const generateId = (prefix: string): string => {
   return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
@@ -97,9 +101,10 @@ export const getStatusColor = (status: OrderStatus): string => {
     case 'cancelled': return 'red';
     default: return 'orange';
   }
-};import { BlockchainTransaction, BlockchainAction } from '../types/inventoryTypes';
+};
 
-class BlockchainService {
+// src/services/BlockchainService.ts
+export class BlockchainService {
   private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
 
   static async recordTransaction(
@@ -147,9 +152,142 @@ class BlockchainService {
   }
 }
 
-export default BlockchainService;import React from 'react';
+// src/services/IoTSensorService.ts
+export class IoTSensorService {
+  static async connectToSensor(materialId: string): Promise<boolean> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(Math.random() > 0.2);
+      }, 500);
+    });
+  }
+
+  static async getSensorReadings(materialId: string): Promise<SensorReadings> {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve({
+          temperature: 22 + Math.floor(Math.random() * 10) - 5,
+          humidity: 45 + Math.floor(Math.random() * 20) - 10,
+          weight: 100 + Math.floor(Math.random() * 50) - 25
+        });
+      }, 800);
+    });
+  }
+}
+
+// src/components/MaterialTable/MaterialRow.tsx
+import React from 'react';
+import { Table, Flex, Badge, Progress, Button, Text } from '@radix-ui/themes';
+import { RawMaterial } from '../../../types/inventoryTypes';
+import { formatDate, getDaysRemaining } from '../../../utils/helpers';
+import { Link2Icon, TokensIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
+
+interface MaterialRowProps {
+  material: RawMaterial;
+  onConnectSensor: (materialId: string) => void;
+  onViewMaterial: (material: RawMaterial) => void;
+  onViewBlockchain: (materialId: string) => void;
+  loading: boolean;
+}
+
+export const MaterialRow: React.FC<MaterialRowProps> = ({
+  material,
+  onConnectSensor,
+  onViewMaterial,
+  onViewBlockchain,
+  loading
+}) => {
+  const available = material.currentStock - material.reserved;
+  const isCritical = available <= material.safetyStock;
+  const needsReorder = available <= material.reorderLevel;
+  const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
+  const daysRemaining = getDaysRemaining(material.expiryDate);
+
+  return (
+    <Table.Row style={{
+      backgroundColor: 'white',
+      borderBottom: '1px solid #f0f0f0',
+      borderLeft: isCritical ? '3px solid #ef4444' : needsReorder ? '3px solid #f59e0b' : '3px solid transparent'
+    }}>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        <Flex align="center" gap="2">
+          {material.name}
+          {material.blockchainTx && <TokensIcon color="blue" />}
+        </Flex>
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        <Flex direction="column" gap="1">
+          <Text>{material.currentStock} {material.unit}</Text>
+          <Progress value={Math.min(stockPercentage, 100)} />
+        </Flex>
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        {material.reserved} {material.unit}
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        {available} {material.unit}
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        {material.sensorConnected ? (
+          <Flex align="center" gap="1">
+            <Link2Icon color="green" />
+            <Text color="green">Connected</Text>
+            {material.sensorReadings?.temperature && (
+              <Text color="gray" size="1">{material.sensorReadings.temperature}°C</Text>
+            )}
+          </Flex>
+        ) : (
+          <Button 
+            size="1" 
+            variant="soft"
+            onClick={() => onConnectSensor(material.id)}
+            disabled={loading}
+          >
+            {loading ? 'Connecting...' : 'Connect Sensor'}
+          </Button>
+        )}
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        <Badge 
+          color={
+            daysRemaining <= 90 ? 'red' :
+            daysRemaining <= 180 ? 'orange' : 'green'
+          }
+          style={{ 
+            padding: '4px 8px',
+            borderRadius: '12px',
+            fontSize: '12px'
+          }}
+        >
+          {formatDate(material.expiryDate)}
+          {daysRemaining <= 90 && <ExclamationTriangleIcon style={{ marginLeft: '4px' }} />}
+        </Badge>
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+        {material.location}
+      </Table.Cell>
+      <Table.Cell style={{ padding: '12px 16px' }}>
+        <Flex gap="2">
+          <Button size="1" onClick={() => onViewMaterial(material)}>
+            Configure
+          </Button>
+          <Button 
+            size="1" 
+            variant="soft" 
+            onClick={() => onViewBlockchain(material.id)}
+          >
+            Blockchain
+          </Button>
+        </Flex>
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
+// src/components/MaterialTable/index.tsx
+import React from 'react';
 import { Table, Flex, Text } from '@radix-ui/themes';
-import MaterialRow from './MaterialRow';
+import { MaterialRow } from './MaterialRow';
 import { RawMaterial } from '../../types/inventoryTypes';
 
 interface MaterialTableProps {
@@ -162,7 +300,7 @@ interface MaterialTableProps {
   loading: boolean;
 }
 
-const MaterialTable: React.FC<MaterialTableProps> = ({
+export const MaterialTable: React.FC<MaterialTableProps> = ({
   materials,
   sortConfig,
   onRequestSort,
@@ -230,11 +368,498 @@ const MaterialTable: React.FC<MaterialTableProps> = ({
           />
         ))}
       </Table.Body>
-    </Table.Root>
+    </Table.Row>
   );
 };
 
-export default MaterialTable;import React, { useState, useEffect, useMemo } from 'react';
+// src/components/Dashboard/StatsCards.tsx
+import React from 'react';
+import { Card, Flex, Box, Heading, Text, Grid } from '@radix-ui/themes';
+import { 
+  ExclamationTriangleIcon, 
+  ClockIcon, 
+  CubeIcon, 
+  LightningBoltIcon 
+} from '@radix-ui/react-icons';
+
+interface StatsCardsProps {
+  criticalMaterials: number;
+  reorderNeeded: number;
+  pendingOrdersCount: number;
+  connectedSensors: number;
+}
+
+export const StatsCards: React.FC<StatsCardsProps> = ({
+  criticalMaterials,
+  reorderNeeded,
+  pendingOrdersCount,
+  connectedSensors
+}) => {
+  return (
+    <Grid columns="4" gap="4" mb="4">
+      <Card>
+        <Flex align="center" gap="3">
+          <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <ExclamationTriangleIcon width={24} height={24} color="red" />
+          </Box>
+          <Box>
+            <Text as="div" size="2" color="gray">Critical Materials</Text>
+            <Heading size="5">{criticalMaterials}</Heading>
+          </Box>
+        </Flex>
+      </Card>
+      
+      <Card>
+        <Flex align="center" gap="3">
+          <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <ClockIcon width={24} height={24} />
+          </Box>
+          <Box>
+            <Text as="div" size="2" color="gray">Need Reorder</Text>
+            <Heading size="5">{reorderNeeded}</Heading>
+          </Box>
+        </Flex>
+      </Card>
+      
+      <Card>
+        <Flex align="center" gap="3">
+          <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <CubeIcon width={24} height={24} />
+          </Box>
+          <Box>
+            <Text as="div" size="2" color="gray">Pending Orders</Text>
+            <Heading size="5">{pendingOrdersCount}</Heading>
+          </Box>
+        </Flex>
+      </Card>
+      
+      <Card>
+        <Flex align="center" gap="3">
+          <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+            <LightningBoltIcon width={24} height={24} color="green" />
+          </Box>
+          <Box>
+            <Text as="div" size="2" color="gray">Connected Sensors</Text>
+            <Heading size="5">{connectedSensors}</Heading>
+          </Box>
+        </Flex>
+      </Card>
+    </Grid>
+  );
+};
+
+// src/components/MaterialDetailsDialog.tsx
+import React from 'react';
+import { Dialog, Flex, Grid, Box, Text, TextField, Select, Button, Badge } from '@radix-ui/themes';
+import { RawMaterial } from '../types/inventoryTypes';
+import { Link2Icon } from '@radix-ui/react-icons';
+
+interface MaterialDetailsDialogProps {
+  material: RawMaterial;
+  onClose: () => void;
+  onSave: (material: RawMaterial) => void;
+}
+
+export const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({ 
+  material, 
+  onClose, 
+  onSave 
+}) => {
+  const [editedMaterial, setEditedMaterial] = React.useState<RawMaterial>(material);
+
+  return (
+    <Dialog.Root open onOpenChange={onClose}>
+      <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Title>
+          <Flex align="center" gap="2">
+            Configure {material.name}
+            {material.sensorConnected && (
+              <Badge color="green">
+                <Link2Icon /> IoT Connected
+              </Badge>
+            )}
+          </Flex>
+        </Dialog.Title>
+        
+        <Grid columns="2" gap="3" mt="3">
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                value={editedMaterial.minStockLevel}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  minStockLevel: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Reorder Level</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                value={editedMaterial.reorderLevel}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  reorderLevel: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Safety Stock</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                value={editedMaterial.safetyStock}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  safetyStock: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Lead Time (days)</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                value={editedMaterial.leadTime}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  leadTime: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Order Quantity</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                value={editedMaterial.orderQuantity}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  orderQuantity: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
+            <TextField.Root>
+              <input
+                type="text"
+                value={editedMaterial.unit}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  unit: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Location</Text>
+            <Select.Root
+              value={editedMaterial.location}
+              onValueChange={(value) => setEditedMaterial({
+                ...editedMaterial,
+                location: value
+              })}
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value="Zone 1">Zone 1</Select.Item>
+                <Select.Item value="Zone 2">Zone 2</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Box>
+
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+            <TextField.Root>
+              <input
+                type="date"
+                value={editedMaterial.expiryDate.split('T')[0]}
+                onChange={(e) => setEditedMaterial({
+                  ...editedMaterial,
+                  expiryDate: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+
+          {editedMaterial.sensorConnected && editedMaterial.sensorReadings && (
+            <>
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Temperature</Text>
+                <Text>{editedMaterial.sensorReadings.temperature}°C</Text>
+              </Box>
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Humidity</Text>
+                <Text>{editedMaterial.sensorReadings.humidity}%</Text>
+              </Box>
+              <Box>
+                <Text as="div" size="2" mb="1" weight="bold">Last Sensor Update</Text>
+                <Text>
+                  {editedMaterial.lastSensorUpdate ? 
+                    new Date(editedMaterial.lastSensorUpdate).toLocaleString() : 
+                    'N/A'}
+                </Text>
+              </Box>
+            </>
+          )}
+        </Grid>
+        
+        <Flex gap="3" mt="4" justify="end">
+          <Button 
+            variant="soft" 
+            color="gray"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button onClick={() => onSave(editedMaterial)}>
+            Save Changes
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
+
+// src/components/OrderFormDialog.tsx
+import React from 'react';
+import { Dialog, Grid, Box, Text, TextField, Select, Button, TextArea } from '@radix-ui/themes';
+import { RawMaterial } from '../types/inventoryTypes';
+
+interface OrderFormDialogProps {
+  materials: RawMaterial[];
+  onClose: () => void;
+  onSubmit: (order: Partial<PurchaseOrder>) => void;
+}
+
+export const OrderFormDialog: React.FC<OrderFormDialogProps> = ({ 
+  materials, 
+  onClose, 
+  onSubmit 
+}) => {
+  const [order, setOrder] = React.useState<Partial<PurchaseOrder>>({
+    status: 'pending',
+    orderDate: new Date().toISOString().split('T')[0]
+  });
+
+  return (
+    <Dialog.Root open onOpenChange={onClose}>
+      <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Title>Create Purchase Order</Dialog.Title>
+        
+        <Grid columns="2" gap="3" mt="3">
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Material</Text>
+            <Select.Root
+              value={order.materialId}
+              onValueChange={(value) => {
+                const material = materials.find(m => m.id === value);
+                setOrder({
+                  ...order,
+                  materialId: value,
+                  supplier: material?.supplier || '',
+                  materialName: material?.name || ''
+                });
+              }}
+            >
+              <Select.Trigger placeholder="Select material" />
+              <Select.Content>
+                {materials.map(material => (
+                  <Select.Item key={material.id} value={material.id}>
+                    {material.name} ({material.currentStock - material.reserved} {material.unit} available)
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={order.quantity || ''}
+                onChange={(e) => setOrder({
+                  ...order,
+                  quantity: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+            <TextField.Root>
+              <input
+                type="text"
+                placeholder="Supplier"
+                value={order.supplier || ''}
+                onChange={(e) => setOrder({
+                  ...order,
+                  supplier: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
+            <TextField.Root>
+              <input
+                type="date"
+                placeholder="Expected Delivery"
+                value={order.expectedDelivery?.split('T')[0] || ''}
+                onChange={(e) => setOrder({
+                  ...order,
+                  expectedDelivery: new Date(e.target.value).toISOString()
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box style={{ gridColumn: '1 / -1' }}>
+            <Text as="div" size="2" mb="1" weight="bold">Notes (optional)</Text>
+            <TextArea
+              placeholder="Notes"
+              value={order.notes || ''}
+              onChange={(e) => setOrder({
+                ...order,
+                notes: e.target.value
+              })}
+            />
+          </Box>
+        </Grid>
+        
+        <Flex gap="3" mt="4" justify="end">
+          <Button 
+            variant="soft" 
+            color="gray"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button onClick={() => onSubmit(order)}>
+            Create Order
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
+
+// src/components/BlockchainDialog.tsx
+import React from 'react';
+import { Dialog, Table, Flex, Text, Button, Badge } from '@radix-ui/themes';
+import { BlockchainTransaction } from '../types/inventoryTypes';
+
+interface BlockchainDialogProps {
+  transactions: BlockchainTransaction[];
+  loading: boolean;
+  onClose: () => void;
+}
+
+export const BlockchainDialog: React.FC<BlockchainDialogProps> = ({ 
+  transactions, 
+  loading, 
+  onClose 
+}) => {
+  return (
+    <Dialog.Root open onOpenChange={onClose}>
+      <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Title>
+          <Flex align="center" gap="2">
+            Blockchain History
+            {loading && <Text size="2">Loading...</Text>}
+          </Flex>
+        </Dialog.Title>
+        
+        {loading ? (
+          <Flex justify="center" py="5">
+            <Text>Loading blockchain data...</Text>
+          </Flex>
+        ) : (
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Transaction Hash</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Related TX</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
+              {transactions.map((tx, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell style={{ wordBreak: 'break-all' }}>
+                    <Text size="1">{tx.txHash}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Badge>
+                      {tx.action}
+                    </Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {new Date(tx.timestamp).toLocaleString()}
+                  </Table.Cell>
+                  <Table.Cell>
+                    {tx.quantity || 'N/A'}
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Flex direction="column" gap="1">
+                      {tx.participants.map((p, i) => (
+                        <Text key={i} size="1">{p}</Text>
+                      ))}
+                    </Flex>
+                  </Table.Cell>
+                  <Table.Cell>
+                    {tx.relatedTxHash ? (
+                      <Text size="1" style={{ wordBreak: 'break-all' }}>
+                        {tx.relatedTxHash}
+                      </Text>
+                    ) : (
+                      <Text size="1" color="gray">None</Text>
+                    )}
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </Table.Body>
+          </Table.Root>
+        )}
+        
+        <Flex gap="3" mt="4" justify="end">
+          <Button 
+            variant="soft" 
+            color="gray"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
+
+// src/App.tsx
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   Flex,
@@ -276,10 +901,21 @@ import {
   DownloadIcon
 } from '@radix-ui/react-icons';
 
-import MaterialTable from './components/MaterialTable';
+import { MaterialTable } from './components/MaterialTable';
+import { StatsCards } from './components/Dashboard/StatsCards';
+import { MaterialDetailsDialog } from './components/MaterialDetailsDialog';
+import { OrderFormDialog } from './components/OrderFormDialog';
+import { BlockchainDialog } from './components/BlockchainDialog';
 import { RawMaterial, PurchaseOrder } from './types/inventoryTypes';
-import BlockchainService from './services/BlockchainService';
-import { generateId, formatDate, getDaysRemaining, CATEGORY_COLORS, getStatusColor } from './utils/helpers';
+import { BlockchainService } from './services/BlockchainService';
+import { IoTSensorService } from './services/IoTSensorService';
+import { 
+  generateId, 
+  formatDate, 
+  getDaysRemaining, 
+  CATEGORY_COLORS, 
+  getStatusColor 
+} from './utils/helpers';
 
 const App: React.FC = () => {
   const [state, setState] = useState({
@@ -341,7 +977,44 @@ const App: React.FC = () => {
           category: 'A',
           expiryDate: '2025-03-15'
         },
-        // More sample materials...
+        {
+          id: generateId('MAT'),
+          name: 'Vitamin B2',
+          currentStock: 90,
+          reserved: 30,
+          minStockLevel: 60,
+          reorderLevel: 90,
+          safetyStock: 40,
+          leadTime: 5,
+          supplier: 'Supplier B',
+          supplierRating: 3.8,
+          orderQuantity: 120,
+          pendingOrders: 0,
+          unit: 'kg',
+          sensorConnected: false,
+          location: 'Zone 2',
+          category: 'B',
+          expiryDate: '2025-08-20'
+        },
+        {
+          id: generateId('MAT'),
+          name: 'Nicotinamide B3',
+          currentStock: 70,
+          reserved: 20,
+          minStockLevel: 40,
+          reorderLevel: 60,
+          safetyStock: 20,
+          leadTime: 10,
+          supplier: 'Supplier C',
+          supplierRating: 4.2,
+          orderQuantity: 80,
+          pendingOrders: 0,
+          unit: 'kg',
+          sensorConnected: false,
+          location: 'Zone 1',
+          category: 'C',
+          expiryDate: '2025-12-31'
+        }
       ]
     }));
   }, []);
@@ -547,36 +1220,264 @@ const App: React.FC = () => {
       }));
     },
     
-    // Other handler functions...
+    createManualOrder: async () => {
+      if (!state.newOrder.materialId || !state.newOrder.quantity) return;
+
+      const material = state.materials.find(m => m.id === state.newOrder.materialId);
+      if (!material) return;
+
+      const order: PurchaseOrder = {
+        id: generateId('PO'),
+        materialId: material.id,
+        materialName: material.name,
+        quantity: Number(state.newOrder.quantity),
+        supplier: state.newOrder.supplier || material.supplier,
+        expectedDelivery: state.newOrder.expectedDelivery || 
+          new Date(
+            new Date().setDate(new Date().getDate() + material.leadTime)
+          ).toISOString(),
+        status: 'pending',
+        orderDate: new Date().toISOString().split('T')[0],
+        notes: state.newOrder.notes,
+        shippingConditions: {
+          temperature: material.sensorReadings?.temperature,
+          humidity: material.sensorReadings?.humidity
+        }
+      };
+
+      const txHash = await BlockchainService.recordTransaction(
+        material.id,
+        'order',
+        order.quantity,
+        [order.supplier, 'Warehouse Manager']
+      );
+      order.blockchainTx = txHash;
+
+      setState(prev => ({
+        ...prev,
+        orders: [...prev.orders, order],
+        materials: prev.materials.map(m => 
+          m.id === material.id ? { ...m, pendingOrders: m.pendingOrders + order.quantity } : m
+        ),
+        dialogs: { ...prev.dialogs, order: false },
+        newOrder: { status: 'pending', orderDate: new Date().toISOString().split('T')[0] }
+      }));
+      
+      setTimeout(async () => {
+        setState(prev => {
+          const existingOrder = prev.orders.find(o => o.id === order.id);
+          if (!existingOrder) return prev;
+          
+          const updatedOrders = prev.orders.map(o => {
+            if (o.id === order.id && (o.status === 'pending' || o.status === 'approved')) {
+              BlockchainService.recordTransaction(
+                material.id,
+                'delivery',
+                order.quantity,
+                [order.supplier, 'Warehouse Manager'],
+                txHash
+              ).then(deliveryTxHash => {
+                setState(prev => ({
+                  ...prev,
+                  orders: prev.orders.map(ord => 
+                    ord.id === order.id ? { ...ord, status: 'delivered', blockchainTx: deliveryTxHash } : ord
+                  ),
+                  materials: prev.materials.map(m => 
+                    m.id === material.id ? { 
+                      ...m, 
+                      currentStock: m.currentStock + order.quantity,
+                      pendingOrders: m.pendingOrders - order.quantity
+                    } : m
+                  )
+                }));
+              });
+            }
+            return o;
+          });
+          
+          return { ...prev, orders: updatedOrders };
+        });
+      }, material.leadTime * 86400000);
+    },
+    
+    addNewMaterial: async () => {
+      if (!state.newMaterial.name || !state.newMaterial.supplier) return;
+
+      const material: RawMaterial = {
+        id: generateId('MAT'),
+        name: state.newMaterial.name,
+        currentStock: state.newMaterial.currentStock || 0,
+        reserved: state.newMaterial.reserved || 0,
+        minStockLevel: state.newMaterial.minStockLevel || 0,
+        reorderLevel: state.newMaterial.reorderLevel || 0,
+        safetyStock: state.newMaterial.safetyStock || 0,
+        leadTime: state.newMaterial.leadTime || 0,
+        supplier: state.newMaterial.supplier,
+        supplierRating: 0,
+        orderQuantity: state.newMaterial.orderQuantity || 0,
+        pendingOrders: 0,
+        unit: state.newMaterial.unit || 'kg',
+        sensorConnected: state.newMaterial.sensorConnected || false,
+        location: state.newMaterial.location || 'Zone 1',
+        category: state.newMaterial.category || 'A',
+        expiryDate: state.newMaterial.expiryDate || '2025-12-31'
+      };
+
+      const txHash = await BlockchainService.recordTransaction(
+        material.id,
+        'adjustment',
+        material.currentStock,
+        ['System', 'Warehouse Manager']
+      );
+      material.blockchainTx = txHash;
+
+      setState(prev => ({
+        ...prev,
+        materials: [...prev.materials, material],
+        dialogs: { ...prev.dialogs, material: false },
+        newMaterial: { unit: 'kg', sensorConnected: false, category: 'A', expiryDate: '2025-12-31' }
+      }));
+    },
+    
+    updateOrderStatus: async (orderId: string, status: OrderStatus) => {
+      const updatedOrders = state.orders.map(order => {
+        if (order.id === orderId) {
+          const updatedOrder = { ...order, status };
+          
+          if (status === 'delivered' && order.blockchainTx) {
+            BlockchainService.recordTransaction(
+              order.materialId,
+              'delivery',
+              order.quantity,
+              [order.supplier, 'Warehouse Manager'],
+              order.blockchainTx
+            ).then(txHash => {
+              setState(prev => ({
+                ...prev,
+                orders: prev.orders.map(o => 
+                  o.id === orderId ? { ...o, blockchainTx: txHash } : o
+                )
+              }));
+            });
+            
+            setState(prev => ({
+              ...prev,
+              materials: prev.materials.map(m => 
+                m.id === order.materialId ? { 
+                  ...m, 
+                  currentStock: m.currentStock + order.quantity,
+                  pendingOrders: m.pendingOrders - order.quantity
+                } : m
+              )
+            }));
+          }
+          
+          return updatedOrder;
+        }
+        return order;
+      });
+
+      setState(prev => ({ ...prev, orders: updatedOrders }));
+    },
+    
+    fetchBlockchainHistory: async (materialId: string) => {
+      setState(prev => ({ ...prev, loading: { ...prev.loading, blockchain: true } }));
+      try {
+        const history = await BlockchainService.getTransactionHistory(materialId);
+        setState(prev => ({
+          ...prev,
+          blockchainData: history,
+          dialogs: { ...prev.dialogs, blockchain: true }
+        }));
+      } catch (error) {
+        console.error('Failed to fetch blockchain data:', error);
+      } finally {
+        setState(prev => ({ ...prev, loading: { ...prev.loading, blockchain: false } }));
+      }
+    },
+    
+    requestSort: (key: keyof RawMaterial) => {
+      let direction: 'asc' | 'desc' = 'asc';
+      if (state.sortConfig?.key === key && state.sortConfig.direction === 'asc') {
+        direction = 'desc';
+      }
+      setState(prev => ({ ...prev, sortConfig: { key, direction } }));
+    }
   };
 
   return (
     <Container size="3" px="4" py="6">
-      <Grid columns="4" gap="4" mb="4">
-        {/* Stats Cards */}
-        <Card>
-          <Flex align="center" gap="3">
-            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
-              <ExclamationTriangleIcon width={24} height={24} color="red" />
-            </Box>
-            <Box>
-              <Text as="div" size="2" color="gray">Critical Materials</Text>
-              <Heading size="5">{criticalMaterials}</Heading>
-            </Box>
-          </Flex>
-        </Card>
-        {/* Other stats cards... */}
-      </Grid>
+      <StatsCards 
+        criticalMaterials={criticalMaterials}
+        reorderNeeded={reorderNeeded}
+        pendingOrdersCount={pendingOrdersCount}
+        connectedSensors={connectedSensors}
+      />
 
-      {/* Action buttons and filters */}
       <Flex gap="3" mb="4" wrap="wrap">
         <Button onClick={handlers.generateAutoOrders}>
           Generate Auto Orders
         </Button>
-        {/* Other buttons... */}
+        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, order: true } }))}>
+          Create Manual Order
+        </Button>
+        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, material: true } }))}>
+          Add New Material
+        </Button>
+        <Flex align="center" gap="2">
+          <Switch 
+            checked={state.filters.showReorderOnly}
+            onCheckedChange={(checked) => setState(prev => ({
+              ...prev,
+              filters: { ...prev.filters, showReorderOnly: checked }
+            }))}
+          />
+          <Text>Show Only Materials Needing Reorder</Text>
+        </Flex>
+        
+        <Select.Root 
+          value={state.filters.location}
+          onValueChange={(value) => setState(prev => ({
+            ...prev,
+            filters: { ...prev.filters, location: value }
+          }))}
+        >
+          <Select.Trigger>
+            <MixerHorizontalIcon />
+            Location
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="all">All Locations</Select.Item>
+            <Select.Item value="Zone 1">Zone 1</Select.Item>
+            <Select.Item value="Zone 2">Zone 2</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <Select.Root 
+          value={state.filters.category}
+          onValueChange={(value) => setState(prev => ({
+            ...prev,
+            filters: { ...prev.filters, category: value as MaterialCategory }
+          }))}
+        >
+          <Select.Trigger>
+            <MixerHorizontalIcon />
+            Category
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="all">All Categories</Select.Item>
+            <Select.Item value="A">Category A</Select.Item>
+            <Select.Item value="B">Category B</Select.Item>
+            <Select.Item value="C">Category C</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
+        <Button variant="soft" onClick={() => alert('Export functionality would go here')}>
+          <DownloadIcon />
+          Export Data
+        </Button>
       </Flex>
 
-      {/* Main Material Table */}
       <Card mb="4" style={{ overflow: 'hidden' }}>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Raw Materials Inventory</Heading>
@@ -585,37 +1486,14 @@ const App: React.FC = () => {
         <MaterialTable
           materials={filteredMaterials}
           sortConfig={state.sortConfig}
-          onRequestSort={(key) => setState(prev => ({
-            ...prev,
-            sortConfig: { 
-              key, 
-              direction: prev.sortConfig?.key === key && prev.sortConfig.direction === 'asc' 
-                ? 'desc' 
-                : 'asc' 
-            }
-          }))}
+          onRequestSort={handlers.requestSort}
           onConnectSensor={handlers.connectToSensor}
-          onViewMaterial={(material) => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))}
-          onViewBlockchain={async (materialId) => {
-            setState(prev => ({ ...prev, loading: { ...prev.loading, blockchain: true } }));
-            try {
-              const history = await BlockchainService.getTransactionHistory(materialId);
-              setState(prev => ({
-                ...prev,
-                blockchainData: history,
-                dialogs: { ...prev.dialogs, blockchain: true }
-              }));
-            } catch (error) {
-              console.error('Failed to fetch blockchain data:', error);
-            } finally {
-              setState(prev => ({ ...prev, loading: { ...prev.loading, blockchain: false } }));
-            }
-          }}
+          onViewMaterial={(material) => setState(prev => ({ ...prev, selected: { ...prev.selected, material } })}
+          onViewBlockchain={handlers.fetchBlockchainHistory}
           loading={state.loading.sensor}
         />
       </Card>
 
-      {/* Charts Section */}
       <Grid columns="2" gap="4" mb="4">
         <Card>
           <Heading size="4" mb="3">Inventory Value by Category</Heading>
@@ -661,7 +1539,6 @@ const App: React.FC = () => {
         </Card>
       </Grid>
 
-      {/* Orders Table */}
       <Card>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Purchase Orders</Heading>
@@ -730,11 +1607,10 @@ const App: React.FC = () => {
         </Table.Root>
       </Card>
 
-      {/* Dialogs and Modals */}
       {state.selected.material && (
         <MaterialDetailsDialog
           material={state.selected.material}
-          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material: null } }))}
+          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material: null } })}
           onSave={(updatedMaterial) => {
             setState(prev => ({
               ...prev,
@@ -744,6 +1620,14 @@ const App: React.FC = () => {
               selected: { ...prev.selected, material: null }
             }));
           }}
+        />
+      )}
+
+      {state.selected.order && (
+        <OrderDetailsDialog
+          order={state.selected.order}
+          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } }))}
+          onUpdateStatus={handlers.updateOrderStatus}
         />
       )}
 
@@ -759,6 +1643,17 @@ const App: React.FC = () => {
         />
       )}
 
+      {state.dialogs.material && (
+        <MaterialFormDialog
+          onClose={() => setState(prev => ({
+            ...prev,
+            dialogs: { ...prev.dialogs, material: false },
+            newMaterial: { unit: 'kg', sensorConnected: false, category: 'A', expiryDate: '2025-12-31' }
+          }))}
+          onSubmit={handlers.addNewMaterial}
+        />
+      )}
+
       {state.dialogs.blockchain && (
         <BlockchainDialog
           transactions={state.blockchainData}
@@ -770,225 +1665,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;import React from 'react';
-import { Dialog, Flex, Grid, Box, Text, TextField, Select, Button, Badge } from '@radix-ui/themes';
-import { RawMaterial } from '../types/inventoryTypes';
-import { formatDate } from '../utils/helpers';
-import { Link2Icon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
-
-interface MaterialDetailsDialogProps {
-  material: RawMaterial;
-  onClose: () => void;
-  onSave: (material: RawMaterial) => void;
-}
-
-const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({ material, onClose, onSave }) => {
-  const [editedMaterial, setEditedMaterial] = React.useState<RawMaterial>(material);
-
-  return (
-    <Dialog.Root open onOpenChange={onClose}>
-      <Dialog.Content style={{ maxWidth: '700px' }}>
-        <Dialog.Title>
-          <Flex align="center" gap="2">
-            Configure {material.name}
-            {material.sensorConnected && (
-              <Badge color="green">
-                <Link2Icon /> IoT Connected
-              </Badge>
-            )}
-          </Flex>
-        </Dialog.Title>
-        
-        <Grid columns="2" gap="3" mt="3">
-          {/* Form fields for editing material properties */}
-          <Box>
-            <Text as="div" size="2" mb="1" weight="bold">Minimum Stock Level</Text>
-            <TextField.Root>
-              <input
-                type="number"
-                value={editedMaterial.minStockLevel}
-                onChange={(e) => setEditedMaterial({
-                  ...editedMaterial,
-                  minStockLevel: parseInt(e.target.value) || 0
-                })}
-              />
-            </TextField.Root>
-          </Box>
-          
-          {/* Other form fields... */}
-        </Grid>
-        
-        <Flex gap="3" mt="4" justify="end">
-          <Button 
-            variant="soft" 
-            color="gray"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-          <Button onClick={() => onSave(editedMaterial)}>
-            Save Changes
-          </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
-
-export default MaterialDetailsDialog;import React from 'react';
-import { Dialog, Grid, Box, Text, TextField, Select, Button, TextArea } from '@radix-ui/themes';
-import { RawMaterial } from '../types/inventoryTypes';
-
-interface OrderFormDialogProps {
-  materials: RawMaterial[];
-  onClose: () => void;
-  onSubmit: (order: Partial<PurchaseOrder>) => void;
-}
-
-const OrderFormDialog: React.FC<OrderFormDialogProps> = ({ materials, onClose, onSubmit }) => {
-  const [order, setOrder] = React.useState<Partial<PurchaseOrder>>({
-    status: 'pending',
-    orderDate: new Date().toISOString().split('T')[0]
-  });
-
-  return (
-    <Dialog.Root open onOpenChange={onClose}>
-      <Dialog.Content style={{ maxWidth: '700px' }}>
-        <Dialog.Title>Create Purchase Order</Dialog.Title>
-        
-        <Grid columns="2" gap="3" mt="3">
-          <Box>
-            <Text as="div" size="2" mb="1" weight="bold">Material</Text>
-            <Select.Root
-              value={order.materialId}
-              onValueChange={(value) => {
-                const material = materials.find(m => m.id === value);
-                setOrder({
-                  ...order,
-                  materialId: value,
-                  supplier: material?.supplier || ''
-                });
-              }}
-            >
-              <Select.Trigger placeholder="Select material" />
-              <Select.Content>
-                {materials.map(material => (
-                  <Select.Item key={material.id} value={material.id}>
-                    {material.name} ({material.currentStock - material.reserved} {material.unit} available)
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-          </Box>
-          
-          {/* Other form fields... */}
-        </Grid>
-        
-        <Flex gap="3" mt="4" justify="end">
-          <Button 
-            variant="soft" 
-            color="gray"
-            onClick={onClose}
-          >
-            Cancel
-          </Button>
-          <Button onClick={() => onSubmit(order)}>
-            Create Order
-          </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
-
-export default OrderFormDialog;import React from 'react';
-import { Dialog, Table, Flex, Text, Button, Badge } from '@radix-ui/themes';
-import { BlockchainTransaction } from '../types/inventoryTypes';
-
-interface BlockchainDialogProps {
-  transactions: BlockchainTransaction[];
-  loading: boolean;
-  onClose: () => void;
-}
-
-const BlockchainDialog: React.FC<BlockchainDialogProps> = ({ transactions, loading, onClose }) => {
-  return (
-    <Dialog.Root open onOpenChange={onClose}>
-      <Dialog.Content style={{ maxWidth: '700px' }}>
-        <Dialog.Title>
-          <Flex align="center" gap="2">
-            Blockchain History
-            {loading && <Text size="2">Loading...</Text>}
-          </Flex>
-        </Dialog.Title>
-        
-        {loading ? (
-          <Flex justify="center" py="5">
-            <Text>Loading blockchain data...</Text>
-          </Flex>
-        ) : (
-          <Table.Root>
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Transaction Hash</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Participants</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Related TX</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {transactions.map((tx, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell style={{ wordBreak: 'break-all' }}>
-                    <Text size="1">{tx.txHash}</Text>
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Badge>
-                      {tx.action}
-                    </Badge>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {new Date(tx.timestamp).toLocaleString()}
-                  </Table.Cell>
-                  <Table.Cell>
-                    {tx.quantity || 'N/A'}
-                  </Table.Cell>
-                  <Table.Cell>
-                    <Flex direction="column" gap="1">
-                      {tx.participants.map((p, i) => (
-                        <Text key={i} size="1">{p}</Text>
-                      ))}
-                    </Flex>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {tx.relatedTxHash ? (
-                      <Text size="1" style={{ wordBreak: 'break-all' }}>
-                        {tx.relatedTxHash}
-                      </Text>
-                    ) : (
-                      <Text size="1" color="gray">None</Text>
-                    )}
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        )}
-        
-        <Flex gap="3" mt="4" justify="end">
-          <Button 
-            variant="soft" 
-            color="gray"
-            onClick={onClose}
-          >
-            Close
-          </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
-
-export default BlockchainDialog;
+export default App;
