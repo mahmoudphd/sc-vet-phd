@@ -451,7 +451,7 @@ const ProductConfiguration = () => {
                       </Table.Row>
                     ))}
                   </Table.Body>
-                </Table.Row>
+                </Table.Root>
 
                 <Flex justify="between" align="center">
                   <Button variant="soft" size="1" onClick={addFormulaRow}>
