@@ -219,10 +219,10 @@ const ProductConfiguration = () => {
   );
 
   const ProductionDesignTable = ({ design }: { design: any }) => (
-    <Table.Root variant="surface" size="1">
+    <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
-          <Table.ColumnHeaderCell colSpan={2} className="bg-blue-50">
+          <Table.ColumnHeaderCell colSpan={2}>
             <Flex align="center" gap="2">
               <CubeIcon /> Packaging Design
             </Flex>
@@ -272,8 +272,8 @@ const ProductConfiguration = () => {
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
 
     return (
-      <div className="w-full h-64">
-        <PieChart width={350} height={250}>
+      <div className="w-full">
+        <PieChart width={400} height={300}>
           <Pie
             data={data}
             cx="50%"
@@ -303,11 +303,11 @@ const ProductConfiguration = () => {
 
   const NewConfigurationModal = () => (
     <Dialog.Root open={newConfigModalOpen} onOpenChange={setNewConfigModalOpen}>
-      <Dialog.Content style={{ maxWidth: 600 }}>
+      <Dialog.Content style={{ maxWidth: 700 }}>
         <Flex justify="between" align="center" mb="4">
-          <Dialog.Title>New Product</Dialog.Title>
+          <Dialog.Title>New Product Configuration</Dialog.Title>
           <Dialog.Close>
-            <Button variant="ghost" color="gray" size="1">
+            <Button variant="ghost" color="gray">
               <Cross2Icon />
             </Button>
           </Dialog.Close>
@@ -326,13 +326,11 @@ const ProductConfiguration = () => {
                 <Grid columns="2" gap="3">
                   <TextField.Root
                     placeholder="Product ID"
-                    size="1"
                     value={newProduct.id}
                     onChange={(e) => setNewProduct({...newProduct, id: e.target.value})}
                   />
                   <TextField.Root
                     placeholder="Product Name"
-                    size="1"
                     value={newProduct.name}
                     onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
                   />
@@ -340,18 +338,16 @@ const ProductConfiguration = () => {
 
                 <TextArea
                   placeholder="Description"
-                  size="1"
                   value={newProduct.description}
                   onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
                 />
 
                 <Grid columns="2" gap="3">
                   <Select.Root
-                    size="1"
                     value={newProduct.compliance}
                     onValueChange={(value) => setNewProduct({...newProduct, compliance: value})}
                   >
-                    <Select.Trigger placeholder="Compliance" />
+                    <Select.Trigger placeholder="Compliance Standard" />
                     <Select.Content>
                       {complianceOptions.map(option => (
                         <Select.Item key={option} value={option}>
@@ -362,7 +358,6 @@ const ProductConfiguration = () => {
                   </Select.Root>
 
                   <Select.Root
-                    size="1"
                     value={newProduct.removalMethod}
                     onValueChange={(value) => setNewProduct({...newProduct, removalMethod: value})}
                   >
@@ -377,23 +372,23 @@ const ProductConfiguration = () => {
             </Tabs.Content>
 
             <Tabs.Content value="formula">
-              <Flex direction="column" gap="2">
-                <Text size="1" color="gray">
-                  Formula composition
+              <Flex direction="column" gap="3">
+                <Text size="2" color="gray">
+                  Define the components and their proportions
                 </Text>
                 {totalPercentage !== 100 && (
-                  <Text size="1" color="red">
-                    Total: {totalPercentage.toFixed(1)}% (should be 100%)
+                  <Text color="red" size="2">
+                    Total percentage: {totalPercentage.toFixed(1)}% (should be 100%)
                   </Text>
                 )}
                 
-                <Table.Root variant="surface" size="1">
+                <Table.Root variant="surface">
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Weight</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>%</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Percentage</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg (EGP)</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
                     </Table.Row>
                   </Table.Header>
@@ -402,7 +397,6 @@ const ProductConfiguration = () => {
                       <Table.Row key={index}>
                         <Table.Cell>
                           <Select.Root
-                            size="1"
                             value={row.component}
                             onValueChange={(value) => {
                               const selected = allComponents.find(c => c.name === value);
@@ -412,7 +406,7 @@ const ProductConfiguration = () => {
                               }
                             }}
                           >
-                            <Select.Trigger placeholder="Select" />
+                            <Select.Trigger placeholder="Select component" />
                             <Select.Content>
                               {allComponents.map(comp => (
                                 <Select.Item key={comp.name} value={comp.name}>
@@ -424,24 +418,22 @@ const ProductConfiguration = () => {
                         </Table.Cell>
                         <Table.Cell>
                           <TextField.Root
-                            size="1"
                             placeholder="0.000"
                             value={row.weight || ''}
                             onChange={(e) => updateFormulaRow(index, 'weight', parseFloat(e.target.value) || 0)}
                           />
                         </Table.Cell>
                         <Table.Cell>
-                          <Text size="1">{row.percentage.toFixed(1)}</Text>
+                          <Text>{row.percentage.toFixed(1)}%</Text>
                         </Table.Cell>
                         <Table.Cell>
-                          <Text size="1">{row.pricePerKg.toFixed(2)}</Text>
+                          <Text>{row.pricePerKg.toFixed(2)}</Text>
                         </Table.Cell>
                         <Table.Cell>
                           {newProduct.formula.length > 1 && (
                             <Button 
                               variant="ghost" 
                               color="red" 
-                              size="1"
                               onClick={() => removeFormulaRow(index)}
                             >
                               <Cross2Icon />
@@ -454,12 +446,12 @@ const ProductConfiguration = () => {
                 </Table.Root>
 
                 <Flex justify="between" align="center">
-                  <Button variant="soft" size="1" onClick={addFormulaRow}>
-                    <PlusIcon /> Add
+                  <Button variant="soft" onClick={addFormulaRow}>
+                    <PlusIcon /> Add Component
                   </Button>
-                  <Text size="1" weight="bold">
-                    Total: {newProduct.formula.reduce((sum, item) => 
-                      sum + (item.weight * item.pricePerKg), 0).toFixed(2)} EGP
+                  <Text weight="bold">
+                    Total Cost: {newProduct.formula.reduce((sum, item) => 
+                      sum + (item.weight * item.pricePerKg), 0).toFixed(2)} EGP per 1 kg
                   </Text>
                 </Flex>
               </Flex>
@@ -468,8 +460,7 @@ const ProductConfiguration = () => {
             <Tabs.Content value="production">
               <ProductionDesignTable design={newProduct.productionDesign} />
               <TextArea
-                placeholder="Additional notes"
-                size="1"
+                placeholder="Additional packaging notes (optional)"
                 mt="3"
                 value={newProduct.productionDesign.notes}
                 onChange={(e) => setNewProduct({
@@ -484,12 +475,12 @@ const ProductConfiguration = () => {
           </Box>
         </Tabs.Root>
 
-        <Flex gap="2" justify="end" mt="4">
-          <Button variant="soft" color="gray" size="1" onClick={() => setNewConfigModalOpen(false)}>
+        <Flex gap="3" justify="end" mt="4">
+          <Button variant="soft" color="gray" onClick={() => setNewConfigModalOpen(false)}>
             Cancel
           </Button>
-          <Button size="1" onClick={handleAddProduct}>
-            <PlusIcon /> Create
+          <Button onClick={handleAddProduct}>
+            <PlusIcon /> Create Product
           </Button>
         </Flex>
       </Dialog.Content>
@@ -500,9 +491,9 @@ const ProductConfiguration = () => {
     <Dialog.Root open={viewSpecModalOpen} onOpenChange={setViewSpecModalOpen}>
       <Dialog.Content style={{ maxWidth: 700 }}>
         <Flex justify="between" align="center" mb="4">
-          <Dialog.Title>Product: {selectedProduct?.id}</Dialog.Title>
+          <Dialog.Title>Product Specification: {selectedProduct?.id}</Dialog.Title>
           <Dialog.Close>
-            <Button variant="ghost" color="gray" size="1">
+            <Button variant="ghost" color="gray">
               <Cross2Icon />
             </Button>
           </Dialog.Close>
@@ -520,40 +511,44 @@ const ProductConfiguration = () => {
               <Tabs.Content value="details">
                 <Grid columns="2" gap="3">
                   <Flex direction="column" gap="1">
-                    <Text size="1" color="gray">Name</Text>
-                    <Text size="2">{selectedProduct.name}</Text>
+                    <Text color="gray">Product Name</Text>
+                    <Text weight="bold">{selectedProduct.name}</Text>
                   </Flex>
                   <Flex direction="column" gap="1">
-                    <Text size="1" color="gray">Status</Text>
+                    <Text color="gray">Status</Text>
                     <Badge color={selectedProduct.status === 'Approved' ? 'green' : 'blue'}>
                       {selectedProduct.status}
                     </Badge>
                   </Flex>
                   <Flex direction="column" gap="1">
-                    <Text size="1" color="gray">Compliance</Text>
-                    <Text size="2">{selectedProduct.compliance}</Text>
+                    <Text color="gray">Version</Text>
+                    <Text>{selectedProduct.version}</Text>
                   </Flex>
                   <Flex direction="column" gap="1">
-                    <Text size="1" color="gray">Removal Method</Text>
-                    <Text size="2">{selectedProduct.removalMethod}</Text>
+                    <Text color="gray">Compliance Standard</Text>
+                    <Text>{selectedProduct.compliance}</Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Removal Method</Text>
+                    <Text>{selectedProduct.removalMethod}</Text>
                   </Flex>
                 </Grid>
 
                 <Flex direction="column" gap="1" mt="3">
-                  <Text size="1" color="gray">Description</Text>
-                  <Text size="2">{selectedProduct.description}</Text>
+                  <Text color="gray">Description</Text>
+                  <Text>{selectedProduct.description}</Text>
                 </Flex>
               </Tabs.Content>
 
               <Tabs.Content value="formula">
-                <Table.Root variant="surface" size="1">
+                <Table.Root variant="surface">
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Weight</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>%</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Percentage</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg (EGP)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Cost (EGP)</Table.ColumnHeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -561,7 +556,7 @@ const ProductConfiguration = () => {
                       <Table.Row key={i}>
                         <Table.Cell>{comp.component}</Table.Cell>
                         <Table.Cell>{comp.weight.toFixed(3)}</Table.Cell>
-                        <Table.Cell>{comp.percentage.toFixed(1)}</Table.Cell>
+                        <Table.Cell>{comp.percentage.toFixed(1)}%</Table.Cell>
                         <Table.Cell>{comp.pricePerKg.toFixed(2)}</Table.Cell>
                         <Table.Cell>{(comp.weight * comp.pricePerKg).toFixed(2)}</Table.Cell>
                       </Table.Row>
@@ -569,11 +564,11 @@ const ProductConfiguration = () => {
                   </Table.Body>
                 </Table.Root>
                 <ComponentDistributionChart formula={selectedProduct.formula} />
-                <Flex justify="end" mt="2">
-                  <Text size="2" weight="bold">
-                    Total: {selectedProduct.formula.reduce(
+                <Flex justify="end" mt="3">
+                  <Text size="4" weight="bold">
+                    Total Cost: {selectedProduct.formula.reduce(
                       (sum: number, item: any) => sum + (item.weight * item.pricePerKg), 0
-                    ).toFixed(2)} EGP
+                    ).toFixed(2)} EGP per 1 kg
                   </Text>
                 </Flex>
               </Tabs.Content>
@@ -581,12 +576,16 @@ const ProductConfiguration = () => {
               <Tabs.Content value="production">
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
-                  <Flex align="center" gap="2" p="2">
-                    <div className="w-16 h-24 bg-amber-100 rounded-t-full border border-amber-300 relative">
-                      <div className="absolute top-1 left-1/2 transform -translate-x-1/2 w-12 h-20 bg-amber-50 rounded-t-full border border-amber-200"></div>
-                      <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-8 h-4 bg-gray-300 rounded-t-sm border border-gray-400"></div>
+                  <Flex align="center" gap="3" p="3">
+                    <div className="w-20 h-32 bg-amber-100 rounded-t-full border-2 border-amber-300 relative">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-amber-50 rounded-t-full border border-amber-200">
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '25%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '50%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '75%' }}></div>
+                      </div>
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-gray-300 rounded-t-md border-2 border-gray-400"></div>
                     </div>
-                    <Text size="1" color="gray">1kg Veterinary Bottle</Text>
+                    <Text size="2" color="gray">1kg Veterinary Bottle</Text>
                   </Flex>
                 </Card>
               </Tabs.Content>
@@ -598,35 +597,34 @@ const ProductConfiguration = () => {
   );
 
   return (
-    <Container size="2" className="p-4">
+    <Container size="3" className="p-4">
       <NewConfigurationModal />
       <ViewSpecModal />
 
-      <Flex direction="column" gap="3">
+      <Flex direction="column" gap="4">
         <Flex justify="between" align="center">
           <Heading size="5">Product Configuration</Heading>
-          <Flex gap="2">
+          <Flex gap="3">
             <TextField.Root
-              placeholder="Search..."
-              size="1"
+              placeholder="Search products..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-48"
+              className="w-64"
             >
               <TextField.Slot>
                 <MagnifyingGlassIcon />
               </TextField.Slot>
             </TextField.Root>
-            <Button size="1" onClick={() => setNewConfigModalOpen(true)}>
-              <PlusIcon /> New
+            <Button onClick={() => setNewConfigModalOpen(true)}>
+              <PlusIcon /> New Product
             </Button>
           </Flex>
         </Flex>
 
-        <Table.Root variant="surface" size="1">
+        <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Components</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
@@ -641,7 +639,7 @@ const ProductConfiguration = () => {
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>{product.components}</Table.Cell>
                 <Table.Cell>
-                  <Text size="1">{product.compliance}</Text>
+                  <Text>{product.compliance}</Text>
                 </Table.Cell>
                 <Table.Cell>
                   <Badge color={product.status === 'Approved' ? 'green' : 'blue'}>
@@ -651,7 +649,6 @@ const ProductConfiguration = () => {
                 <Table.Cell>
                   <Button 
                     variant="ghost" 
-                    size="1"
                     onClick={() => {
                       setSelectedProduct(product);
                       setViewSpecModalOpen(true);
