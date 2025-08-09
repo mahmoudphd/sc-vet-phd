@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Table,
   Badge,
@@ -35,7 +34,6 @@ interface BatchRecord {
 }
 
 const BatchRecords: React.FC = () => {
-  const { t } = useTranslation('master-batch-records');
   const [searchQuery, setSearchQuery] = useState('');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
@@ -94,10 +92,7 @@ const BatchRecords: React.FC = () => {
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="6" gap="4">
-        <div>
-          <Heading size="6" className="text-gray-800 font-bold">Batch Records</Heading>
-          <Text size="2" className="text-gray-500">Manage pharmaceutical batch records</Text>
-        </div>
+        <Heading size="6" className="text-gray-800 font-bold">Batch Records</Heading>
         
         <Flex gap="3" align="center">
           <TextField.Root
