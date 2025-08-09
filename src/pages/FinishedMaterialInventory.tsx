@@ -368,7 +368,7 @@ export const MaterialTable: React.FC<MaterialTableProps> = ({
           />
         ))}
       </Table.Body>
-    </Table.Row>
+    </Table.Root>
   );
 };
 
@@ -1488,7 +1488,7 @@ const App: React.FC = () => {
           sortConfig={state.sortConfig}
           onRequestSort={handlers.requestSort}
           onConnectSensor={handlers.connectToSensor}
-          onViewMaterial={(material) => setState(prev => ({ ...prev, selected: { ...prev.selected, material } })}
+          onViewMaterial={(material) => setState(prev => ({ ...prev, selected: { ...prev.selected, material }}))}
           onViewBlockchain={handlers.fetchBlockchainHistory}
           loading={state.loading.sensor}
         />
@@ -1596,7 +1596,7 @@ const App: React.FC = () => {
                     )}
                   </Table.Cell>
                   <Table.Cell>
-                    <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order } }))}>
+                    <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order }}))}>
                       View
                     </Button>
                   </Table.Cell>
@@ -1610,7 +1610,7 @@ const App: React.FC = () => {
       {state.selected.material && (
         <MaterialDetailsDialog
           material={state.selected.material}
-          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material: null } })}
+          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material: null }}))}
           onSave={(updatedMaterial) => {
             setState(prev => ({
               ...prev,
@@ -1626,7 +1626,7 @@ const App: React.FC = () => {
       {state.selected.order && (
         <OrderDetailsDialog
           order={state.selected.order}
-          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null } }))}
+          onClose={() => setState(prev => ({ ...prev, selected: { ...prev.selected, order: null }}))}
           onUpdateStatus={handlers.updateOrderStatus}
         />
       )}
@@ -1658,7 +1658,7 @@ const App: React.FC = () => {
         <BlockchainDialog
           transactions={state.blockchainData}
           loading={state.loading.blockchain}
-          onClose={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, blockchain: false } }))}
+          onClose={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, blockchain: false }}))}
         />
       )}
     </Container>
