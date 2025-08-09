@@ -18,12 +18,15 @@ import {
   CubeIcon as BlockchainIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  Cross2Icon
+  Cross2Icon,
+  ExclamationTriangleIcon,
+  CheckCircledIcon,
+  ClockIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, Tooltip as ChartTooltip, Legend, ResponsiveContainer } from 'recharts';
 import { toast } from 'sonner';
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
+const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
 
 const ProductionOrders = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,7 +42,7 @@ const ProductionOrders = () => {
   const orders = [
     {
       id: 'PO23045',
-      product: 'Poultry Product A',
+      product: 'Poultry Drug A',
       priority: 'High',
       materials: 'Allocated',
       progress: 65,
@@ -48,7 +51,7 @@ const ProductionOrders = () => {
     },
     {
       id: 'PO23046',
-      product: 'Poultry Product B',
+      product: 'Poultry Drug B',
       priority: 'Medium',
       materials: 'Pending',
       progress: 30,
@@ -57,9 +60,9 @@ const ProductionOrders = () => {
     },
     {
       id: 'PO23047',
-      product: 'Poultry Product C',
+      product: 'Poultry Drug C',
       priority: 'Low',
-      materials: 'Insufficient Materials',
+      materials: 'Insufficient',
       progress: 15,
       schedule: '2025-08-01',
       batchSize: 6000
@@ -88,21 +91,41 @@ const ProductionOrders = () => {
       toast.error('Please fill all required fields');
       return;
     }
-    toast.success('New order created successfully');
+    toast.success('Production order created successfully');
     setIsDialogOpen(false);
+  };
+
+  const getPriorityIcon = (priority: string) => {
+    switch (priority) {
+      case 'High': return <ExclamationTriangleIcon className="mr-1" />;
+      case 'Medium': return <ClockIcon className="mr-1" />;
+      default: return <CheckCircledIcon className="mr-1" />;
+    }
+  };
+
+  const getMaterialsIcon = (status: string) => {
+    switch (status) {
+      case 'Allocated': return <CheckCircledIcon className="mr-1" />;
+      case 'Pending': return <ClockIcon className="mr-1" />;
+      default: return <ExclamationTriangleIcon className="mr-1" />;
+    }
   };
 
   return (
     <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="4">
-        <Heading size="6">Production Orders Dashboard</Heading>
+      <Flex justify="between" align="center" mb="6">
+        <div>
+          <Heading size="6" className="text-gray-800 font-bold">Pharmaceutical Production</Heading>
+          <Text size="2" className="text-gray-500">Batch manufacturing orders</Text>
+        </div>
         
         <Flex gap="3" align="center">
           <TextField.Root
             placeholder="Search orders..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48"
+            className="w-56"
+            variant="soft"
           >
             <TextField.Slot>
               <MagnifyingGlassIcon />
@@ -112,7 +135,7 @@ const ProductionOrders = () => {
           <Button 
             variant="solid" 
             color="green"
-            className="bg-green-700 hover:bg-green-800"
+            className="bg-green-700 hover:bg-green-800 transition-colors shadow-sm"
             onClick={() => toast.success('Data submitted to blockchain')}
           >
             <BlockchainIcon className="mr-2" />
@@ -121,72 +144,99 @@ const ProductionOrders = () => {
           
           <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger>
-              <Button variant="soft">
+              <Button variant="soft" className="shadow-sm">
                 <PlusIcon className="mr-2" /> New Order
               </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 500 }}>
+            <Dialog.Content style={{ maxWidth: 500 }} className="p-6">
               <Flex justify="between" align="center" mb="4">
-                <Dialog.Title>Create New Production Order</Dialog.Title>
+                <Dialog.Title className="text-lg font-bold">New Production Order</Dialog.Title>
                 <IconButton variant="ghost" onClick={() => setIsDialogOpen(false)}>
                   <Cross2Icon />
                 </IconButton>
               </Flex>
               
               <Flex direction="column" gap="3">
-                <TextField.Root
-                  placeholder="Product ID"
-                  value={formData.productId}
-                  onChange={(e) => handleFormChange('productId', e.target.value)}
-                />
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="bold">Product ID</Text>
+                  <TextField.Root
+                    placeholder="DRG-2023-001"
+                    value={formData.productId}
+                    onChange={(e) => handleFormChange('productId', e.target.value)}
+                  />
+                </Flex>
 
-                <TextField.Root
-                  placeholder="Product Name"
-                  value={formData.productName}
-                  onChange={(e) => handleFormChange('productName', e.target.value)}
-                />
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="bold">Product Name</Text>
+                  <Select.Root 
+                    value={formData.productName}
+                    onValueChange={(value) => handleFormChange('productName', value)}
+                  >
+                    <Select.Trigger placeholder="Select product" />
+                    <Select.Content>
+                      <Select.Item value="Poultry Drug A">Poultry Drug A</Select.Item>
+                      <Select.Item value="Poultry Drug B">Poultry Drug B</Select.Item>
+                      <Select.Item value="Poultry Drug C">Poultry Drug C</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
 
-                <TextField.Root
-                  type="number"
-                  placeholder="Quantity"
-                  value={formData.quantity}
-                  onChange={(e) => handleFormChange('quantity', e.target.value)}
-                />
+                <Flex direction="column" gap="1">
+                  <Text as="label" size="2" weight="bold">Quantity (units)</Text>
+                  <TextField.Root
+                    type="number"
+                    placeholder="5000"
+                    value={formData.quantity}
+                    onChange={(e) => handleFormChange('quantity', e.target.value)}
+                  />
+                </Flex>
 
-                <Select.Root 
-                  value={formData.priority}
-                  onValueChange={(value) => handleFormChange('priority', value)}
-                >
-                  <Select.Trigger placeholder="Select priority" />
-                  <Select.Content>
-                    <Select.Item value="high">High Priority</Select.Item>
-                    <Select.Item value="medium">Medium Priority</Select.Item>
-                    <Select.Item value="low">Low Priority</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                <Flex gap="3">
+                  <Flex direction="column" gap="1" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Priority</Text>
+                    <Select.Root 
+                      value={formData.priority}
+                      onValueChange={(value) => handleFormChange('priority', value)}
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="high">High</Select.Item>
+                        <Select.Item value="medium">Medium</Select.Item>
+                        <Select.Item value="low">Low</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
 
-                <Select.Root 
-                  value={formData.materialsStatus}
-                  onValueChange={(value) => handleFormChange('materialsStatus', value)}
-                >
-                  <Select.Trigger placeholder="Materials Status" />
-                  <Select.Content>
-                    <Select.Item value="Allocated">Allocated</Select.Item>
-                    <Select.Item value="Pending">Pending</Select.Item>
-                    <Select.Item value="Insufficient Materials">Insufficient Materials</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                  <Flex direction="column" gap="1" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Materials</Text>
+                    <Select.Root 
+                      value={formData.materialsStatus}
+                      onValueChange={(value) => handleFormChange('materialsStatus', value)}
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="Allocated">Allocated</Select.Item>
+                        <Select.Item value="Pending">Pending</Select.Item>
+                        <Select.Item value="Insufficient">Insufficient</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+                </Flex>
 
-                <Flex gap="3" justify="end" mt="4">
+                <Flex gap="3" justify="end" mt="4" className="border-t border-gray-100 pt-4">
                   <Button 
                     variant="soft" 
                     color="gray"
                     onClick={() => setIsDialogOpen(false)}
+                    className="hover:bg-gray-100"
                   >
                     Cancel
                   </Button>
-                  <Button onClick={handleSubmit}>
+                  <Button 
+                    onClick={handleSubmit}
+                    className="hover:bg-blue-600 transition-colors"
+                  >
                     Create Order
                   </Button>
                 </Flex>
@@ -196,60 +246,85 @@ const ProductionOrders = () => {
         </Flex>
       </Flex>
 
-      {/* Compact Table */}
-      <Table.Root variant="surface" className="text-sm mb-6">
-        <Table.Header>
-          <Table.Row className="[&>th]:py-2 [&>th]:px-3">
+      {/* Enhanced Table */}
+      <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200 mb-6">
+        <Table.Header className="bg-gray-50">
+          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
             <Table.ColumnHeaderCell>Order ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Priority</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Materials Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Materials</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Schedule</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Batch Size</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
-        <Table.Body className="[&>tr>td]:py-2 [&>tr>td]:px-3">
+        <Table.Body className="divide-y divide-gray-100">
           {filteredOrders().map((order) => (
-            <Table.Row key={order.id} className="hover:bg-gray-50">
-              <Table.Cell className="font-medium">{order.id}</Table.Cell>
-              <Table.Cell>{order.product}</Table.Cell>
+            <Table.Row key={order.id} className="hover:bg-gray-50/50">
+              <Table.Cell className="font-medium">
+                <Badge variant="soft" className="px-2 py-1">
+                  {order.id}
+                </Badge>
+              </Table.Cell>
+              
+              <Table.Cell className="font-medium">{order.product}</Table.Cell>
+              
               <Table.Cell>
-                <Badge color={
-                  order.priority === 'High' ? 'red' :
-                  order.priority === 'Medium' ? 'amber' : 'green'
-                }>
+                <Badge 
+                  color={
+                    order.priority === 'High' ? 'red' :
+                    order.priority === 'Medium' ? 'amber' : 'green'
+                  }
+                  variant="soft"
+                  className="px-2 py-1 rounded-full"
+                >
+                  {getPriorityIcon(order.priority)}
                   {order.priority}
                 </Badge>
               </Table.Cell>
+              
               <Table.Cell>
-                <Badge color={
-                  order.materials === 'Allocated' ? 'green' :
-                  order.materials === 'Pending' ? 'amber' : 'red'
-                }>
+                <Badge 
+                  color={
+                    order.materials === 'Allocated' ? 'green' :
+                    order.materials === 'Pending' ? 'amber' : 'red'
+                  }
+                  variant="soft"
+                  className="px-2 py-1 rounded-full"
+                >
+                  {getMaterialsIcon(order.materials)}
                   {order.materials}
                 </Badge>
               </Table.Cell>
+              
               <Table.Cell>
-                <Flex align="center" gap="2" className="w-32">
+                <Flex align="center" gap="2" className="w-40">
                   <Progress 
                     value={order.progress} 
-                    className="h-1.5"
+                    className="h-2 rounded-full flex-1"
+                    style={{
+                      backgroundColor: '#e5e7eb',
+                      ['--accent-9' as any]: 
+                        order.progress > 70 ? '#10b981' :
+                        order.progress > 40 ? '#3b82f6' : '#ef4444'
+                    }}
                   />
-                  <Text size="2">{order.progress}%</Text>
+                  <Text size="2" weight="medium">{order.progress}%</Text>
                 </Flex>
               </Table.Cell>
-              <Table.Cell>{order.schedule}</Table.Cell>
-              <Table.Cell>{order.batchSize.toLocaleString()}</Table.Cell>
+              
+              <Table.Cell className="text-gray-700">{order.schedule}</Table.Cell>
+              <Table.Cell className="font-medium">{order.batchSize.toLocaleString()}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
       </Table.Root>
 
-      {/* Pie Chart Visualization */}
-      <Box className="bg-white p-4 rounded-lg shadow-sm">
-        <Heading size="5" mb="4">Production Distribution</Heading>
+      {/* Enhanced Pie Chart */}
+      <Box className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+        <Heading size="5" className="text-gray-800 mb-4">Production Distribution</Heading>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -270,11 +345,23 @@ const ProductionOrders = () => {
               </Pie>
               <ChartTooltip 
                 formatter={(value, name, props) => [
-                  `${value}% (${props.payload.batchSize} units)`,
+                  `${value}% (${props.payload.batchSize.toLocaleString()} units)`,
                   name
                 ]}
+                contentStyle={{
+                  background: 'white',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '6px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  padding: '8px 12px'
+                }}
               />
-              <Legend />
+              <Legend 
+                layout="horizontal"
+                verticalAlign="bottom"
+                height={36}
+                wrapperStyle={{ paddingTop: '20px' }}
+              />
             </PieChart>
           </ResponsiveContainer>
         </div>
