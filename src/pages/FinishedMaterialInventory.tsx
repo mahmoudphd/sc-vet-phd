@@ -1,19 +1,63 @@
-export type MaterialCategory = 'A' | 'B' | 'C';
-export type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
-export type BlockchainAction = 'order' | 'delivery' | 'adjustment';
+import React, { useState, useEffect, useMemo } from 'react';
+import {
+  Card,
+  Flex,
+  Heading,
+  Button,
+  TextField,
+  Box,
+  Text,
+  Badge,
+  Dialog,
+  Select,
+  Grid,
+  Switch,
+  TextArea,
+  Container,
+  Progress,
+  Table
+} from '@radix-ui/themes';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  CartesianGrid,
+  Tooltip
+} from 'recharts';
+import {
+  CubeIcon,
+  MixerHorizontalIcon,
+  ExclamationTriangleIcon,
+  ClockIcon,
+  LightningBoltIcon,
+  Link2Icon,
+  TokensIcon,
+  DownloadIcon
+} from '@radix-ui/react-icons';
 
-export interface SensorReadings {
+// Types
+type MaterialCategory = 'A' | 'B' | 'C';
+type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
+type BlockchainAction = 'order' | 'delivery' | 'adjustment';
+
+interface SensorReadings {
   temperature?: number;
   humidity?: number;
   weight?: number;
 }
 
-export interface ShippingConditions {
+interface ShippingConditions {
   temperature?: number;
   humidity?: number;
 }
 
-export interface RawMaterial {
+interface RawMaterial {
   id: string;
   name: string;
   currentStock: number;
@@ -37,7 +81,7 @@ export interface RawMaterial {
   expiryDate: string;
 }
 
-export interface PurchaseOrder {
+interface PurchaseOrder {
   id: string;
   materialId: string;
   materialName: string;
@@ -52,7 +96,7 @@ export interface PurchaseOrder {
   shippingConditions?: ShippingConditions;
 }
 
-export interface BlockchainTransaction {
+interface BlockchainTransaction {
   txHash: string;
   timestamp: string;
   materialId: string;
@@ -62,34 +106,37 @@ export interface BlockchainTransaction {
   quantity?: number;
 }
 
-export interface InventoryValueItem {
+interface InventoryValueItem {
   name: string;
   value: number;
   category: MaterialCategory;
   fill: string;
   unit: string;
-}export const generateId = (prefix: string): string => {
+}
+
+// Utils
+const generateId = (prefix: string): string => {
   return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
-export const formatDate = (dateString: string): string => {
+const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
   return date.toLocaleDateString('en-US');
 };
 
-export const getDaysRemaining = (expiryDate: string): number => {
+const getDaysRemaining = (expiryDate: string): number => {
   const expiry = new Date(expiryDate).getTime();
   const now = Date.now();
   return Math.floor((expiry - now) / (1000 * 60 * 60 * 24));
 };
 
-export const CATEGORY_COLORS = {
+const CATEGORY_COLORS = {
   A: '#3b82f6',
   B: '#10b981',
   C: '#6b7280'
 };
 
-export const getStatusColor = (status: OrderStatus): string => {
+const getStatusColor = (status: OrderStatus): 'red' | 'green' | 'blue' | 'purple' | 'orange' => {
   switch (status) {
     case 'delivered': return 'green';
     case 'shipped': return 'blue';
@@ -97,7 +144,10 @@ export const getStatusColor = (status: OrderStatus): string => {
     case 'cancelled': return 'red';
     default: return 'orange';
   }
-};export class BlockchainService {
+};
+
+// Services
+class BlockchainService {
   private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
 
   static async recordTransaction(
@@ -143,7 +193,9 @@ export const getStatusColor = (status: OrderStatus): string => {
       }, 1200);
     });
   }
-}export class IoTSensorService {
+}
+
+class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -163,12 +215,9 @@ export const getStatusColor = (status: OrderStatus): string => {
       }, 800);
     });
   }
-}import React from 'react';
-import { Table, Flex, Badge, Progress, Button, Text } from '@radix-ui/themes';
-import { RawMaterial } from '../../../types/inventoryTypes';
-import { formatDate, getDaysRemaining } from '../../../utils/helpers';
-import { Link2Icon, TokensIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
+}
 
+// Components
 interface MaterialRowProps {
   material: RawMaterial;
   onConnectSensor: (materialId: string) => void;
@@ -177,7 +226,7 @@ interface MaterialRowProps {
   loading: boolean;
 }
 
-export const MaterialRow: React.FC<MaterialRowProps> = ({
+const MaterialRow: React.FC<MaterialRowProps> = ({
   material,
   onConnectSensor,
   onViewMaterial,
@@ -269,10 +318,7 @@ export const MaterialRow: React.FC<MaterialRowProps> = ({
       </Table.Cell>
     </Table.Row>
   );
-};import React from 'react';
-import { Table, Flex, Text } from '@radix-ui/themes';
-import { MaterialRow } from './MaterialRow';
-import { RawMaterial } from '../../types/inventoryTypes';
+};
 
 interface MaterialTableProps {
   materials: RawMaterial[];
@@ -284,7 +330,7 @@ interface MaterialTableProps {
   loading: boolean;
 }
 
-export const MaterialTable: React.FC<MaterialTableProps> = ({
+const MaterialTable: React.FC<MaterialTableProps> = ({
   materials,
   sortConfig,
   onRequestSort,
@@ -354,14 +400,7 @@ export const MaterialTable: React.FC<MaterialTableProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};import React from 'react';
-import { Card, Flex, Box, Heading, Text, Grid } from '@radix-ui/themes';
-import { 
-  ExclamationTriangleIcon, 
-  ClockIcon, 
-  CubeIcon, 
-  LightningBoltIcon 
-} from '@radix-ui/react-icons';
+};
 
 interface StatsCardsProps {
   criticalMaterials: number;
@@ -370,7 +409,7 @@ interface StatsCardsProps {
   connectedSensors: number;
 }
 
-export const StatsCards: React.FC<StatsCardsProps> = ({
+const StatsCards: React.FC<StatsCardsProps> = ({
   criticalMaterials,
   reorderNeeded,
   pendingOrdersCount,
@@ -427,10 +466,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
       </Card>
     </Grid>
   );
-};import React from 'react';
-import { Dialog, Flex, Grid, Box, Text, TextField, Select, Button, Badge } from '@radix-ui/themes';
-import { RawMaterial } from '../types/inventoryTypes';
-import { Link2Icon } from '@radix-ui/react-icons';
+};
 
 interface MaterialDetailsDialogProps {
   material: RawMaterial;
@@ -438,7 +474,7 @@ interface MaterialDetailsDialogProps {
   onSave: (material: RawMaterial) => void;
 }
 
-export const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({ 
+const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({ 
   material, 
   onClose, 
   onSave 
@@ -612,9 +648,7 @@ export const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};import React from 'react';
-import { Dialog, Grid, Box, Text, TextField, Select, Button, TextArea } from '@radix-ui/themes';
-import { RawMaterial } from '../types/inventoryTypes';
+};
 
 interface OrderFormDialogProps {
   materials: RawMaterial[];
@@ -622,7 +656,7 @@ interface OrderFormDialogProps {
   onSubmit: (order: Partial<PurchaseOrder>) => void;
 }
 
-export const OrderFormDialog: React.FC<OrderFormDialogProps> = ({ 
+const OrderFormDialog: React.FC<OrderFormDialogProps> = ({ 
   materials, 
   onClose, 
   onSubmit 
@@ -736,9 +770,7 @@ export const OrderFormDialog: React.FC<OrderFormDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};import React from 'react';
-import { Dialog, Table, Flex, Text, Button, Badge } from '@radix-ui/themes';
-import { BlockchainTransaction } from '../types/inventoryTypes';
+};
 
 interface BlockchainDialogProps {
   transactions: BlockchainTransaction[];
@@ -746,7 +778,7 @@ interface BlockchainDialogProps {
   onClose: () => void;
 }
 
-export const BlockchainDialog: React.FC<BlockchainDialogProps> = ({ 
+const BlockchainDialog: React.FC<BlockchainDialogProps> = ({ 
   transactions, 
   loading, 
   onClose 
@@ -828,10 +860,7 @@ export const BlockchainDialog: React.FC<BlockchainDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};import React from 'react';
-import { Dialog, Flex, Grid, Box, Text, Button, Badge } from '@radix-ui/themes';
-import { PurchaseOrder } from '../types/inventoryTypes';
-import { formatDate } from '../utils/helpers';
+};
 
 interface OrderDetailsDialogProps {
   order: PurchaseOrder;
@@ -839,7 +868,7 @@ interface OrderDetailsDialogProps {
   onUpdateStatus: (orderId: string, status: OrderStatus) => void;
 }
 
-export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({ 
+const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({ 
   order, 
   onClose,
   onUpdateStatus
@@ -936,16 +965,14 @@ export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};import React from 'react';
-import { Dialog, Grid, Box, Text, TextField, Select, Button } from '@radix-ui/themes';
-import { MaterialCategory } from '../types/inventoryTypes';
+};
 
 interface MaterialFormDialogProps {
   onClose: () => void;
   onSubmit: (material: Partial<RawMaterial>) => void;
 }
 
-export const MaterialFormDialog: React.FC<MaterialFormDialogProps> = ({ 
+const MaterialFormDialog: React.FC<MaterialFormDialogProps> = ({ 
   onClose, 
   onSubmit 
 }) => {
@@ -1118,66 +1145,9 @@ export const MaterialFormDialog: React.FC<MaterialFormDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};import React, { useState, useEffect, useMemo } from 'react';
-import {
-  Card,
-  Flex,
-  Heading,
-  Button,
-  TextField,
-  Box,
-  Text,
-  Badge,
-  Dialog,
-  Select,
-  Grid,
-  Switch,
-  TextArea,
-  Container,
-  Progress
-} from '@radix-ui/themes';
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Cell,
-  PieChart,
-  Pie,
-  Legend,
-  CartesianGrid,
-  Tooltip
-} from 'recharts';
-import {
-  CubeIcon,
-  MixerHorizontalIcon,
-  ExclamationTriangleIcon,
-  ClockIcon,
-  LightningBoltIcon,
-  Link2Icon,
-  TokensIcon,
-  DownloadIcon
-} from '@radix-ui/react-icons';
+};
 
-import { MaterialTable } from '../components/MaterialTable';
-import { StatsCards } from '../components/Dashboard/StatsCards';
-import { MaterialDetailsDialog } from '../components/MaterialDetailsDialog';
-import { OrderFormDialog } from '../components/OrderFormDialog';
-import { BlockchainDialog } from '../components/BlockchainDialog';
-import { OrderDetailsDialog } from '../components/OrderDetailsDialog';
-import { MaterialFormDialog } from '../components/MaterialFormDialog';
-import { RawMaterial, PurchaseOrder } from '../types/inventoryTypes';
-import { BlockchainService } from '../services/BlockchainService';
-import { IoTSensorService } from '../services/IoTSensorService';
-import { 
-  generateId, 
-  formatDate, 
-  getDaysRemaining, 
-  CATEGORY_COLORS, 
-  getStatusColor 
-} from '../utils/helpers';
-
+// Main Component
 const FinishedMaterialInventory: React.FC = () => {
   const [state, setState] = useState({
     materials: [] as RawMaterial[],
