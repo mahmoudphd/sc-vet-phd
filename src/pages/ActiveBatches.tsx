@@ -38,9 +38,9 @@ const STAGE_OPTIONS = [
 ] as const;
 
 const PRODUCT_OPTIONS = [
-  'Poultry Product A',
-  'Poultry Product B',
-  'Poultry Product C',
+  'Poultry Drug A',
+  'Poultry Drug B',
+  'Poultry Drug C',
 ] as const;
 
 const PRIORITY_OPTIONS = [
@@ -90,7 +90,7 @@ const ActiveBatches: React.FC = () => {
   const [batches, setBatches] = useState<Batch[]>([
     { 
       id: 'VC23001', 
-      product: 'Poultry Product A',
+      product: 'Poultry Drug A',
       stage: 'Mixing',
       temp: 2.5,
       status: 'status.onTrack',
@@ -99,7 +99,7 @@ const ActiveBatches: React.FC = () => {
     },
     { 
       id: 'VC23002', 
-      product: 'Poultry Product B',
+      product: 'Poultry Drug B',
       stage: 'Compression',
       temp: 3.2,
       status: 'status.onTrack',
@@ -130,7 +130,7 @@ const ActiveBatches: React.FC = () => {
 
   const handleNewBatch = useCallback(() => {
     if (!validateForm()) {
-      alert('Please fill all fields');
+      alert('Please fill all required fields');
       return;
     }
 
@@ -163,15 +163,16 @@ const ActiveBatches: React.FC = () => {
   }, []);
 
   const handleSubmitToBlockchain = useCallback(() => {
-    alert('Data submitted to blockchain successfully');
+    alert('Batch data submitted to blockchain successfully');
   }, []);
 
   const memoizedTempChart = useMemo(() => (
-    <LineChart width={100} height={40} data={TEMP_CHART_DATA}>
+    <LineChart width={96} height={40} data={TEMP_CHART_DATA}>
       <Line 
         type="monotone" 
         dataKey="temp" 
         stroke="#3b82f6" 
+        strokeWidth={2}
         dot={false}
       />
       <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
@@ -196,17 +197,21 @@ const ActiveBatches: React.FC = () => {
 
   return (
     <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="5" gap="4">
-        <Heading size="6">Active Batches</Heading>
+      <Flex justify="between" align="center" mb="6" gap="4">
+        <div>
+          <Heading size="6" className="text-gray-800 font-bold">Active Batches</Heading>
+          <Text size="2" className="text-gray-500">Manage current production batches</Text>
+        </div>
         
         <Flex gap="3" align="center">
           <TextField.Root
             placeholder="Search batches..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48"
+            className="w-56"
+            variant="soft"
           >
-            <TextField.Slot>
+            <TextField.Slot className="text-gray-500">
               <MagnifyingGlassIcon />
             </TextField.Slot>
           </TextField.Root>
@@ -215,7 +220,7 @@ const ActiveBatches: React.FC = () => {
             onClick={handleSubmitToBlockchain}
             variant="solid" 
             color="green"
-            className="bg-green-700 hover:bg-green-800 transition-colors"
+            className="bg-green-700 hover:bg-green-800 transition-colors shadow-sm"
           >
             <CubeIcon className="mr-2" />
             Submit to Blockchain
@@ -223,108 +228,123 @@ const ActiveBatches: React.FC = () => {
           
           <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger>
-              <Button variant="soft" className="whitespace-nowrap">
-                <MixerHorizontalIcon /> New Batch
+              <Button variant="soft" className="whitespace-nowrap shadow-sm">
+                <MixerHorizontalIcon className="mr-2" /> New Batch
               </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 500 }}>
-              <Dialog.Title>Create New Batch</Dialog.Title>
-              <Dialog.Description mb="4">
+            <Dialog.Content style={{ maxWidth: 500 }} className="p-6">
+              <Dialog.Title className="text-xl font-bold text-gray-800 mb-2">Create New Batch</Dialog.Title>
+              <Dialog.Description className="text-sm text-gray-600 mb-6">
                 Fill in the details for the new production batch
               </Dialog.Description>
               
-              <Flex direction="column" gap="4">
+              <Flex direction="column" gap="4" className="mb-6">
                 <Flex direction="column" gap="2">
-                  <Text as="label" size="2" weight="bold">
+                  <Text as="label" size="2" weight="bold" className="text-gray-700">
                     Batch Identifier
                   </Text>
                   <TextField.Root
                     value={formData.batchName}
                     onChange={(e) => handleFormChange('batchName', e.target.value)}
                     placeholder="VC-2023-001"
+                    className="w-full"
                   />
                 </Flex>
 
-                <Select.Root 
-                  value={formData.selectedProduct}
-                  onValueChange={(value) => handleFormChange('selectedProduct', value)}
-                >
-                  <Select.Trigger placeholder="Select product" />
-                  <Select.Content>
-                    {PRODUCT_OPTIONS.map(prod => (
-                      <Select.Item key={prod} value={prod}>{prod}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold" className="text-gray-700">
+                    Product
+                  </Text>
+                  <Select.Root 
+                    value={formData.selectedProduct}
+                    onValueChange={(value) => handleFormChange('selectedProduct', value)}
+                  >
+                    <Select.Trigger placeholder="Select product" className="w-full" />
+                    <Select.Content>
+                      {PRODUCT_OPTIONS.map(prod => (
+                        <Select.Item key={prod} value={prod}>{prod}</Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
 
                 <div className="grid grid-cols-2 gap-4">
                   <Flex direction="column" gap="2">
-                    <Text as="label" size="2" weight="bold">
+                    <Text as="label" size="2" weight="bold" className="text-gray-700">
                       Batch Size
                     </Text>
                     <TextField.Root
                       type="number"
                       value={formData.batchSize}
                       onChange={(e) => handleFormChange('batchSize', e.target.value)}
+                      placeholder="1000"
                     />
                   </Flex>
-                  <Select.Root 
-                    value={formData.priority}
-                    onValueChange={(value) => handleFormChange('priority', value)}
-                  >
-                    <Select.Trigger placeholder="Priority" />
-                    <Select.Content>
-                      {PRIORITY_OPTIONS.map(option => (
-                        <Select.Item key={option.value} value={option.value}>
-                          {option.label}
-                        </Select.Item>
-                      ))}
-                    </Select.Content>
-                  </Select.Root>
+                  <Flex direction="column" gap="2">
+                    <Text as="label" size="2" weight="bold" className="text-gray-700">
+                      Priority
+                    </Text>
+                    <Select.Root 
+                      value={formData.priority}
+                      onValueChange={(value) => handleFormChange('priority', value)}
+                    >
+                      <Select.Trigger placeholder="Priority" />
+                      <Select.Content>
+                        {PRIORITY_OPTIONS.map(option => (
+                          <Select.Item key={option.value} value={option.value}>
+                            {option.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
                 </div>
+              </Flex>
 
-                <Flex gap="3" justify="end" mt="4">
-                  <Button 
-                    variant="soft" 
-                    color="gray"
-                    onClick={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleNewBatch}>
-                    <PlusIcon className="mr-2" /> Create Batch
-                  </Button>
-                </Flex>
+              <Flex gap="3" justify="end" className="border-t border-gray-100 pt-4">
+                <Button 
+                  variant="soft" 
+                  color="gray"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="hover:bg-gray-100"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleNewBatch}
+                  className="hover:bg-blue-600 transition-colors"
+                >
+                  <PlusIcon className="mr-2" /> Create Batch
+                </Button>
               </Flex>
             </Dialog.Content>
           </Dialog.Root>
         </Flex>
       </Flex>
 
-      <Table.Root variant="surface" className="rounded-lg shadow-sm">
+      <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
         <Table.Header className="bg-gray-50">
-          <Table.Row>
+          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700">
             <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Stage</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>
-              <Flex direction="column">
-                <span>Temperature</span>
-                <span className="text-xs text-gray-500">Via IoT</span>
-              </Flex>
-            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Temperature</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
-        <Table.Body className="divide-y divide-gray-200">
+        <Table.Body className="divide-y divide-gray-100">
           {filteredBatches.map((batch) => (
-            <Table.Row key={batch.id} className="hover:bg-gray-50">
+            <Table.Row key={batch.id} className="hover:bg-gray-50/50">
               <Table.Cell className="font-medium">
-                <Badge color={getPriorityColor(batch.priority)} variant="soft">
+                <Badge 
+                  color={getPriorityColor(batch.priority)} 
+                  variant="soft"
+                  className="px-2 py-1 rounded-full text-xs font-medium"
+                >
                   {batch.id}
                 </Badge>
               </Table.Cell>
@@ -334,7 +354,7 @@ const ActiveBatches: React.FC = () => {
                   value={batch.product}
                   onValueChange={(value) => handleProductChange(batch.id, value as ProductType)}
                 >
-                  <Select.Trigger variant="soft" />
+                  <Select.Trigger variant="soft" className="w-full" />
                   <Select.Content>
                     {PRODUCT_OPTIONS.map(prod => (
                       <Select.Item key={prod} value={prod}>{prod}</Select.Item>
@@ -348,7 +368,7 @@ const ActiveBatches: React.FC = () => {
                   value={batch.stage}
                   onValueChange={(value) => handleStageChange(batch.id, value as BatchStage)}
                 >
-                  <Select.Trigger variant="soft" />
+                  <Select.Trigger variant="soft" className="w-full" />
                   <Select.Content>
                     {STAGE_OPTIONS.map(stage => (
                       <Select.Item key={stage} value={stage}>{stage}</Select.Item>
@@ -358,18 +378,22 @@ const ActiveBatches: React.FC = () => {
               </Table.Cell>
 
               <Table.Cell>
-                <Flex direction="column" gap="1">
-                  <div className="flex items-center gap-2">
-                    <div style={{ width: 100, height: 40 }}>
-                      {memoizedTempChart}
-                    </div>
-                    <span className={`text-sm font-medium ${
-                      batch.temp > 5 ? 'text-red-600' : 'text-blue-600'
-                    }`}>
-                      {batch.temp}°C
-                    </span>
+                <Flex align="center" gap="2">
+                  <div className="w-24 h-10">
+                    <LineChart width={96} height={40} data={TEMP_CHART_DATA}>
+                      <Line 
+                        type="monotone" 
+                        dataKey="temp" 
+                        stroke={batch.temp > 5 ? '#ef4444' : '#3b82f6'} 
+                        strokeWidth={2}
+                        dot={false}
+                      />
+                      <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
+                    </LineChart>
                   </div>
-                  <Text size="1" color="gray">Via IoT</Text>
+                  <span className={`text-sm font-medium ${batch.temp > 5 ? 'text-red-600' : 'text-blue-600'}`}>
+                    {batch.temp}°C
+                  </span>
                 </Flex>
               </Table.Cell>
 
@@ -377,8 +401,19 @@ const ActiveBatches: React.FC = () => {
                 <Badge 
                   color={batch.status === 'status.onTrack' ? 'green' : 'red'}
                   variant="soft"
+                  className="px-2 py-1 rounded-full text-xs font-medium"
                 >
-                  {batch.status === 'status.onTrack' ? 'On Track' : 'Delayed'}
+                  {batch.status === 'status.onTrack' ? (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      On Track
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      Delayed
+                    </span>
+                  )}
                 </Badge>
               </Table.Cell>
 
@@ -386,25 +421,37 @@ const ActiveBatches: React.FC = () => {
                 <Flex align="center" gap="2">
                   <Progress 
                     value={batch.progress} 
-                    className="h-2"
+                    className="h-2.5 rounded-full w-full"
                     style={{
-                      backgroundColor: getProgressColor(batch.progress),
-                      borderRadius: '4px'
+                      backgroundColor: '#e5e7eb',
+                      ['--accent-9' as any]: getProgressColor(batch.progress),
                     }}
                   />
-                  <Text size="2" weight="medium">{batch.progress}%</Text>
+                  <Text size="2" weight="medium" className="text-gray-700 min-w-[40px]">
+                    {batch.progress}%
+                  </Text>
                 </Flex>
               </Table.Cell>
 
               <Table.Cell>
                 <Flex gap="2">
-                  <Tooltip content="Cancel batch">
-                    <IconButton variant="soft" color="red" size="2">
+                  <Tooltip content="Cancel batch" delayDuration={300}>
+                    <IconButton 
+                      variant="soft" 
+                      color="red" 
+                      size="2"
+                      className="hover:bg-red-100 transition-colors"
+                    >
                       <CrossCircledIcon />
                     </IconButton>
                   </Tooltip>
-                  <Tooltip content="Pause batch">
-                    <IconButton variant="soft" color="amber" size="2">
+                  <Tooltip content="Pause batch" delayDuration={300}>
+                    <IconButton 
+                      variant="soft" 
+                      color="amber" 
+                      size="2"
+                      className="hover:bg-amber-100 transition-colors"
+                    >
                       <PauseIcon />
                     </IconButton>
                   </Tooltip>
