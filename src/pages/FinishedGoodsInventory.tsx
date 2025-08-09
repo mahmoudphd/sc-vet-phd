@@ -1,204 +1,697 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
-  Table,
-  Badge,
   Card,
   Flex,
   Heading,
-  Text,
-  Progress,
-  TextField,
-  Select,
+  Table,
   Button,
-  Box
+  TextField,
+  Box,
+  Text,
+  Badge,
+  Dialog,
+  Select,
+  Switch,
+  Grid
 } from '@radix-ui/themes';
 import {
-  BoxIcon,
-  CalendarIcon,
-  CheckCircledIcon,
-  CrossCircledIcon,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip as ChartTooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+  LineChart,
+  Line,
+  CartesianGrid
+} from 'recharts';
+import { 
   CubeIcon,
+  MixerHorizontalIcon,
+  DownloadIcon,
+  CommitIcon,
+  SymbolIcon,
+  ClockIcon,
+  UpdateIcon
 } from '@radix-ui/react-icons';
-import { BarChart, Bar, XAxis, YAxis } from 'recharts';
-import { useTranslation } from 'react-i18next';
-import NewReceiptModel from '../components/NewReceiptModel';
-import ExportCSVModel from '../components/ExportCSVModel';
 
-const FinishedGoodsInventory = () => {
-  const { t } = useTranslation('finished-goods-inventory');
-  const [isNewReceiptOpen, setIsNewReceiptOpen] = useState(false);
-  const [isExportCSVOpen, setIsExportCSVOpen] = useState(false);
+interface InventoryItem {
+  id: string;
+  name: string;
+  quantity: number;
+  reserved: number;
+  storage: string;
+  expiry: string;
+  location: string;
+  unitPrice: number;
+  unitCost: number;
+  category: 'A' | 'B' | 'C';
+  lastRestock: string;
+  cogs: number;
+  movement?: { month: string; quantity: number }[];
+}
 
-  const inventory = [
-    {
-      id: 'FG23045',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 1245,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 400,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 800,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-    {
-      id: 'FG23048',
-      product: 'Antiparasitic Injection',
-      productCategory: 'VC23001',
-      quantity: 1300,
-      location: 'Zone B-12',
-      status: 'Released',
-      expiry: '2024-12-01',
-      temperature: '2-8°C'
-    },
-  ];
+const EXCHANGE_RATE = 50;
+const CATEGORY_COLORS = {
+  A: '#3b82f6',
+  B: '#10b981',
+  C: '#6b7280'
+};
+
+const initialData: InventoryItem[] = [
+  {
+    id: 'DRG001',
+    name: 'Poultry Drug A',
+    quantity: 120,
+    reserved: 40,
+    storage: '4°C',
+    expiry: '2025-08-10',
+    location: 'Zone 1',
+    unitPrice: 225,
+    unitCost: 171,
+    category: 'A',
+    lastRestock: '2023-05-15',
+    cogs: 20520,
+    movement: [
+      { month: 'Jan', quantity: 100 },
+      { month: 'Feb', quantity: 110 },
+      { month: 'Mar', quantity: 95 },
+      { month: 'Apr', quantity: 120 },
+      { month: 'May', quantity: 115 },
+      { month: 'Jun', quantity: 120 }
+    ]
+  },
+  {
+    id: 'DRG002',
+    name: 'Poultry Drug B',
+    quantity: 100,
+    reserved: 30,
+    storage: '6°C',
+    expiry: '2025-09-15',
+    location: 'Zone 2',
+    unitPrice: 215,
+    unitCost: 160,
+    category: 'B',
+    lastRestock: '2023-06-20',
+    cogs: 19200,
+    movement: [
+      { month: 'Jan', quantity: 80 },
+      { month: 'Feb', quantity: 90 },
+      { month: 'Mar', quantity: 85 },
+      { month: 'Apr', quantity: 95 },
+      { month: 'May', quantity: 100 },
+      { month: 'Jun', quantity: 100 }
+    ]
+  },
+  {
+    id: 'DRG003',
+    name: 'Poultry Drug C',
+    quantity: 80,
+    reserved: 20,
+    storage: '8°C',
+    expiry: '2025-07-28',
+    location: 'Zone 2',
+    unitPrice: 230,
+    unitCost: 171,
+    category: 'C',
+    lastRestock: '2023-07-10',
+    cogs: 20520,
+    movement: [
+      { month: 'Jan', quantity: 70 },
+      { month: 'Feb', quantity: 75 },
+      { month: 'Mar', quantity: 80 },
+      { month: 'Apr', quantity: 85 },
+      { month: 'May', quantity: 80 },
+      { month: 'Jun', quantity: 80 }
+    ]
+  }
+];
+
+const StatusCircle = ({ color }: { color: 'red' | 'green' | 'orange' }) => (
+  <div style={{
+    width: '16px',
+    height: '16px',
+    borderRadius: '50%',
+    backgroundColor: color,
+    display: 'inline-block',
+    marginRight: '8px'
+  }} />
+);
+
+const InventoryDashboard = () => {
+  const [data, setData] = useState<InventoryItem[]>(initialData);
+  const [currency, setCurrency] = useState<'USD' | 'EGP'>('EGP');
+  const [locationFilter, setLocationFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
+  const [sortConfig, setSortConfig] = useState<{key: keyof Omit<InventoryItem, 'category' | 'movement'>, direction: 'asc' | 'desc'} | null>(null);
+  const [hoveredRow, setHoveredRow] = useState<string | null>(null);
+
+  const calculateTurnoverRate = (item: InventoryItem) => {
+    const avgInventoryValue = (item.quantity * item.unitCost) / 2;
+    return avgInventoryValue > 0 ? item.cogs / avgInventoryValue : 0;
+  };
+
+  const getExpiryStatus = (expiryDate: string): { status: string; color: 'red' | 'green' | 'orange' } => {
+    const today = new Date();
+    const expiry = new Date(expiryDate);
+    const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays < 0) return { status: 'Expired', color: 'red' };
+    if (diffDays < 7) return { status: 'Urgent', color: 'red' };
+    if (diffDays < 30) return { status: 'Warning', color: 'orange' };
+    return { status: 'Good', color: 'green' };
+  };
+
+  const totalInventoryValue = useMemo(() => 
+    data.reduce((sum, item) => sum + (item.quantity * item.unitPrice), 0), 
+    [data, currency]
+  );
+
+  const itemsNearExpiry = useMemo(() => 
+    data.filter(item => {
+      const expiry = new Date(item.expiry);
+      const today = new Date();
+      const diffDays = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      return diffDays < 30;
+    }).length, 
+    [data]
+  );
+
+  const avgTurnoverRate = useMemo(() => {
+    const total = data.reduce((sum, item) => sum + calculateTurnoverRate(item), 0);
+    return data.length > 0 ? total / data.length : 0;
+  }, [data]);
+
+  const filteredData = useMemo(() => {
+    let result = [...data];
+    if (locationFilter !== 'all') {
+      result = result.filter(item => item.location === locationFilter);
+    }
+    if (categoryFilter !== 'all') {
+      result = result.filter(item => item.category === categoryFilter);
+    }
+    if (sortConfig !== null) {
+      result.sort((a, b) => {
+        if (sortConfig.key === 'expiry') {
+          const dateA = new Date(a.expiry).getTime();
+          const dateB = new Date(b.expiry).getTime();
+          return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+    return result;
+  }, [data, locationFilter, categoryFilter, sortConfig]);
+
+  const requestSort = (key: keyof Omit<InventoryItem, 'category' | 'movement'>) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig?.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const updateItemField = (id: string, field: keyof InventoryItem, value: any) => {
+    setData(prev => prev.map(item => {
+      if (item.id === id) {
+        if (field === 'quantity' && value > item.quantity) {
+          return {
+            ...item,
+            [field]: value,
+            lastRestock: new Date().toISOString().split('T')[0]
+          };
+        }
+        return { ...item, [field]: value };
+      }
+      return item;
+    }));
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currency,
+      minimumFractionDigits: 2
+    }).format(currency === 'EGP' ? value : value / EXCHANGE_RATE);
+  };
+
+  const formatNumber = (value: number) => {
+    return new Intl.NumberFormat('en-US').format(value);
+  };
+
+  const inventoryValueData = filteredData.map(item => ({
+    name: item.name,
+    value: item.quantity * item.unitPrice * (currency === 'EGP' ? 1 : 1/EXCHANGE_RATE),
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category]
+  }));
+
+  const turnoverData = filteredData.map(item => ({
+    name: item.name,
+    turnoverRate: calculateTurnoverRate(item),
+    category: item.category,
+    fill: CATEGORY_COLORS[item.category]
+  }));
 
   return (
-    <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('finished-goods-inventory')}</Heading>
-        <Flex gap="3">
-          <Button variant="soft" onClick={() => setIsNewReceiptOpen(true)}>
-            <CubeIcon /> {t('new-receipt')}
-          </Button>
-          <Button variant="soft" onClick={() => setIsExportCSVOpen(true)}>
-            {t('export-csv')}
-          </Button>
-        </Flex>
-      </Flex>
-      <Flex gap="4" mb="5">
-        <Card style={{ flex: 1 }}>
+    <Box p="4">
+      <Card>
+        <Flex direction="column" gap="4">
           <Flex justify="between" align="center">
-            <Text size="2" className="text-gray-500">{t('total-skus')}</Text>
-            <Heading size="7">245</Heading>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Flex justify="between" align="center">
-            <Text size="2" className="text-gray-500">{t('quarantined')}</Text>
-            <Heading size="7" className="text-red-500">3</Heading>
-          </Flex>
-        </Card>
-        <Card style={{ flex: 2 }} className="h-32">
-          <Text size="2" mb="2">{t('inventory-trend')}</Text>
-          <BarChart width={300} height={100} data={inventory}>
-            <Bar dataKey="quantity" fill="#3b82f6" />
-          </BarChart>
-        </Card>
-      </Flex>
-      <Flex gap="3" mb="4">
-        <TextField.Root placeholder={t('search-products')} />
-        <Select.Root defaultValue="all">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="all">{t('all-products')}</Select.Item>
-            <Select.Item value="oral">{t('oral-preparations')}</Select.Item>
-            <Select.Item value="injectable">{t('parenterals')}</Select.Item>
-          </Select.Content>
-        </Select.Root>
-        <Select.Root defaultValue="all">
-          <Select.Trigger />
-          <Select.Content>
-            <Select.Item value="all">{t('all-statuses')}</Select.Item>
-            <Select.Item value="released">{t('released')}</Select.Item>
-            <Select.Item value="quarantine">{t('quarantined-status')}</Select.Item>
-          </Select.Content>
-        </Select.Root>
-      </Flex>
-      <Table.Root variant="surface">
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>{t('product')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('product-category')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('quantity')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Free To Use')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Incoming')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('outgoing')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('Forecasted')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('location')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('status')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('expiry')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('storage')}</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {inventory.map((item) => (
-            <Table.Row key={item.id}>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  <BoxIcon />
-                  {item.product}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>{item.productCategory}</Table.Cell>
-              <Table.Cell>
-                <Badge variant="outline">{item.quantity} {t('units')}</Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">10</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">+20</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">-40</Text>
-              </Table.Cell>
-              <Table.Cell>
-                <Text size="1">100</Text>
-              </Table.Cell>
-              <Table.Cell>{item.location}</Table.Cell>
-              <Table.Cell>
-                <Badge
-                  color={item.status === 'Released' ? 'green' : 'red'}
-                  variant="soft"
-                >
-                  {t(item.status.toLowerCase())}
-                </Badge>
-              </Table.Cell>
-              <Table.Cell>
-                <Flex align="center" gap="2">
-                  <CalendarIcon />
-                  {item.expiry}
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>
-                <Badge variant="outline">{item.temperature}</Badge>
-              </Table.Cell>
-            </Table.Row>
-          ))}
-        </Table.Body>
-      </Table.Root>
+            <Heading size="6">Finished Good Inventory Overview</Heading>
+            <Flex gap="3" align="center">
+              <Select.Root value={locationFilter} onValueChange={setLocationFilter}>
+                <Select.Trigger>
+                  <MixerHorizontalIcon />
+                  Location
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="all">All Locations</Select.Item>
+                  <Select.Item value="Zone 1">Zone 1</Select.Item>
+                  <Select.Item value="Zone 2">Zone 2</Select.Item>
+                </Select.Content>
+              </Select.Root>
 
-      <NewReceiptModel isOpen={isNewReceiptOpen} onClose={() => setIsNewReceiptOpen(false)} />
-      <ExportCSVModel isOpen={isExportCSVOpen} onClose={() => setIsExportCSVOpen(false)} />
+              <Select.Root value={categoryFilter} onValueChange={setCategoryFilter}>
+                <Select.Trigger>
+                  <MixerHorizontalIcon />
+                  Category
+                </Select.Trigger>
+                <Select.Content>
+                  <Select.Item value="all">All Categories</Select.Item>
+                  <Select.Item value="A">Category A</Select.Item>
+                  <Select.Item value="B">Category B</Select.Item>
+                  <Select.Item value="C">Category C</Select.Item>
+                </Select.Content>
+              </Select.Root>
+
+              <Flex align="center" gap="2">
+                <Text>EGP</Text>
+                <Switch 
+                  checked={currency === 'USD'}
+                  onCheckedChange={(checked) => setCurrency(checked ? 'USD' : 'EGP')}
+                />
+                <Text>USD (1:50)</Text>
+              </Flex>
+
+              <Button variant="soft" onClick={() => alert('Export functionality would go here')}>
+                <DownloadIcon />
+              </Button>
+            </Flex>
+          </Flex>
+
+          <Grid columns="3" gap="4">
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#3b82f620',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <SymbolIcon width="24" height="24" color="#3b82f6" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Total Value</Text>
+                  <Heading size="5" mb="1" style={{ color: '#1e40af' }}>
+                    {formatCurrency(totalInventoryValue)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 2.5%</Text>
+                    <Text size="1" color="gray">vs last month</Text>
+                  </Flex>
+                </Box>
+              </Flex>
+            </Card>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #fefce8 0%, #fef9c3 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#f59e0b20',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <ClockIcon width="24" height="24" color="#d97706" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Near Expiry</Text>
+                  <Heading size="5" mb="1" style={{ color: '#92400e' }}>
+                    {itemsNearExpiry}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="red">↑ 1.2%</Text>
+                    <Text size="1" color="gray">Urgent</Text>
+                  </Flex>
+                </Box>
+              </Flex>
+            </Card>
+
+            <Card style={{ 
+              borderRadius: '12px', 
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              background: 'linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%)'
+            }}>
+              <Flex align="center" gap="4" p="4">
+                <Box style={{
+                  background: '#10b98120',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <UpdateIcon width="24" height="24" color="#059669" />
+                </Box>
+                <Box>
+                  <Text as="div" size="2" color="gray" mb="1">Turnover Rate</Text>
+                  <Heading size="5" mb="1" style={{ color: '#065f46' }}>
+                    {avgTurnoverRate.toFixed(2)}
+                  </Heading>
+                  <Flex align="center" gap="1">
+                    <Text size="1" color="green">↑ 0.3</Text>
+                    <Text size="1" color="gray">vs last quarter</Text>
+                  </Flex>
+                </Box>
+              </Flex>
+            </Card>
+          </Grid>
+
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell onClick={() => requestSort('id')}>
+                  ID {sortConfig?.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell onClick={() => requestSort('name')}>
+                  Product {sortConfig?.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell onClick={() => requestSort('quantity')}>
+                  Qty {sortConfig?.key === 'quantity' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell onClick={() => requestSort('reserved')}>
+                  Reserved {sortConfig?.key === 'reserved' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  Available
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell onClick={() => requestSort('expiry')}>
+                  Expiry {sortConfig?.key === 'expiry' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                  Status
+                </Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+
+            <Table.Body>
+              {filteredData.map((item) => {
+                const expiryStatus = getExpiryStatus(item.expiry);
+                const rowColor = expiryStatus.color === 'red' ? 'var(--red-2)' : 
+                                expiryStatus.color === 'orange' ? 'var(--orange-2)' : 'white';
+                const hoverColor = expiryStatus.color === 'red' ? 'var(--red-3)' :
+                                  expiryStatus.color === 'orange' ? 'var(--orange-3)' : 'var(--gray-2)';
+                
+                return (
+                  <Table.Row 
+                    key={item.id}
+                    style={{ 
+                      backgroundColor: hoveredRow === item.id ? hoverColor : rowColor,
+                      transition: 'background-color 0.2s ease'
+                    }}
+                    onMouseEnter={() => setHoveredRow(item.id)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                  >
+                    <Table.Cell>{item.id}</Table.Cell>
+                    <Table.Cell>
+                      <Flex direction="column">
+                        <Text 
+                          weight="bold"
+                          style={{ 
+                            cursor: 'pointer',
+                            color: '#3b82f6',
+                            textDecoration: 'underline'
+                          }}
+                          onClick={() => setSelectedItem(item)}
+                        >
+                          {item.name}
+                        </Text>
+                        <Badge color={item.category === 'A' ? 'blue' : item.category === 'B' ? 'green' : 'gray'}>
+                          Category {item.category}
+                        </Badge>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        value={item.quantity}
+                        type="number"
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            updateItemField(item.id, 'quantity', Math.max(0, newValue));
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        value={item.reserved}
+                        type="number"
+                        onChange={(e) => {
+                          const newValue = parseInt(e.target.value);
+                          if (!isNaN(newValue)) {
+                            updateItemField(item.id, 'reserved', Math.min(item.quantity, Math.max(0, newValue)));
+                          }
+                        }}
+                        style={{ width: '70px' }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell>{formatNumber(item.quantity - item.reserved)}</Table.Cell>
+                    <Table.Cell>
+                      {new Date(item.expiry).toLocaleDateString('en-US')}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <Flex align="center" gap="2">
+                        <StatusCircle color={expiryStatus.color} />
+                        <Text>{expiryStatus.status}</Text>
+                      </Flex>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+            </Table.Body>
+          </Table.Root>
+
+          <Flex gap="4">
+            <Card style={{ flex: 1 }}>
+              <Heading size="4" mb="2">Inventory Value by Category ({currency})</Heading>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={inventoryValueData}
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  >
+                    {inventoryValueData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Legend />
+                  <ChartTooltip 
+                    formatter={(value: number) => [formatCurrency(value), 'Value']}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Card>
+
+            <Card style={{ flex: 1 }}>
+              <Heading size="4" mb="2">Inventory Turnover Rate</Heading>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={turnoverData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" />
+                  <YAxis domain={[0, 5]} />
+                  <ChartTooltip 
+                    formatter={(value: number) => [value.toFixed(2), 'Turnover Rate']}
+                  />
+                  <Bar 
+                    dataKey="turnoverRate" 
+                    fill="#8884d8"
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {turnoverData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </Card>
+          </Flex>
+        </Flex>
+      </Card>
+
+      <Dialog.Root open={!!selectedItem} onOpenChange={(open) => !open && setSelectedItem(null)}>
+        {selectedItem && (
+          <Dialog.Content style={{ maxWidth: '700px' }}>
+            <Dialog.Title>
+              <Flex align="center" gap="2">
+                {selectedItem.name}
+                <Badge color={selectedItem.category === 'A' ? 'blue' : 
+                             selectedItem.category === 'B' ? 'green' : 'gray'}>
+                  Category {selectedItem.category}
+                </Badge>
+              </Flex>
+            </Dialog.Title>
+            
+            <Flex gap="4" mt="4">
+              <Box style={{ flex: '1 1 200px' }}>
+                <Card>
+                  <Heading size="4" mb="3">Inventory Details</Heading>
+                  <Flex direction="column" gap="3">
+                    <Flex justify="between">
+                      <Text color="gray">Current Stock:</Text>
+                      <Text weight="bold">{formatNumber(selectedItem.quantity)} units</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Available:</Text>
+                      <Text weight="bold">{formatNumber(selectedItem.quantity - selectedItem.reserved)} units</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Unit Cost:</Text>
+                      <Text weight="bold">{formatCurrency(selectedItem.unitCost)}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Unit Price:</Text>
+                      <Text weight="bold">{formatCurrency(selectedItem.unitPrice)}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Total Value:</Text>
+                      <Text weight="bold">{formatCurrency(selectedItem.quantity * selectedItem.unitPrice)}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Turnover Rate:</Text>
+                      <Text weight="bold">{calculateTurnoverRate(selectedItem).toFixed(2)}</Text>
+                    </Flex>
+                  </Flex>
+                </Card>
+
+                <Card mt="4">
+                  <Heading size="4" mb="3">Stock Movement (Last 6 Months)</Heading>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <LineChart data={selectedItem.movement}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <ChartTooltip 
+                        formatter={(value: number) => [`${value} units`, 'Quantity']}
+                        labelFormatter={(month) => `Month: ${month}`}
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="quantity" 
+                        stroke={CATEGORY_COLORS[selectedItem.category]} 
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 6 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </Card>
+              </Box>
+
+              <Box style={{ flex: '1 1 200px' }}>
+                <Card>
+                  <Heading size="4" mb="3">Product Information</Heading>
+                  <Flex direction="column" gap="3">
+                    <Flex justify="between">
+                      <Text color="gray">Storage:</Text>
+                      <Text weight="bold">{selectedItem.storage}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Location:</Text>
+                      <Text weight="bold">{selectedItem.location}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Expiry Date:</Text>
+                      <Flex align="center" gap="2">
+                        <StatusCircle color={getExpiryStatus(selectedItem.expiry).color} />
+                        <Text>{new Date(selectedItem.expiry).toLocaleDateString('en-US')}</Text>
+                      </Flex>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Last Restock:</Text>
+                      <Text>{new Date(selectedItem.lastRestock).toLocaleDateString('en-US')}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text color="gray">Cost of Goods Sold:</Text>
+                      <Text weight="bold">{formatCurrency(selectedItem.cogs)}</Text>
+                    </Flex>
+                  </Flex>
+                </Card>
+
+                <Card mt="4">
+                  <Heading size="4" mb="3">Quick Actions</Heading>
+                  <Flex direction="column" gap="2">
+                    <Button variant="soft">
+                      Request Restock
+                    </Button>
+                    <Button variant="soft" color="red">
+                      Mark as Damaged
+                    </Button>
+                    <Button variant="soft" color="amber">
+                      Change Location
+                    </Button>
+                  </Flex>
+                </Card>
+              </Box>
+            </Flex>
+
+            <Flex justify="end" gap="3" mt="4">
+              <Dialog.Close>
+                <Button variant="soft" color="gray">
+                  Close
+                </Button>
+              </Dialog.Close>
+              <Button>
+                <CubeIcon />
+                View Blockchain Record
+              </Button>
+              <Button variant="solid" color="green">
+                <CommitIcon />
+                Commit to Ledger
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        )}
+      </Dialog.Root>
     </Box>
   );
 };
 
-export default FinishedGoodsInventory;
-
-/*
-
-  - Released
-  - Quarantined
-
-*/
+export default InventoryDashboard;
