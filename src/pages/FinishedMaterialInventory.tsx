@@ -1,4 +1,3 @@
-// src/types/inventoryTypes.ts
 export type MaterialCategory = 'A' | 'B' | 'C';
 export type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
 export type BlockchainAction = 'order' | 'delivery' | 'adjustment';
@@ -69,10 +68,7 @@ export interface InventoryValueItem {
   category: MaterialCategory;
   fill: string;
   unit: string;
-}
-
-// src/utils/helpers.ts
-export const generateId = (prefix: string): string => {
+}export const generateId = (prefix: string): string => {
   return `${prefix}-${Math.random().toString(36).substr(2, 9)}`;
 };
 
@@ -101,10 +97,7 @@ export const getStatusColor = (status: OrderStatus): string => {
     case 'cancelled': return 'red';
     default: return 'orange';
   }
-};
-
-// src/services/BlockchainService.ts
-export class BlockchainService {
+};export class BlockchainService {
   private static transactionHistory: Record<string, BlockchainTransaction[]> = {};
 
   static async recordTransaction(
@@ -150,10 +143,7 @@ export class BlockchainService {
       }, 1200);
     });
   }
-}
-
-// src/services/IoTSensorService.ts
-export class IoTSensorService {
+}export class IoTSensorService {
   static async connectToSensor(materialId: string): Promise<boolean> {
     return new Promise((resolve) => {
       setTimeout(() => {
@@ -173,10 +163,7 @@ export class IoTSensorService {
       }, 800);
     });
   }
-}
-
-// src/components/MaterialTable/MaterialRow.tsx
-import React from 'react';
+}import React from 'react';
 import { Table, Flex, Badge, Progress, Button, Text } from '@radix-ui/themes';
 import { RawMaterial } from '../../../types/inventoryTypes';
 import { formatDate, getDaysRemaining } from '../../../utils/helpers';
@@ -282,10 +269,7 @@ export const MaterialRow: React.FC<MaterialRowProps> = ({
       </Table.Cell>
     </Table.Row>
   );
-};
-
-// src/components/MaterialTable/index.tsx
-import React from 'react';
+};import React from 'react';
 import { Table, Flex, Text } from '@radix-ui/themes';
 import { MaterialRow } from './MaterialRow';
 import { RawMaterial } from '../../types/inventoryTypes';
@@ -370,10 +354,7 @@ export const MaterialTable: React.FC<MaterialTableProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};
-
-// src/components/Dashboard/StatsCards.tsx
-import React from 'react';
+};import React from 'react';
 import { Card, Flex, Box, Heading, Text, Grid } from '@radix-ui/themes';
 import { 
   ExclamationTriangleIcon, 
@@ -446,10 +427,7 @@ export const StatsCards: React.FC<StatsCardsProps> = ({
       </Card>
     </Grid>
   );
-};
-
-// src/components/MaterialDetailsDialog.tsx
-import React from 'react';
+};import React from 'react';
 import { Dialog, Flex, Grid, Box, Text, TextField, Select, Button, Badge } from '@radix-ui/themes';
 import { RawMaterial } from '../types/inventoryTypes';
 import { Link2Icon } from '@radix-ui/react-icons';
@@ -634,10 +612,7 @@ export const MaterialDetailsDialog: React.FC<MaterialDetailsDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};
-
-// src/components/OrderFormDialog.tsx
-import React from 'react';
+};import React from 'react';
 import { Dialog, Grid, Box, Text, TextField, Select, Button, TextArea } from '@radix-ui/themes';
 import { RawMaterial } from '../types/inventoryTypes';
 
@@ -761,10 +736,7 @@ export const OrderFormDialog: React.FC<OrderFormDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};
-
-// src/components/BlockchainDialog.tsx
-import React from 'react';
+};import React from 'react';
 import { Dialog, Table, Flex, Text, Button, Badge } from '@radix-ui/themes';
 import { BlockchainTransaction } from '../types/inventoryTypes';
 
@@ -856,10 +828,297 @@ export const BlockchainDialog: React.FC<BlockchainDialogProps> = ({
       </Dialog.Content>
     </Dialog.Root>
   );
-};
+};import React from 'react';
+import { Dialog, Flex, Grid, Box, Text, Button, Badge } from '@radix-ui/themes';
+import { PurchaseOrder } from '../types/inventoryTypes';
+import { formatDate } from '../utils/helpers';
 
-// src/App.tsx
-import React, { useState, useEffect, useMemo } from 'react';
+interface OrderDetailsDialogProps {
+  order: PurchaseOrder;
+  onClose: () => void;
+  onUpdateStatus: (orderId: string, status: OrderStatus) => void;
+}
+
+export const OrderDetailsDialog: React.FC<OrderDetailsDialogProps> = ({ 
+  order, 
+  onClose,
+  onUpdateStatus
+}) => {
+  return (
+    <Dialog.Root open onOpenChange={onClose}>
+      <Dialog.Content style={{ maxWidth: '600px' }}>
+        <Dialog.Title>Order Details: {order.id}</Dialog.Title>
+        
+        <Grid columns="2" gap="3" mt="3">
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Material</Text>
+            <Text>{order.materialName}</Text>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Quantity</Text>
+            <Text>{order.quantity}</Text>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+            <Text>{order.supplier}</Text>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Order Date</Text>
+            <Text>{formatDate(order.orderDate)}</Text>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Expected Delivery</Text>
+            <Text>{formatDate(order.expectedDelivery)}</Text>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Status</Text>
+            <Badge color={getStatusColor(order.status)}>
+              {order.status}
+            </Badge>
+          </Box>
+          
+          {order.notes && (
+            <Box style={{ gridColumn: '1 / -1' }}>
+              <Text as="div" size="2" mb="1" weight="bold">Notes</Text>
+              <Text>{order.notes}</Text>
+            </Box>
+          )}
+          
+          {order.blockchainTx && (
+            <Box style={{ gridColumn: '1 / -1' }}>
+              <Text as="div" size="2" mb="1" weight="bold">Blockchain Transaction</Text>
+              <Text size="1" style={{ wordBreak: 'break-all' }}>{order.blockchainTx}</Text>
+            </Box>
+          )}
+        </Grid>
+        
+        <Flex gap="3" mt="4" justify="end">
+          {order.status === 'pending' && (
+            <Button 
+              variant="soft" 
+              color="green"
+              onClick={() => onUpdateStatus(order.id, 'approved')}
+            >
+              Approve
+            </Button>
+          )}
+          {order.status === 'approved' && (
+            <Button 
+              variant="soft" 
+              color="blue"
+              onClick={() => onUpdateStatus(order.id, 'shipped')}
+            >
+              Mark as Shipped
+            </Button>
+          )}
+          {order.status === 'shipped' && (
+            <Button 
+              variant="soft" 
+              color="purple"
+              onClick={() => onUpdateStatus(order.id, 'delivered')}
+            >
+              Mark as Delivered
+            </Button>
+          )}
+          <Button 
+            variant="soft" 
+            color="gray"
+            onClick={onClose}
+          >
+            Close
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};import React from 'react';
+import { Dialog, Grid, Box, Text, TextField, Select, Button } from '@radix-ui/themes';
+import { MaterialCategory } from '../types/inventoryTypes';
+
+interface MaterialFormDialogProps {
+  onClose: () => void;
+  onSubmit: (material: Partial<RawMaterial>) => void;
+}
+
+export const MaterialFormDialog: React.FC<MaterialFormDialogProps> = ({ 
+  onClose, 
+  onSubmit 
+}) => {
+  const [newMaterial, setNewMaterial] = React.useState<Partial<RawMaterial>>({
+    unit: 'kg',
+    sensorConnected: false,
+    category: 'A',
+    expiryDate: '2025-12-31',
+    currentStock: 0,
+    reserved: 0,
+    minStockLevel: 0,
+    reorderLevel: 0,
+    safetyStock: 0,
+    leadTime: 0,
+    orderQuantity: 0,
+    pendingOrders: 0,
+    location: 'Zone 1'
+  });
+
+  return (
+    <Dialog.Root open onOpenChange={onClose}>
+      <Dialog.Content style={{ maxWidth: '700px' }}>
+        <Dialog.Title>Add New Material</Dialog.Title>
+        
+        <Grid columns="2" gap="3" mt="3">
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Material Name</Text>
+            <TextField.Root>
+              <input
+                type="text"
+                placeholder="Name"
+                value={newMaterial.name || ''}
+                onChange={(e) => setNewMaterial({
+                  ...newMaterial,
+                  name: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Supplier</Text>
+            <TextField.Root>
+              <input
+                type="text"
+                placeholder="Supplier"
+                value={newMaterial.supplier || ''}
+                onChange={(e) => setNewMaterial({
+                  ...newMaterial,
+                  supplier: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Initial Stock</Text>
+            <TextField.Root>
+              <input
+                type="number"
+                placeholder="Quantity"
+                value={newMaterial.currentStock || 0}
+                onChange={(e) => setNewMaterial({
+                  ...newMaterial,
+                  currentStock: parseInt(e.target.value) || 0
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Unit</Text>
+            <Select.Root
+              value={newMaterial.unit || 'kg'}
+              onValueChange={(value) => setNewMaterial({
+                ...newMaterial,
+                unit: value
+              })}
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value="kg">kg</Select.Item>
+                <Select.Item value="g">g</Select.Item>
+                <Select.Item value="L">L</Select.Item>
+                <Select.Item value="mL">mL</Select.Item>
+                <Select.Item value="units">units</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Category</Text>
+            <Select.Root
+              value={newMaterial.category || 'A'}
+              onValueChange={(value) => setNewMaterial({
+                ...newMaterial,
+                category: value as MaterialCategory
+              })}
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value="A">Category A</Select.Item>
+                <Select.Item value="B">Category B</Select.Item>
+                <Select.Item value="C">Category C</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Location</Text>
+            <Select.Root
+              value={newMaterial.location || 'Zone 1'}
+              onValueChange={(value) => setNewMaterial({
+                ...newMaterial,
+                location: value
+              })}
+            >
+              <Select.Trigger />
+              <Select.Content>
+                <Select.Item value="Zone 1">Zone 1</Select.Item>
+                <Select.Item value="Zone 2">Zone 2</Select.Item>
+              </Select.Content>
+            </Select.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">Expiry Date</Text>
+            <TextField.Root>
+              <input
+                type="date"
+                value={newMaterial.expiryDate?.split('T')[0] || ''}
+                onChange={(e) => setNewMaterial({
+                  ...newMaterial,
+                  expiryDate: e.target.value
+                })}
+              />
+            </TextField.Root>
+          </Box>
+          
+          <Box>
+            <Text as="div" size="2" mb="1" weight="bold">IoT Sensor</Text>
+            <Flex gap="2" align="center">
+              <Switch 
+                checked={newMaterial.sensorConnected || false}
+                onCheckedChange={(checked) => setNewMaterial({
+                  ...newMaterial,
+                  sensorConnected: checked
+                })}
+              />
+              <Text>{newMaterial.sensorConnected ? 'Connected' : 'Not Connected'}</Text>
+            </Flex>
+          </Box>
+        </Grid>
+        
+        <Flex gap="3" mt="4" justify="end">
+          <Button 
+            variant="soft" 
+            color="gray"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button 
+            onClick={() => onSubmit(newMaterial)}
+            disabled={!newMaterial.name || !newMaterial.supplier}
+          >
+            Add Material
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};import React, { useState, useEffect, useMemo } from 'react';
 import {
   Card,
   Flex,
@@ -901,23 +1160,25 @@ import {
   DownloadIcon
 } from '@radix-ui/react-icons';
 
-import { MaterialTable } from './components/MaterialTable';
-import { StatsCards } from './components/Dashboard/StatsCards';
-import { MaterialDetailsDialog } from './components/MaterialDetailsDialog';
-import { OrderFormDialog } from './components/OrderFormDialog';
-import { BlockchainDialog } from './components/BlockchainDialog';
-import { RawMaterial, PurchaseOrder } from './types/inventoryTypes';
-import { BlockchainService } from './services/BlockchainService';
-import { IoTSensorService } from './services/IoTSensorService';
+import { MaterialTable } from '../components/MaterialTable';
+import { StatsCards } from '../components/Dashboard/StatsCards';
+import { MaterialDetailsDialog } from '../components/MaterialDetailsDialog';
+import { OrderFormDialog } from '../components/OrderFormDialog';
+import { BlockchainDialog } from '../components/BlockchainDialog';
+import { OrderDetailsDialog } from '../components/OrderDetailsDialog';
+import { MaterialFormDialog } from '../components/MaterialFormDialog';
+import { RawMaterial, PurchaseOrder } from '../types/inventoryTypes';
+import { BlockchainService } from '../services/BlockchainService';
+import { IoTSensorService } from '../services/IoTSensorService';
 import { 
   generateId, 
   formatDate, 
   getDaysRemaining, 
   CATEGORY_COLORS, 
   getStatusColor 
-} from './utils/helpers';
+} from '../utils/helpers';
 
-const App: React.FC = () => {
+const FinishedMaterialInventory: React.FC = () => {
   const [state, setState] = useState({
     materials: [] as RawMaterial[],
     orders: [] as PurchaseOrder[],
@@ -1665,4 +1926,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default FinishedMaterialInventory;
