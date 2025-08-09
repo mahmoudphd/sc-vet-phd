@@ -23,8 +23,7 @@ import {
   Cross2Icon,
   Pencil2Icon,
   CubeIcon,
-  MagnifyingGlassIcon,
-  CurrencyDollarIcon
+  MagnifyingGlassIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -40,7 +39,7 @@ const ProductConfiguration = () => {
       compliance: 'ICH Q11',
       cost: { value: 1500, currency: 'USD' },
       price: { value: 3200, currency: 'USD' },
-      removalMethod: 'FIFO', // Kept original removal method
+      removalMethod: 'FIFO',
       description: 'Vitamin complex for poultry nutrition',
       formula: [
         { component: 'Vitamin B1', weight: '0.0010 kg', percentage: '1%', pricePerKg: 85 },
@@ -71,7 +70,7 @@ const ProductConfiguration = () => {
       compliance: 'FDA',
       cost: { value: 1800, currency: 'USD' },
       price: { value: 3500, currency: 'USD' },
-      removalMethod: 'LIFO', // Kept original removal method
+      removalMethod: 'LIFO',
       description: 'Antiparasitic solution for poultry',
       formula: [
         { component: 'Active Compound', weight: '0.0500 kg', percentage: '50%', pricePerKg: 200 },
