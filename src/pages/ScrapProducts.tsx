@@ -18,7 +18,10 @@ import {
   CubeIcon as BlockchainIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  Cross2Icon
+  Cross2Icon,
+  CheckCircledIcon,
+  ClockIcon,
+  ExclamationTriangleIcon
 } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
 
@@ -40,7 +43,7 @@ const ScrapProducts = () => {
   const [scrapData, setScrapData] = useState<ScrapEntry[]>([
     {
       id: '1',
-      productName: 'Poultry Product A',
+      productName: 'Poultry Drug A',
       batchId: 'BR-001',
       type: 'Full',
       weight: 500,
@@ -51,7 +54,7 @@ const ScrapProducts = () => {
     },
     {
       id: '2',
-      productName: 'Poultry Product B',
+      productName: 'Poultry Drug B',
       batchId: 'BR-002',
       type: 'Partial',
       weight: 300,
@@ -120,9 +123,18 @@ const ScrapProducts = () => {
     }
   };
 
+  const getMethodIcon = (method: string) => {
+    switch (method) {
+      case 'Recycled': return <CheckCircledIcon className="mr-1" />;
+      case 'Disposed': return <ExclamationTriangleIcon className="mr-1" />;
+      case 'Incinerated': return <ClockIcon className="mr-1" />;
+      default: return null;
+    }
+  };
+
   return (
-    <Card className="p-6">
-      <Flex justify="between" align="center" mb="5">
+    <Card className="p-6 rounded-lg shadow-sm">
+      <Flex justify="between" align="center" mb="6">
         <Heading size="6">Scrap Products Management</Heading>
         
         <Flex gap="3" align="center">
@@ -130,7 +142,8 @@ const ScrapProducts = () => {
             placeholder="Search scraps..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-48"
+            className="w-56"
+            variant="soft"
           >
             <TextField.Slot>
               <MagnifyingGlassIcon />
@@ -140,7 +153,7 @@ const ScrapProducts = () => {
           <Button 
             variant="solid" 
             color="green"
-            className="bg-green-700 hover:bg-green-800 transition-colors"
+            className="bg-green-700 hover:bg-green-800 transition-colors shadow-sm"
             onClick={handleSubmitToBlockchain}
           >
             <BlockchainIcon className="mr-2" />
@@ -149,104 +162,139 @@ const ScrapProducts = () => {
           
           <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger>
-              <Button variant="soft">
+              <Button variant="soft" className="shadow-sm">
                 <PlusIcon className="mr-2" /> New Scrap
               </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 500 }}>
+            <Dialog.Content style={{ maxWidth: 500 }} className="p-6">
               <Flex justify="between" align="center" mb="4">
-                <Dialog.Title>Add New Scrap Entry</Dialog.Title>
+                <Dialog.Title className="font-bold">Add New Scrap Entry</Dialog.Title>
                 <IconButton variant="ghost" onClick={() => setIsDialogOpen(false)}>
                   <Cross2Icon />
                 </IconButton>
               </Flex>
               
-              <Flex direction="column" gap="3">
-                <TextField.Root
-                  placeholder="Product Name"
-                  value={newEntry.productName}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, productName: e.target.value })
-                  }
-                />
+              <Flex direction="column" gap="4">
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">Product Name</Text>
+                  <Select.Root
+                    value={newEntry.productName}
+                    onValueChange={(value) =>
+                      setNewEntry({ ...newEntry, productName: value })
+                    }
+                  >
+                    <Select.Trigger placeholder="Select product" />
+                    <Select.Content>
+                      <Select.Item value="Poultry Drug A">Poultry Drug A</Select.Item>
+                      <Select.Item value="Poultry Drug B">Poultry Drug B</Select.Item>
+                      <Select.Item value="Poultry Drug C">Poultry Drug C</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
 
-                <TextField.Root
-                  placeholder="Batch ID"
-                  value={newEntry.batchId}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, batchId: e.target.value })
-                  }
-                />
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">Batch ID</Text>
+                  <TextField.Root
+                    placeholder="BR-001"
+                    value={newEntry.batchId}
+                    onChange={(e) =>
+                      setNewEntry({ ...newEntry, batchId: e.target.value })
+                    }
+                  />
+                </Flex>
 
-                <Select.Root
-                  value={newEntry.type}
-                  onValueChange={(value) =>
-                    setNewEntry({ ...newEntry, type: value })
-                  }
-                >
-                  <Select.Trigger placeholder="Type" />
-                  <Select.Content>
-                    <Select.Item value="Full">Full</Select.Item>
-                    <Select.Item value="Partial">Partial</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Type</Text>
+                    <Select.Root
+                      value={newEntry.type}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, type: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="Full">Full</Select.Item>
+                        <Select.Item value="Partial">Partial</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
 
-                <TextField.Root
-                  type="number"
-                  placeholder="Weight (g)"
-                  value={newEntry.weight.toString()}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, weight: parseInt(e.target.value) || 0 })
-                  }
-                />
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Weight (g)</Text>
+                    <TextField.Root
+                      type="number"
+                      placeholder="500"
+                      value={newEntry.weight.toString()}
+                      onChange={(e) =>
+                        setNewEntry({ ...newEntry, weight: parseInt(e.target.value) || 0 })
+                      }
+                    />
+                  </Flex>
+                </Flex>
 
-                <Select.Root
-                  value={newEntry.handlingMethod}
-                  onValueChange={(value) =>
-                    setNewEntry({ ...newEntry, handlingMethod: value })
-                  }
-                >
-                  <Select.Trigger placeholder="Handling Method" />
-                  <Select.Content>
-                    <Select.Item value="Recycled">Recycled</Select.Item>
-                    <Select.Item value="Disposed">Disposed</Select.Item>
-                    <Select.Item value="Incinerated">Incinerated</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Handling</Text>
+                    <Select.Root
+                      value={newEntry.handlingMethod}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, handlingMethod: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="Recycled">Recycled</Select.Item>
+                        <Select.Item value="Disposed">Disposed</Select.Item>
+                        <Select.Item value="Incinerated">Incinerated</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
 
-                <Select.Root
-                  value={newEntry.reason}
-                  onValueChange={(value) =>
-                    setNewEntry({ ...newEntry, reason: value })
-                  }
-                >
-                  <Select.Trigger placeholder="Reason" />
-                  <Select.Content>
-                    <Select.Item value="Expiration">Expiration</Select.Item>
-                    <Select.Item value="Damage">Damage</Select.Item>
-                    <Select.Item value="Quality Issue">Quality Issue</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Reason</Text>
+                    <Select.Root
+                      value={newEntry.reason}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, reason: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="Expiration">Expiration</Select.Item>
+                        <Select.Item value="Damage">Damage</Select.Item>
+                        <Select.Item value="Quality Issue">Quality Issue</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+                </Flex>
 
-                <TextField.Root
-                  type="date"
-                  value={newEntry.date}
-                  onChange={(e) =>
-                    setNewEntry({ ...newEntry, date: e.target.value })
-                  }
-                />
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">Date</Text>
+                  <TextField.Root
+                    type="date"
+                    value={newEntry.date}
+                    onChange={(e) =>
+                      setNewEntry({ ...newEntry, date: e.target.value })
+                    }
+                  />
+                </Flex>
               </Flex>
 
-              <Flex gap="3" justify="end" mt="4">
+              <Flex gap="3" justify="end" mt="4" className="border-t border-gray-100 pt-4">
                 <Button 
                   variant="soft" 
                   color="gray"
                   onClick={() => setIsDialogOpen(false)}
+                  className="hover:bg-gray-100"
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleAddEntry}>
+                <Button 
+                  onClick={handleAddEntry}
+                  className="hover:bg-blue-600 transition-colors"
+                >
                   Add Scrap
                 </Button>
               </Flex>
@@ -255,49 +303,60 @@ const ScrapProducts = () => {
         </Flex>
       </Flex>
 
-      <Table.Root variant="surface" className="rounded-lg shadow-sm">
+      <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
         <Table.Header className="bg-gray-50">
-          <Table.Row>
-            <Table.ColumnHeaderCell className="font-semibold">Batch ID / Name</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">Type</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">Weight (g)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">Handling Method</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">Reason</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-semibold">Date</Table.ColumnHeaderCell>
+          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
+            <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight (g)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Reason</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
-        <Table.Body className="divide-y divide-gray-200">
+        <Table.Body className="divide-y divide-gray-100">
           {filteredScraps().map((entry) => (
-            <Table.Row key={entry.id} className="hover:bg-gray-50">
+            <Table.Row key={entry.id} className="hover:bg-gray-50/50">
               <Table.Cell className="font-medium">
-                {entry.batchId} / {entry.productName}
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">{entry.batchId}</Text>
+                  <Text size="2" color="gray">{entry.productName}</Text>
+                </Flex>
               </Table.Cell>
               <Table.Cell>
-                <Badge variant="soft">
+                <Badge variant="soft" className="px-2 py-1">
                   {entry.type}
                 </Badge>
               </Table.Cell>
-              <Table.Cell>{entry.weight.toLocaleString()}</Table.Cell>
+              <Table.Cell className="font-medium">
+                {entry.weight.toLocaleString()}
+              </Table.Cell>
               <Table.Cell>
                 <Badge 
                   color={getMethodColor(entry.handlingMethod)}
                   variant="soft"
+                  className="px-2 py-1 rounded-full"
                 >
+                  {getMethodIcon(entry.handlingMethod)}
                   {entry.handlingMethod}
                 </Badge>
               </Table.Cell>
               <Table.Cell>
                 <Flex direction="column" gap="1">
                   <Text>{entry.reason}</Text>
-                  <Tooltip content={`Detected: ${entry.detectedAt || 'N/A'}`}>
-                    <Badge color="blue" variant="soft" className="w-fit cursor-pointer">
-                      Via IoT
-                    </Badge>
-                  </Tooltip>
+                  {entry.detectedAt && (
+                    <Tooltip content={`Detected at: ${entry.detectedAt}`}>
+                      <Badge color="blue" variant="soft" className="w-fit cursor-pointer">
+                        Via IoT
+                      </Badge>
+                    </Tooltip>
+                  )}
                 </Flex>
               </Table.Cell>
-              <Table.Cell>{entry.date}</Table.Cell>
+              <Table.Cell className="text-gray-700">
+                {entry.date}
+              </Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
