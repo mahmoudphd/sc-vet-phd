@@ -378,22 +378,32 @@ const ActiveBatches: React.FC = () => {
               </Table.Cell>
 
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <div className="w-24 h-10">
-                    <LineChart width={96} height={40} data={TEMP_CHART_DATA}>
-                      <Line 
-                        type="monotone" 
-                        dataKey="temp" 
-                        stroke={batch.temp > 5 ? '#ef4444' : '#3b82f6'} 
-                        strokeWidth={2}
-                        dot={false}
-                      />
-                      <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
-                    </LineChart>
-                  </div>
-                  <span className={`text-sm font-medium ${batch.temp > 5 ? 'text-red-600' : 'text-blue-600'}`}>
-                    {batch.temp}°C
-                  </span>
+                <Flex direction="column" gap="1">
+                  <Flex align="center" gap="2">
+                    <div className="w-24 h-10">
+                      <LineChart width={96} height={40} data={TEMP_CHART_DATA}>
+                        <Line 
+                          type="monotone" 
+                          dataKey="temp" 
+                          stroke={batch.temp > 5 ? '#ef4444' : '#3b82f6'} 
+                          strokeWidth={2}
+                          dot={false}
+                        />
+                        <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
+                      </LineChart>
+                    </div>
+                    <Flex direction="column">
+                      <span className={`text-sm font-medium ${batch.temp > 5 ? 'text-red-600' : 'text-blue-600'}`}>
+                        {batch.temp}°C
+                      </span>
+                      <Badge color="gray" variant="soft" radius="full" className="w-fit text-xs">
+                        <span className="flex items-center gap-1">
+                          <span className="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                          Via IoT
+                        </span>
+                      </Badge>
+                    </Flex>
+                  </Flex>
                 </Flex>
               </Table.Cell>
 
