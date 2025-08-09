@@ -30,10 +30,18 @@ import {
   GearIcon,
   MixerHorizontalIcon
 } from '@radix-ui/react-icons';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+
+const complianceOptions = [
+  "ICH Q11",
+  "Egyptian Drug Authority",
+  "FDA Guidance",
+  "EMEA",
+  "WHO"
+];
 
 const ProductConfiguration = () => {
-  // Sample products data
   const [products, setProducts] = useState([
     {
       id: 'DRG-045',
@@ -41,7 +49,7 @@ const ProductConfiguration = () => {
       components: 12,
       status: 'Approved',
       version: 'v2.1',
-      compliance: 'ICH Q11',
+      compliance: 'Egyptian Drug Authority',
       description: 'Vitamin complex for poultry nutrition',
       removalMethod: 'FIFO',
       formula: [
@@ -79,7 +87,7 @@ const ProductConfiguration = () => {
       components: 8,
       status: 'Draft',
       version: 'v1.3',
-      compliance: 'FDA',
+      compliance: 'ICH Q11',
       description: 'Antiparasitic solution for poultry',
       removalMethod: 'LIFO',
       formula: [
@@ -111,7 +119,7 @@ const ProductConfiguration = () => {
     components: 0,
     status: 'Draft',
     version: 'v1.0',
-    compliance: 'ICH Q11',
+    compliance: 'Egyptian Drug Authority',
     description: '',
     removalMethod: 'FIFO',
     formula: [{ component: '', weight: '', percentage: '', pricePerKg: 0 }],
@@ -136,6 +144,13 @@ const ProductConfiguration = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('details');
+  const [totalPercentage, setTotalPercentage] = useState(0);
+
+  useEffect(() => {
+    const total = newProduct.formula.reduce(
+      (sum, item) => sum + parseFloat(item.percentage || '0'), 0);
+    setTotalPercentage(total);
+  }, [newProduct.formula]);
 
   const handleAddProduct = () => {
     if (!newProduct.id || !newProduct.name) {
@@ -149,7 +164,7 @@ const ProductConfiguration = () => {
       components: 0,
       status: 'Draft',
       version: 'v1.0',
-      compliance: 'ICH Q11',
+      compliance: 'Egyptian Drug Authority',
       description: '',
       removalMethod: 'FIFO',
       formula: [{ component: '', weight: '', percentage: '', pricePerKg: 0 }],
@@ -201,6 +216,90 @@ const ProductConfiguration = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const ProductionDesignTable = ({ design }: { design: any }) => (
+    <Table.Root variant="surface" className="my-4">
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeaderCell colSpan={2} className="text-center">
+            <Flex align="center" justify="center" gap="2">
+              <CubeIcon /> Product Design Summary
+            </Flex>
+          </Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        <Table.Row>
+          <Table.Cell className="font-bold">Packaging Shape</Table.Cell>
+          <Table.Cell>{design.packagingShape}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Packaging Type</Table.Cell>
+          <Table.Cell>{design.packagingType}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Cap Type</Table.Cell>
+          <Table.Cell>{design.capType}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Viscosity</Table.Cell>
+          <Table.Cell>{design.viscosity}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">pH Level</Table.Cell>
+          <Table.Cell>{design.pH}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Plastic Reactivity</Table.Cell>
+          <Table.Cell>{design.plasticReactivity}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Filling Temperature</Table.Cell>
+          <Table.Cell>{design.fillingTemp}</Table.Cell>
+        </Table.Row>
+      </Table.Body>
+    </Table.Root>
+  );
+
+  const ComponentDistributionChart = ({ formula }: { formula: any }) => {
+    const data = formula.map((item: any) => ({
+      name: item.component,
+      value: parseFloat(item.percentage),
+      pricePerKg: item.pricePerKg
+    }));
+
+    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+    return (
+      <Card className="mt-4">
+        <Heading size="4" mb="2">Component Distribution</Heading>
+        <PieChart width={400} height={300}>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            nameKey="name"
+            label={({ name, percent }: { name: string, percent: number }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+          >
+            {data.map((entry: any, index: number) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+          <Tooltip 
+            formatter={(value: any, name: any, props: any) => [
+              `${value}%`, 
+              `Price/kg: ${props.payload.pricePerKg} EGP`
+            ]}
+          />
+          <Legend />
+        </PieChart>
+      </Card>
+    );
+  };
+
   const NewConfigurationModal = () => (
     <Dialog.Root open={newConfigModalOpen} onOpenChange={setNewConfigModalOpen}>
       <Dialog.Content style={{ maxWidth: 800 }}>
@@ -249,10 +348,16 @@ const ProductConfiguration = () => {
                   >
                     <Select.Trigger placeholder="Compliance Standard" />
                     <Select.Content>
-                      <Select.Item value="ICH Q11">ICH Q11</Select.Item>
-                      <Select.Item value="FDA">FDA</Select.Item>
-                      <Select.Item value="EMEA">EMEA</Select.Item>
-                      <Select.Item value="WHO">WHO</Select.Item>
+                      {complianceOptions.map(option => (
+                        <Select.Item 
+                          key={option} 
+                          value={option}
+                          className={option === "Egyptian Drug Authority" ? "font-bold bg-amber-50" : ""}
+                        >
+                          {option}
+                          {option === "Egyptian Drug Authority" && " (Default)"}
+                        </Select.Item>
+                      ))}
                     </Select.Content>
                   </Select.Root>
 
@@ -276,6 +381,11 @@ const ProductConfiguration = () => {
                 <Text size="2" color="gray">
                   Define the components and their proportions in the product formula
                 </Text>
+                {totalPercentage !== 100 && (
+                  <Text color="red" size="2">
+                    Total percentage: {totalPercentage}% (should be 100%)
+                  </Text>
+                )}
                 
                 <Table.Root variant="surface">
                   <Table.Header>
@@ -503,7 +613,7 @@ const ProductConfiguration = () => {
 
   const ViewSpecModal = () => (
     <Dialog.Root open={viewSpecModalOpen} onOpenChange={setViewSpecModalOpen}>
-      <Dialog.Content style={{ maxWidth: 800 }}>
+      <Dialog.Content style={{ maxWidth: 900 }}>
         <Flex justify="between" align="center" mb="5">
           <Dialog.Title>Product Specification: {selectedProduct?.id}</Dialog.Title>
           <Dialog.Close>
@@ -518,8 +628,7 @@ const ProductConfiguration = () => {
             <Tabs.List>
               <Tabs.Trigger value="details">Details</Tabs.Trigger>
               <Tabs.Trigger value="formula">Formula</Tabs.Trigger>
-              <Tabs.Trigger value="production">Production</Tabs.Trigger>
-              <Tabs.Trigger value="eda">EDA Compliance</Tabs.Trigger>
+              <Tabs.Trigger value="design">Design</Tabs.Trigger>
             </Tabs.List>
 
             <Box pt="3">
@@ -541,7 +650,10 @@ const ProductConfiguration = () => {
                   </Flex>
                   <Flex direction="column" gap="1">
                     <Text color="gray">Compliance Standard</Text>
-                    <Badge variant="soft">{selectedProduct.compliance}</Badge>
+                    <Badge variant="soft">
+                      {selectedProduct.compliance}
+                      {selectedProduct.compliance === "Egyptian Drug Authority" && " (Default)"}
+                    </Badge>
                   </Flex>
                   <Flex direction="column" gap="1">
                     <Text color="gray">Removal Method</Text>
@@ -576,56 +688,11 @@ const ProductConfiguration = () => {
                     ))}
                   </Table.Body>
                 </Table.Root>
+                <ComponentDistributionChart formula={selectedProduct.formula} />
               </Tabs.Content>
 
-              <Tabs.Content value="production">
-                <Grid columns="2" gap="4">
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Packaging Shape</Text>
-                    <Text>{selectedProduct.productionDesign.packagingShape}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Packaging Type</Text>
-                    <Text>{selectedProduct.productionDesign.packagingType}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Cap Type</Text>
-                    <Text>{selectedProduct.productionDesign.capType}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Viscosity</Text>
-                    <Text>{selectedProduct.productionDesign.viscosity}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">pH Level</Text>
-                    <Text>{selectedProduct.productionDesign.pH}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Plastic Reactivity</Text>
-                    <Text>{selectedProduct.productionDesign.plasticReactivity}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Filling Temperature</Text>
-                    <Text>{selectedProduct.productionDesign.fillingTemp}</Text>
-                  </Flex>
-                </Grid>
-              </Tabs.Content>
-
-              <Tabs.Content value="eda">
-                <Grid columns="2" gap="4">
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Stability</Text>
-                    <Text>{selectedProduct.eda.stability}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Storage Conditions</Text>
-                    <Text>{selectedProduct.eda.storage}</Text>
-                  </Flex>
-                  <Flex direction="column" gap="1">
-                    <Text color="gray">Maximum Impurities</Text>
-                    <Text>{selectedProduct.eda.impurities}</Text>
-                  </Flex>
-                </Grid>
+              <Tabs.Content value="design">
+                <ProductionDesignTable design={selectedProduct.productionDesign} />
               </Tabs.Content>
             </Box>
           </Tabs.Root>
@@ -677,7 +744,10 @@ const ProductConfiguration = () => {
               <Table.Cell>{product.name}</Table.Cell>
               <Table.Cell>{product.components}</Table.Cell>
               <Table.Cell>
-                <Badge variant="soft">{product.compliance}</Badge>
+                <Badge variant="soft">
+                  {product.compliance}
+                  {product.compliance === "Egyptian Drug Authority" && " (Default)"}
+                </Badge>
               </Table.Cell>
               <Table.Cell>
                 <Badge variant="soft">{product.removalMethod}</Badge>
