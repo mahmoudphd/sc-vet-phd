@@ -8,7 +8,6 @@ import {
   Badge,
   Card,
   Tooltip,
-  Progress,
   Grid,
   Select,
   Separator
@@ -205,7 +204,7 @@ const StatusBadge = ({ status }: { status: string }) => {
   return (
     <Badge color={currentConfig.color} highContrast>
       <Flex align="center" gap="1">
-        {currentConfig.icon}
+        <Text as="span">{currentConfig.icon}</Text>
         {status}
       </Flex>
     </Badge>
@@ -243,7 +242,7 @@ const MaterialTypeIcon = ({ type }: { type: Material['type'] }) => {
   
   return (
     <Tooltip content={type}>
-      {icons[type]}
+      <Text as="span">{icons[type]}</Text>
     </Tooltip>
   );
 };
@@ -299,7 +298,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#ECFDF5', borderRadius: '8px' }}>
-              <Check color="#10B981" size={20} />
+              <Text as="span"><Check color="#10B981" size={20} /></Text>
             </Box>
             <Box>
               <Text color="gray" size="2">Approved Materials</Text>
@@ -311,7 +310,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#FEF3C7', borderRadius: '8px' }}>
-              <Clock color="#F59E0B" size={20} />
+              <Text as="span"><Clock color="#F59E0B" size={20} /></Text>
             </Box>
             <Box>
               <Text color="gray" size="2">Pending Approval</Text>
@@ -323,7 +322,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#EFF6FF', borderRadius: '8px' }}>
-              <Cpu color="#3B82F6" size={20} />
+              <Text as="span"><Cpu color="#3B82F6" size={20} /></Text>
             </Box>
             <Box>
               <Text color="gray" size="2">IoT Connected</Text>
@@ -335,7 +334,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#F5F3FF', borderRadius: '8px' }}>
-              <Database color="#6D28D9" size={20} />
+              <Text as="span"><Database color="#6D28D9" size={20} /></Text>
             </Box>
             <Box>
               <Text color="gray" size="2">Blockchain Verified</Text>
