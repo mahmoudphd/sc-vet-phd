@@ -29,9 +29,9 @@ import {
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 const complianceOptions = [
+  "Egyptian Drug Authority (EDA)",
   "GMP",
   "ICH Q11",
-  "Egyptian Drug Authority",
   "FDA Guidance",
   "EMEA",
   "WHO"
@@ -66,7 +66,7 @@ const ProductConfiguration = () => {
       components: 18,
       status: 'Approved',
       version: 'v2.1',
-      compliance: 'GMP',
+      compliance: 'Egyptian Drug Authority (EDA)',
       description: 'Balanced vitamins and amino acids for healthier, faster-growing poultry.',
       removalMethod: 'FIFO',
       formula: [
@@ -93,14 +93,15 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'White with decorative window designs',
+        color: 'Egyptian Blue with Gold Accents',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
         features: [
           'UV protection',
           'Tamper-evident neck band',
-          'Graduated measuring marks'
+          'Graduated measuring marks',
+          'EDA compliant labeling'
         ]
       }
     }
@@ -112,7 +113,7 @@ const ProductConfiguration = () => {
     components: 0,
     status: 'Draft',
     version: 'v1.0',
-    compliance: 'GMP',
+    compliance: 'Egyptian Drug Authority (EDA)',
     description: '',
     removalMethod: 'FIFO',
     formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -120,14 +121,15 @@ const ProductConfiguration = () => {
       packagingType: '1kg HDPE Plastic Bottle',
       dimensions: 'Ø80mm × 180mm',
       closure: '38mm Screw Cap with Foil Seal',
-      color: 'White with decorative window designs',
+      color: 'Egyptian Blue with Gold Accents',
       viscosity: 'Medium (500-1000 cPs)',
       pH: '6.5-7.5',
       fillingTemp: '25°C ± 2°C',
       features: [
         'UV protection',
         'Tamper-evident neck band',
-        'Graduated measuring marks'
+        'Graduated measuring marks',
+        'EDA compliant labeling'
       ],
       notes: ''
     }
@@ -158,7 +160,7 @@ const ProductConfiguration = () => {
       components: 0,
       status: 'Draft',
       version: 'v1.0',
-      compliance: 'GMP',
+      compliance: 'Egyptian Drug Authority (EDA)',
       description: '',
       removalMethod: 'FIFO',
       formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -166,14 +168,15 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'White with decorative window designs',
+        color: 'Egyptian Blue with Gold Accents',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
         features: [
           'UV protection',
           'Tamper-evident neck band',
-          'Graduated measuring marks'
+          'Graduated measuring marks',
+          'EDA compliant labeling'
         ],
         notes: ''
       }
@@ -270,7 +273,11 @@ const ProductConfiguration = () => {
       pricePerKg: item.pricePerKg
     }));
 
-    const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+    const COLORS = [
+      '#003f5c', '#2f4b7c', '#665191', '#a05195', 
+      '#d45087', '#f95d6a', '#ff7c43', '#ffa600',
+      '#00c49f', '#ffbb28', '#ff8042', '#8884d8'
+    ];
 
     return (
       <div className="w-full">
@@ -578,15 +585,15 @@ const ProductConfiguration = () => {
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
                   <Flex align="center" gap="3" p="3">
-                    <div className="w-20 h-32 bg-white rounded-t-full border-2 border-gray-300 relative">
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-gray-50 rounded-t-full border border-gray-200">
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '25%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '50%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '75%' }}></div>
+                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-gold-500 relative shadow-lg">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-blue-800 rounded-t-full border border-blue-600">
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '25%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '50%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '75%' }}></div>
                       </div>
-                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-gray-300 rounded-t-md border-2 border-gray-400"></div>
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-yellow-500 rounded-t-md border-2 border-yellow-400 shadow-md"></div>
                     </div>
-                    <Text size="2" color="gray">1kg White Veterinary Bottle</Text>
+                    <Text size="2" color="gray">1kg Egyptian Blue Veterinary Bottle</Text>
                   </Flex>
                 </Card>
               </Tabs.Content>
@@ -604,7 +611,7 @@ const ProductConfiguration = () => {
 
       <Flex direction="column" gap="4">
         <Flex justify="between" align="center">
-          <Heading size="5">Product Configuration</Heading>
+          <Heading size="5" className="text-blue-900">Product Configuration</Heading>
           <Flex gap="3">
             <TextField.Root
               placeholder="Search products..."
@@ -613,37 +620,43 @@ const ProductConfiguration = () => {
               className="w-64"
             >
               <TextField.Slot>
-                <MagnifyingGlassIcon />
+                <MagnifyingGlassIcon className="text-blue-700" />
               </TextField.Slot>
             </TextField.Root>
-            <Button onClick={() => setNewConfigModalOpen(true)}>
+            <Button 
+              onClick={() => setNewConfigModalOpen(true)}
+              className="bg-blue-700 hover:bg-blue-800 text-white"
+            >
               <PlusIcon /> New Product
             </Button>
           </Flex>
         </Flex>
 
-        <Table.Root variant="surface">
-          <Table.Header>
+        <Table.Root variant="surface" className="shadow-sm">
+          <Table.Header className="bg-blue-50">
             <Table.Row>
-              <Table.ColumnHeaderCell>Product ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Name</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Components</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Product ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Components</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Compliance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Actions</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
           <Table.Body>
             {filteredProducts.map(product => (
-              <Table.Row key={product.id}>
-                <Table.Cell>{product.id}</Table.Cell>
+              <Table.Row key={product.id} className="hover:bg-blue-50">
+                <Table.Cell className="font-medium">{product.id}</Table.Cell>
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>{product.components}</Table.Cell>
                 <Table.Cell>
                   <Text>{product.compliance}</Text>
                 </Table.Cell>
                 <Table.Cell>
-                  <Badge color={product.status === 'Approved' ? 'green' : 'blue'}>
+                  <Badge 
+                    color={product.status === 'Approved' ? 'green' : 'blue'}
+                    className="shadow-sm"
+                  >
                     {product.status}
                   </Badge>
                 </Table.Cell>
@@ -654,6 +667,7 @@ const ProductConfiguration = () => {
                       setSelectedProduct(product);
                       setViewSpecModalOpen(true);
                     }}
+                    className="text-blue-700 hover:bg-blue-100"
                   >
                     <FileTextIcon /> View
                   </Button>
