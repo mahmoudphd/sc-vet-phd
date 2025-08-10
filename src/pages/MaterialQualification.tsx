@@ -12,17 +12,28 @@ import {
 } from '@radix-ui/themes';
 import { useState } from 'react';
 import {
-  CheckIcon,
-  ClockIcon,
-  WarningIcon,
-  ChevronRightIcon,
-  FileTextIcon,
-  ShieldCheckIcon,
-  BlockchainIcon
+  Check,
+  Clock,
+  AlertTriangle,
+  ChevronRight,
+  FileText,
+  ShieldCheck,
+  HardHat
 } from 'lucide-react';
 
 // Theme configuration
-const theme = {
+interface Theme {
+  colors: {
+    primary: string;
+    success: string;
+    warning: string;
+    danger: string;
+    compliance: string;
+    background: string;
+  };
+}
+
+const theme: Theme = {
   colors: {
     primary: '#3B82F6',
     success: '#10B981',
@@ -33,8 +44,26 @@ const theme = {
   }
 };
 
+// Material interface
+interface Material {
+  id: string;
+  material: string;
+  supplier: string;
+  status: 'Approved' | 'Pending';
+  expiry: string;
+  batch: string;
+  tests: {
+    Identity: 'Passed' | 'Pending' | 'Failed';
+    Purity: 'Passed' | 'Pending' | 'Failed';
+    Microbial: 'Passed' | 'Pending' | 'Failed';
+    Endotoxins: 'Passed' | 'Pending' | 'Failed';
+  };
+  certificate: string;
+  lastReviewed: string;
+}
+
 // Sample data
-const materialsData = [
+const materialsData: Material[] = [
   {
     id: 'MAT-001',
     material: 'Vitamin B1',
@@ -86,7 +115,7 @@ const materialsData = [
 ];
 
 // Compliance calculation functions
-const calculateMaterialCompliance = (material) => {
+const calculateMaterialCompliance = (material: Material): number => {
   let score = 0;
   
   // Test results (40 points)
@@ -108,26 +137,32 @@ const calculateMaterialCompliance = (material) => {
   return Math.round(score);
 };
 
-const isALCOACompliant = (material) => {
+const isALCOACompliant = (material: Material): boolean => {
   return (
     Object.values(material.tests).every(t => t === 'Passed') &&
-    material.certificate &&
+    !!material.certificate &&
     new Date(material.expiry) > new Date()
   );
 };
 
 // Component for test result badges
-const TestResultBadge = ({ result }) => {
+interface TestResultBadgeProps {
+  result: 'Passed' | 'Pending' | 'Failed';
+}
+
+const TestResultBadge = ({ result }: TestResultBadgeProps) => {
   const statusConfig = {
-    Passed: { color: 'green', icon: <CheckIcon size={14} /> },
-    Pending: { color: 'yellow', icon: <ClockIcon size={14} /> },
-    Failed: { color: 'red', icon: <WarningIcon size={14} /> }
+    Passed: { color: 'green' as const, icon: <Check size={14} /> },
+    Pending: { color: 'yellow' as const, icon: <Clock size={14} /> },
+    Failed: { color: 'red' as const, icon: <AlertTriangle size={14} /> }
   };
 
+  const config = statusConfig[result];
+
   return (
-    <Badge color={statusConfig[result].color} highContrast>
+    <Badge color={config.color} highContrast>
       <Flex align="center" gap="1">
-        {statusConfig[result].icon}
+        {config.icon}
         {result}
       </Flex>
     </Badge>
@@ -135,12 +170,17 @@ const TestResultBadge = ({ result }) => {
 };
 
 // Component for expiry date with warning indicators
-const ExpiryDateCell = ({ date }) => {
+interface ExpiryDateCellProps {
+  date: string;
+}
+
+const ExpiryDateCell = ({ date }: ExpiryDateCellProps) => {
   const today = new Date();
   const expiryDate = new Date(date);
-  const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+  const diffTime = expiryDate.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-  let status = 'normal';
+  let status: 'normal' | 'expired' | 'warning' = 'normal';
   if (diffDays < 0) status = 'expired';
   else if (diffDays <= 30) status = 'warning';
 
@@ -157,12 +197,16 @@ const ExpiryDateCell = ({ date }) => {
       </Text>
       {status === 'warning' && (
         <Tooltip content={`Expires in ${diffDays} days`}>
-          <WarningIcon size={16} color={theme.colors.warning} />
+          <Box>
+            <AlertTriangle size={16} color={theme.colors.warning} />
+          </Box>
         </Tooltip>
       )}
       {status === 'expired' && (
         <Tooltip content="Material expired">
-          <WarningIcon size={16} color={theme.colors.danger} />
+          <Box>
+            <AlertTriangle size={16} color={theme.colors.danger} />
+          </Box>
         </Tooltip>
       )}
     </Flex>
@@ -170,8 +214,8 @@ const ExpiryDateCell = ({ date }) => {
 };
 
 export default function MaterialQualificationDashboard() {
-  const [selectedMaterial, setSelectedMaterial] = useState(null);
-  const [selectedCertificate, setSelectedCertificate] = useState(null);
+  const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
+  const [selectedCertificate, setSelectedCertificate] = useState<Material | null>(null);
 
   // Calculate overall metrics
   const approvedCount = materialsData.filter(m => m.status === 'Approved').length;
@@ -179,7 +223,8 @@ export default function MaterialQualificationDashboard() {
   const expiringSoonCount = materialsData.filter(m => {
     const expiryDate = new Date(m.expiry);
     const today = new Date();
-    const diffDays = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays >= 0;
   }).length;
   
@@ -193,7 +238,7 @@ export default function MaterialQualificationDashboard() {
       <Flex justify="between" align="center" mb="5">
         <Text size="6" weight="bold">Material Qualification Dashboard</Text>
         <Button variant="solid" color="violet">
-          <ShieldCheckIcon size={16} />
+          <ShieldCheck size={16} />
           <Text>Quality Report</Text>
         </Button>
       </Flex>
@@ -203,20 +248,20 @@ export default function MaterialQualificationDashboard() {
         <Card variant="surface" style={{ flex: 1 }}>
           <Flex gap="3" align="center">
             <Box p="2" style={{ background: '#F0F9FF', borderRadius: '8px' }}>
-              <FileTextIcon color={theme.colors.primary} size={20} />
+              <FileText color={theme.colors.primary} size={20} />
             </Box>
             <Box>
               <Text size="2" color="gray">Qualification Progress</Text>
               <Flex gap="3" mt="2">
                 <Badge color="yellow" highContrast>
                   <Flex align="center" gap="1">
-                    <ClockIcon size={14} />
+                    <Clock size={14} />
                     {pendingCount} Pending
                   </Flex>
                 </Badge>
                 <Badge color="green" highContrast>
                   <Flex align="center" gap="1">
-                    <CheckIcon size={14} />
+                    <Check size={14} />
                     {approvedCount} Approved
                   </Flex>
                 </Badge>
@@ -228,7 +273,7 @@ export default function MaterialQualificationDashboard() {
         <Card variant="surface" style={{ flex: 1 }}>
           <Flex gap="3" align="center">
             <Box p="2" style={{ background: '#F5F3FF', borderRadius: '8px' }}>
-              <ShieldCheckIcon color={theme.colors.compliance} size={20} />
+              <ShieldCheck color={theme.colors.compliance} size={20} />
             </Box>
             <Box>
               <Text size="2" color="gray">System Compliance</Text>
@@ -255,7 +300,7 @@ export default function MaterialQualificationDashboard() {
         <Card variant="surface" style={{ flex: 1 }}>
           <Flex gap="3" align="center">
             <Box p="2" style={{ background: '#FEF2F2', borderRadius: '8px' }}>
-              <WarningIcon color={theme.colors.danger} size={20} />
+              <AlertTriangle color={theme.colors.danger} size={20} />
             </Box>
             <Box>
               <Text size="2" color="gray">Expiring Soon</Text>
@@ -284,7 +329,7 @@ export default function MaterialQualificationDashboard() {
 
         <Table.Body>
           {materialsData.map((material) => (
-            <Table.Row key={material.id} style={{ '&:hover': { backgroundColor: '#F9FAFB' } }}>
+            <Table.Row key={material.id} style={{ backgroundColor: '#fff' }}>
               <Table.Cell>
                 <Dialog.Root>
                   <Dialog.Trigger>
@@ -294,7 +339,7 @@ export default function MaterialQualificationDashboard() {
                       style={{ fontWeight: 500 }}
                     >
                       {material.material}
-                      <ChevronRightIcon size={14} style={{ marginLeft: 4 }} />
+                      <ChevronRight size={14} style={{ marginLeft: 4 }} />
                     </Button>
                   </Dialog.Trigger>
                   
@@ -353,14 +398,14 @@ export default function MaterialQualificationDashboard() {
                 {Object.values(material.tests).every(v => v === 'Passed') ? (
                   <Badge color="green" highContrast>
                     <Flex align="center" gap="1">
-                      <CheckIcon size={14} />
+                      <Check size={14} />
                       All Passed
                     </Flex>
                   </Badge>
                 ) : (
                   <Badge color="yellow" highContrast>
                     <Flex align="center" gap="1">
-                      <ClockIcon size={14} />
+                      <Clock size={14} />
                       {Object.values(material.tests).filter(v => v === 'Pending').length} Pending
                     </Flex>
                   </Badge>
@@ -409,7 +454,7 @@ export default function MaterialQualificationDashboard() {
             style={{ marginTop: '24px' }}
             onClick={() => setSelectedCertificate(materialsData[0])}
           >
-            <BlockchainIcon size={16} />
+            <HardHat size={16} />
             <Text>Submit to Blockchain</Text>
           </Button>
         </Dialog.Trigger>
@@ -442,7 +487,7 @@ export default function MaterialQualificationDashboard() {
               <Button variant="soft">Cancel</Button>
             </Dialog.Close>
             <Button color="violet">
-              <BlockchainIcon size={16} />
+              <HardHat size={16} />
               Confirm Submission
             </Button>
           </Flex>
