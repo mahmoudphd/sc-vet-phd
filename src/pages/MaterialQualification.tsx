@@ -223,7 +223,7 @@ const BlockchainLink = ({ txHash }: { txHash?: string }) => {
           style={{ textDecoration: 'none' }}
         >
           <Flex align="center" gap="1">
-            <Link size={12} />
+            <Text as="span"><Link size={12} /></Text>
             Verify
           </Flex>
         </a>
@@ -347,7 +347,7 @@ export default function MaterialsQualificationDashboard() {
         <Dialog.Root>
           <Dialog.Trigger>
             <Button variant="solid" color="violet">
-              <HardHat size={16} />
+              <Text as="span"><HardHat size={16} /></Text>
               <Text>Submit to Blockchain</Text>
             </Button>
           </Dialog.Trigger>
@@ -373,7 +373,7 @@ export default function MaterialsQualificationDashboard() {
                 <Button variant="soft">Cancel</Button>
               </Dialog.Close>
               <Button color="violet">
-                <HardHat size={16} />
+                <Text as="span"><HardHat size={16} /></Text>
                 Confirm Submission
               </Button>
             </Flex>
@@ -436,7 +436,7 @@ export default function MaterialsQualificationDashboard() {
                   variant="soft"
                   onClick={() => setSelectedMaterial(material)}
                 >
-                  <FileText size={14} /> Details
+                  <Text as="span"><FileText size={14} /></Text> Details
                 </Button>
               </Table.Cell>
             </Table.Row>
@@ -452,7 +452,7 @@ export default function MaterialsQualificationDashboard() {
                 {selectedMaterial.name} Details
                 {selectedMaterial.blockchainRegistered && (
                   <Badge color="violet">
-                    <Database size={12} /> Blockchain Verified
+                    <Text as="span"><Database size={12} /></Text> Blockchain Verified
                   </Badge>
                 )}
               </Flex>
