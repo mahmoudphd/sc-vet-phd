@@ -27,7 +27,6 @@ import {
   Database,
   Calendar,
   FlaskConical,
-  Microscope,
   Pill
 } from 'lucide-react';
 
@@ -87,7 +86,7 @@ const materialsData: Material[] = [
     type: 'API',
     supplier: {
       id: 'SUP-001',
-      name: 'PharmaChem Solutions',
+      name: 'Supplier A',
       status: 'Approved',
       approvalDate: '2023-01-10',
       edaRegistration: 'EDA-SUP-2022-3456'
@@ -141,104 +140,45 @@ const materialsData: Material[] = [
   },
   {
     id: 'MAT-002',
-    name: 'Microcrystalline Cellulose',
-    type: 'Excipient',
+    name: 'Vitamin B2 (Riboflavin)',
+    type: 'API',
     supplier: {
       id: 'SUP-002',
-      name: 'Excipient World',
-      status: 'Approved',
-      approvalDate: '2022-11-15',
-      edaRegistration: 'EDA-SUP-2021-7890'
+      name: 'Supplier B',
+      status: 'NotApproved',
+      edaRegistration: 'EDA-SUP-2023-7890'
     },
-    status: 'Approved',
-    expiryDate: '2026-05-20',
-    batchNumber: 'B230712',
+    status: 'Pending',
+    expiryDate: '2025-12-15',
+    batchNumber: 'B230502',
     tests: {
       Identity: {
-        status: 'Passed',
+        status: 'Pending',
         date: '2025-08-01',
         performedBy: 'Lab Tech 3',
-        iotDevice: 'FTIR-015',
-        blockchainTx: '0x9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c'
+        iotDevice: 'HPLC-024'
       },
       Purity: {
-        status: 'Passed',
+        status: 'Pending',
         date: '2025-08-01',
-        performedBy: 'Lab Tech 1',
-        iotDevice: 'HPLC-023',
-        blockchainTx: '0x8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b'
+        performedBy: 'Lab Tech 1'
       },
       Microbial: {
-        status: 'Passed',
+        status: 'Pending',
         date: '2025-08-02',
-        performedBy: 'Microbiology Team',
-        iotDevice: 'MIC-008',
-        blockchainTx: '0x7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a'
+        performedBy: 'Microbiology Team'
       },
       Endotoxins: {
-        status: 'Passed',
+        status: 'Pending',
         date: '2025-08-02',
-        performedBy: 'Microbiology Team',
-        iotDevice: 'LAL-013',
-        blockchainTx: '0x6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f'
+        performedBy: 'Microbiology Team'
       }
     },
-    certificate: 'CERT-002',
     lastReviewed: '2025-08-10',
     regulatory: {
       registrationNumber: 'EDA-REG-2023-54321',
       approvalDate: '2023-03-10',
       expiryDate: '2026-03-10',
-      status: 'Approved',
-      gmpInspection: true,
-      lastInspectionDate: '2024-05-15',
-      blockchainTx: '0x5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e'
-    },
-    iotConnected: true,
-    blockchainRegistered: true
-  },
-  {
-    id: 'MAT-003',
-    name: 'Glass Vials (10ml)',
-    type: 'Packaging',
-    supplier: {
-      id: 'SUP-003',
-      name: 'Prime Packaging',
-      status: 'Pending',
-      edaRegistration: 'EDA-SUP-2023-1234'
-    },
-    status: 'Pending',
-    expiryDate: '2030-12-31', // Packaging materials often have longer expiry
-    batchNumber: 'B231001',
-    tests: {
-      Identity: {
-        status: 'Pending',
-        date: '2025-09-15',
-        performedBy: 'QC Team',
-        iotDevice: 'VIS-002'
-      },
-      Purity: {
-        status: 'Pending',
-        date: '2025-09-15',
-        performedBy: 'QC Team'
-      },
-      Microbial: {
-        status: 'Pending',
-        date: '2025-09-16',
-        performedBy: 'Microbiology Team',
-        iotDevice: 'MIC-009'
-      },
-      Endotoxins: {
-        status: 'Pending',
-        date: '2025-09-16',
-        performedBy: 'Microbiology Team'
-      }
-    },
-    lastReviewed: '2025-09-10',
-    regulatory: {
-      registrationNumber: 'EDA-REG-2023-98765',
-      approvalDate: '2023-06-20',
-      expiryDate: '2026-06-20',
       status: 'Pending',
       gmpInspection: false
     },
@@ -275,12 +215,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 const BlockchainLink = ({ txHash }: { txHash?: string }) => {
   if (!txHash) return null;
 
-  // Updated to use Hyperledger Besu explorer URL format
   return (
     <Tooltip content="View on Hyperledger Besu Explorer">
       <Button variant="ghost" size="1" asChild>
         <a 
-          href={`http://besu-explorer.local/transactions/${txHash}`} // Replace with your actual Besu explorer URL
+          href={`http://besu-explorer.local/transactions/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
           style={{ textDecoration: 'none' }}
@@ -306,6 +245,20 @@ const MaterialTypeIcon = ({ type }: { type: Material['type'] }) => {
     <Tooltip content={type}>
       {icons[type]}
     </Tooltip>
+  );
+};
+
+const SupplierStatus = ({ supplier }: { supplier: Supplier }) => {
+  return (
+    <Flex direction="column" gap="1">
+      <Text>{supplier.name}</Text>
+      <StatusBadge status={supplier.status} />
+      {supplier.approvalDate && (
+        <Text size="1" color="gray">
+          Approved: {new Date(supplier.approvalDate).toLocaleDateString()}
+        </Text>
+      )}
+    </Flex>
   );
 };
 
@@ -342,11 +295,10 @@ export default function MaterialsQualificationDashboard() {
         </Select.Root>
       </Flex>
 
-      {/* Dashboard Stats Cards */}
       <Grid columns="4" gap="4" mb="4">
         <Card>
           <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#ECFDF5', borderRadius: '8px' }}>
+            <Box style={{ padding: '8px', backgroundColor: '#ECFDF5', borderRadius: '8px' }}>
               <Check color="#10B981" size={20} />
             </Box>
             <Box>
@@ -358,7 +310,7 @@ export default function MaterialsQualificationDashboard() {
 
         <Card>
           <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#FEF3C7', borderRadius: '8px' }}>
+            <Box style={{ padding: '8px', backgroundColor: '#FEF3C7', borderRadius: '8px' }}>
               <Clock color="#F59E0B" size={20} />
             </Box>
             <Box>
@@ -370,7 +322,7 @@ export default function MaterialsQualificationDashboard() {
 
         <Card>
           <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#EFF6FF', borderRadius: '8px' }}>
+            <Box style={{ padding: '8px', backgroundColor: '#EFF6FF', borderRadius: '8px' }}>
               <Cpu color="#3B82F6" size={20} />
             </Box>
             <Box>
@@ -382,7 +334,7 @@ export default function MaterialsQualificationDashboard() {
 
         <Card>
           <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#F5F3FF', borderRadius: '8px' }}>
+            <Box style={{ padding: '8px', backgroundColor: '#F5F3FF', borderRadius: '8px' }}>
               <Database color="#6D28D9" size={20} />
             </Box>
             <Box>
@@ -393,7 +345,6 @@ export default function MaterialsQualificationDashboard() {
         </Card>
       </Grid>
 
-      {/* Blockchain Submission */}
       <Flex justify="end" mb="4">
         <Dialog.Root>
           <Dialog.Trigger>
@@ -432,7 +383,6 @@ export default function MaterialsQualificationDashboard() {
         </Dialog.Root>
       </Flex>
 
-      {/* Main Materials Table */}
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
@@ -460,10 +410,7 @@ export default function MaterialsQualificationDashboard() {
               </Table.Cell>
               <Table.Cell>{material.batchNumber}</Table.Cell>
               <Table.Cell>
-                <Flex direction="column">
-                  <Text>{material.supplier.name}</Text>
-                  <StatusBadge status={material.supplier.status} />
-                </Flex>
+                <SupplierStatus supplier={material.supplier} />
               </Table.Cell>
               <Table.Cell>
                 <StatusBadge status={material.status} />
@@ -499,7 +446,6 @@ export default function MaterialsQualificationDashboard() {
         </Table.Body>
       </Table.Root>
 
-      {/* Material Detail Dialog */}
       {selectedMaterial && (
         <Dialog.Root open={true} onOpenChange={() => setSelectedMaterial(null)}>
           <Dialog.Content style={{ maxWidth: '800px' }}>
@@ -520,10 +466,7 @@ export default function MaterialsQualificationDashboard() {
                 <DetailItem label="Type" value={selectedMaterial.type} />
                 <DetailItem label="Batch" value={selectedMaterial.batchNumber} />
                 <DetailItem label="Supplier" value={
-                  <Flex align="center" gap="2">
-                    <Text>{selectedMaterial.supplier.name}</Text>
-                    <StatusBadge status={selectedMaterial.supplier.status} />
-                  </Flex>
+                  <SupplierStatus supplier={selectedMaterial.supplier} />
                 } />
                 <DetailItem label="Status" value={<StatusBadge status={selectedMaterial.status} />} />
                 <DetailItem 
