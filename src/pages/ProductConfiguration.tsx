@@ -24,7 +24,7 @@ import {
   MagnifyingGlassIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import edaLogo from './الدواء.jpg'; // Make sure the image path is correct
+import edaLogo from './eda-logo.jpg'; // Updated to use English filename
 
 const complianceOptions = [
   "Egyptian Drug Authority (EDA)",
@@ -78,7 +78,22 @@ const ProductConfiguration = () => {
       formula: [
         { component: 'Vitamin B1', weight: 0.001, percentage: 0.1, pricePerKg: 540 },
         { component: 'Vitamin B2', weight: 0.006, percentage: 0.6, pricePerKg: 600 },
-        // ... other components
+        { component: 'Vitamin B12', weight: 0.001, percentage: 0.1, pricePerKg: 2300 },
+        { component: 'Nicotinamide B3', weight: 0.010, percentage: 1.0, pricePerKg: 400 },
+        { component: 'Pantothenic Acid', weight: 0.004, percentage: 0.4, pricePerKg: 1700 },
+        { component: 'Vitamin B6', weight: 0.0015, percentage: 0.15, pricePerKg: 900 },
+        { component: 'Leucine', weight: 0.030, percentage: 3.0, pricePerKg: 200 },
+        { component: 'Threonine', weight: 0.010, percentage: 1.0, pricePerKg: 950 },
+        { component: 'Taurine', weight: 0.0025, percentage: 0.25, pricePerKg: 3000 },
+        { component: 'Glycine', weight: 0.0025, percentage: 0.25, pricePerKg: 4200 },
+        { component: 'Arginine', weight: 0.0025, percentage: 0.25, pricePerKg: 5000 },
+        { component: 'Cynarin', weight: 0.0025, percentage: 0.25, pricePerKg: 3900 },
+        { component: 'Silymarin', weight: 0.025, percentage: 2.5, pricePerKg: 700 },
+        { component: 'Sorbitol', weight: 0.010, percentage: 1.0, pricePerKg: 360 },
+        { component: 'Carnitine', weight: 0.005, percentage: 0.5, pricePerKg: 1070 },
+        { component: 'Betaine', weight: 0.020, percentage: 2.0, pricePerKg: 1250 },
+        { component: 'Tween-80', weight: 0.075, percentage: 7.5, pricePerKg: 90 },
+        { component: 'Water', weight: 0.571, percentage: 57.1, pricePerKg: 1 }
       ],
       productionDesign: {
         packagingType: '1kg HDPE Plastic Bottle',
