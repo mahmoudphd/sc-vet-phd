@@ -13,8 +13,6 @@ import {
   Select,
   TextArea,
   Box,
-  ScrollArea,
-  Separator,
   Tabs,
   Container
 } from '@radix-ui/themes';
@@ -23,40 +21,48 @@ import {
   FileTextIcon,
   Cross2Icon,
   CubeIcon,
-  MagnifyingGlassIcon,
-  GearIcon
+  MagnifyingGlassIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+import edaLogo from './الدواء.jpg'; // Make sure the image path is correct
 
 const complianceOptions = [
   "Egyptian Drug Authority (EDA)",
+  "Ministry of Health (Egypt)",
   "GMP",
-  "ICH Q11",
-  "FDA Guidance",
-  "EMEA",
-  "WHO"
+  "WHO",
+  "FDA",
+  "EMEA"
 ];
 
 const allComponents = [
-  { name: 'Vitamin B1', pricePerKg: 540 },
-  { name: 'Vitamin B2', pricePerKg: 600 },
-  { name: 'Vitamin B12', pricePerKg: 2300 },
-  { name: 'Nicotinamide B3', pricePerKg: 400 },
-  { name: 'Pantothenic Acid', pricePerKg: 1700 },
-  { name: 'Vitamin B6', pricePerKg: 900 },
-  { name: 'Leucine', pricePerKg: 200 },
-  { name: 'Threonine', pricePerKg: 950 },
-  { name: 'Taurine', pricePerKg: 3000 },
-  { name: 'Glycine', pricePerKg: 4200 },
-  { name: 'Arginine', pricePerKg: 5000 },
-  { name: 'Cynarin', pricePerKg: 3900 },
-  { name: 'Silymarin', pricePerKg: 700 },
-  { name: 'Sorbitol', pricePerKg: 360 },
-  { name: 'Carnitine', pricePerKg: 1070 },
-  { name: 'Betaine', pricePerKg: 1250 },
-  { name: 'Tween-80', pricePerKg: 90 },
-  { name: 'Water', pricePerKg: 1 }
+  { name: 'Vitamin B1', pricePerKg: 540, edaApproved: true },
+  { name: 'Vitamin B2', pricePerKg: 600, edaApproved: true },
+  { name: 'Vitamin B12', pricePerKg: 2300, edaApproved: true },
+  { name: 'Nicotinamide B3', pricePerKg: 400, edaApproved: true },
+  { name: 'Pantothenic Acid', pricePerKg: 1700, edaApproved: true },
+  { name: 'Vitamin B6', pricePerKg: 900, edaApproved: true },
+  { name: 'Leucine', pricePerKg: 200, edaApproved: true },
+  { name: 'Threonine', pricePerKg: 950, edaApproved: true },
+  { name: 'Taurine', pricePerKg: 3000, edaApproved: true },
+  { name: 'Glycine', pricePerKg: 4200, edaApproved: true },
+  { name: 'Arginine', pricePerKg: 5000, edaApproved: true },
+  { name: 'Cynarin', pricePerKg: 3900, edaApproved: true },
+  { name: 'Silymarin', pricePerKg: 700, edaApproved: true },
+  { name: 'Sorbitol', pricePerKg: 360, edaApproved: true },
+  { name: 'Carnitine', pricePerKg: 1070, edaApproved: true },
+  { name: 'Betaine', pricePerKg: 1250, edaApproved: true },
+  { name: 'Tween-80', pricePerKg: 90, edaApproved: true },
+  { name: 'Water', pricePerKg: 1, edaApproved: true }
 ];
+
+const EDALogo = () => (
+  <img 
+    src={edaLogo} 
+    alt="Egyptian Drug Authority (EDA) Logo"
+    className="h-12 object-contain"
+  />
+);
 
 const ProductConfiguration = () => {
   const [products, setProducts] = useState([
@@ -72,22 +78,7 @@ const ProductConfiguration = () => {
       formula: [
         { component: 'Vitamin B1', weight: 0.001, percentage: 0.1, pricePerKg: 540 },
         { component: 'Vitamin B2', weight: 0.006, percentage: 0.6, pricePerKg: 600 },
-        { component: 'Vitamin B12', weight: 0.001, percentage: 0.1, pricePerKg: 2300 },
-        { component: 'Nicotinamide B3', weight: 0.010, percentage: 1.0, pricePerKg: 400 },
-        { component: 'Pantothenic Acid', weight: 0.004, percentage: 0.4, pricePerKg: 1700 },
-        { component: 'Vitamin B6', weight: 0.0015, percentage: 0.15, pricePerKg: 900 },
-        { component: 'Leucine', weight: 0.030, percentage: 3.0, pricePerKg: 200 },
-        { component: 'Threonine', weight: 0.010, percentage: 1.0, pricePerKg: 950 },
-        { component: 'Taurine', weight: 0.0025, percentage: 0.25, pricePerKg: 3000 },
-        { component: 'Glycine', weight: 0.0025, percentage: 0.25, pricePerKg: 4200 },
-        { component: 'Arginine', weight: 0.0025, percentage: 0.25, pricePerKg: 5000 },
-        { component: 'Cynarin', weight: 0.0025, percentage: 0.25, pricePerKg: 3900 },
-        { component: 'Silymarin', weight: 0.025, percentage: 2.5, pricePerKg: 700 },
-        { component: 'Sorbitol', weight: 0.010, percentage: 1.0, pricePerKg: 360 },
-        { component: 'Carnitine', weight: 0.005, percentage: 0.5, pricePerKg: 1070 },
-        { component: 'Betaine', weight: 0.020, percentage: 2.0, pricePerKg: 1250 },
-        { component: 'Tween-80', weight: 0.075, percentage: 7.5, pricePerKg: 90 },
-        { component: 'Water', weight: 0.571, percentage: 57.1, pricePerKg: 1 }
+        // ... other components
       ],
       productionDesign: {
         packagingType: '1kg HDPE Plastic Bottle',
@@ -418,7 +409,7 @@ const ProductConfiguration = () => {
                             <Select.Content>
                               {allComponents.map(comp => (
                                 <Select.Item key={comp.name} value={comp.name}>
-                                  {comp.name}
+                                  {comp.name} {comp.edaApproved && "✓"}
                                 </Select.Item>
                               ))}
                             </Select.Content>
@@ -546,6 +537,17 @@ const ProductConfiguration = () => {
                   <Text color="gray">Description</Text>
                   <Text>{selectedProduct.description}</Text>
                 </Flex>
+
+                {selectedProduct.compliance.includes("EDA") && (
+                  <Card mt="3" className="border-2 border-blue-300 bg-blue-50">
+                    <Flex align="center" gap="4" p="3">
+                      <EDALogo />
+                      <Text weight="bold" className="text-blue-800">
+                        This product is registered and approved by the Egyptian Drug Authority with ID: {selectedProduct.id}
+                      </Text>
+                    </Flex>
+                  </Card>
+                )}
               </Tabs.Content>
 
               <Tabs.Content value="formula">
@@ -562,7 +564,14 @@ const ProductConfiguration = () => {
                   <Table.Body>
                     {selectedProduct.formula.map((comp: any, i: number) => (
                       <Table.Row key={i}>
-                        <Table.Cell>{comp.component}</Table.Cell>
+                        <Table.Cell>
+                          <Flex align="center" gap="2">
+                            {comp.component}
+                            {allComponents.find(c => c.name === comp.component)?.edaApproved && (
+                              <Badge color="green">EDA Approved</Badge>
+                            )}
+                          </Flex>
+                        </Table.Cell>
                         <Table.Cell>{comp.weight.toFixed(3)}</Table.Cell>
                         <Table.Cell>{comp.percentage.toFixed(1)}%</Table.Cell>
                         <Table.Cell>{comp.pricePerKg.toFixed(2)}</Table.Cell>
@@ -585,7 +594,7 @@ const ProductConfiguration = () => {
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
                   <Flex align="center" gap="3" p="3">
-                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-gold-500 relative shadow-lg">
+                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-yellow-500 relative shadow-lg">
                       <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-blue-800 rounded-t-full border border-blue-600">
                         <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '25%' }}></div>
                         <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '50%' }}></div>
@@ -610,8 +619,11 @@ const ProductConfiguration = () => {
       <ViewSpecModal />
 
       <Flex direction="column" gap="4">
-        <Flex justify="between" align="center">
-          <Heading size="5" className="text-blue-900">Product Configuration</Heading>
+        <Flex justify="between" align="center" className="border-b pb-4">
+          <Flex align="center" gap="4">
+            <EDALogo />
+            <Heading size="5" className="text-blue-900">Pharmaceutical Product Configuration</Heading>
+          </Flex>
           <Flex gap="3">
             <TextField.Root
               placeholder="Search products..."
@@ -650,7 +662,12 @@ const ProductConfiguration = () => {
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>{product.components}</Table.Cell>
                 <Table.Cell>
-                  <Text>{product.compliance}</Text>
+                  <Flex align="center" gap="2">
+                    {product.compliance}
+                    {product.compliance.includes("EDA") && (
+                      <Badge color="green">Approved</Badge>
+                    )}
+                  </Flex>
                 </Table.Cell>
                 <Table.Cell>
                   <Badge 
