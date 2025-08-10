@@ -582,7 +582,7 @@ const MaterialsQualificationDashboard = () => {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Row>
+      </Table.Root>
 
       {selectedMaterial && (
         <MaterialDetailDialog 
