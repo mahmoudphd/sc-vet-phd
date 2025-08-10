@@ -29,6 +29,7 @@ import {
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 const complianceOptions = [
+  "GMP",
   "ICH Q11",
   "Egyptian Drug Authority",
   "FDA Guidance",
@@ -61,12 +62,12 @@ const ProductConfiguration = () => {
   const [products, setProducts] = useState([
     {
       id: 'DRG-045',
-      name: 'Poultry Drug A',
+      name: 'Poultry Product A',
       components: 18,
       status: 'Approved',
       version: 'v2.1',
-      compliance: 'Egyptian Drug Authority',
-      description: 'Complete vitamin complex for poultry nutrition',
+      compliance: 'GMP',
+      description: 'Balanced vitamins and amino acids for healthier, faster-growing poultry.',
       removalMethod: 'FIFO',
       formula: [
         { component: 'Vitamin B1', weight: 0.001, percentage: 0.1, pricePerKg: 540 },
@@ -92,7 +93,7 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'Amber',
+        color: 'White with decorative window designs',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
@@ -111,7 +112,7 @@ const ProductConfiguration = () => {
     components: 0,
     status: 'Draft',
     version: 'v1.0',
-    compliance: 'Egyptian Drug Authority',
+    compliance: 'GMP',
     description: '',
     removalMethod: 'FIFO',
     formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -119,7 +120,7 @@ const ProductConfiguration = () => {
       packagingType: '1kg HDPE Plastic Bottle',
       dimensions: 'Ø80mm × 180mm',
       closure: '38mm Screw Cap with Foil Seal',
-      color: 'Amber',
+      color: 'White with decorative window designs',
       viscosity: 'Medium (500-1000 cPs)',
       pH: '6.5-7.5',
       fillingTemp: '25°C ± 2°C',
@@ -157,7 +158,7 @@ const ProductConfiguration = () => {
       components: 0,
       status: 'Draft',
       version: 'v1.0',
-      compliance: 'Egyptian Drug Authority',
+      compliance: 'GMP',
       description: '',
       removalMethod: 'FIFO',
       formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -165,7 +166,7 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'Amber',
+        color: 'White with decorative window designs',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
@@ -577,15 +578,15 @@ const ProductConfiguration = () => {
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
                   <Flex align="center" gap="3" p="3">
-                    <div className="w-20 h-32 bg-amber-100 rounded-t-full border-2 border-amber-300 relative">
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-amber-50 rounded-t-full border border-amber-200">
-                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '25%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '50%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '75%' }}></div>
+                    <div className="w-20 h-32 bg-white rounded-t-full border-2 border-gray-300 relative">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-gray-50 rounded-t-full border border-gray-200">
+                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '25%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '50%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '75%' }}></div>
                       </div>
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-gray-300 rounded-t-md border-2 border-gray-400"></div>
                     </div>
-                    <Text size="2" color="gray">1kg Veterinary Bottle</Text>
+                    <Text size="2" color="gray">1kg White Veterinary Bottle</Text>
                   </Flex>
                 </Card>
               </Tabs.Content>
