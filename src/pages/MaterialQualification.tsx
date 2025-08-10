@@ -305,66 +305,68 @@ const MaterialDetailDialog = ({
   onClose: () => void;
 }) => {
   return (
-    <Dialog.Content maxWidth="600px">
-      <Dialog.Title>{material.material} Details</Dialog.Title>
-      
-      <Grid columns="2" gap="4" mt="4">
-        <Box>
-          <Text weight="bold" color="gray">Basic Information</Text>
-          <DetailItem label="Batch" value={material.batch} />
-          <DetailItem label="Supplier" value={material.supplier} />
-          <DetailItem label="Status" value={<StatusBadge status={material.status} />} />
-          <DetailItem 
-            label="Last Reviewed" 
-            value={new Date(material.lastReviewed).toLocaleDateString()} 
-          />
-        </Box>
+    <Dialog.Root open={true} onOpenChange={onClose}>
+      <Dialog.Content maxWidth="600px">
+        <Dialog.Title>{material.material} Details</Dialog.Title>
+        
+        <Grid columns="2" gap="4" mt="4">
+          <Box>
+            <Text weight="bold" color="gray">Basic Information</Text>
+            <DetailItem label="Batch" value={material.batch} />
+            <DetailItem label="Supplier" value={material.supplier} />
+            <DetailItem label="Status" value={<StatusBadge status={material.status} />} />
+            <DetailItem 
+              label="Last Reviewed" 
+              value={new Date(material.lastReviewed).toLocaleDateString()} 
+            />
+          </Box>
 
-        <Box>
-          <Text weight="bold" color="gray">Regulatory Information</Text>
-          <DetailItem 
-            label="EDA Registration" 
-            value={material.regulatory.edaApproved ? 
-              material.regulatory.edaRegistrationNumber : 
-              'Not Registered'
-            } 
-          />
-          <DetailItem 
-            label="GMP Certified" 
-            value={material.regulatory.gmpCertified ? 'Yes' : 'No'} 
-          />
-          <DetailItem 
-            label="Expiry Date" 
-            value={<ExpiryDateCell date={material.expiry} />} 
-          />
-        </Box>
-      </Grid>
+          <Box>
+            <Text weight="bold" color="gray">Regulatory Information</Text>
+            <DetailItem 
+              label="EDA Registration" 
+              value={material.regulatory.edaApproved ? 
+                material.regulatory.edaRegistrationNumber : 
+                'Not Registered'
+              } 
+            />
+            <DetailItem 
+              label="GMP Certified" 
+              value={material.regulatory.gmpCertified ? 'Yes' : 'No'} 
+            />
+            <DetailItem 
+              label="Expiry Date" 
+              value={<ExpiryDateCell date={material.expiry} />} 
+            />
+          </Box>
+        </Grid>
 
-      <Box mt="4">
-        <Text weight="bold" color="gray">Test Results</Text>
-        <TestResultsTable tests={material.tests} />
-      </Box>
-
-      {material.certificate && (
         <Box mt="4">
-          <Text weight="bold" color="gray">Certificates</Text>
-          <Flex gap="2" mt="2">
-            <Badge color="green">
-              <FileText size={12} /> COA
-            </Badge>
-            <Badge color="green">
-              <FileText size={12} /> COC
-            </Badge>
-          </Flex>
+          <Text weight="bold" color="gray">Test Results</Text>
+          <TestResultsTable tests={material.tests} />
         </Box>
-      )}
 
-      <Flex justify="end" mt="4">
-        <Button variant="soft" onClick={onClose}>
-          Close
-        </Button>
-      </Flex>
-    </Dialog.Content>
+        {material.certificate && (
+          <Box mt="4">
+            <Text weight="bold" color="gray">Certificates</Text>
+            <Flex gap="2" mt="2">
+              <Badge color="green">
+                <FileText size={12} /> COA
+              </Badge>
+              <Badge color="green">
+                <FileText size={12} /> COC
+              </Badge>
+            </Flex>
+          </Box>
+        )}
+
+        <Flex justify="end" mt="4">
+          <Button variant="soft" onClick={onClose}>
+            Close
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
   );
 };
 
@@ -458,38 +460,47 @@ export default function MaterialQualificationDashboard() {
 
         <Table.Body>
           {filteredMaterials.map((material) => (
-            <Table.Row key={material.id} onClick={() => setSelectedMaterial(material)} style={{ cursor: 'pointer' }}>
-              <Table.Cell>
+            <Table.Row key={material.id} style={{ cursor: 'pointer' }}>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <Text weight="medium">{material.material}</Text>
                 <Text size="1" color="gray">Last reviewed: {new Date(material.lastReviewed).toLocaleDateString()}</Text>
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <Badge variant="outline">{material.batch}</Badge>
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <StatusBadge status={material.status} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <TestResultsIndicator tests={material.tests} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <ComplianceProgress value={calculateCompliance(material)} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell onClick={() => setSelectedMaterial(material)}>
                 <EDARegistrationBadge regulatory={material.regulatory} />
               </Table.Cell>
 
               <Table.Cell>
                 <Flex gap="2">
-                  <Button size="1" variant="soft">
+                  <Button 
+                    size="1" 
+                    variant="soft"
+                    onClick={() => setSelectedMaterial(material)}
+                  >
                     <FileText size={14} />
                   </Button>
-                  <Button size="1" variant="soft" color="red">
+                  <Button 
+                    size="1" 
+                    variant="soft" 
+                    color="red"
+                    onClick={() => alert(`Reported ${material.material} to EDA`)}
+                  >
                     <AlertTriangle size={14} />
                   </Button>
                 </Flex>
@@ -522,7 +533,7 @@ export default function MaterialQualificationDashboard() {
         </Flex>
       </Card>
 
-      {/* Material Detail Dialog */}
+      {/* Material Detail Dialog - Now properly controlled */}
       {selectedMaterial && (
         <MaterialDetailDialog 
           material={selectedMaterial} 
