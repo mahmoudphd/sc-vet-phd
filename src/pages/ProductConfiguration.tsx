@@ -13,6 +13,8 @@ import {
   Select,
   TextArea,
   Box,
+  ScrollArea,
+  Separator,
   Tabs,
   Container
 } from '@radix-ui/themes';
@@ -21,48 +23,43 @@ import {
   FileTextIcon,
   Cross2Icon,
   CubeIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  GearIcon,
+  CheckIcon,
+  LockClosedIcon,
+  UpdateIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import edaLogo from './eda-logo.jpg'; // Updated to use English filename
 
 const complianceOptions = [
   "Egyptian Drug Authority (EDA)",
-  "Ministry of Health (Egypt)",
   "GMP",
-  "WHO",
-  "FDA",
-  "EMEA"
+  "ICH Q11",
+  "FDA Guidance",
+  "EMEA",
+  "WHO"
 ];
 
 const allComponents = [
-  { name: 'Vitamin B1', pricePerKg: 540, edaApproved: true },
-  { name: 'Vitamin B2', pricePerKg: 600, edaApproved: true },
-  { name: 'Vitamin B12', pricePerKg: 2300, edaApproved: true },
-  { name: 'Nicotinamide B3', pricePerKg: 400, edaApproved: true },
-  { name: 'Pantothenic Acid', pricePerKg: 1700, edaApproved: true },
-  { name: 'Vitamin B6', pricePerKg: 900, edaApproved: true },
-  { name: 'Leucine', pricePerKg: 200, edaApproved: true },
-  { name: 'Threonine', pricePerKg: 950, edaApproved: true },
-  { name: 'Taurine', pricePerKg: 3000, edaApproved: true },
-  { name: 'Glycine', pricePerKg: 4200, edaApproved: true },
-  { name: 'Arginine', pricePerKg: 5000, edaApproved: true },
-  { name: 'Cynarin', pricePerKg: 3900, edaApproved: true },
-  { name: 'Silymarin', pricePerKg: 700, edaApproved: true },
-  { name: 'Sorbitol', pricePerKg: 360, edaApproved: true },
-  { name: 'Carnitine', pricePerKg: 1070, edaApproved: true },
-  { name: 'Betaine', pricePerKg: 1250, edaApproved: true },
-  { name: 'Tween-80', pricePerKg: 90, edaApproved: true },
-  { name: 'Water', pricePerKg: 1, edaApproved: true }
+  { name: 'Vitamin B1', pricePerKg: 540 },
+  { name: 'Vitamin B2', pricePerKg: 600 },
+  { name: 'Vitamin B12', pricePerKg: 2300 },
+  { name: 'Nicotinamide B3', pricePerKg: 400 },
+  { name: 'Pantothenic Acid', pricePerKg: 1700 },
+  { name: 'Vitamin B6', pricePerKg: 900 },
+  { name: 'Leucine', pricePerKg: 200 },
+  { name: 'Threonine', pricePerKg: 950 },
+  { name: 'Taurine', pricePerKg: 3000 },
+  { name: 'Glycine', pricePerKg: 4200 },
+  { name: 'Arginine', pricePerKg: 5000 },
+  { name: 'Cynarin', pricePerKg: 3900 },
+  { name: 'Silymarin', pricePerKg: 700 },
+  { name: 'Sorbitol', pricePerKg: 360 },
+  { name: 'Carnitine', pricePerKg: 1070 },
+  { name: 'Betaine', pricePerKg: 1250 },
+  { name: 'Tween-80', pricePerKg: 90 },
+  { name: 'Water', pricePerKg: 1 }
 ];
-
-const EDALogo = () => (
-  <img 
-    src={edaLogo} 
-    alt="Egyptian Drug Authority (EDA) Logo"
-    className="h-12 object-contain"
-  />
-);
 
 const ProductConfiguration = () => {
   const [products, setProducts] = useState([
@@ -109,6 +106,11 @@ const ProductConfiguration = () => {
           'Graduated measuring marks',
           'EDA compliant labeling'
         ]
+      },
+      blockchain: {
+        txHash: '',
+        status: 'not-submitted',
+        timestamp: null
       }
     }
   ]);
@@ -138,6 +140,11 @@ const ProductConfiguration = () => {
         'EDA compliant labeling'
       ],
       notes: ''
+    },
+    blockchain: {
+      txHash: '',
+      status: 'not-submitted',
+      timestamp: null
     }
   });
 
@@ -153,6 +160,77 @@ const ProductConfiguration = () => {
       (sum, item) => sum + (item.percentage || 0), 0);
     setTotalPercentage(total);
   }, [newProduct.formula]);
+
+  const submitToBlockchain = async (productId: string) => {
+    const productIndex = products.findIndex(p => p.id === productId);
+    if (productIndex === -1) return;
+    
+    const updatedProducts = [...products];
+    updatedProducts[productIndex] = {
+      ...updatedProducts[productIndex],
+      blockchain: {
+        ...updatedProducts[productIndex].blockchain,
+        status: 'pending'
+      }
+    };
+    setProducts(updatedProducts);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+      
+      const successfulUpdate = [...updatedProducts];
+      successfulUpdate[productIndex] = {
+        ...successfulUpdate[productIndex],
+        blockchain: {
+          txHash: mockTxHash,
+          status: 'confirmed',
+          timestamp: new Date().toISOString()
+        }
+      };
+      setProducts(successfulUpdate);
+    } catch (error) {
+      const failedUpdate = [...updatedProducts];
+      failedUpdate[productIndex] = {
+        ...failedUpdate[productIndex],
+        blockchain: {
+          ...failedUpdate[productIndex].blockchain,
+          status: 'failed'
+        }
+      };
+      setProducts(failedUpdate);
+    }
+  };
+
+  const BlockchainStatus = ({ status }: { status: string }) => {
+    switch (status) {
+      case 'confirmed':
+        return (
+          <Badge color="green" className="flex items-center gap-1">
+            <CheckIcon /> On Blockchain
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge color="orange" className="flex items-center gap-1">
+            <UpdateIcon className="animate-spin" /> Submitting...
+          </Badge>
+        );
+      case 'failed':
+        return (
+          <Badge color="red" className="flex items-center gap-1">
+            <Cross2Icon /> Failed
+          </Badge>
+        );
+      default:
+        return (
+          <Badge color="gray" className="flex items-center gap-1">
+            <LockClosedIcon /> Not Submitted
+          </Badge>
+        );
+    }
+  };
 
   const handleAddProduct = () => {
     if (!newProduct.id || !newProduct.name) {
@@ -185,6 +263,11 @@ const ProductConfiguration = () => {
           'EDA compliant labeling'
         ],
         notes: ''
+      },
+      blockchain: {
+        txHash: '',
+        status: 'not-submitted',
+        timestamp: null
       }
     });
     setNewConfigModalOpen(false);
@@ -424,7 +507,7 @@ const ProductConfiguration = () => {
                             <Select.Content>
                               {allComponents.map(comp => (
                                 <Select.Item key={comp.name} value={comp.name}>
-                                  {comp.name} {comp.edaApproved && "✓"}
+                                  {comp.name}
                                 </Select.Item>
                               ))}
                             </Select.Content>
@@ -553,16 +636,28 @@ const ProductConfiguration = () => {
                   <Text>{selectedProduct.description}</Text>
                 </Flex>
 
-                {selectedProduct.compliance.includes("EDA") && (
-                  <Card mt="3" className="border-2 border-blue-300 bg-blue-50">
-                    <Flex align="center" gap="4" p="3">
-                      <EDALogo />
-                      <Text weight="bold" className="text-blue-800">
-                        This product is registered and approved by the Egyptian Drug Authority with ID: {selectedProduct.id}
+                <Flex direction="column" gap="1" mt="3">
+                  <Text color="gray">Blockchain Status</Text>
+                  <Flex align="center" gap="3">
+                    <BlockchainStatus status={selectedProduct.blockchain.status} />
+                    {selectedProduct.blockchain.txHash && (
+                      <Text size="1" color="blue" className="truncate max-w-xs">
+                        TX: {selectedProduct.blockchain.txHash}
                       </Text>
-                    </Flex>
-                  </Card>
-                )}
+                    )}
+                  </Flex>
+                  {selectedProduct.blockchain.status !== 'confirmed' && (
+                    <Button 
+                      variant="soft" 
+                      onClick={() => submitToBlockchain(selectedProduct.id)}
+                      disabled={selectedProduct.blockchain.status === 'pending'}
+                      mt="2"
+                      className="w-fit"
+                    >
+                      Submit to Blockchain
+                    </Button>
+                  )}
+                </Flex>
               </Tabs.Content>
 
               <Tabs.Content value="formula">
@@ -579,14 +674,7 @@ const ProductConfiguration = () => {
                   <Table.Body>
                     {selectedProduct.formula.map((comp: any, i: number) => (
                       <Table.Row key={i}>
-                        <Table.Cell>
-                          <Flex align="center" gap="2">
-                            {comp.component}
-                            {allComponents.find(c => c.name === comp.component)?.edaApproved && (
-                              <Badge color="green">EDA Approved</Badge>
-                            )}
-                          </Flex>
-                        </Table.Cell>
+                        <Table.Cell>{comp.component}</Table.Cell>
                         <Table.Cell>{comp.weight.toFixed(3)}</Table.Cell>
                         <Table.Cell>{comp.percentage.toFixed(1)}%</Table.Cell>
                         <Table.Cell>{comp.pricePerKg.toFixed(2)}</Table.Cell>
@@ -609,7 +697,7 @@ const ProductConfiguration = () => {
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
                   <Flex align="center" gap="3" p="3">
-                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-yellow-500 relative shadow-lg">
+                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-gold-500 relative shadow-lg">
                       <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-blue-800 rounded-t-full border border-blue-600">
                         <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '25%' }}></div>
                         <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '50%' }}></div>
@@ -634,11 +722,8 @@ const ProductConfiguration = () => {
       <ViewSpecModal />
 
       <Flex direction="column" gap="4">
-        <Flex justify="between" align="center" className="border-b pb-4">
-          <Flex align="center" gap="4">
-            <EDALogo />
-            <Heading size="5" className="text-blue-900">Pharmaceutical Product Configuration</Heading>
-          </Flex>
+        <Flex justify="between" align="center">
+          <Heading size="5" className="text-blue-900">Product Configuration</Heading>
           <Flex gap="3">
             <TextField.Root
               placeholder="Search products..."
@@ -667,6 +752,7 @@ const ProductConfiguration = () => {
               <Table.ColumnHeaderCell className="text-blue-900">Components</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className="text-blue-900">Compliance</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className="text-blue-900">Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Blockchain</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell className="text-blue-900">Actions</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -677,12 +763,7 @@ const ProductConfiguration = () => {
                 <Table.Cell>{product.name}</Table.Cell>
                 <Table.Cell>{product.components}</Table.Cell>
                 <Table.Cell>
-                  <Flex align="center" gap="2">
-                    {product.compliance}
-                    {product.compliance.includes("EDA") && (
-                      <Badge color="green">Approved</Badge>
-                    )}
-                  </Flex>
+                  <Text>{product.compliance}</Text>
                 </Table.Cell>
                 <Table.Cell>
                   <Badge 
@@ -691,6 +772,9 @@ const ProductConfiguration = () => {
                   >
                     {product.status}
                   </Badge>
+                </Table.Cell>
+                <Table.Cell>
+                  <BlockchainStatus status={product.blockchain.status} />
                 </Table.Cell>
                 <Table.Cell>
                   <Button 
