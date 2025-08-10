@@ -18,26 +18,22 @@ import {
   Check,
   Clock,
   AlertTriangle,
-  ChevronRight,
   FileText,
   ShieldCheck,
   HardHat,
   HelpCircle,
-  BarChart2,
-  Gauge,
-  CalendarCheck,
   Cpu,
   Link,
   Database
 } from 'lucide-react';
 
-// 1. Enhanced Type Definitions with IoT and Blockchain
+// 1. Type Definitions
 interface TestResult {
   status: 'Passed' | 'Pending' | 'Failed';
   date: string;
   performedBy: string;
-  iotDevice?: string; // IoT device ID
-  blockchainTx?: string; // Blockchain transaction hash
+  iotDevice?: string;
+  blockchainTx?: string;
 }
 
 interface EDARegistration {
@@ -47,7 +43,7 @@ interface EDARegistration {
   status: 'Active' | 'Expired' | 'Pending';
   gmpInspection: boolean;
   lastInspectionDate?: string;
-  blockchainTx?: string; // Blockchain transaction for registration
+  blockchainTx?: string;
 }
 
 interface Material {
@@ -65,12 +61,12 @@ interface Material {
   };
   certificate?: string;
   lastReviewed: string;
-  edaRegistration: EDARegistration;
+  regulatory: EDARegistration;
   iotConnected: boolean;
   blockchainRegistered: boolean;
 }
 
-// 2. Sample Data with IoT and Blockchain integration
+// 2. Sample Data
 const materialsData: Material[] = [
   {
     id: 'MAT-001',
@@ -111,7 +107,7 @@ const materialsData: Material[] = [
     },
     certificate: 'Cert-001',
     lastReviewed: '2025-07-15',
-    edaRegistration: {
+    regulatory: {
       registrationNumber: 'EDA-REG-2023-12345',
       approvalDate: '2023-01-15',
       expiryDate: '2026-01-15',
@@ -126,41 +122,63 @@ const materialsData: Material[] = [
   // ... other materials
 ];
 
-// 3. IoT Device Status Component
-const IoTStatusBadge = ({ connected }: { connected: boolean }) => (
-  <Badge color={connected ? 'green' : 'red'}>
-    <Flex align="center" gap="1">
-      <Cpu size={12} />
-      {connected ? 'Connected' : 'Disconnected'}
-    </Flex>
-  </Badge>
-);
+// 3. Status Badge Component
+const StatusBadge = ({ status }: { status: string }) => {
+  const config = {
+    Approved: { color: 'green' as const, icon: <Check size={14} /> },
+    Pending: { color: 'yellow' as const, icon: <Clock size={14} /> },
+    Rejected: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
+    Active: { color: 'green' as const, icon: <Check size={14} /> },
+    Expired: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
+    Passed: { color: 'green' as const, icon: <Check size={14} /> },
+    Failed: { color: 'red' as const, icon: <AlertTriangle size={14} /> }
+  };
 
-// 4. Blockchain Verification Component
-const BlockchainVerification = ({ verified }: { verified: boolean }) => (
-  <Badge color={verified ? 'violet' : 'gray'}>
-    <Flex align="center" gap="1">
-      <Database size={12} />
-      {verified ? 'Verified' : 'Pending'}
-    </Flex>
-  </Badge>
-);
+  const currentConfig = config[status as keyof typeof config] || 
+                      { color: 'gray' as const, icon: <HelpCircle size={14} /> };
 
-// 5. Blockchain Transaction Link Component
+  return (
+    <Badge color={currentConfig.color} highContrast>
+      <Flex align="center" gap="1">
+        {currentConfig.icon}
+        {status}
+      </Flex>
+    </Badge>
+  );
+};
+
+// 4. IoT Device Badge
+const IoTDeviceBadge = ({ deviceId }: { deviceId?: string }) => {
+  if (!deviceId) return null;
+
+  return (
+    <Tooltip content={`IoT Device: ${deviceId}`}>
+      <Badge color="blue" variant="soft">
+        <Flex align="center" gap="1">
+          <Cpu size={12} />
+          {deviceId}
+        </Flex>
+      </Badge>
+    </Tooltip>
+  );
+};
+
+// 5. Blockchain Link
 const BlockchainLink = ({ txHash }: { txHash?: string }) => {
   if (!txHash) return null;
 
   return (
-    <Tooltip content="View on blockchain explorer">
+    <Tooltip content={`View on blockchain explorer`}>
       <Button variant="ghost" size="1" asChild>
         <a 
           href={`https://etherscan.io/tx/${txHash}`} 
           target="_blank"
           rel="noopener noreferrer"
+          style={{ textDecoration: 'none' }}
         >
           <Flex align="center" gap="1">
             <Link size={12} />
-            Transaction
+            Verify
           </Flex>
         </a>
       </Button>
@@ -175,6 +193,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
       <Table.Row>
         <Table.ColumnHeaderCell>Test</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+        <Table.ColumnHeaderCell>Performed By</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>IoT Device</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
       </Table.Row>
@@ -183,17 +202,10 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
       {Object.entries(tests).map(([testName, test]) => (
         <Table.Row key={testName}>
           <Table.Cell>{testName}</Table.Cell>
+          <Table.Cell><StatusBadge status={test.status} /></Table.Cell>
+          <Table.Cell>{test.performedBy}</Table.Cell>
           <Table.Cell>
-            <StatusBadge status={test.status} />
-          </Table.Cell>
-          <Table.Cell>
-            {test.iotDevice ? (
-              <Badge color="blue">
-                <Cpu size={12} /> {test.iotDevice}
-              </Badge>
-            ) : (
-              <Text color="gray">N/A</Text>
-            )}
+            <IoTDeviceBadge deviceId={test.iotDevice} />
           </Table.Cell>
           <Table.Cell>
             <BlockchainLink txHash={test.blockchainTx} />
@@ -204,64 +216,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
   </Table.Root>
 );
 
-// 7. Blockchain Submission Dialog
-const BlockchainSubmissionDialog = () => {
-  const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
-
-  const handleSubmit = () => {
-    setSubmitting(true);
-    // Simulate blockchain submission
-    setTimeout(() => {
-      setSubmitting(false);
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
-    }, 2000);
-  };
-
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger>
-        <Button variant="solid" color="violet">
-          <HardHat size={16} />
-          Submit to Blockchain
-        </Button>
-      </Dialog.Trigger>
-      <Dialog.Content>
-        <Dialog.Title>Blockchain Submission</Dialog.Title>
-        <Dialog.Description>
-          Submit material qualification data to the Ethereum blockchain
-        </Dialog.Description>
-
-        <Box my="4">
-          <Text>You are about to submit {materialsData.length} material records:</Text>
-          <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
-            {materialsData.map(material => (
-              <li key={material.id}>
-                <Text>{material.material} (Batch: {material.batch})</Text>
-              </li>
-            ))}
-          </ul>
-        </Box>
-
-        <Flex justify="end" gap="2" mt="4">
-          <Dialog.Close>
-            <Button variant="soft">Cancel</Button>
-          </Dialog.Close>
-          <Button 
-            onClick={handleSubmit}
-            disabled={submitting || success}
-            color={success ? 'green' : 'violet'}
-          >
-            {submitting ? 'Submitting...' : success ? 'Submitted!' : 'Confirm'}
-          </Button>
-        </Flex>
-      </Dialog.Content>
-    </Dialog.Root>
-  );
-};
-
-// 8. Enhanced Material Detail Dialog with IoT/Blockchain
+// 7. Material Detail Dialog with IoT/Blockchain
 const MaterialDetailDialog = ({ material, onClose }: { material: Material; onClose: () => void }) => {
   return (
     <Dialog.Root open={true} onOpenChange={onClose}>
@@ -285,7 +240,11 @@ const MaterialDetailDialog = ({ material, onClose }: { material: Material; onClo
             <DetailItem label="Status" value={<StatusBadge status={material.status} />} />
             <DetailItem 
               label="IoT Status" 
-              value={<IoTStatusBadge connected={material.iotConnected} />} 
+              value={
+                <Badge color={material.iotConnected ? 'green' : 'red'}>
+                  {material.iotConnected ? 'Connected' : 'Disconnected'}
+                </Badge>
+              } 
             />
           </Box>
 
@@ -293,13 +252,17 @@ const MaterialDetailDialog = ({ material, onClose }: { material: Material; onClo
             <Text weight="bold" color="gray">Regulatory Information</Text>
             <DetailItem 
               label="EDA Registration" 
-              value={material.edaRegistration.registrationNumber} 
+              value={material.regulatory.registrationNumber} 
+            />
+            <DetailItem 
+              label="Registration Status" 
+              value={<StatusBadge status={material.regulatory.status} />} 
             />
             <DetailItem 
               label="Blockchain Verification" 
               value={
-                material.edaRegistration.blockchainTx ? 
-                <BlockchainLink txHash={material.edaRegistration.blockchainTx} /> : 
+                material.regulatory.blockchainTx ? 
+                <BlockchainLink txHash={material.regulatory.blockchainTx} /> : 
                 'Not submitted'
               } 
             />
@@ -321,7 +284,7 @@ const MaterialDetailDialog = ({ material, onClose }: { material: Material; onClo
   );
 };
 
-// 9. Enhanced Main Dashboard Component
+// 8. Main Dashboard Component with Original Columns + IoT/Blockchain
 export default function MaterialsQualificationDashboard() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [filter, setFilter] = useState<'all' | 'approved' | 'pending'>('all');
@@ -355,7 +318,30 @@ export default function MaterialsQualificationDashboard() {
       </Flex>
 
       <Grid columns="4" gap="4" mb="4">
-        {/* ... existing stat cards ... */}
+        <Card>
+          <Flex gap="3" align="center">
+            <Box p="2" style={{ background: '#ECFDF5', borderRadius: '8px' }}>
+              <Check color="#10B981" size={20} />
+            </Box>
+            <Box>
+              <Text color="gray" size="2">Approved Materials</Text>
+              <Text size="4" weight="bold">{stats.approved}</Text>
+            </Box>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex gap="3" align="center">
+            <Box p="2" style={{ background: '#FEF3C7', borderRadius: '8px' }}>
+              <Clock color="#F59E0B" size={20} />
+            </Box>
+            <Box>
+              <Text color="gray" size="2">Pending Approval</Text>
+              <Text size="4" weight="bold">{stats.pending}</Text>
+            </Box>
+          </Flex>
+        </Card>
+
         <Card>
           <Flex gap="3" align="center">
             <Box p="2" style={{ background: '#EFF6FF', borderRadius: '8px' }}>
@@ -382,7 +368,41 @@ export default function MaterialsQualificationDashboard() {
       </Grid>
 
       <Flex justify="end" mb="4">
-        <BlockchainSubmissionDialog />
+        <Dialog.Root>
+          <Dialog.Trigger>
+            <Button variant="solid" color="violet">
+              <HardHat size={16} />
+              <Text>Submit to Blockchain</Text>
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Content>
+            <Dialog.Title>Blockchain Submission</Dialog.Title>
+            <Dialog.Description>
+              Submit material qualification data to the blockchain
+            </Dialog.Description>
+            
+            <Box my="4">
+              <Text>You are submitting {materialsData.length} material records to the blockchain:</Text>
+              <ul style={{ paddingLeft: '20px', marginTop: '8px' }}>
+                {materialsData.map(material => (
+                  <li key={material.id}>
+                    <Text>{material.material} (Batch: {material.batch})</Text>
+                  </li>
+                ))}
+              </ul>
+            </Box>
+
+            <Flex justify="end" gap="2" mt="4">
+              <Dialog.Close>
+                <Button variant="soft">Cancel</Button>
+              </Dialog.Close>
+              <Button color="violet">
+                <HardHat size={16} />
+                Confirm Submission
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
       </Flex>
 
       <Table.Root variant="surface">
@@ -390,25 +410,35 @@ export default function MaterialsQualificationDashboard() {
           <Table.Row>
             <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Batch</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>IoT</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Tests</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>EDA Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {filteredMaterials.map(material => (
             <Table.Row key={material.id}>
-              <Table.Cell onClick={() => setSelectedMaterial(material)}>
+              <Table.Cell>
                 <Text weight="medium">{material.material}</Text>
+                <Text size="1" color="gray">Expires: {new Date(material.expiry).toLocaleDateString()}</Text>
               </Table.Cell>
               <Table.Cell>{material.batch}</Table.Cell>
+              <Table.Cell>{material.supplier}</Table.Cell>
               <Table.Cell><StatusBadge status={material.status} /></Table.Cell>
               <Table.Cell>
-                <IoTStatusBadge connected={material.iotConnected} />
+                <Flex align="center" gap="2">
+                  <Badge color={material.iotConnected ? 'green' : 'red'}>
+                    <Cpu size={12} />
+                  </Badge>
+                  <Badge color={material.blockchainRegistered ? 'violet' : 'gray'}>
+                    <Database size={12} />
+                  </Badge>
+                </Flex>
               </Table.Cell>
               <Table.Cell>
-                <BlockchainVerification verified={material.blockchainRegistered} />
+                <StatusBadge status={material.regulatory.status} />
               </Table.Cell>
               <Table.Cell>
                 <Button 
@@ -416,7 +446,7 @@ export default function MaterialsQualificationDashboard() {
                   variant="soft"
                   onClick={() => setSelectedMaterial(material)}
                 >
-                  Details
+                  <FileText size={14} /> Details
                 </Button>
               </Table.Cell>
             </Table.Row>
