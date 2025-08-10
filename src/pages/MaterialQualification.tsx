@@ -18,7 +18,6 @@ import {
   Clock,
   AlertTriangle,
   FileText,
-  ShieldCheck,
   HardHat,
   HelpCircle,
   Cpu,
