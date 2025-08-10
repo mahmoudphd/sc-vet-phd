@@ -76,6 +76,24 @@ interface Material {
   blockchainRegistered: boolean;
 }
 
+// ========== ICON WRAPPER COMPONENT ==========
+interface IconProps {
+  size?: number;
+  color?: string;
+  children: React.ReactNode;
+}
+
+const IconWrapper = ({ size = 16, color, children }: IconProps) => (
+  <Text as="span" style={{ 
+    display: 'inline-flex',
+    width: size,
+    height: size,
+    color
+  }}>
+    {children}
+  </Text>
+);
+
 // ========== SAMPLE DATA ==========
 const materialsData: Material[] = [
   {
@@ -188,22 +206,22 @@ const materialsData: Material[] = [
 // ========== COMPONENTS ==========
 const StatusBadge = ({ status }: { status: string }) => {
   const config = {
-    Approved: { color: 'green' as const, icon: <Check size={14} /> },
-    Rejected: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
-    Pending: { color: 'yellow' as const, icon: <Clock size={14} /> },
-    Expired: { color: 'orange' as const, icon: <Calendar size={14} /> },
-    NotApproved: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
-    Passed: { color: 'green' as const, icon: <Check size={14} /> },
-    Failed: { color: 'red' as const, icon: <AlertTriangle size={14} /> }
+    Approved: { color: 'green' as const, icon: <IconWrapper size={14}><Check /></IconWrapper> },
+    Rejected: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> },
+    Pending: { color: 'yellow' as const, icon: <IconWrapper size={14}><Clock /></IconWrapper> },
+    Expired: { color: 'orange' as const, icon: <IconWrapper size={14}><Calendar /></IconWrapper> },
+    NotApproved: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> },
+    Passed: { color: 'green' as const, icon: <IconWrapper size={14}><Check /></IconWrapper> },
+    Failed: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> }
   };
 
   const currentConfig = config[status as keyof typeof config] || 
-                      { color: 'gray' as const, icon: <HelpCircle size={14} /> };
+                      { color: 'gray' as const, icon: <IconWrapper size={14}><HelpCircle /></IconWrapper> };
 
   return (
     <Badge color={currentConfig.color} highContrast>
       <Flex align="center" gap="1">
-        <Text as="span">{currentConfig.icon}</Text>
+        {currentConfig.icon}
         {status}
       </Flex>
     </Badge>
@@ -223,7 +241,7 @@ const BlockchainLink = ({ txHash }: { txHash?: string }) => {
           style={{ textDecoration: 'none' }}
         >
           <Flex align="center" gap="1">
-            <Text as="span"><Link size={12} /></Text>
+            <IconWrapper size={12}><Link /></IconWrapper>
             Verify
           </Flex>
         </a>
@@ -234,14 +252,14 @@ const BlockchainLink = ({ txHash }: { txHash?: string }) => {
 
 const MaterialTypeIcon = ({ type }: { type: Material['type'] }) => {
   const icons = {
-    API: <Pill size={16} />,
-    Excipient: <FlaskConical size={16} />,
-    Packaging: <Box size={16} />
+    API: <IconWrapper size={16}><Pill /></IconWrapper>,
+    Excipient: <IconWrapper size={16}><FlaskConical /></IconWrapper>,
+    Packaging: <IconWrapper size={16}><Box /></IconWrapper>
   };
   
   return (
     <Tooltip content={type}>
-      <Text as="span">{icons[type]}</Text>
+      {icons[type]}
     </Tooltip>
   );
 };
@@ -297,7 +315,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#ECFDF5', borderRadius: '8px' }}>
-              <Text as="span"><Check color="#10B981" size={20} /></Text>
+              <IconWrapper size={20} color="#10B981"><Check /></IconWrapper>
             </Box>
             <Box>
               <Text color="gray" size="2">Approved Materials</Text>
@@ -309,7 +327,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#FEF3C7', borderRadius: '8px' }}>
-              <Text as="span"><Clock color="#F59E0B" size={20} /></Text>
+              <IconWrapper size={20} color="#F59E0B"><Clock /></IconWrapper>
             </Box>
             <Box>
               <Text color="gray" size="2">Pending Approval</Text>
@@ -321,7 +339,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#EFF6FF', borderRadius: '8px' }}>
-              <Text as="span"><Cpu color="#3B82F6" size={20} /></Text>
+              <IconWrapper size={20} color="#3B82F6"><Cpu /></IconWrapper>
             </Box>
             <Box>
               <Text color="gray" size="2">IoT Connected</Text>
@@ -333,7 +351,7 @@ export default function MaterialsQualificationDashboard() {
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#F5F3FF', borderRadius: '8px' }}>
-              <Text as="span"><Database color="#6D28D9" size={20} /></Text>
+              <IconWrapper size={20} color="#6D28D9"><Database /></IconWrapper>
             </Box>
             <Box>
               <Text color="gray" size="2">Blockchain Verified</Text>
@@ -347,7 +365,7 @@ export default function MaterialsQualificationDashboard() {
         <Dialog.Root>
           <Dialog.Trigger>
             <Button variant="solid" color="violet">
-              <Text as="span"><HardHat size={16} /></Text>
+              <IconWrapper size={16}><HardHat /></IconWrapper>
               <Text>Submit to Blockchain</Text>
             </Button>
           </Dialog.Trigger>
@@ -373,7 +391,7 @@ export default function MaterialsQualificationDashboard() {
                 <Button variant="soft">Cancel</Button>
               </Dialog.Close>
               <Button color="violet">
-                <Text as="span"><HardHat size={16} /></Text>
+                <IconWrapper size={16}><HardHat /></IconWrapper>
                 Confirm Submission
               </Button>
             </Flex>
@@ -417,12 +435,12 @@ export default function MaterialsQualificationDashboard() {
                 <Flex align="center" gap="2">
                   <Tooltip content={material.iotConnected ? 'IoT Connected' : 'IoT Disconnected'}>
                     <Badge color={material.iotConnected ? 'green' : 'red'}>
-                      <Text as="span"><Cpu size={12} /></Text>
+                      <IconWrapper size={12}><Cpu /></IconWrapper>
                     </Badge>
                   </Tooltip>
                   <Tooltip content={material.blockchainRegistered ? 'Blockchain Verified' : 'Not on Blockchain'}>
                     <Badge color={material.blockchainRegistered ? 'violet' : 'gray'}>
-                      <Text as="span"><Database size={12} /></Text>
+                      <IconWrapper size={12}><Database /></IconWrapper>
                     </Badge>
                   </Tooltip>
                 </Flex>
@@ -436,7 +454,7 @@ export default function MaterialsQualificationDashboard() {
                   variant="soft"
                   onClick={() => setSelectedMaterial(material)}
                 >
-                  <Text as="span"><FileText size={14} /></Text> Details
+                  <IconWrapper size={14}><FileText /></IconWrapper> Details
                 </Button>
               </Table.Cell>
             </Table.Row>
@@ -452,7 +470,7 @@ export default function MaterialsQualificationDashboard() {
                 {selectedMaterial.name} Details
                 {selectedMaterial.blockchainRegistered && (
                   <Badge color="violet">
-                    <Text as="span"><Database size={12} /></Text> Blockchain Verified
+                    <IconWrapper size={12}><Database /></IconWrapper> Blockchain Verified
                   </Badge>
                 )}
               </Flex>
@@ -545,7 +563,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
           <Table.Cell>
             {test.iotDevice ? (
               <Badge color="blue">
-                <Text as="span"><Cpu size={12} /></Text> {test.iotDevice}
+                <IconWrapper size={12}><Cpu /></IconWrapper> {test.iotDevice}
               </Badge>
             ) : (
               <Text color="gray">N/A</Text>
