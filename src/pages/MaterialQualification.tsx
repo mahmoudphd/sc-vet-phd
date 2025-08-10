@@ -418,12 +418,12 @@ export default function MaterialsQualificationDashboard() {
                 <Flex align="center" gap="2">
                   <Tooltip content={material.iotConnected ? 'IoT Connected' : 'IoT Disconnected'}>
                     <Badge color={material.iotConnected ? 'green' : 'red'}>
-                      <Cpu size={12} />
+                      <Text as="span"><Cpu size={12} /></Text>
                     </Badge>
                   </Tooltip>
                   <Tooltip content={material.blockchainRegistered ? 'Blockchain Verified' : 'Not on Blockchain'}>
                     <Badge color={material.blockchainRegistered ? 'violet' : 'gray'}>
-                      <Database size={12} />
+                      <Text as="span"><Database size={12} /></Text>
                     </Badge>
                   </Tooltip>
                 </Flex>
@@ -546,7 +546,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
           <Table.Cell>
             {test.iotDevice ? (
               <Badge color="blue">
-                <Cpu size={12} /> {test.iotDevice}
+                <Text as="span"><Cpu size={12} /></Text> {test.iotDevice}
               </Badge>
             ) : (
               <Text color="gray">N/A</Text>
