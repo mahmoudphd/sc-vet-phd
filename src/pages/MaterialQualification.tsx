@@ -10,7 +10,8 @@ import {
   Tooltip,
   Progress,
   Grid,
-  Select
+  Select,
+  Separator
 } from '@radix-ui/themes';
 import { useState } from 'react';
 import {
@@ -21,8 +22,10 @@ import {
   FileText,
   ShieldCheck,
   HardHat,
-  ShieldAlert,
-  HelpCircle
+  HelpCircle,
+  BarChart2,
+  Gauge,
+  CalendarCheck
 } from 'lucide-react';
 
 // 1. Type Definitions
@@ -370,10 +373,68 @@ const MaterialDetailDialog = ({
   );
 };
 
-// 13. Main Dashboard Component
-export default function MaterialQualificationDashboard() {
+// 13. Stats Cards Component
+const StatsCards = () => {
+  const approvedCount = materialsData.filter(m => m.status === 'Approved').length;
+  const pendingCount = materialsData.filter(m => m.status === 'Pending').length;
+  const compliantCount = materialsData.filter(m => calculateCompliance(m) >= 90).length;
+  const overallCompliance = materialsData.length > 0 
+    ? materialsData.reduce((sum, material) => sum + calculateCompliance(material), 0) / materialsData.length
+    : 0;
+  const expiringSoonCount = materialsData.filter(m => {
+    const expiryDate = new Date(m.expiry);
+    const today = new Date();
+    const diffTime = expiryDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays <= 30 && diffDays >= 0;
+  }).length;
+
+  return (
+    <Grid columns="3" gap="4" mb="5">
+      <Card>
+        <Flex gap="3" align="center">
+          <Box p="2" style={{ background: '#ECFDF5', borderRadius: '8px' }}>
+            <Check color="#10B981" size={20} />
+          </Box>
+          <Box>
+            <Text color="gray" size="2">Approved Materials</Text>
+            <Text size="4" weight="bold">{approvedCount}</Text>
+          </Box>
+        </Flex>
+      </Card>
+
+      <Card>
+        <Flex gap="3" align="center">
+          <Box p="2" style={{ background: '#FEF3C7', borderRadius: '8px' }}>
+            <Clock color="#F59E0B" size={20} />
+          </Box>
+          <Box>
+            <Text color="gray" size="2">Pending Approval</Text>
+            <Text size="4" weight="bold">{pendingCount}</Text>
+          </Box>
+        </Flex>
+      </Card>
+
+      <Card>
+        <Flex gap="3" align="center">
+          <Box p="2" style={{ background: '#EFF6FF', borderRadius: '8px' }}>
+            <ShieldCheck color="#3B82F6" size={20} />
+          </Box>
+          <Box>
+            <Text color="gray" size="2">ALCOA+ Compliant</Text>
+            <Text size="4" weight="bold">{compliantCount}</Text>
+          </Box>
+        </Flex>
+      </Card>
+    </Grid>
+  );
+};
+
+// 14. Main Dashboard Component
+export default function MaterialsQualificationDashboard() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [filter, setFilter] = useState<'all' | 'compliant' | 'nonCompliant'>('all');
+  const [showBlockchainDialog, setShowBlockchainDialog] = useState(false);
 
   // Filter materials based on compliance
   const filteredMaterials = materialsData.filter(material => {
@@ -383,9 +444,6 @@ export default function MaterialQualificationDashboard() {
   });
 
   // Calculate dashboard metrics
-  const approvedCount = materialsData.filter(m => m.status === 'Approved').length;
-  const pendingCount = materialsData.filter(m => m.status === 'Pending').length;
-  const compliantCount = materialsData.filter(m => calculateCompliance(m) >= 90).length;
   const overallCompliance = materialsData.length > 0 
     ? materialsData.reduce((sum, material) => sum + calculateCompliance(material), 0) / materialsData.length
     : 0;
@@ -394,7 +452,7 @@ export default function MaterialQualificationDashboard() {
     <Box p="4" style={{ backgroundColor: '#F8FAFC', minHeight: '100vh' }}>
       {/* Dashboard Header */}
       <Flex justify="between" align="center" mb="5">
-        <Text size="6" weight="bold">Pharmaceutical Materials Dashboard</Text>
+        <Text size="6" weight="bold">Materials Qualification Dashboard</Text>
         <Select.Root value={filter} onValueChange={(v) => setFilter(v as any)}>
           <Select.Trigger />
           <Select.Content>
@@ -406,43 +464,7 @@ export default function MaterialQualificationDashboard() {
       </Flex>
 
       {/* Stats Cards */}
-      <Grid columns="3" gap="4" mb="5">
-        <Card>
-          <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#ECFDF5', borderRadius: '8px' }}>
-              <Check color="#10B981" size={20} />
-            </Box>
-            <Box>
-              <Text color="gray" size="2">Approved Materials</Text>
-              <Text size="4" weight="bold">{approvedCount}</Text>
-            </Box>
-          </Flex>
-        </Card>
-
-        <Card>
-          <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#FEF3C7', borderRadius: '8px' }}>
-              <Clock color="#F59E0B" size={20} />
-            </Box>
-            <Box>
-              <Text color="gray" size="2">Pending Approval</Text>
-              <Text size="4" weight="bold">{pendingCount}</Text>
-            </Box>
-          </Flex>
-        </Card>
-
-        <Card>
-          <Flex gap="3" align="center">
-            <Box p="2" style={{ background: '#EFF6FF', borderRadius: '8px' }}>
-              <ShieldCheck color="#3B82F6" size={20} />
-            </Box>
-            <Box>
-              <Text color="gray" size="2">ALCOA+ Compliant</Text>
-              <Text size="4" weight="bold">{compliantCount}</Text>
-            </Box>
-          </Flex>
-        </Card>
-      </Grid>
+      <StatsCards />
 
       {/* Materials Table */}
       <Table.Root variant="surface" style={{ borderRadius: '8px' }}>
@@ -510,6 +532,51 @@ export default function MaterialQualificationDashboard() {
         </Table.Body>
       </Table.Root>
 
+      {/* Blockchain Submission Section */}
+      <Flex justify="end" mt="4">
+        <Dialog.Root open={showBlockchainDialog} onOpenChange={setShowBlockchainDialog}>
+          <Dialog.Trigger>
+            <Button variant="solid" color="violet">
+              <HardHat size={16} />
+              <Text>Submit to Blockchain</Text>
+            </Button>
+          </Dialog.Trigger>
+          <Dialog.Content maxWidth="450px" style={{ borderRadius: '12px' }}>
+            <Dialog.Title>Blockchain Submission</Dialog.Title>
+            <Dialog.Description mb="4">
+              Confirm submission of quality data to immutable ledger
+            </Dialog.Description>
+            
+            <Box p="4" mb="4" style={{ 
+              backgroundColor: '#F5F3FF', 
+              borderRadius: '8px',
+              border: `1px solid #6D28D920`
+            }}>
+              <Flex direction="column" gap="2">
+                <Text weight="bold">Materials to be submitted:</Text>
+                <ul style={{ paddingLeft: '20px' }}>
+                  {materialsData.map(material => (
+                    <li key={material.id}>
+                      <Text>{material.material} (Batch: {material.batch})</Text>
+                    </li>
+                  ))}
+                </ul>
+              </Flex>
+            </Box>
+
+            <Flex justify="end" gap="2">
+              <Dialog.Close>
+                <Button variant="soft">Cancel</Button>
+              </Dialog.Close>
+              <Button color="violet">
+                <HardHat size={16} />
+                Confirm Submission
+              </Button>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      </Flex>
+
       {/* Overall Compliance Footer */}
       <Card mt="4">
         <Flex justify="between" align="center">
@@ -533,7 +600,7 @@ export default function MaterialQualificationDashboard() {
         </Flex>
       </Card>
 
-      {/* Material Detail Dialog - Now properly controlled */}
+      {/* Material Detail Dialog */}
       {selectedMaterial && (
         <MaterialDetailDialog 
           material={selectedMaterial} 
