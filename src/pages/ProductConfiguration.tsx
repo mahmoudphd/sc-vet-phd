@@ -31,6 +31,46 @@ import {
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
+// تعريف الواجهات
+interface Component {
+  component: string;
+  weight: number;
+  percentage: number;
+  pricePerKg: number;
+}
+
+interface ProductionDesign {
+  packagingType: string;
+  dimensions: string;
+  closure: string;
+  color: string;
+  viscosity: string;
+  pH: string;
+  fillingTemp: string;
+  features: string[];
+  notes?: string;
+}
+
+interface BlockchainStatus {
+  txHash: string | null;
+  status: 'not-submitted' | 'pending' | 'confirmed' | 'failed';
+  timestamp: string | null;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  components: number;
+  status: string;
+  version: string;
+  compliance: string;
+  description: string;
+  removalMethod: string;
+  formula: Component[];
+  productionDesign: ProductionDesign;
+  blockchain: BlockchainStatus;
+}
+
 const complianceOptions = [
   "Egyptian Drug Authority (EDA)",
   "GMP",
@@ -62,7 +102,7 @@ const allComponents = [
 ];
 
 const ProductConfiguration = () => {
-  const [products, setProducts] = useState([
+  const [products, setProducts] = useState<Product[]>([
     {
       id: 'DRG-045',
       name: 'Poultry Product A',
@@ -108,14 +148,14 @@ const ProductConfiguration = () => {
         ]
       },
       blockchain: {
-        txHash: '',
+        txHash: null,
         status: 'not-submitted',
         timestamp: null
       }
     }
   ]);
 
-  const [newProduct, setNewProduct] = useState({
+  const [newProduct, setNewProduct] = useState<Product>({
     id: '',
     name: '',
     components: 0,
@@ -142,7 +182,7 @@ const ProductConfiguration = () => {
       notes: ''
     },
     blockchain: {
-      txHash: '',
+      txHash: null,
       status: 'not-submitted',
       timestamp: null
     }
@@ -150,7 +190,7 @@ const ProductConfiguration = () => {
 
   const [newConfigModalOpen, setNewConfigModalOpen] = useState(false);
   const [viewSpecModalOpen, setViewSpecModalOpen] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('details');
   const [totalPercentage, setTotalPercentage] = useState(0);
@@ -203,7 +243,7 @@ const ProductConfiguration = () => {
     }
   };
 
-  const BlockchainStatus = ({ status }: { status: string }) => {
+  const BlockchainStatusBadge = ({ status }: { status: BlockchainStatus['status'] }) => {
     switch (status) {
       case 'confirmed':
         return (
@@ -265,7 +305,7 @@ const ProductConfiguration = () => {
         notes: ''
       },
       blockchain: {
-        txHash: '',
+        txHash: null,
         status: 'not-submitted',
         timestamp: null
       }
@@ -289,7 +329,7 @@ const ProductConfiguration = () => {
     });
   };
 
-  const updateFormulaRow = (index: number, field: string, value: any) => {
+  const updateFormulaRow = (index: number, field: keyof Component, value: any) => {
     const newFormula = [...newProduct.formula];
     newFormula[index] = { ...newFormula[index], [field]: value };
     
@@ -311,7 +351,7 @@ const ProductConfiguration = () => {
     product.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const ProductionDesignTable = ({ design }: { design: any }) => (
+  const ProductionDesignTable = ({ design }: { design: ProductionDesign }) => (
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
@@ -355,8 +395,8 @@ const ProductConfiguration = () => {
     </Table.Root>
   );
 
-  const ComponentDistributionChart = ({ formula }: { formula: any }) => {
-    const data = formula.map((item: any) => ({
+  const ComponentDistributionChart = ({ formula }: { formula: Component[] }) => {
+    const data = formula.map((item) => ({
       name: item.component,
       value: item.percentage,
       pricePerKg: item.pricePerKg
@@ -382,7 +422,7 @@ const ProductConfiguration = () => {
             nameKey="name"
             label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
           >
-            {data.map((entry: any, index: number) => (
+            {data.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
@@ -559,7 +599,7 @@ const ProductConfiguration = () => {
               <TextArea
                 placeholder="Additional packaging notes (optional)"
                 mt="3"
-                value={newProduct.productionDesign.notes}
+                value={newProduct.productionDesign.notes || ''}
                 onChange={(e) => setNewProduct({
                   ...newProduct,
                   productionDesign: {
@@ -639,7 +679,7 @@ const ProductConfiguration = () => {
                 <Flex direction="column" gap="1" mt="3">
                   <Text color="gray">Blockchain Status</Text>
                   <Flex align="center" gap="3">
-                    <BlockchainStatus status={selectedProduct.blockchain.status} />
+                    <BlockchainStatusBadge status={selectedProduct.blockchain.status} />
                     {selectedProduct.blockchain.txHash && (
                       <Text size="1" color="blue" className="truncate max-w-xs">
                         TX: {selectedProduct.blockchain.txHash}
@@ -672,7 +712,7 @@ const ProductConfiguration = () => {
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
-                    {selectedProduct.formula.map((comp: any, i: number) => (
+                    {selectedProduct.formula.map((comp, i) => (
                       <Table.Row key={i}>
                         <Table.Cell>{comp.component}</Table.Cell>
                         <Table.Cell>{comp.weight.toFixed(3)}</Table.Cell>
@@ -687,7 +727,7 @@ const ProductConfiguration = () => {
                 <Flex justify="end" mt="3">
                   <Text size="4" weight="bold">
                     Total Cost: {selectedProduct.formula.reduce(
-                      (sum: number, item: any) => sum + (item.weight * item.pricePerKg), 0
+                      (sum, item) => sum + (item.weight * item.pricePerKg), 0
                     ).toFixed(2)} EGP per 1 kg
                   </Text>
                 </Flex>
@@ -774,7 +814,7 @@ const ProductConfiguration = () => {
                   </Badge>
                 </Table.Cell>
                 <Table.Cell>
-                  <BlockchainStatus status={product.blockchain.status} />
+                  <BlockchainStatusBadge status={product.blockchain.status} />
                 </Table.Cell>
                 <Table.Cell>
                   <Button 
