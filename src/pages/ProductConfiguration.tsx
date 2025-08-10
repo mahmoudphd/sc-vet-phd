@@ -29,7 +29,6 @@ import {
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
 
 const complianceOptions = [
-  "GMP",
   "ICH Q11",
   "Egyptian Drug Authority",
   "FDA Guidance",
@@ -62,12 +61,12 @@ const ProductConfiguration = () => {
   const [products, setProducts] = useState([
     {
       id: 'DRG-045',
-      name: 'Poultry Product A',
+      name: 'Poultry Drug A',
       components: 18,
       status: 'Approved',
       version: 'v2.1',
-      compliance: 'GMP',
-      description: 'Balanced vitamins and amino acids for healthier, faster-growing poultry.',
+      compliance: 'Egyptian Drug Authority',
+      description: 'Complete vitamin complex for poultry nutrition',
       removalMethod: 'FIFO',
       formula: [
         { component: 'Vitamin B1', weight: 0.001, percentage: 0.1, pricePerKg: 540 },
@@ -75,13 +74,13 @@ const ProductConfiguration = () => {
         { component: 'Vitamin B12', weight: 0.001, percentage: 0.1, pricePerKg: 2300 },
         { component: 'Nicotinamide B3', weight: 0.010, percentage: 1.0, pricePerKg: 400 },
         { component: 'Pantothenic Acid', weight: 0.004, percentage: 0.4, pricePerKg: 1700 },
-        { component: 'Vitamin B6', weight: 0.0015, percentage: 0.15, pricePerKg: 900 },
+        { component: 'Vitamin B6', weight: 0.002, percentage: 0.2, pricePerKg: 900 },
         { component: 'Leucine', weight: 0.030, percentage: 3.0, pricePerKg: 200 },
         { component: 'Threonine', weight: 0.010, percentage: 1.0, pricePerKg: 950 },
-        { component: 'Taurine', weight: 0.0025, percentage: 0.25, pricePerKg: 3000 },
-        { component: 'Glycine', weight: 0.0025, percentage: 0.25, pricePerKg: 4200 },
-        { component: 'Arginine', weight: 0.0025, percentage: 0.25, pricePerKg: 5000 },
-        { component: 'Cynarin', weight: 0.0025, percentage: 0.25, pricePerKg: 3900 },
+        { component: 'Taurine', weight: 0.003, percentage: 0.3, pricePerKg: 3000 },
+        { component: 'Glycine', weight: 0.003, percentage: 0.3, pricePerKg: 4200 },
+        { component: 'Arginine', weight: 0.003, percentage: 0.3, pricePerKg: 5000 },
+        { component: 'Cynarin', weight: 0.003, percentage: 0.3, pricePerKg: 3900 },
         { component: 'Silymarin', weight: 0.025, percentage: 2.5, pricePerKg: 700 },
         { component: 'Sorbitol', weight: 0.010, percentage: 1.0, pricePerKg: 360 },
         { component: 'Carnitine', weight: 0.005, percentage: 0.5, pricePerKg: 1070 },
@@ -93,7 +92,7 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'White with decorative window designs',
+        color: 'Amber',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
@@ -112,7 +111,7 @@ const ProductConfiguration = () => {
     components: 0,
     status: 'Draft',
     version: 'v1.0',
-    compliance: 'GMP',
+    compliance: 'Egyptian Drug Authority',
     description: '',
     removalMethod: 'FIFO',
     formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -120,7 +119,7 @@ const ProductConfiguration = () => {
       packagingType: '1kg HDPE Plastic Bottle',
       dimensions: 'Ø80mm × 180mm',
       closure: '38mm Screw Cap with Foil Seal',
-      color: 'White with decorative window designs',
+      color: 'Amber',
       viscosity: 'Medium (500-1000 cPs)',
       pH: '6.5-7.5',
       fillingTemp: '25°C ± 2°C',
@@ -158,7 +157,7 @@ const ProductConfiguration = () => {
       components: 0,
       status: 'Draft',
       version: 'v1.0',
-      compliance: 'GMP',
+      compliance: 'Egyptian Drug Authority',
       description: '',
       removalMethod: 'FIFO',
       formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
@@ -166,7 +165,7 @@ const ProductConfiguration = () => {
         packagingType: '1kg HDPE Plastic Bottle',
         dimensions: 'Ø80mm × 180mm',
         closure: '38mm Screw Cap with Foil Seal',
-        color: 'White with decorative window designs',
+        color: 'Amber',
         viscosity: 'Medium (500-1000 cPs)',
         pH: '6.5-7.5',
         fillingTemp: '25°C ± 2°C',
@@ -578,15 +577,15 @@ const ProductConfiguration = () => {
                 <ProductionDesignTable design={selectedProduct.productionDesign} />
                 <Card mt="3">
                   <Flex align="center" gap="3" p="3">
-                    <div className="w-20 h-32 bg-white rounded-t-full border-2 border-gray-300 relative">
-                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-gray-50 rounded-t-full border border-gray-200">
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '25%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '50%' }}></div>
-                        <div className="absolute left-0 w-full border-t border-gray-300" style={{ top: '75%' }}></div>
+                    <div className="w-20 h-32 bg-amber-100 rounded-t-full border-2 border-amber-300 relative">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-amber-50 rounded-t-full border border-amber-200">
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '25%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '50%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-amber-300" style={{ top: '75%' }}></div>
                       </div>
                       <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-gray-300 rounded-t-md border-2 border-gray-400"></div>
                     </div>
-                    <Text size="2" color="gray">1kg White Veterinary Bottle</Text>
+                    <Text size="2" color="gray">1kg Veterinary Bottle</Text>
                   </Flex>
                 </Card>
               </Tabs.Content>
