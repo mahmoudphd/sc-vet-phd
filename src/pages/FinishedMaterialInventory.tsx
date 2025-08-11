@@ -277,11 +277,11 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'A',
-          expiryDate: '2026-12-31'
+          expiryDate: '2025-03-15'
         },
         {
           id: generateId('MAT'),
-          name: 'Vitamin B12',
+          name: 'Vitamin B2',
           currentStock: 90,
           reserved: 30,
           minStockLevel: 60,
@@ -296,7 +296,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 2',
           category: 'B',
-          expiryDate: '2025-10-30'
+          expiryDate: '2025-08-20'
         },
         {
           id: generateId('MAT'),
@@ -315,7 +315,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'C',
-          expiryDate: '2026-02-11'
+          expiryDate: '2025-12-31'
         }
       ]
     }));
@@ -763,10 +763,10 @@ const RawMaterialsInventory = () => {
         <Button onClick={handlers.generateAutoOrders}>
           Generate Auto Orders
         </Button>
-        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, order: true } }))>
+        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, order: true } }))}>
           Create Manual Order
         </Button>
-        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, material: true } }))>
+        <Button onClick={() => setState(prev => ({ ...prev, dialogs: { ...prev.dialogs, material: true } }))}>
           Add New Material
         </Button>
         <Flex align="center" gap="2">
@@ -950,7 +950,7 @@ const RawMaterialsInventory = () => {
                   </Table.Cell>
                   <Table.Cell style={{ padding: '12px 16px' }}>
                     <Flex gap="2">
-                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))>
+                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))}>
                         Configure
                       </Button>
                       <Button 
@@ -1889,4 +1889,4 @@ const RawMaterialsInventory = () => {
   );
 };
 
-export default RawMaterialsInventory;
+export default RawMaterialsInventory;         
