@@ -261,28 +261,17 @@ const PharmacyPartners = () => {
               <Table.Cell>
                 <Select.Root
                   value={pharmacy.stock}
-                  onValueChange={(val: StockOption) => handleStockChange(pharmacy.id, val)}
+                  onValueChange={(val) => handleStockChange(pharmacy.id, val as StockOption)}
                 >
-                  <Select.Trigger variant="soft" color="gray">
-                    <Select.Value />
-                    <Select.Icon>
-                      <ChevronDownIcon />
-                    </Select.Icon>
-                  </Select.Trigger>
-
+                  <Select.Trigger />
                   <Select.Content>
-                    <Select.ScrollUpButton />
-                    <Select.Viewport>
+                    <Select.Group>
                       {stockOptions.map((option) => (
                         <Select.Item key={option} value={option}>
-                          <Select.ItemText>{option}</Select.ItemText>
-                          <Select.ItemIndicator>
-                            <CheckIcon />
-                          </Select.ItemIndicator>
+                          {option}
                         </Select.Item>
                       ))}
-                    </Select.Viewport>
-                    <Select.ScrollDownButton />
+                    </Select.Group>
                   </Select.Content>
                 </Select.Root>
               </Table.Cell>
