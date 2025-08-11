@@ -337,57 +337,24 @@ const ALCOABadge = ({ isCompliant }: { isCompliant: boolean }) => (
   )
 );
 
-const ExpiryStatusCell = ({ expiryDate }: { expiryDate: string }) => {
+const ExpiryWithIndicator = ({ expiryDate }: { expiryDate: string }) => {
   const expiry = new Date(expiryDate);
   const today = new Date();
-  const diffTime = expiry.getTime() - today.getTime();
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  let status: 'safe' | 'warning' | 'danger' | 'expired';
-  let label: string;
-  let icon: React.ReactNode;
-
-  if (diffDays < 0) {
-    status = 'expired';
-    label = 'Expired';
-    icon = <AlertTriangle size={16} />;
-  } else if (diffDays <= 30) {
-    status = 'danger';
-    label = `Soon (${diffDays}d)`;
-    icon = <AlertTriangle size={16} />;
-  } else if (diffDays <= 90) {
-    status = 'warning';
-    label = `OK (${diffDays}d)`;
-    icon = <Clock size={16} />;
-  } else {
-    status = 'safe';
-    label = 'Good';
-    icon = <Check size={16} />;
-  }
-
-  const colors = {
-    safe: { bg: '#ECFDF5', text: '#10B981', icon: '#10B981' },
-    warning: { bg: '#FFFBEB', text: '#F59E0B', icon: '#F59E0B' },
-    danger: { bg: '#FEF2F2', text: '#EF4444', icon: '#EF4444' },
-    expired: { bg: '#FEF2F2', text: '#DC2626', icon: '#DC2626' }
-  };
+  const isExpired = expiry < today;
 
   return (
-    <Flex
-      align="center"
-      gap="2"
-      style={{
-        backgroundColor: colors[status].bg,
-        color: colors[status].text,
-        padding: '4px 8px',
-        borderRadius: '4px',
-        fontWeight: 500
-      }}
-    >
-      <Box style={{ color: colors[status].icon }}>
-        {icon}
-      </Box>
-      <Text>{label}</Text>
+    <Flex align="center" gap="2">
+      <Text>{new Date(expiryDate).toLocaleDateString()}</Text>
+      <Tooltip content={isExpired ? "Expired" : "Valid"}>
+        <Box
+          style={{
+            width: '12px',
+            height: '12px',
+            borderRadius: '50%',
+            backgroundColor: isExpired ? '#EF4444' : '#10B981'
+          }}
+        />
+      </Tooltip>
     </Flex>
   );
 };
@@ -608,13 +575,12 @@ export default function MaterialQualificationDashboard() {
         <Table.Header style={{ backgroundColor: theme.colors.primary }}>
           <Table.Row>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Material</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Batch</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Supplier</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>EDA Status</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Test Results</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>ALCOA+</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry Status</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -633,15 +599,11 @@ export default function MaterialQualificationDashboard() {
               </Table.Cell>
 
               <Table.Cell>
-                <Badge variant="outline">{material.batchNumber}</Badge>
-              </Table.Cell>
-
-              <Table.Cell>
                 <SupplierStatus supplier={material.supplier} />
               </Table.Cell>
 
               <Table.Cell>
-                <StatusBadge status={material.status} />
+                <StatusBadge status={material.regulatory.status} />
               </Table.Cell>
 
               <Table.Cell>
@@ -679,11 +641,13 @@ export default function MaterialQualificationDashboard() {
               </Table.Cell>
 
               <Table.Cell>
-                <ALCOABadge isCompliant={checkALCOACompliance(material)} />
+                <ExpiryWithIndicator expiryDate={material.expiryDate} />
               </Table.Cell>
 
               <Table.Cell>
-                <ExpiryStatusCell expiryDate={material.expiryDate} />
+                <Flex justify="center">
+                  <ALCOABadge isCompliant={checkALCOACompliance(material)} />
+                </Flex>
               </Table.Cell>
             </Table.Row>
           ))}
@@ -706,7 +670,6 @@ export default function MaterialQualificationDashboard() {
             </Dialog.Title>
             
             <Grid columns="2" gap="4" mt="4">
-              {/* Basic Information Column */}
               <Box>
                 <Heading size="4" mb="2">Basic Information</Heading>
                 <Card>
@@ -716,8 +679,8 @@ export default function MaterialQualificationDashboard() {
                       <SupplierStatus supplier={selectedMaterial.supplier} />
                     } />
                     <DetailItem 
-                      label="Expiry Date" 
-                      value={new Date(selectedMaterial.expiryDate).toLocaleDateString()} 
+                      label="Batch Number" 
+                      value={selectedMaterial.batchNumber} 
                     />
                     <DetailItem 
                       label="Last Reviewed" 
@@ -727,7 +690,6 @@ export default function MaterialQualificationDashboard() {
                 </Card>
               </Box>
 
-              {/* Regulatory Information Column */}
               <Box>
                 <Heading size="4" mb="2">Regulatory Information</Heading>
                 <Card>
