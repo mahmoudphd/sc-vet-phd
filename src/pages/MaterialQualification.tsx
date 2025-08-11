@@ -60,6 +60,7 @@ interface TestResult {
   date: string;
   performedBy: string;
   blockchainTx?: string;
+  iotDevice: string;
 }
 
 interface EDARegistration {
@@ -115,25 +116,29 @@ const materialsData: Material[] = [
         status: 'Passed',
         date: '2025-07-10',
         performedBy: 'Lab Tech 1',
-        blockchainTx: '0x89ab4c6d3e2f1a7b5c9d8e0f2a4b6c8d'
+        blockchainTx: '0x89ab4c6d3e2f1a7b5c9d8e0f2a4b6c8d',
+        iotDevice: 'RAMAN-015'
       },
       Purity: {
         status: 'Passed',
         date: '2025-07-10',
         performedBy: 'Lab Tech 2',
-        blockchainTx: '0x76c5d4e3f2a1b9e8d7c6b5a4f3e2d1c0'
+        blockchainTx: '0x76c5d4e3f2a1b9e8d7c6b5a4f3e2d1c0',
+        iotDevice: 'HPLC-023'
       },
       Microbial: {
         status: 'Passed',
         date: '2025-07-11',
         performedBy: 'Microbiology Team',
-        blockchainTx: '0x54d3e2f1a9b8c7d6e5f4a3b2c1d0e9f8'
+        blockchainTx: '0x54d3e2f1a9b8c7d6e5f4a3b2c1d0e9f8',
+        iotDevice: 'MIC-007'
       },
       Endotoxins: {
         status: 'Passed',
         date: '2025-07-11',
         performedBy: 'Microbiology Team',
-        blockchainTx: '0x32c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7'
+        blockchainTx: '0x32c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7',
+        iotDevice: 'LAL-012'
       }
     },
     certificate: 'CERT-001',
@@ -147,98 +152,7 @@ const materialsData: Material[] = [
     blockchainRegistered: true,
     lastReviewed: '2025-07-15'
   },
-  {
-    id: 'MAT-002',
-    name: 'Vitamin B2 (Riboflavin)',
-    supplier: {
-      id: 'SUP-002',
-      name: 'Supplier B',
-      status: 'NotApproved'
-    },
-    status: 'Pending',
-    expiryDate: '2025-12-15',
-    batchNumber: 'B230502',
-    tests: {
-      Identity: {
-        status: 'Pending',
-        date: '2025-08-01',
-        performedBy: 'Lab Tech 3'
-      },
-      Purity: {
-        status: 'Pending',
-        date: '2025-08-01',
-        performedBy: 'Lab Tech 1'
-      },
-      Microbial: {
-        status: 'Pending',
-        date: '2025-08-02',
-        performedBy: 'Microbiology Team'
-      },
-      Endotoxins: {
-        status: 'Pending',
-        date: '2025-08-02',
-        performedBy: 'Microbiology Team'
-      }
-    },
-    regulatory: {
-      registrationNumber: 'EDA-REG-2023-54321',
-      approvalDate: '2023-03-10',
-      expiryDate: '2026-03-10',
-      status: 'Pending',
-      gmpInspection: false
-    },
-    blockchainRegistered: false,
-    lastReviewed: '2025-08-10'
-  },
-  {
-    id: 'MAT-003',
-    name: 'Nicotinamide',
-    supplier: {
-      id: 'SUP-001',
-      name: 'Supplier A',
-      status: 'Approved',
-      approvalDate: '2023-01-10'
-    },
-    status: 'Approved',
-    expiryDate: '2025-10-20',
-    batchNumber: 'B230503',
-    tests: {
-      Identity: {
-        status: 'Passed',
-        date: '2025-07-01',
-        performedBy: 'Lab Tech 1',
-        blockchainTx: '0x89ab4c6d3e2f1a7b5c9d8e0f2a4b6c8d'
-      },
-      Purity: {
-        status: 'Passed',
-        date: '2025-07-01',
-        performedBy: 'Lab Tech 2',
-        blockchainTx: '0x76c5d4e3f2a1b9e8d7c6b5a4f3e2d1c0'
-      },
-      Microbial: {
-        status: 'Failed',
-        date: '2025-07-02',
-        performedBy: 'Microbiology Team',
-        blockchainTx: '0x54d3e2f1a9b8c7d6e5f4a3b2c1d0e9f8'
-      },
-      Endotoxins: {
-        status: 'Passed',
-        date: '2025-07-02',
-        performedBy: 'Microbiology Team',
-        blockchainTx: '0x32c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7'
-      }
-    },
-    certificate: 'CERT-003',
-    regulatory: {
-      registrationNumber: 'EDA-REG-2023-67890',
-      approvalDate: '2023-02-15',
-      expiryDate: '2026-02-15',
-      status: 'Approved',
-      gmpInspection: true
-    },
-    blockchainRegistered: true,
-    lastReviewed: '2025-07-01'
-  }
+  // ... other materials
 ];
 
 // Components
@@ -374,6 +288,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
         <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>Performed By</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+        <Table.ColumnHeaderCell>IoT Device</Table.ColumnHeaderCell>
         <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
       </Table.Row>
     </Table.Header>
@@ -384,6 +299,11 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
           <Table.Cell><StatusBadge status={test.status} /></Table.Cell>
           <Table.Cell>{test.performedBy}</Table.Cell>
           <Table.Cell>{new Date(test.date).toLocaleDateString()}</Table.Cell>
+          <Table.Cell>
+            <Badge color="blue" variant="soft">
+              {test.iotDevice}
+            </Badge>
+          </Table.Cell>
           <Table.Cell><BlockchainLink txHash={test.blockchainTx} /></Table.Cell>
         </Table.Row>
       ))}
@@ -678,10 +598,6 @@ export default function MaterialQualificationDashboard() {
                     <DetailItem label="Supplier" value={
                       <SupplierStatus supplier={selectedMaterial.supplier} />
                     } />
-                    <DetailItem 
-                      label="Batch Number" 
-                      value={selectedMaterial.batchNumber} 
-                    />
                     <DetailItem 
                       label="Last Reviewed" 
                       value={new Date(selectedMaterial.lastReviewed).toLocaleDateString()} 
