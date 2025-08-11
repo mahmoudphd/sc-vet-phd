@@ -10,15 +10,16 @@ import {
   Text,
   Box,
   Dialog,
+  AlertDialog,
 } from '@radix-ui/themes';
 import * as Select from '@radix-ui/react-select';
+import { ChevronDownIcon, CheckIcon } from '@radix-ui/react-icons';
 
 const stockOptions = ['optimal', 'low', 'critical'] as const;
 type StockOption = typeof stockOptions[number];
 
 interface Pharmacy {
   id: string;
-  name: string;
   location: string;
   license: 'Active' | 'Inactive';
   lastDelivery: string;
@@ -29,11 +30,13 @@ interface Pharmacy {
 const PharmacyPartners = () => {
   const [isStockMonitorOpen, setIsStockMonitorOpen] = useState(false);
   const [isRecallPortalOpen, setIsRecallPortalOpen] = useState(false);
+  const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<{success: boolean, message: string} | null>(null);
 
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([
     {
-      id: 'PHARM-045',
-      name: 'CarePlus Pharmacy',
+      id: 'Retailer-1',
       location: 'Egypt',
       license: 'Active',
       lastDelivery: '2025-07-18',
@@ -41,8 +44,7 @@ const PharmacyPartners = () => {
       recallCompliance: 100,
     },
     {
-      id: 'PHARM-046',
-      name: 'HealthyLife Retailer',
+      id: 'Retailer-2',
       location: 'Egypt',
       license: 'Inactive',
       lastDelivery: '2025-06-30',
@@ -59,6 +61,28 @@ const PharmacyPartners = () => {
     );
   };
 
+  const submitToBlockchain = async () => {
+    setIsSubmitting(true);
+    try {
+      // Here would be the actual blockchain API call
+      // This is just a simulation for demonstration
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setSubmissionResult({
+        success: true,
+        message: 'Data successfully submitted to blockchain!'
+      });
+    } catch (error) {
+      setSubmissionResult({
+        success: false,
+        message: 'Failed to submit data to blockchain'
+      });
+    } finally {
+      setIsSubmitting(false);
+      setIsBlockchainDialogOpen(false);
+    }
+  };
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
@@ -70,8 +94,66 @@ const PharmacyPartners = () => {
           <Button variant="soft" onClick={() => setIsRecallPortalOpen(true)}>
             Recall Portal
           </Button>
+          <Button 
+            variant="solid" 
+            color="blue"
+            onClick={() => setIsBlockchainDialogOpen(true)}
+          >
+            Submit to Blockchain
+          </Button>
         </Flex>
       </Flex>
+
+      {/* Blockchain Submission Dialog */}
+      <AlertDialog.Root open={isBlockchainDialogOpen}>
+        <AlertDialog.Content style={{ maxWidth: 450 }}>
+          <AlertDialog.Title>Submit to Blockchain</AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="4">
+            Are you sure you want to submit this data to the blockchain? This action cannot be undone.
+          </AlertDialog.Description>
+
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray" 
+              onClick={() => setIsBlockchainDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="solid" 
+              color="blue"
+              onClick={submitToBlockchain}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Confirm'}
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+
+      {/* Submission Result Dialog */}
+      <AlertDialog.Root open={!!submissionResult}>
+        {submissionResult && (
+          <AlertDialog.Content style={{ maxWidth: 450 }}>
+            <AlertDialog.Title>
+              {submissionResult.success ? 'Success!' : 'Error'}
+            </AlertDialog.Title>
+            <AlertDialog.Description size="2" mb="4">
+              {submissionResult.message}
+            </AlertDialog.Description>
+            <Flex gap="3" mt="4" justify="end">
+              <Button 
+                variant="solid" 
+                color="blue"
+                onClick={() => setSubmissionResult(null)}
+              >
+                OK
+              </Button>
+            </Flex>
+          </AlertDialog.Content>
+        )}
+      </AlertDialog.Root>
 
       {/* Stock Monitor Modal */}
       <Dialog.Root open={isStockMonitorOpen} onOpenChange={setIsStockMonitorOpen}>
@@ -160,7 +242,7 @@ const PharmacyPartners = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>Retailer</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Retailer ID</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>License</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Last Delivery</Table.ColumnHeaderCell>
@@ -171,7 +253,7 @@ const PharmacyPartners = () => {
         <Table.Body>
           {pharmacies.map((pharmacy) => (
             <Table.Row key={pharmacy.id}>
-              <Table.Cell>{pharmacy.name}</Table.Cell>
+              <Table.Cell>{pharmacy.id}</Table.Cell>
               <Table.Cell>{pharmacy.location}</Table.Cell>
               <Table.Cell>
                 <Badge color={pharmacy.license === 'Active' ? 'green' : 'red'}>
@@ -198,7 +280,9 @@ const PharmacyPartners = () => {
                     }}
                   >
                     <Select.Value />
-                    <Select.Icon />
+                    <Select.Icon>
+                      <ChevronDownIcon />
+                    </Select.Icon>
                   </Select.Trigger>
 
                   <Select.Content
@@ -224,6 +308,9 @@ const PharmacyPartners = () => {
                           }}
                         >
                           <Select.ItemText>{option}</Select.ItemText>
+                          <Select.ItemIndicator>
+                            <CheckIcon />
+                          </Select.ItemIndicator>
                         </Select.Item>
                       ))}
                     </Select.Viewport>
