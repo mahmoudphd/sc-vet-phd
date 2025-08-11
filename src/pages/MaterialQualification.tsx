@@ -24,7 +24,6 @@ import {
   Calendar
 } from 'lucide-react';
 
-// ========== TYPE DEFINITIONS ==========
 interface TestResult {
   status: 'Passed' | 'Pending' | 'Failed';
   date: string;
@@ -66,7 +65,6 @@ interface Material {
   lastReviewed: string;
 }
 
-// ========== SAMPLE DATA ==========
 const materialsData: Material[] = [
   {
     id: 'MAT-001',
@@ -116,53 +114,9 @@ const materialsData: Material[] = [
     },
     blockchainRegistered: true,
     lastReviewed: '2025-07-15'
-  },
-  {
-    id: 'MAT-002',
-    name: 'Vitamin B2 (Riboflavin)',
-    supplier: {
-      id: 'SUP-002',
-      name: 'Supplier B',
-      status: 'NotApproved'
-    },
-    status: 'Pending',
-    expiryDate: '2025-12-15',
-    batchNumber: 'B230502',
-    tests: {
-      Identity: {
-        status: 'Pending',
-        date: '2025-08-01',
-        performedBy: 'Lab Tech 3'
-      },
-      Purity: {
-        status: 'Pending',
-        date: '2025-08-01',
-        performedBy: 'Lab Tech 1'
-      },
-      Microbial: {
-        status: 'Pending',
-        date: '2025-08-02',
-        performedBy: 'Microbiology Team'
-      },
-      Endotoxins: {
-        status: 'Pending',
-        date: '2025-08-02',
-        performedBy: 'Microbiology Team'
-      }
-    },
-    regulatory: {
-      registrationNumber: 'EDA-REG-2023-54321',
-      approvalDate: '2023-03-10',
-      expiryDate: '2026-03-10',
-      status: 'Pending',
-      gmpInspection: false
-    },
-    blockchainRegistered: false,
-    lastReviewed: '2025-08-10'
   }
 ];
 
-// ========== COMPONENTS ==========
 const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: string; children: React.ReactNode }) => (
   <Text as="span" style={{ display: 'inline-flex', width: size, height: size, color }}>
     {children}
@@ -282,28 +236,13 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
   </Table.Root>
 );
 
-// ========== COMPLIANCE CALCULATION ==========
 const calculateComplianceDetails = (material: Material) => {
-  // 1. Test Results (40 points)
   const passedTests = Object.values(material.tests).filter(t => t.status === 'Passed').length;
   const testsScore = passedTests * 10;
-
-  // 2. Certificate (30 points)
   const certificateScore = material.certificate ? 30 : 0;
-
-  // 3. Supplier Status (20 points)
-  let supplierScore = 0;
-  if (material.supplier.status === 'Approved') {
-    supplierScore = 20;
-  } else if (material.supplier.status === 'Pending') {
-    supplierScore = 10;
-  }
-
-  // 4. Validity (10 points)
-  const isExpired = new Date(material.expiryDate) < new Date();
-  const validityScore = isExpired ? 0 : 10;
-
-  // Total score
+  const supplierScore = material.supplier.status === 'Approved' ? 20 : 
+                      material.supplier.status === 'Pending' ? 10 : 0;
+  const validityScore = new Date(material.expiryDate) > new Date() ? 10 : 0;
   const totalScore = testsScore + certificateScore + supplierScore + validityScore;
 
   return {
@@ -312,12 +251,12 @@ const calculateComplianceDetails = (material: Material) => {
       tests: { passed: passedTests, total: 4, score: testsScore, max: 40 },
       certificate: { exists: !!material.certificate, score: certificateScore, max: 30 },
       supplier: { status: material.supplier.status, score: supplierScore, max: 20 },
-      validity: { isExpired, score: validityScore, max: 10 }
+      validity: { isExpired: validityScore === 0, score: validityScore, max: 10 }
     }
   };
 };
 
-const isALCOACompliant = (material: Material): boolean => {
+const isALCOACompliant = (material: Material) => {
   return (
     Object.values(material.tests).every(t => t.status === 'Passed') &&
     !!material.certificate &&
@@ -329,58 +268,20 @@ const isALCOACompliant = (material: Material): boolean => {
 
 const ComplianceCard = ({ material }: { material: Material }) => {
   const { totalScore, details } = calculateComplianceDetails(material);
-  const isALCOA = isALCOACompliant(material);
-
   return (
     <Card>
       <Flex direction="column" gap="3">
         <Text size="4" weight="bold">Compliance Score: {totalScore}%</Text>
-        
-        <Box>
-          <Flex justify="between">
-            <Text color="gray">Test Results:</Text>
-            <Text>{details.tests.score}/{details.tests.max}</Text>
-          </Flex>
-          <Text size="1">{details.tests.passed} out of {details.tests.total} tests passed</Text>
-        </Box>
-
-        <Box>
-          <Flex justify="between">
-            <Text color="gray">Certificate:</Text>
-            <Text>{details.certificate.score}/{details.certificate.max}</Text>
-          </Flex>
-          <Text size="1">{details.certificate.exists ? 'Certificate available' : 'No certificate'}</Text>
-        </Box>
-
-        <Box>
-          <Flex justify="between">
-            <Text color="gray">Supplier Status:</Text>
-            <Text>{details.supplier.score}/{details.supplier.max}</Text>
-          </Flex>
-          <Text size="1">Status: {details.supplier.status}</Text>
-        </Box>
-
-        <Box>
-          <Flex justify="between">
-            <Text color="gray">Validity:</Text>
-            <Text>{details.validity.score}/{details.validity.max}</Text>
-          </Flex>
-          <Text size="1">
-            {details.validity.isExpired ? 'Expired' : 'Valid'} until {new Date(material.expiryDate).toLocaleDateString()}
-          </Text>
-        </Box>
-
-        {isALCOA && (
-          <Box mt="2">
-            <ALCOABadge />
-          </Box>
-        )}
+        <DetailItem label="Test Results" value={`${details.tests.score}/${details.tests.max}`} />
+        <DetailItem label="Certificate" value={`${details.certificate.score}/${details.certificate.max}`} />
+        <DetailItem label="Supplier Status" value={`${details.supplier.score}/${details.supplier.max}`} />
+        <DetailItem label="Validity" value={`${details.validity.score}/${details.validity.max}`} />
+        {isALCOACompliant(material) && <ALCOABadge />}
       </Flex>
     </Card>
   );
 };
 
-// ========== MAIN DASHBOARD COMPONENT ==========
 export default function MaterialsQualificationDashboard() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [filter, setFilter] = useState<'all' | 'approved' | 'pending'>('all');
@@ -555,19 +456,7 @@ export default function MaterialsQualificationDashboard() {
                     <DetailItem 
                       label="GMP Inspection" 
                       value={
-                        <Flex align="center" gap="2">
-                          {selectedMaterial.regulatory.gmpInspection ? (
-                            <>
-                              <IconWrapper size={14} color="green"><Check /></IconWrapper>
-                              <Text>Passed</Text>
-                            </>
-                          ) : (
-                            <>
-                              <IconWrapper size={14} color="red"><AlertTriangle /></IconWrapper>
-                              <Text>Pending</Text>
-                            </>
-                          )}
-                        </Flex>
+                        selectedMaterial.regulatory.gmpInspection ? 'Passed' : 'Pending'
                       } 
                     />
                   </Flex>
