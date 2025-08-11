@@ -328,11 +328,9 @@ export default function MaterialsQualificationDashboard() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredMaterials = materialsData.filter(material => {
-    // Apply status filter
     if (filter === 'approved' && material.status !== 'Approved') return false;
     if (filter === 'pending' && material.status === 'Approved') return false;
     
-    // Apply search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
@@ -366,19 +364,32 @@ export default function MaterialsQualificationDashboard() {
             </Select.Content>
           </Select.Root>
 
-          <TextField.Root>
-            <TextField.Slot>
-              <Search size={16} />
-            </TextField.Slot>
-            <TextField.Input 
-              placeholder="Search materials..." 
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-            />
-          </TextField.Root>
+          {/* Fixed TextField implementation */}
+          <div style={{ position: 'relative', width: '200px' }}>
+            <TextField.Root>
+              <TextField.Slot>
+                <Search size={16} />
+              </TextField.Slot>
+              <input
+                className="radix-TextFieldInput"
+                placeholder="Search materials..."
+                value={searchQuery}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '0 8px',
+                  height: '100%',
+                  outline: 'none'
+                }}
+              />
+            </TextField.Root>
+          </div>
         </Flex>
       </Flex>
 
+      {/* Rest of your component remains exactly the same */}
       <Grid columns="3" gap="4" mb="4">
         <Card>
           <Flex gap="3" align="center">
