@@ -357,7 +357,7 @@ export default function MaterialsQualificationDashboard() {
       <Flex justify="between" align="center" mb="4">
         <Text size="6" weight="bold">Materials Qualification Dashboard</Text>
         <Flex gap="3">
-          <Select.Root value={filter} onValueChange={(value) => setFilter(value as 'all' | 'approved' | 'pending')}>
+          <Select.Root value={filter} onValueChange={(value: 'all' | 'approved' | 'pending') => setFilter(value)}>
             <Select.Trigger />
             <Select.Content>
               <Select.Item value="all">All Materials ({stats.total})</Select.Item>
@@ -373,7 +373,7 @@ export default function MaterialsQualificationDashboard() {
             <TextField.Input 
               placeholder="Search materials..." 
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
           </TextField.Root>
         </Flex>
