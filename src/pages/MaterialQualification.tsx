@@ -111,7 +111,7 @@ interface Material {
 const materialsData: Material[] = [
   {
     id: 'MAT-001',
-    name: 'Vitamin B1 (Thiamine)',
+    name: 'Vitamin B1',
     supplier: {
       id: 'SUP-001',
       name: 'Supplier A',
