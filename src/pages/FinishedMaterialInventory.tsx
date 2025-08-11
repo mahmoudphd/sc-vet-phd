@@ -277,7 +277,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'A',
-          expiryDate: '2026-12-31' // Updated expiry date
+          expiryDate: '2026-12-31'
         },
         {
           id: generateId('MAT'),
@@ -296,7 +296,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 2',
           category: 'B',
-          expiryDate: '2025-10-30' // Updated expiry date
+          expiryDate: '2025-10-30'
         },
         {
           id: generateId('MAT'),
@@ -315,7 +315,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'C',
-          expiryDate: '2026-02-11' // Updated expiry date
+          expiryDate: '2026-02-11'
         }
       ]
     }));
@@ -950,7 +950,7 @@ const RawMaterialsInventory = () => {
                   </Table.Cell>
                   <Table.Cell style={{ padding: '12px 16px' }}>
                     <Flex gap="2">
-                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))}>
+                      <Button size="1" onClick={() => setState(prev => ({ ...prev, selected: { ...prev.selected, material } }))>
                         Configure
                       </Button>
                       <Button 
