@@ -54,12 +54,20 @@ const theme: Theme = {
   }
 };
 
-// Material interface
+// Type definitions
 interface TestResult {
   status: 'Passed' | 'Pending' | 'Failed';
   date: string;
   performedBy: string;
   blockchainTx?: string;
+}
+
+interface EDARegistration {
+  registrationNumber: string;
+  approvalDate: string;
+  expiryDate: string;
+  status: 'Approved' | 'Rejected' | 'Pending' | 'Expired';
+  gmpInspection: boolean;
 }
 
 interface Supplier {
@@ -83,6 +91,7 @@ interface Material {
     Endotoxins: TestResult;
   };
   certificate?: string;
+  regulatory: EDARegistration;
   blockchainRegistered: boolean;
   lastReviewed: string;
 }
@@ -99,7 +108,7 @@ const materialsData: Material[] = [
       approvalDate: '2023-01-10'
     },
     status: 'Approved',
-    expiryDate: '2025-08-10',
+    expiryDate: '2026-12-31',
     batchNumber: 'B230501',
     tests: {
       Identity: {
@@ -128,6 +137,13 @@ const materialsData: Material[] = [
       }
     },
     certificate: 'CERT-001',
+    regulatory: {
+      registrationNumber: 'EDA-REG-2023-12345',
+      approvalDate: '2023-01-15',
+      expiryDate: '2026-12-31',
+      status: 'Approved',
+      gmpInspection: true
+    },
     blockchainRegistered: true,
     lastReviewed: '2025-07-15'
   },
@@ -164,6 +180,13 @@ const materialsData: Material[] = [
         performedBy: 'Microbiology Team'
       }
     },
+    regulatory: {
+      registrationNumber: 'EDA-REG-2023-54321',
+      approvalDate: '2023-03-10',
+      expiryDate: '2026-03-10',
+      status: 'Pending',
+      gmpInspection: false
+    },
     blockchainRegistered: false,
     lastReviewed: '2025-08-10'
   },
@@ -177,7 +200,7 @@ const materialsData: Material[] = [
       approvalDate: '2023-01-10'
     },
     status: 'Approved',
-    expiryDate: '2026-01-20',
+    expiryDate: '2025-10-20',
     batchNumber: 'B230503',
     tests: {
       Identity: {
@@ -206,12 +229,19 @@ const materialsData: Material[] = [
       }
     },
     certificate: 'CERT-003',
+    regulatory: {
+      registrationNumber: 'EDA-REG-2023-67890',
+      approvalDate: '2023-02-15',
+      expiryDate: '2026-02-15',
+      status: 'Approved',
+      gmpInspection: true
+    },
     blockchainRegistered: true,
     lastReviewed: '2025-07-01'
   }
 ];
 
-// ========== COMPONENTS ==========
+// Components
 const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: string; children: React.ReactNode }) => (
   <Text as="span" style={{ display: 'inline-flex', width: size, height: size, color }}>
     {children}
@@ -307,6 +337,61 @@ const ALCOABadge = ({ isCompliant }: { isCompliant: boolean }) => (
   )
 );
 
+const ExpiryStatusCell = ({ expiryDate }: { expiryDate: string }) => {
+  const expiry = new Date(expiryDate);
+  const today = new Date();
+  const diffTime = expiry.getTime() - today.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  let status: 'safe' | 'warning' | 'danger' | 'expired';
+  let label: string;
+  let icon: React.ReactNode;
+
+  if (diffDays < 0) {
+    status = 'expired';
+    label = 'Expired';
+    icon = <AlertTriangle size={16} />;
+  } else if (diffDays <= 30) {
+    status = 'danger';
+    label = `Soon (${diffDays}d)`;
+    icon = <AlertTriangle size={16} />;
+  } else if (diffDays <= 90) {
+    status = 'warning';
+    label = `OK (${diffDays}d)`;
+    icon = <Clock size={16} />;
+  } else {
+    status = 'safe';
+    label = 'Good';
+    icon = <Check size={16} />;
+  }
+
+  const colors = {
+    safe: { bg: '#ECFDF5', text: '#10B981', icon: '#10B981' },
+    warning: { bg: '#FFFBEB', text: '#F59E0B', icon: '#F59E0B' },
+    danger: { bg: '#FEF2F2', text: '#EF4444', icon: '#EF4444' },
+    expired: { bg: '#FEF2F2', text: '#DC2626', icon: '#DC2626' }
+  };
+
+  return (
+    <Flex
+      align="center"
+      gap="2"
+      style={{
+        backgroundColor: colors[status].bg,
+        color: colors[status].text,
+        padding: '4px 8px',
+        borderRadius: '4px',
+        fontWeight: 500
+      }}
+    >
+      <Box style={{ color: colors[status].icon }}>
+        {icon}
+      </Box>
+      <Text>{label}</Text>
+    </Flex>
+  );
+};
+
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <Flex justify="between" py="2" style={{ borderBottom: '1px solid #eee' }}>
     <Text color="gray">{label}</Text>
@@ -339,7 +424,7 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
   </Table.Root>
 );
 
-// ========== UTILITY FUNCTIONS ==========
+// Utility functions
 const calculateComplianceScore = (material: Material): number => {
   const testScores = Object.values(material.tests)
     .filter(test => test.status === 'Passed')
@@ -367,7 +452,7 @@ const checkALCOACompliance = (material: Material): boolean => {
   return testsPassed && hasCertificate && validSupplier && notExpired && blockchainVerified;
 };
 
-// ========== MAIN DASHBOARD COMPONENT ==========
+// Main Dashboard Component
 export default function MaterialQualificationDashboard() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
   const [selectedCertificate, setSelectedCertificate] = useState<Material | null>(null);
@@ -529,7 +614,7 @@ export default function MaterialQualificationDashboard() {
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Test Results</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>Compliance</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell style={{ color: 'white' }}>ALCOA+</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry Status</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -598,35 +683,7 @@ export default function MaterialQualificationDashboard() {
               </Table.Cell>
 
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <Text
-                    weight={
-                      new Date(material.expiryDate) <= new Date() ? 'bold' : 
-                      new Date(material.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) ? 'bold' : 'regular'
-                    }
-                    color={
-                      new Date(material.expiryDate) <= new Date() ? 'red' : 
-                      new Date(material.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) ? 'yellow' : undefined
-                    }
-                  >
-                    {new Date(material.expiryDate).toLocaleDateString()}
-                  </Text>
-                  {new Date(material.expiryDate) <= new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) && (
-                    <Tooltip content={
-                      new Date(material.expiryDate) <= new Date() ? 
-                      "Material expired" : 
-                      `Expires in ${Math.ceil((new Date(material.expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24))} days`
-                    }>
-                      <Box>
-                        <AlertTriangle size={16} color={
-                          new Date(material.expiryDate) <= new Date() ? 
-                          theme.colors.danger : 
-                          theme.colors.warning
-                        } />
-                      </Box>
-                    </Tooltip>
-                  )}
-                </Flex>
+                <ExpiryStatusCell expiryDate={material.expiryDate} />
               </Table.Cell>
             </Table.Row>
           ))}
@@ -649,6 +706,7 @@ export default function MaterialQualificationDashboard() {
             </Dialog.Title>
             
             <Grid columns="2" gap="4" mt="4">
+              {/* Basic Information Column */}
               <Box>
                 <Heading size="4" mb="2">Basic Information</Heading>
                 <Card>
@@ -669,25 +727,26 @@ export default function MaterialQualificationDashboard() {
                 </Card>
               </Box>
 
+              {/* Regulatory Information Column */}
               <Box>
-                <Heading size="4" mb="2">Compliance Information</Heading>
+                <Heading size="4" mb="2">Regulatory Information</Heading>
                 <Card>
                   <Flex direction="column" gap="2">
                     <DetailItem 
+                      label="EDA Registration" 
+                      value={selectedMaterial.regulatory.registrationNumber} 
+                    />
+                    <DetailItem 
+                      label="GMP Certified" 
+                      value={selectedMaterial.regulatory.gmpInspection ? 'Yes' : 'No'} 
+                    />
+                    <DetailItem 
+                      label="Approval Date" 
+                      value={new Date(selectedMaterial.regulatory.approvalDate).toLocaleDateString()} 
+                    />
+                    <DetailItem 
                       label="Status" 
-                      value={<StatusBadge status={selectedMaterial.status} />} 
-                    />
-                    <DetailItem 
-                      label="Certificate" 
-                      value={selectedMaterial.certificate || 'Not Available'} 
-                    />
-                    <DetailItem 
-                      label="Blockchain" 
-                      value={
-                        selectedMaterial.blockchainRegistered ? 
-                        <StatusBadge status="Registered" /> : 
-                        <StatusBadge status="Not Registered" />
-                      } 
+                      value={<StatusBadge status={selectedMaterial.regulatory.status} />} 
                     />
                   </Flex>
                 </Card>
