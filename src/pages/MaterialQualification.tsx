@@ -11,7 +11,6 @@ import {
   Grid,
   Select,
   Separator,
-  TextField,
   Heading
 } from '@radix-ui/themes';
 import { useState, useMemo } from 'react';
@@ -601,16 +600,27 @@ export default function MaterialsQualificationDashboard() {
             </Select.Content>
           </Select.Root>
 
-          <TextField.Root>
-            <TextField.Slot>
-              <Search size={16} />
-            </TextField.Slot>
-            <TextField.Input 
-              placeholder="Search materials..." 
+          <div style={{ position: 'relative' }}>
+            <Search size={16} style={{
+              position: 'absolute',
+              left: '10px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#6b7280'
+            }} />
+            <input
+              type="text"
+              placeholder="Search materials..."
               value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              style={{
+                padding: '8px 8px 8px 32px',
+                borderRadius: '4px',
+                border: '1px solid #e5e7eb',
+                minWidth: '200px'
+              }}
             />
-          </TextField.Root>
+          </div>
         </Flex>
       </Flex>
 
