@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import {
   Table,
   Button,
@@ -15,7 +16,6 @@ import {
   TextField,
   Heading
 } from '@radix-ui/themes';
-import { useState } from 'react';
 import {
   Check,
   Clock,
@@ -30,6 +30,7 @@ import {
   Calendar,
   Search
 } from 'lucide-react';
+import styled from '@emotion/styled';
 
 // Theme configuration
 interface Theme {
@@ -40,6 +41,11 @@ interface Theme {
     danger: string;
     compliance: string;
     background: string;
+    borders: {
+      light: string;
+      medium: string;
+      strong: string;
+    };
   };
 }
 
@@ -50,7 +56,12 @@ const theme: Theme = {
     warning: '#F59E0B',
     danger: '#EF4444',
     compliance: '#6D28D9',
-    background: '#F8FAFC'
+    background: '#F8FAFC',
+    borders: {
+      light: '#E2E8F0',
+      medium: '#CBD5E1',
+      strong: '#94A3B8'
+    }
   }
 };
 
@@ -152,10 +163,130 @@ const materialsData: Material[] = [
     blockchainRegistered: true,
     lastReviewed: '2025-07-15'
   },
-  // ... other materials
+  {
+    id: 'MAT-002',
+    name: 'Vitamin B12 (Cyanocobalamin)',
+    supplier: {
+      id: 'SUP-002',
+      name: 'Supplier B',
+      status: 'Pending'
+    },
+    status: 'Pending',
+    expiryDate: '2024-06-30',
+    batchNumber: 'B230502',
+    tests: {
+      Identity: { status: 'Passed', date: '2024-01-10', performedBy: 'Lab Tech 3', iotDevice: 'RAMAN-016' },
+      Purity: { status: 'Pending', date: new Date().toISOString(), performedBy: 'Lab Tech 1', iotDevice: 'HPLC-024' },
+      Microbial: { status: 'Failed', date: '2024-01-15', performedBy: 'Micro Team', iotDevice: 'MIC-008' },
+      Endotoxins: { status: 'Passed', date: '2024-01-12', performedBy: 'Micro Team', iotDevice: 'LAL-013' }
+    },
+    regulatory: {
+      registrationNumber: 'EDA-REG-2023-54321',
+      approvalDate: '2023-03-10',
+      expiryDate: '2026-03-10',
+      status: 'Pending',
+      gmpInspection: false
+    },
+    blockchainRegistered: false,
+    lastReviewed: '2024-01-20'
+  },
+  {
+    id: 'MAT-003',
+    name: 'Nicotinamide',
+    supplier: {
+      id: 'SUP-001',
+      name: 'Supplier A',
+      status: 'Approved',
+      approvalDate: '2023-01-10'
+    },
+    status: 'Approved',
+    expiryDate: new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0],
+    batchNumber: 'B230503',
+    tests: {
+      Identity: { status: 'Passed', date: new Date().toISOString(), performedBy: 'Lab Tech 1', iotDevice: 'RAMAN-017' },
+      Purity: { status: 'Passed', date: new Date().toISOString(), performedBy: 'Lab Tech 2', iotDevice: 'HPLC-025' },
+      Microbial: { status: 'Passed', date: new Date().toISOString(), performedBy: 'Micro Team', iotDevice: 'MIC-009' },
+      Endotoxins: { status: 'Pending', date: new Date().toISOString(), performedBy: 'Micro Team', iotDevice: 'LAL-014' }
+    },
+    certificate: 'CERT-003',
+    regulatory: {
+      registrationNumber: 'EDA-REG-2023-67890',
+      approvalDate: '2023-02-15',
+      expiryDate: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+      status: 'Approved',
+      gmpInspection: true
+    },
+    blockchainRegistered: true,
+    lastReviewed: new Date().toISOString().split('T')[0]
+  }
 ];
 
-// Components
+// Styled Components
+const StyledMainTable = styled(Table.Root)({
+  borderRadius: '8px',
+  overflow: 'hidden',
+  border: `1px solid ${theme.colors.borders.medium}`,
+  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+  
+  '& .rt-TableHeader': {
+    backgroundColor: theme.colors.primary,
+    borderBottom: `2px solid ${theme.colors.borders.strong}`
+  },
+  
+  '& .rt-TableRow': {
+    borderBottom: `1px solid ${theme.colors.borders.light}`,
+    '&:last-child': {
+      borderBottom: 'none'
+    }
+  },
+  
+  '& .rt-TableCell': {
+    borderRight: `1px solid ${theme.colors.borders.light}`,
+    padding: '12px 16px',
+    '&:last-child': {
+      borderRight: 'none'
+    }
+  },
+  
+  '& .rt-ColumnHeaderCell': {
+    color: 'white !important',
+    fontWeight: '600'
+  }
+});
+
+const StyledSubTable = styled(Table.Root)({
+  marginTop: '16px',
+  border: `1px solid ${theme.colors.borders.light}`,
+  borderRadius: '6px',
+  backgroundColor: 'white',
+  
+  '& .rt-TableHeader': {
+    backgroundColor: '#F8FAFC',
+    borderBottom: `2px solid ${theme.colors.borders.light}`
+  },
+  
+  '& .rt-TableRow': {
+    borderBottom: `1px solid ${theme.colors.borders.light}`,
+    '&:last-child': {
+      borderBottom: 'none'
+    }
+  },
+  
+  '& .rt-TableCell': {
+    padding: '10px 12px',
+    borderRight: `1px solid ${theme.colors.borders.light}`,
+    '&:last-child': {
+      borderRight: 'none'
+    }
+  },
+  
+  '& .rt-ColumnHeaderCell': {
+    fontWeight: '600',
+    fontSize: '14px'
+  }
+});
+
+// Helper Components
 const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: string; children: React.ReactNode }) => (
   <Text as="span" style={{ display: 'inline-flex', width: size, height: size, color }}>
     {children}
@@ -163,23 +294,25 @@ const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: st
 );
 
 const StatusBadge = ({ status }: { status: string }) => {
-  const config = {
-    Approved: { color: 'green' as const, icon: <IconWrapper size={14}><Check /></IconWrapper> },
-    Rejected: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> },
-    Pending: { color: 'yellow' as const, icon: <IconWrapper size={14}><Clock /></IconWrapper> },
-    Expired: { color: 'orange' as const, icon: <IconWrapper size={14}><Calendar /></IconWrapper> },
-    NotApproved: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> },
-    Passed: { color: 'green' as const, icon: <IconWrapper size={14}><Check /></IconWrapper> },
-    Failed: { color: 'red' as const, icon: <IconWrapper size={14}><AlertTriangle /></IconWrapper> }
+  const statusConfig = {
+    Approved: { color: 'green', icon: <Check size={14} /> },
+    Rejected: { color: 'red', icon: <AlertTriangle size={14} /> },
+    Pending: { color: 'yellow', icon: <Clock size={14} /> },
+    Expired: { color: 'orange', icon: <Calendar size={14} /> },
+    NotApproved: { color: 'red', icon: <AlertTriangle size={14} /> },
+    Passed: { color: 'green', icon: <Check size={14} /> },
+    Failed: { color: 'red', icon: <AlertTriangle size={14} /> }
   };
 
-  const currentConfig = config[status as keyof typeof config] || 
-                      { color: 'gray' as const, icon: <IconWrapper size={14}><HelpCircle /></IconWrapper> };
+  const currentConfig = statusConfig[status as keyof typeof statusConfig] || 
+                      { color: 'gray', icon: <HelpCircle size={14} /> };
 
   return (
     <Badge color={currentConfig.color} highContrast>
       <Flex align="center" gap="1">
-        {currentConfig.icon}
+        <IconWrapper size={14} color={`var(--${currentConfig.color}-11)`}>
+          {currentConfig.icon}
+        </IconWrapper>
         {status}
       </Flex>
     </Badge>
@@ -216,20 +349,17 @@ const SupplierStatus = ({ supplier }: { supplier: Supplier }) => (
 
 const ComplianceBar = ({ score }: { score: number }) => (
   <Flex direction="column" gap="1">
-    <div style={{ 
-      width: '100%',
-      height: '8px',
-      backgroundColor: '#e9ecef',
-      borderRadius: '4px',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        width: `${score}%`,
-        height: '100%',
-        backgroundColor: score > 75 ? '#2ecc71' : score > 50 ? '#f39c12' : '#e74c3c'
-      }} />
-    </div>
-    <Text size="1" align="center">{score}%</Text>
+    <Progress
+      value={score}
+      color={
+        score > 90 ? 'green' : 
+        score > 70 ? 'yellow' : 'red'
+      }
+      style={{ height: '8px' }}
+    />
+    <Text size="1" align="center" weight="bold">
+      {score}%
+    </Text>
   </Flex>
 );
 
@@ -255,17 +385,19 @@ const ExpiryWithIndicator = ({ expiryDate }: { expiryDate: string }) => {
   const expiry = new Date(expiryDate);
   const today = new Date();
   const isExpired = expiry < today;
+  const daysUntilExpiry = Math.ceil((expiry.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   return (
     <Flex align="center" gap="2">
       <Text>{new Date(expiryDate).toLocaleDateString()}</Text>
-      <Tooltip content={isExpired ? "Expired" : "Valid"}>
+      <Tooltip content={isExpired ? "Expired" : `Valid (${daysUntilExpiry} days remaining)`}>
         <Box
           style={{
             width: '12px',
             height: '12px',
             borderRadius: '50%',
-            backgroundColor: isExpired ? '#EF4444' : '#10B981'
+            backgroundColor: isExpired ? theme.colors.danger : 
+                           daysUntilExpiry <= 30 ? theme.colors.warning : theme.colors.success
           }}
         />
       </Tooltip>
@@ -274,63 +406,28 @@ const ExpiryWithIndicator = ({ expiryDate }: { expiryDate: string }) => {
 };
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
-  <Flex justify="between" py="2" style={{ borderBottom: '1px solid #eee' }}>
+  <Flex justify="between" py="2" style={{ borderBottom: `1px solid ${theme.colors.borders.light}` }}>
     <Text color="gray">{label}</Text>
     {typeof value === 'string' ? <Text>{value}</Text> : value}
   </Flex>
-);
-
-const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
-  <Table.Root mt="2">
-    <Table.Header>
-      <Table.Row>
-        <Table.ColumnHeaderCell>Test</Table.ColumnHeaderCell>
-        <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-        <Table.ColumnHeaderCell>Performed By</Table.ColumnHeaderCell>
-        <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-        <Table.ColumnHeaderCell>IoT Device</Table.ColumnHeaderCell>
-        <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
-      </Table.Row>
-    </Table.Header>
-    <Table.Body>
-      {Object.entries(tests).map(([testName, test]) => (
-        <Table.Row key={testName}>
-          <Table.Cell>{testName}</Table.Cell>
-          <Table.Cell><StatusBadge status={test.status} /></Table.Cell>
-          <Table.Cell>{test.performedBy}</Table.Cell>
-          <Table.Cell>{new Date(test.date).toLocaleDateString()}</Table.Cell>
-          <Table.Cell>
-            <Badge color="blue" variant="soft">
-              {test.iotDevice}
-            </Badge>
-          </Table.Cell>
-          <Table.Cell><BlockchainLink txHash={test.blockchainTx} /></Table.Cell>
-        </Table.Row>
-      ))}
-    </Table.Body>
-  </Table.Root>
 );
 
 // Utility functions
 const calculateComplianceScore = (material: Material): number => {
   const testScores = Object.values(material.tests)
     .filter(test => test.status === 'Passed')
-    .length * 10;
+    .length * 25; // Each test worth 25 points (100/4)
 
-  const certScore = material.certificate ? 30 : 0;
+  const certScore = material.certificate ? 20 : 0;
+  const supplierScore = material.supplier.status === 'Approved' ? 20 : 0;
+  const expiryScore = new Date(material.expiryDate) > new Date() ? 20 : 0;
+  const blockchainScore = material.blockchainRegistered ? 20 : 0;
 
-  const supplierScore = material.supplier.status === 'Approved' ? 20 :
-                       material.supplier.status === 'Pending' ? 10 : 0;
-
-  const expiryScore = new Date(material.expiryDate) > new Date() ? 10 : 0;
-
-  return testScores + certScore + supplierScore + expiryScore;
+  return Math.min(100, testScores + certScore + supplierScore + expiryScore + blockchainScore);
 };
 
 const checkALCOACompliance = (material: Material): boolean => {
-  const testsPassed = Object.values(material.tests)
-    .every(test => test.status === 'Passed');
-  
+  const testsPassed = Object.values(material.tests).every(test => test.status === 'Passed');
   const hasCertificate = !!material.certificate;
   const validSupplier = material.supplier.status === 'Approved';
   const notExpired = new Date(material.expiryDate) > new Date();
@@ -346,14 +443,13 @@ export default function MaterialQualificationDashboard() {
   const [filter, setFilter] = useState<'all' | 'approved' | 'pending'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Calculate overall metrics
+  // Calculate metrics
   const approvedCount = materialsData.filter(m => m.status === 'Approved').length;
   const pendingCount = materialsData.filter(m => m.status === 'Pending').length;
   const expiringSoonCount = materialsData.filter(m => {
     const expiryDate = new Date(m.expiryDate);
     const today = new Date();
-    const diffTime = expiryDate.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays >= 0;
   }).length;
   
@@ -392,27 +488,16 @@ export default function MaterialQualificationDashboard() {
             </Select.Content>
           </Select.Root>
 
-          <div style={{ position: 'relative', width: '200px' }}>
-            <TextField.Root>
-              <TextField.Slot>
-                <Search size={16} />
-              </TextField.Slot>
-              <input
-                className="radix-TextFieldInput"
-                placeholder="Search materials..."
-                value={searchQuery}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-                style={{
-                  flex: 1,
-                  border: 'none',
-                  background: 'transparent',
-                  padding: '0 8px',
-                  height: '100%',
-                  outline: 'none'
-                }}
-              />
-            </TextField.Root>
-          </div>
+          <TextField.Root>
+            <TextField.Slot>
+              <Search size={16} />
+            </TextField.Slot>
+            <TextField.Input
+              placeholder="Search materials..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </TextField.Root>
           
           <Button variant="solid" color="violet">
             <ShieldCheck size={16} />
@@ -490,23 +575,23 @@ export default function MaterialQualificationDashboard() {
         </Card>
       </Flex>
 
-      {/* Materials Table */}
-      <Table.Root variant="surface" style={{ borderRadius: '8px', overflow: 'hidden' }}>
-        <Table.Header style={{ backgroundColor: theme.colors.primary }}>
+      {/* Main Materials Table */}
+      <StyledMainTable>
+        <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Material</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Supplier</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>EDA Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Test Results</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Compliance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={{ color: 'white' }}>ALCOA+</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>EDA Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Test Results</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>ALCOA+</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
         <Table.Body>
           {filteredMaterials.map((material) => (
-            <Table.Row key={material.id} style={{ backgroundColor: '#fff' }}>
+            <Table.Row key={material.id}>
               <Table.Cell>
                 <Button 
                   variant="ghost" 
@@ -545,19 +630,7 @@ export default function MaterialQualificationDashboard() {
               </Table.Cell>
 
               <Table.Cell>
-                <Box style={{ width: '100%' }}>
-                  <Progress
-                    value={calculateComplianceScore(material)}
-                    color={
-                      calculateComplianceScore(material) >= 90 ? 'green' : 
-                      calculateComplianceScore(material) >= 70 ? 'yellow' : 'red'
-                    }
-                    style={{ height: '8px', marginBottom: '4px' }}
-                  />
-                  <Text size="2" weight="bold">
-                    {calculateComplianceScore(material)}%
-                  </Text>
-                </Box>
+                <ComplianceBar score={calculateComplianceScore(material)} />
               </Table.Cell>
 
               <Table.Cell>
@@ -572,7 +645,7 @@ export default function MaterialQualificationDashboard() {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Root>
+      </StyledMainTable>
 
       {/* Material Details Dialog */}
       {selectedMaterial && (
@@ -662,7 +735,36 @@ export default function MaterialQualificationDashboard() {
 
               <Box>
                 <Heading size="4" mb="2">Test Results</Heading>
-                <TestResultsTable tests={selectedMaterial.tests} />
+                <StyledSubTable>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Test</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Performed By</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>IoT Device</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Blockchain</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {Object.entries(selectedMaterial.tests).map(([testName, test]) => (
+                      <Table.Row key={testName}>
+                        <Table.Cell>{testName}</Table.Cell>
+                        <Table.Cell><StatusBadge status={test.status} /></Table.Cell>
+                        <Table.Cell>{test.performedBy}</Table.Cell>
+                        <Table.Cell>{new Date(test.date).toLocaleDateString()}</Table.Cell>
+                        <Table.Cell>
+                          <Badge color="blue" variant="soft">
+                            {test.iotDevice}
+                          </Badge>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <BlockchainLink txHash={test.blockchainTx} />
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </StyledSubTable>
               </Box>
             </Flex>
 
