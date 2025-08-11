@@ -164,7 +164,7 @@ const materialsData: Material[] = [
   },
   {
     id: 'MAT-002',
-    name: 'Vitamin B12 (Cyanocobalamin)',
+    name: 'Vitamin B12',
     supplier: {
       id: 'SUP-002',
       name: 'Supplier B',
@@ -380,12 +380,16 @@ export default function MaterialQualificationDashboard() {
   // Calculate metrics
   const approvedCount = materialsData.filter(m => m.status === 'Approved').length;
   const pendingCount = materialsData.filter(m => m.status === 'Pending').length;
-  const expiringSoonCount = materialsData.filter(m => {
+  
+  // Dynamic expiry count calculation
+  const expiringSoonMaterials = materialsData.filter(m => {
     const expiryDate = new Date(m.expiryDate);
     const today = new Date();
     const diffDays = Math.ceil((expiryDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     return diffDays <= 30 && diffDays >= 0;
-  }).length;
+  });
+  
+  const expiringSoonCount = expiringSoonMaterials.length;
   
   const overallCompliance = materialsData.length > 0 
     ? materialsData.reduce((sum, material) => sum + calculateComplianceScore(material), 0) / materialsData.length
@@ -449,7 +453,6 @@ export default function MaterialQualificationDashboard() {
             </Select.Content>
           </Select.Root>
 
-          {/* Fixed TextField implementation */}
           <div style={{ position: 'relative', width: '200px' }}>
             <TextField.Root>
               <TextField.Slot>
@@ -543,6 +546,15 @@ export default function MaterialQualificationDashboard() {
               <Text size="5" weight="bold" color="red" mt="2">
                 {expiringSoonCount} Materials
               </Text>
+              {expiringSoonCount > 0 && (
+                <Flex direction="column" gap="1" mt="2">
+                  {expiringSoonMaterials.map(material => (
+                    <Text key={material.id} size="1">
+                      {material.name} - {new Date(material.expiryDate).toLocaleDateString()}
+                    </Text>
+                  ))}
+                </Flex>
+              )}
             </Box>
           </Flex>
         </Card>
