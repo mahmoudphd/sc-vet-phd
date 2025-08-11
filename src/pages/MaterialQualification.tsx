@@ -30,7 +30,6 @@ import {
   Calendar,
   Search
 } from 'lucide-react';
-import styled from '@emotion/styled';
 
 // Theme configuration
 interface Theme {
@@ -221,71 +220,6 @@ const materialsData: Material[] = [
   }
 ];
 
-// Styled Components
-const StyledMainTable = styled(Table.Root)({
-  borderRadius: '8px',
-  overflow: 'hidden',
-  border: `1px solid ${theme.colors.borders.medium}`,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-  
-  '& .rt-TableHeader': {
-    backgroundColor: theme.colors.primary,
-    borderBottom: `2px solid ${theme.colors.borders.strong}`
-  },
-  
-  '& .rt-TableRow': {
-    borderBottom: `1px solid ${theme.colors.borders.light}`,
-    '&:last-child': {
-      borderBottom: 'none'
-    }
-  },
-  
-  '& .rt-TableCell': {
-    borderRight: `1px solid ${theme.colors.borders.light}`,
-    padding: '12px 16px',
-    '&:last-child': {
-      borderRight: 'none'
-    }
-  },
-  
-  '& .rt-ColumnHeaderCell': {
-    color: 'white !important',
-    fontWeight: '600'
-  }
-});
-
-const StyledSubTable = styled(Table.Root)({
-  marginTop: '16px',
-  border: `1px solid ${theme.colors.borders.light}`,
-  borderRadius: '6px',
-  backgroundColor: 'white',
-  
-  '& .rt-TableHeader': {
-    backgroundColor: '#F8FAFC',
-    borderBottom: `2px solid ${theme.colors.borders.light}`
-  },
-  
-  '& .rt-TableRow': {
-    borderBottom: `1px solid ${theme.colors.borders.light}`,
-    '&:last-child': {
-      borderBottom: 'none'
-    }
-  },
-  
-  '& .rt-TableCell': {
-    padding: '10px 12px',
-    borderRight: `1px solid ${theme.colors.borders.light}`,
-    '&:last-child': {
-      borderRight: 'none'
-    }
-  },
-  
-  '& .rt-ColumnHeaderCell': {
-    fontWeight: '600',
-    fontSize: '14px'
-  }
-});
-
 // Helper Components
 const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: string; children: React.ReactNode }) => (
   <Text as="span" style={{ display: 'inline-flex', width: size, height: size, color }}>
@@ -295,17 +229,17 @@ const IconWrapper = ({ size = 16, color, children }: { size?: number; color?: st
 
 const StatusBadge = ({ status }: { status: string }) => {
   const statusConfig = {
-    Approved: { color: 'green', icon: <Check size={14} /> },
-    Rejected: { color: 'red', icon: <AlertTriangle size={14} /> },
-    Pending: { color: 'yellow', icon: <Clock size={14} /> },
-    Expired: { color: 'orange', icon: <Calendar size={14} /> },
-    NotApproved: { color: 'red', icon: <AlertTriangle size={14} /> },
-    Passed: { color: 'green', icon: <Check size={14} /> },
-    Failed: { color: 'red', icon: <AlertTriangle size={14} /> }
+    Approved: { color: 'green' as const, icon: <Check size={14} /> },
+    Rejected: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
+    Pending: { color: 'yellow' as const, icon: <Clock size={14} /> },
+    Expired: { color: 'orange' as const, icon: <Calendar size={14} /> },
+    NotApproved: { color: 'red' as const, icon: <AlertTriangle size={14} /> },
+    Passed: { color: 'green' as const, icon: <Check size={14} /> },
+    Failed: { color: 'red' as const, icon: <AlertTriangle size={14} /> }
   };
 
   const currentConfig = statusConfig[status as keyof typeof statusConfig] || 
-                      { color: 'gray', icon: <HelpCircle size={14} /> };
+                      { color: 'gray' as const, icon: <HelpCircle size={14} /> };
 
   return (
     <Badge color={currentConfig.color} highContrast>
@@ -473,6 +407,33 @@ export default function MaterialQualificationDashboard() {
     return true;
   });
 
+  // Table styling
+  const tableStyle = {
+    borderRadius: '8px',
+    overflow: 'hidden',
+    border: `1px solid ${theme.colors.borders.medium}`,
+    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+    width: '100%'
+  };
+
+  const headerStyle = {
+    backgroundColor: theme.colors.primary,
+    borderBottom: `2px solid ${theme.colors.borders.strong}`
+  };
+
+  const cellStyle = {
+    borderRight: `1px solid ${theme.colors.borders.light}`,
+    padding: '12px 16px'
+  };
+
+  const subTableStyle = {
+    marginTop: '16px',
+    border: `1px solid ${theme.colors.borders.light}`,
+    borderRadius: '6px',
+    backgroundColor: 'white',
+    width: '100%'
+  };
+
   return (
     <Box p="4" style={{ backgroundColor: theme.colors.background, minHeight: '100vh' }}>
       {/* Header */}
@@ -495,7 +456,7 @@ export default function MaterialQualificationDashboard() {
             <TextField.Input
               placeholder="Search materials..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
             />
           </TextField.Root>
           
@@ -576,23 +537,23 @@ export default function MaterialQualificationDashboard() {
       </Flex>
 
       {/* Main Materials Table */}
-      <StyledMainTable>
-        <Table.Header>
+      <Table.Root style={tableStyle}>
+        <Table.Header style={headerStyle}>
           <Table.Row>
-            <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>EDA Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Test Results</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Expiry</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>ALCOA+</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Material</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Supplier</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>EDA Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Test Results</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>Expiry</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={{ color: 'white' }}>ALCOA+</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
         <Table.Body>
           {filteredMaterials.map((material) => (
-            <Table.Row key={material.id}>
-              <Table.Cell>
+            <Table.Row key={material.id} style={{ borderBottom: `1px solid ${theme.colors.borders.light}` }}>
+              <Table.Cell style={cellStyle}>
                 <Button 
                   variant="ghost" 
                   onClick={() => setSelectedMaterial(material)}
@@ -603,15 +564,15 @@ export default function MaterialQualificationDashboard() {
                 </Button>
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={cellStyle}>
                 <SupplierStatus supplier={material.supplier} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={cellStyle}>
                 <StatusBadge status={material.regulatory.status} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={cellStyle}>
                 {Object.values(material.tests).every(v => v.status === 'Passed') ? (
                   <Badge color="green" highContrast>
                     <Flex align="center" gap="1">
@@ -629,15 +590,15 @@ export default function MaterialQualificationDashboard() {
                 )}
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={cellStyle}>
                 <ComplianceBar score={calculateComplianceScore(material)} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={cellStyle}>
                 <ExpiryWithIndicator expiryDate={material.expiryDate} />
               </Table.Cell>
 
-              <Table.Cell>
+              <Table.Cell style={{ ...cellStyle, borderRight: 'none' }}>
                 <Flex justify="center">
                   <ALCOABadge isCompliant={checkALCOACompliance(material)} />
                 </Flex>
@@ -645,7 +606,7 @@ export default function MaterialQualificationDashboard() {
             </Table.Row>
           ))}
         </Table.Body>
-      </StyledMainTable>
+      </Table.Root>
 
       {/* Material Details Dialog */}
       {selectedMaterial && (
@@ -735,8 +696,8 @@ export default function MaterialQualificationDashboard() {
 
               <Box>
                 <Heading size="4" mb="2">Test Results</Heading>
-                <StyledSubTable>
-                  <Table.Header>
+                <Table.Root style={subTableStyle}>
+                  <Table.Header style={{ backgroundColor: '#F8FAFC', borderBottom: `2px solid ${theme.colors.borders.light}` }}>
                     <Table.Row>
                       <Table.ColumnHeaderCell>Test</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
@@ -748,23 +709,27 @@ export default function MaterialQualificationDashboard() {
                   </Table.Header>
                   <Table.Body>
                     {Object.entries(selectedMaterial.tests).map(([testName, test]) => (
-                      <Table.Row key={testName}>
-                        <Table.Cell>{testName}</Table.Cell>
-                        <Table.Cell><StatusBadge status={test.status} /></Table.Cell>
-                        <Table.Cell>{test.performedBy}</Table.Cell>
-                        <Table.Cell>{new Date(test.date).toLocaleDateString()}</Table.Cell>
-                        <Table.Cell>
+                      <Table.Row key={testName} style={{ borderBottom: `1px solid ${theme.colors.borders.light}` }}>
+                        <Table.Cell style={{ padding: '10px 12px', borderRight: `1px solid ${theme.colors.borders.light}` }}>{testName}</Table.Cell>
+                        <Table.Cell style={{ padding: '10px 12px', borderRight: `1px solid ${theme.colors.borders.light}` }}>
+                          <StatusBadge status={test.status} />
+                        </Table.Cell>
+                        <Table.Cell style={{ padding: '10px 12px', borderRight: `1px solid ${theme.colors.borders.light}` }}>{test.performedBy}</Table.Cell>
+                        <Table.Cell style={{ padding: '10px 12px', borderRight: `1px solid ${theme.colors.borders.light}` }}>
+                          {new Date(test.date).toLocaleDateString()}
+                        </Table.Cell>
+                        <Table.Cell style={{ padding: '10px 12px', borderRight: `1px solid ${theme.colors.borders.light}` }}>
                           <Badge color="blue" variant="soft">
                             {test.iotDevice}
                           </Badge>
                         </Table.Cell>
-                        <Table.Cell>
+                        <Table.Cell style={{ padding: '10px 12px' }}>
                           <BlockchainLink txHash={test.blockchainTx} />
                         </Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>
-                </StyledSubTable>
+                </Table.Root>
               </Box>
             </Flex>
 
