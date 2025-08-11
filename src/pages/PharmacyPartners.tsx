@@ -11,8 +11,8 @@ import {
   Box,
   Dialog,
   AlertDialog,
+  Select,
 } from '@radix-ui/themes';
-import * as Select from '@radix-ui/react-select';
 import { ChevronDownIcon, CheckIcon } from '@radix-ui/react-icons';
 
 const stockOptions = ['optimal', 'low', 'critical'] as const;
@@ -64,10 +64,7 @@ const PharmacyPartners = () => {
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
     try {
-      // Here would be the actual blockchain API call
-      // This is just a simulation for demonstration
       await new Promise(resolve => setTimeout(resolve, 1500));
-      
       setSubmissionResult({
         success: true,
         message: 'Data successfully submitted to blockchain!'
@@ -266,47 +263,18 @@ const PharmacyPartners = () => {
                   value={pharmacy.stock}
                   onValueChange={(val: StockOption) => handleStockChange(pharmacy.id, val)}
                 >
-                  <Select.Trigger
-                    aria-label="Stock Level"
-                    style={{
-                      all: 'unset',
-                      cursor: 'pointer',
-                      padding: '6px 12px',
-                      borderRadius: 4,
-                      border: '1px solid #ccc',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 5,
-                    }}
-                  >
+                  <Select.Trigger variant="soft" color="gray">
                     <Select.Value />
                     <Select.Icon>
                       <ChevronDownIcon />
                     </Select.Icon>
                   </Select.Trigger>
 
-                  <Select.Content
-                    style={{
-                      background: 'white',
-                      borderRadius: 6,
-                      boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-                      padding: 5,
-                    }}
-                  >
+                  <Select.Content>
                     <Select.ScrollUpButton />
                     <Select.Viewport>
                       {stockOptions.map((option) => (
-                        <Select.Item
-                          key={option}
-                          value={option}
-                          style={{
-                            padding: '8px 12px',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                          }}
-                        >
+                        <Select.Item key={option} value={option}>
                           <Select.ItemText>{option}</Select.ItemText>
                           <Select.ItemIndicator>
                             <CheckIcon />
