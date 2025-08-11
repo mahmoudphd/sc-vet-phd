@@ -449,16 +449,28 @@ export default function MaterialQualificationDashboard() {
             </Select.Content>
           </Select.Root>
 
-          <TextField.Root>
-            <TextField.Slot>
-              <Search size={16} />
-            </TextField.Slot>
-            <TextField.Input
-              placeholder="Search materials..."
-              value={searchQuery}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
-            />
-          </TextField.Root>
+          {/* Fixed TextField implementation */}
+          <div style={{ position: 'relative', width: '200px' }}>
+            <TextField.Root>
+              <TextField.Slot>
+                <Search size={16} />
+              </TextField.Slot>
+              <input
+                className="radix-TextFieldInput"
+                placeholder="Search materials..."
+                value={searchQuery}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                style={{
+                  flex: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  padding: '0 8px',
+                  height: '100%',
+                  outline: 'none'
+                }}
+              />
+            </TextField.Root>
+          </div>
           
           <Button variant="solid" color="violet">
             <ShieldCheck size={16} />
