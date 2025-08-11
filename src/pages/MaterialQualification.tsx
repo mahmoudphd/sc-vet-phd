@@ -18,7 +18,6 @@ import {
   Clock,
   AlertTriangle,
   FileText,
-  HardHat,
   HelpCircle,
   Cpu,
   Link,
@@ -250,20 +249,6 @@ const BlockchainLink = ({ txHash }: { txHash?: string }) => {
   );
 };
 
-const MaterialTypeIcon = ({ type }: { type: Material['type'] }) => {
-  const icons = {
-    API: <IconWrapper size={16}><Pill /></IconWrapper>,
-    Excipient: <IconWrapper size={16}><FlaskConical /></IconWrapper>,
-    Packaging: <IconWrapper size={16}><Box /></IconWrapper>
-  };
-  
-  return (
-    <Tooltip content={type}>
-      {icons[type]}
-    </Tooltip>
-  );
-};
-
 const SupplierStatus = ({ supplier }: { supplier: Supplier }) => {
   return (
     <Flex direction="column" gap="1">
@@ -275,22 +260,6 @@ const SupplierStatus = ({ supplier }: { supplier: Supplier }) => {
         </Text>
       )}
     </Flex>
-  );
-};
-
-const SupplierStatusBadge = ({ status }: { status: 'Approved' | 'NotApproved' | 'Pending' }) => {
-  const config = {
-    Approved: { color: 'green', text: 'Approved' },
-    NotApproved: { color: 'red', text: 'Not Approved' },
-    Pending: { color: 'yellow', text: 'Pending' }
-  };
-  
-  const current = config[status];
-  
-  return (
-    <Badge color={current.color as any} highContrast>
-      {current.text}
-    </Badge>
   );
 };
 
@@ -309,13 +278,12 @@ const ComplianceChart = ({ compliance }: { compliance: number }) => {
         backgroundColor: compliance > 75 ? '#2ecc71' : compliance > 50 ? '#f39c12' : '#e74c3c',
         borderRadius: '4px'
       }} />
-      <Text size="1" style={{ marginTop: '4px' }}>{compliance}%</Text>
     </div>
   );
 };
 
 const ExpiryStatusIndicator = ({ expiryDate }: { expiryDate: string }) => {
-  const daysRemaining = Math.floor((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.floor((new Date(expiryDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24);
   let color = 'green';
 
   if (daysRemaining <= 30) {
@@ -338,28 +306,6 @@ const ExpiryStatusIndicator = ({ expiryDate }: { expiryDate: string }) => {
   );
 };
 
-const IoTStatusIndicator = ({ connected }: { connected: boolean }) => (
-  <Tooltip content={connected ? 'IoT Connected' : 'IoT Disconnected'}>
-    <div style={{
-      width: '12px',
-      height: '12px',
-      borderRadius: '50%',
-      backgroundColor: connected ? 'green' : 'red'
-    }} />
-  </Tooltip>
-);
-
-const BlockchainStatusIndicator = ({ registered }: { registered: boolean }) => (
-  <Tooltip content={registered ? 'Blockchain Verified' : 'Not on Blockchain'}>
-    <div style={{
-      width: '12px',
-      height: '12px',
-      borderRadius: '50%',
-      backgroundColor: registered ? 'violet' : 'gray'
-    }} />
-  </Tooltip>
-);
-
 const ALCOABadge = () => (
   <Badge color="green" highContrast>
     <Flex align="center" gap="1">
@@ -368,38 +314,6 @@ const ALCOABadge = () => (
     </Flex>
   </Badge>
 );
-
-const ComplianceCard = ({ compliance }: { compliance: number }) => {
-  return (
-    <Card>
-      <Flex direction="column" gap="2">
-        <Text weight="bold">Compliance Score</Text>
-        <div style={{
-          padding: '8px',
-          borderRadius: '6px',
-          backgroundColor: compliance >= 90 ? '#ECFDF5' : compliance >= 70 ? '#FFFBEB' : '#FEF2F2'
-        }}>
-          <Text size="5" weight="bold" color={compliance >= 90 ? 'green' : compliance >= 70 ? 'yellow' : 'red'}>
-            {compliance}%
-          </Text>
-        </div>
-        <div style={{
-          width: '100%',
-          height: '6px',
-          backgroundColor: '#E5E7EB',
-          borderRadius: '3px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            width: `${compliance}%`,
-            height: '100%',
-            backgroundColor: compliance >= 90 ? '#10B981' : compliance >= 70 ? '#F59E0B' : '#EF4444'
-          }} />
-        </div>
-      </Flex>
-    </Card>
-  );
-};
 
 const DetailItem = ({ label, value }: { label: string; value: React.ReactNode }) => (
   <Flex justify="between" py="2" style={{ borderBottom: '1px solid #eee' }}>
@@ -445,6 +359,145 @@ const TestResultsTable = ({ tests }: { tests: Material['tests'] }) => (
   </Table.Root>
 );
 
+// ========== COMPLIANCE CALCULATION ==========
+const calculateComplianceDetails = (material: Material) => {
+  // 1. Test Results (40 points)
+  const testResults = Object.values(material.tests);
+  const passedTests = testResults.filter(test => test.status === 'Passed').length;
+  const testsScore = passedTests * 10; // Each passed test gives 10 points
+
+  // 2. Certificate (30 points)
+  const certificateScore = material.certificate ? 30 : 0;
+
+  // 3. Supplier Status (20 points)
+  let supplierScore = 0;
+  if (material.supplier.status === 'Approved') {
+    supplierScore = 20;
+  } else if (material.supplier.status === 'Pending') {
+    supplierScore = 10;
+  }
+
+  // 4. Validity (10 points)
+  const isExpired = new Date(material.expiryDate) < new Date();
+  const validityScore = isExpired ? 0 : 10;
+
+  // Total score
+  const totalScore = testsScore + certificateScore + supplierScore + validityScore;
+
+  return {
+    totalScore,
+    details: {
+      tests: {
+        passed: passedTests,
+        total: testResults.length,
+        score: testsScore,
+        max: 40
+      },
+      certificate: {
+        exists: !!material.certificate,
+        score: certificateScore,
+        max: 30
+      },
+      supplier: {
+        status: material.supplier.status,
+        score: supplierScore,
+        max: 20
+      },
+      validity: {
+        isExpired,
+        score: validityScore,
+        max: 10
+      }
+    }
+  };
+};
+
+// ========== ALCOA+ CHECK ==========
+const isALCOACompliant = (material: Material): boolean => {
+  // All tests passed
+  const allTestsPassed = Object.values(material.tests).every(
+    test => test.status === 'Passed'
+  );
+
+  // Has certificate
+  const hasCertificate = !!material.certificate;
+
+  // Supplier is approved
+  const isSupplierApproved = material.supplier.status === 'Approved';
+
+  // Material not expired
+  const isNotExpired = new Date(material.expiryDate) > new Date();
+
+  // Registered on blockchain
+  const isBlockchainRegistered = material.blockchainRegistered;
+
+  return (
+    allTestsPassed &&
+    hasCertificate &&
+    isSupplierApproved &&
+    isNotExpired &&
+    isBlockchainRegistered
+  );
+};
+
+const ComplianceCard = ({ material }: { material: Material }) => {
+  const { totalScore, details } = calculateComplianceDetails(material);
+  const isALCOA = isALCOACompliant(material);
+
+  return (
+    <Card>
+      <Flex direction="column" gap="3">
+        <Text size="4" weight="bold">Compliance Score: {totalScore}%</Text>
+        
+        {/* Test Results */}
+        <Box>
+          <Flex justify="between">
+            <Text color="gray">Test Results:</Text>
+            <Text>{details.tests.score}/{details.tests.max}</Text>
+          </Flex>
+          <Text size="1">{details.tests.passed} out of {details.tests.total} tests passed</Text>
+        </Box>
+
+        {/* Certificate */}
+        <Box>
+          <Flex justify="between">
+            <Text color="gray">Certificate:</Text>
+            <Text>{details.certificate.score}/{details.certificate.max}</Text>
+          </Flex>
+          <Text size="1">{details.certificate.exists ? 'Certificate available' : 'No certificate'}</Text>
+        </Box>
+
+        {/* Supplier Status */}
+        <Box>
+          <Flex justify="between">
+            <Text color="gray">Supplier Status:</Text>
+            <Text>{details.supplier.score}/{details.supplier.max}</Text>
+          </Flex>
+          <Text size="1">Status: {details.supplier.status}</Text>
+        </Box>
+
+        {/* Validity */}
+        <Box>
+          <Flex justify="between">
+            <Text color="gray">Validity:</Text>
+            <Text>{details.validity.score}/{details.validity.max}</Text>
+          </Flex>
+          <Text size="1">
+            {details.validity.isExpired ? 'Expired' : 'Valid'} until {new Date(material.expiryDate).toLocaleDateString()}
+          </Text>
+        </Box>
+
+        {/* ALCOA+ Badge */}
+        {isALCOA && (
+          <Box mt="2">
+            <ALCOABadge />
+          </Box>
+        )}
+      </Flex>
+    </Card>
+  );
+};
+
 // ========== MAIN DASHBOARD COMPONENT ==========
 export default function MaterialsQualificationDashboard() {
   const [selectedMaterial, setSelectedMaterial] = useState<Material | null>(null);
@@ -460,7 +513,6 @@ export default function MaterialsQualificationDashboard() {
     total: materialsData.length,
     approved: materialsData.filter(m => m.status === 'Approved').length,
     pending: materialsData.filter(m => m.status !== 'Approved').length,
-    iotConnected: materialsData.filter(m => m.iotConnected).length,
     blockchainRegistered: materialsData.filter(m => m.blockchainRegistered).length
   };
 
@@ -478,7 +530,7 @@ export default function MaterialsQualificationDashboard() {
         </Select.Root>
       </Flex>
 
-      <Grid columns="4" gap="4" mb="4">
+      <Grid columns="3" gap="4" mb="4">
         <Card>
           <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#ECFDF5', borderRadius: '8px' }}>
@@ -505,18 +557,6 @@ export default function MaterialsQualificationDashboard() {
 
         <Card>
           <Flex gap="3" align="center">
-            <Box style={{ padding: '8px', backgroundColor: '#EFF6FF', borderRadius: '8px' }}>
-              <IconWrapper size={20} color="#3B82F6"><Cpu /></IconWrapper>
-            </Box>
-            <Box>
-              <Text color="gray" size="2">IoT Connected</Text>
-              <Text size="4" weight="bold">{stats.iotConnected}</Text>
-            </Box>
-          </Flex>
-        </Card>
-
-        <Card>
-          <Flex gap="3" align="center">
             <Box style={{ padding: '8px', backgroundColor: '#F5F3FF', borderRadius: '8px' }}>
               <IconWrapper size={20} color="#6D28D9"><Database /></IconWrapper>
             </Box>
@@ -528,37 +568,19 @@ export default function MaterialsQualificationDashboard() {
         </Card>
       </Grid>
 
-      <Grid columns="2" gap="4" mb="4">
-        <ComplianceCard compliance={85} />
-        <Card>
-          <Flex direction="column" gap="2">
-            <Text weight="bold">ALCOA+ Compliance</Text>
-            <ALCOABadge />
-            <Text size="1">All materials meet ALCOA+ standards</Text>
-          </Flex>
-        </Card>
-      </Grid>
-
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
             <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Batch</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Tech</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {filteredMaterials.map(material => {
-            const passedTests = Object.values(material.tests).filter(
-              test => test.status === 'Passed'
-            ).length;
-            const totalTests = Object.keys(material.tests).length;
-            const compliancePercentage = Math.round((passedTests / totalTests) * 100);
+            const { totalScore } = calculateComplianceDetails(material);
             
             return (
               <Table.Row key={material.id}>
@@ -568,23 +590,14 @@ export default function MaterialsQualificationDashboard() {
                     <Text weight="medium">{material.name}</Text>
                   </Flex>
                 </Table.Cell>
-                <Table.Cell>
-                  <MaterialTypeIcon type={material.type} />
-                </Table.Cell>
                 <Table.Cell>{material.batchNumber}</Table.Cell>
                 <Table.Cell>
                   <SupplierStatus supplier={material.supplier} />
                 </Table.Cell>
                 <Table.Cell>
-                  <ComplianceChart compliance={compliancePercentage} />
-                </Table.Cell>
-                <Table.Cell>
-                  <StatusBadge status={material.status} />
-                </Table.Cell>
-                <Table.Cell>
-                  <Flex gap="2">
-                    <IoTStatusIndicator connected={material.iotConnected} />
-                    <BlockchainStatusIndicator registered={material.blockchainRegistered} />
+                  <Flex direction="column" gap="1">
+                    <Text weight="bold">{totalScore}%</Text>
+                    <ComplianceChart compliance={totalScore} />
                   </Flex>
                 </Table.Cell>
                 <Table.Cell>
@@ -604,10 +617,10 @@ export default function MaterialsQualificationDashboard() {
 
       {selectedMaterial && (
         <Dialog.Root open={true} onOpenChange={() => setSelectedMaterial(null)}>
-          <Dialog.Content style={{ maxWidth: '800px' }}>
+          <Dialog.Content style={{ maxWidth: '800px', padding: '20px' }}>
             <Dialog.Title>
               <Flex align="center" gap="2">
-                {selectedMaterial.name} Details
+                {selectedMaterial.name} - Batch: {selectedMaterial.batchNumber}
                 {selectedMaterial.blockchainRegistered && (
                   <Badge color="violet">
                     <IconWrapper size={12}><Database /></IconWrapper> Blockchain Verified
@@ -618,48 +631,82 @@ export default function MaterialsQualificationDashboard() {
             
             <Grid columns="2" gap="4" mt="4">
               <Box>
-                <Text weight="bold" color="gray">Basic Information</Text>
-                <DetailItem label="Type" value={selectedMaterial.type} />
-                <DetailItem label="Batch" value={selectedMaterial.batchNumber} />
-                <DetailItem label="Supplier" value={
-                  <SupplierStatus supplier={selectedMaterial.supplier} />
-                } />
-                <DetailItem label="Status" value={<StatusBadge status={selectedMaterial.status} />} />
-                <DetailItem 
-                  label="Expiry Date" 
-                  value={new Date(selectedMaterial.expiryDate).toLocaleDateString()} 
-                />
+                <Text weight="bold" color="gray" mb="2">Basic Information</Text>
+                <Card>
+                  <Flex direction="column" gap="2">
+                    <DetailItem label="Material ID" value={selectedMaterial.id} />
+                    <DetailItem label="Supplier" value={
+                      <SupplierStatus supplier={selectedMaterial.supplier} />
+                    } />
+                    <DetailItem 
+                      label="Expiry Date" 
+                      value={
+                        <Flex align="center" gap="2">
+                          <ExpiryStatusIndicator expiryDate={selectedMaterial.expiryDate} />
+                          {new Date(selectedMaterial.expiryDate).toLocaleDateString()}
+                        </Flex>
+                      } 
+                    />
+                    <DetailItem 
+                      label="Last Reviewed" 
+                      value={new Date(selectedMaterial.lastReviewed).toLocaleDateString()} 
+                    />
+                  </Flex>
+                </Card>
               </Box>
 
               <Box>
-                <Text weight="bold" color="gray">Regulatory Information</Text>
-                <DetailItem 
-                  label="EDA Registration" 
-                  value={selectedMaterial.regulatory.registrationNumber} 
-                />
-                <DetailItem 
-                  label="Approval Date" 
-                  value={new Date(selectedMaterial.regulatory.approvalDate).toLocaleDateString()} 
-                />
-                <DetailItem 
-                  label="GMP Inspection" 
-                  value={selectedMaterial.regulatory.gmpInspection ? 'Passed' : 'Pending'} 
-                />
-                <DetailItem 
-                  label="Blockchain Verification" 
-                  value={
-                    selectedMaterial.regulatory.blockchainTx ? 
-                    <BlockchainLink txHash={selectedMaterial.regulatory.blockchainTx} /> : 
-                    'Not submitted'
-                  } 
-                />
+                <Text weight="bold" color="gray" mb="2">Regulatory Information</Text>
+                <Card>
+                  <Flex direction="column" gap="2">
+                    <DetailItem 
+                      label="Status" 
+                      value={<StatusBadge status={selectedMaterial.status} />} 
+                    />
+                    <DetailItem 
+                      label="EDA Registration" 
+                      value={selectedMaterial.regulatory.registrationNumber} 
+                    />
+                    <DetailItem 
+                      label="Approval Date" 
+                      value={new Date(selectedMaterial.regulatory.approvalDate).toLocaleDateString()} 
+                    />
+                    <DetailItem 
+                      label="GMP Inspection" 
+                      value={
+                        <Flex align="center" gap="2">
+                          {selectedMaterial.regulatory.gmpInspection ? (
+                            <>
+                              <IconWrapper size={14} color="green"><Check /></IconWrapper>
+                              <Text>Passed</Text>
+                            </>
+                          ) : (
+                            <>
+                              <IconWrapper size={14} color="red"><AlertTriangle /></IconWrapper>
+                              <Text>Pending</Text>
+                            </>
+                          )}
+                        </Flex>
+                      } 
+                    />
+                  </Flex>
+                </Card>
               </Box>
             </Grid>
 
             <Separator my="4" />
 
-            <Text weight="bold" color="gray">Test Results</Text>
-            <TestResultsTable tests={selectedMaterial.tests} />
+            <Flex direction="column" gap="4">
+              <Box>
+                <Text weight="bold" color="gray" mb="2">Compliance Score</Text>
+                <ComplianceCard material={selectedMaterial} />
+              </Box>
+
+              <Box>
+                <Text weight="bold" color="gray" mb="2">Test Results</Text>
+                <TestResultsTable tests={selectedMaterial.tests} />
+              </Box>
+            </Flex>
 
             <Flex justify="end" mt="4">
               <Button variant="soft" onClick={() => setSelectedMaterial(null)}>
