@@ -65,9 +65,15 @@ interface Supplier {
   reliability: number;
 }
 
+interface CostComparison {
+  current: number;
+  potential: number;
+}
+
 interface SolutionDetails {
   suppliers?: Supplier[];
   currentPrice?: number;
+  costComparison?: CostComparison;
 }
 
 interface SolutionConfig {
@@ -318,7 +324,7 @@ function CostAnalytics() {
     }
   };
 
-  const handleSupplierDataChange = (index: number, field: keyof Supplier, value: any) => {
+  const handleSupplierDataChange = (index: number, field: keyof Supplier, value: string | number) => {
     const updatedSuppliers = [...editableSupplierData];
     updatedSuppliers[index] = {
       ...updatedSuppliers[index],
@@ -474,7 +480,9 @@ function CostAnalytics() {
                           <TextField.Input
                             type="number"
                             value={supplier.price}
-                            onChange={(e) => handleSupplierDataChange(idx, 'price', e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'price', e.target.value)
+                            }
                           />
                         </TextField.Root>
                       ) : formatCurrency(supplier.price, currency)}
@@ -488,7 +496,9 @@ function CostAnalytics() {
                             max="5"
                             step="0.1"
                             value={supplier.rating}
-                            onChange={(e) => handleSupplierDataChange(idx, 'rating', e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'rating', e.target.value)
+                            }
                           />
                         </TextField.Root>
                       ) : (
@@ -503,7 +513,9 @@ function CostAnalytics() {
                         <TextField.Root>
                           <TextField.Input
                             value={supplier.deliveryTime}
-                            onChange={(e) => handleSupplierDataChange(idx, 'deliveryTime', e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
+                            }
                           />
                         </TextField.Root>
                       ) : supplier.deliveryTime}
@@ -516,7 +528,9 @@ function CostAnalytics() {
                             min="1"
                             max="100"
                             value={supplier.reliability}
-                            onChange={(e) => handleSupplierDataChange(idx, 'reliability', e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'reliability', e.target.value)
+                            }
                           />
                         </TextField.Root>
                       ) : `${supplier.reliability}%`}
