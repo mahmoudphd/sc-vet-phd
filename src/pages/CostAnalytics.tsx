@@ -93,12 +93,12 @@ const SOLUTIONS_CONFIG: SolutionConfig[] = [
     applicableTo: ['Direct Materials', 'Packaging Materials'],
     details: {
       suppliers: [
-        { name: 'Supplier A', price: 45, rating: 4.5, deliveryTime: '2 weeks', reliability: 95 },
-        { name: 'Supplier B', price: 48, rating: 4.2, deliveryTime: '1 week', reliability: 90 },
-        { name: 'Supplier C', price: 42, rating: 4.0, deliveryTime: '3 weeks', reliability: 85 }
+        { name: 'Premium Supplier', price: 0, rating: 4.7, deliveryTime: '1 week', reliability: 97 },
+        { name: 'Standard Supplier', price: 0, rating: 4.2, deliveryTime: '2 weeks', reliability: 90 },
+        { name: 'Budget Supplier', price: 0, rating: 3.8, deliveryTime: '3 weeks', reliability: 85 }
       ],
-      currentPrice: 50,
-      costComparison: { current: 50, potential: 45 }
+      currentPrice: 0,
+      costComparison: { current: 0, potential: 0 }
     }
   },
   {
@@ -132,50 +132,6 @@ const SOLUTIONS_CONFIG: SolutionConfig[] = [
     }
   },
   {
-    name: 'Optimizing machine usage',
-    actions: ['Schedule preventive maintenance'],
-    applyAdjustment: (item: Item) => {
-      if ('unitPrice' in item) item.unitPrice! *= 0.85;
-    },
-    applicableTo: ['Overhead'],
-    details: {
-      costComparison: { current: 100, potential: 85 }
-    }
-  },
-  {
-    name: 'Improving inventory management',
-    actions: ['Implement inventory tracking system'],
-    applyAdjustment: (item: Item) => {
-      if ('qty' in item) item.qty! *= 0.9;
-    },
-    applicableTo: ['Direct Materials', 'Packaging Materials'],
-    details: {
-      costComparison: { current: 100, potential: 90 }
-    }
-  },
-  {
-    name: 'Minimize transportation costs',
-    actions: ['Analyze logistics network'],
-    applyAdjustment: (item: Item) => {
-      if ('unitPrice' in item) item.unitPrice! *= 0.8;
-    },
-    applicableTo: ['Other Costs'],
-    details: {
-      costComparison: { current: 100, potential: 80 }
-    }
-  },
-  {
-    name: 'Reduce rework costs',
-    actions: ['Implement quality training program'],
-    applyAdjustment: (item: Item) => {
-      if ('qty' in item) item.qty! *= 0.7;
-    },
-    applicableTo: ['Other Costs'],
-    details: {
-      costComparison: { current: 100, potential: 70 }
-    }
-  },
-  {
     name: 'Other',
     actions: ['Create custom improvement plan'],
     applyAdjustment: (item: Item) => {},
@@ -185,23 +141,40 @@ const SOLUTIONS_CONFIG: SolutionConfig[] = [
 
 const simulatedIoTCostData: SimulatedIoTCostData = {
   totals: {
-    'Direct Materials': { actual: 1000, budget: 950, costAfter: 900 },
+    'Direct Materials': { actual: 0, budget: 0, costAfter: 0 }, // Will be calculated
     'Packaging Materials': { actual: 500, budget: 450, costAfter: 400 },
     'Direct Labor': { actual: 800, budget: 750, costAfter: 700 },
     'Overhead': { actual: 600, budget: 550, costAfter: 500 },
     'Other Costs': { actual: 300, budget: 250, costAfter: 200 }
   },
   rawMaterials: [
-    { name: 'Material A', concentrationKg: 10, pricePerKg: 50 },
-    { name: 'Material B', concentrationKg: 5, pricePerKg: 30 }
+    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
+    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600 },
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
+    { name: 'Nicotinamide B3', concentrationKg: 0.010, pricePerKg: 400 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700 },
+    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 },
+    { name: 'Leucine', concentrationKg: 0.030, pricePerKg: 200 },
+    { name: 'Threonine', concentrationKg: 0.010, pricePerKg: 950 },
+    { name: 'Taurine', concentrationKg: 0.003, pricePerKg: 3000 },
+    { name: 'Glycine', concentrationKg: 0.003, pricePerKg: 4200 },
+    { name: 'Arginine', concentrationKg: 0.003, pricePerKg: 5000 },
+    { name: 'Cynarin', concentrationKg: 0.003, pricePerKg: 3900 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700 },
+    { name: 'Sorbitol', concentrationKg: 0.010, pricePerKg: 360 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070 },
+    { name: 'Betaine', concentrationKg: 0.020, pricePerKg: 1250 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90 },
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1 }
   ],
   packagingMaterials: [
-    { name: 'Boxes', qty: 100, unitPrice: 2 },
-    { name: 'Labels', qty: 200, unitPrice: 0.5 }
+    { name: 'Bottles', qty: 100, unitPrice: 2 },
+    { name: 'Labels', qty: 200, unitPrice: 0.5 },
+    { name: 'Caps', qty: 100, unitPrice: 0.3 }
   ],
   directLabor: [
-    { name: 'Assembly', hours: 40, hourlyRate: 15 },
-    { name: 'Inspection', hours: 20, hourlyRate: 12 }
+    { name: 'Mixing', hours: 40, hourlyRate: 15 },
+    { name: 'Quality Control', hours: 20, hourlyRate: 12 }
   ],
   overheadItems: [
     { name: 'Electricity', cost: 200 },
@@ -212,6 +185,12 @@ const simulatedIoTCostData: SimulatedIoTCostData = {
     { name: 'Miscellaneous', cost: 150 }
   ]
 };
+
+// Calculate initial Direct Materials total
+simulatedIoTCostData.totals['Direct Materials'].actual = simulatedIoTCostData.rawMaterials.reduce(
+  (sum, item) => sum + (item.concentrationKg || 0) * (item.pricePerKg || 0), 
+  0
+);
 
 const formatCurrency = (value: number, currency: string) => 
   `${currency} ${value.toFixed(2)}`;
@@ -282,6 +261,7 @@ function CostAnalytics() {
     reductionPercentage: 5
   });
 
+  // Calculate totals based on current data
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -321,14 +301,64 @@ function CostAnalytics() {
       return;
     }
 
-    setSolutionDialog({ 
-      open: true, 
-      solution,
-      category,
-      itemIndex: index,
-      selectedSupplier: null,
-      reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
-    });
+    // For supplier negotiation, set up dynamic suppliers based on current price
+    if (solution.name === 'Negotiating better prices with supplier') {
+      const item = getDetailsByCategory(category)[index];
+      const currentPrice = item.pricePerKg || item.unitPrice || 0;
+      
+      // Generate dynamic suppliers based on current price
+      const dynamicSuppliers = [
+        { 
+          name: 'Premium Supplier', 
+          price: parseFloat((currentPrice * 0.92).toFixed(2)), // 8% discount
+          rating: 4.7, 
+          deliveryTime: '1 week', 
+          reliability: 97 
+        },
+        { 
+          name: 'Standard Supplier', 
+          price: parseFloat((currentPrice * 0.88).toFixed(2)), // 12% discount
+          rating: 4.2, 
+          deliveryTime: '2 weeks', 
+          reliability: 90 
+        },
+        { 
+          name: 'Budget Supplier', 
+          price: parseFloat((currentPrice * 0.82).toFixed(2)), // 18% discount
+          rating: 3.8, 
+          deliveryTime: '3 weeks', 
+          reliability: 85 
+        }
+      ];
+
+      setSolutionDialog({ 
+        open: true, 
+        solution: {
+          ...solution,
+          details: {
+            ...solution.details,
+            suppliers: dynamicSuppliers,
+            currentPrice,
+            costComparison: {
+              current: currentPrice,
+              potential: dynamicSuppliers[0].price // Default to premium supplier
+            }
+          }
+        },
+        category,
+        itemIndex: index,
+        selectedSupplier: null
+      });
+    } else {
+      setSolutionDialog({ 
+        open: true, 
+        solution,
+        category,
+        itemIndex: index,
+        selectedSupplier: null,
+        reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
+      });
+    }
   };
 
   const applySolution = () => {
@@ -344,6 +374,12 @@ function CostAnalytics() {
       if (solutionDialog.solution.name === 'Negotiating better prices with supplier' && solutionDialog.selectedSupplier) {
         if ('pricePerKg' in item) item.pricePerKg = solutionDialog.selectedSupplier.price;
         if ('unitPrice' in item) item.unitPrice = solutionDialog.selectedSupplier.price;
+        
+        // Update the total cost for the category
+        newData.totals[solutionDialog.category].actual = getDetailsByCategory(solutionDialog.category).reduce(
+          (sum, item) => sum + calculateItemCost(item, solutionDialog.category!), 
+          0
+        );
       }
       
       if (solutionDialog.solution.name === 'Reducing waste in material usage' && solutionDialog.reductionPercentage) {
@@ -372,7 +408,6 @@ function CostAnalytics() {
       setData(newData);
       setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
       setSolutionDialog({...solutionDialog, open: false});
-      alert('Solution applied successfully!');
     } catch (error) {
       alert('Error applying solution');
       setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
@@ -400,7 +435,6 @@ function CostAnalytics() {
   const renderSolutionDialogContent = () => {
     if (!solutionDialog.solution) return null;
 
-    // Default case for solutions without details
     if (!solutionDialog.solution.details) {
       return (
         <Box>
@@ -420,17 +454,17 @@ function CostAnalytics() {
           <Box>
             <Flex justify="between" mb="4">
               <Box>
-                <Text size="2" color="gray">Current Price</Text>
+                <Text size="2" color="gray">Current Price/kg</Text>
                 <Text size="5" weight="bold">
                   {formatCurrency(solutionDialog.solution.details.currentPrice || 0, currency)}
                 </Text>
               </Box>
               <Box>
-                <Text size="2" color="gray">Potential Savings</Text>
+                <Text size="2" color="gray">Potential Savings/kg</Text>
                 <Text size="5" weight="bold" color="green">
                   {formatCurrency(
                     (solutionDialog.solution.details.currentPrice || 0) - 
-                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0) * 0.9), 
+                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0)), 
                     currency
                   )}
                 </Text>
@@ -446,7 +480,7 @@ function CostAnalytics() {
                     <YAxis />
                     <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
                     <Legend />
-                    <Bar dataKey="price" fill="#3b82f6" name="Price" />
+                    <Bar dataKey="price" fill="#3b82f6" name="Price/kg" />
                     <Bar dataKey="rating" fill="#10b981" name="Rating" />
                   </BarChart>
                 </ResponsiveContainer>
@@ -455,7 +489,7 @@ function CostAnalytics() {
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
@@ -830,11 +864,11 @@ function CostAnalytics() {
                   let costValue = item.cost ?? 0;
                   if (autoMode) {
                     if (dialogCategory === 'Direct Materials') {
-                      costValue = (item.concentrationKg ?? 0) * (item.pricePerKg ?? 0);
+                      costValue = (item.concentrationKg || 0) * (item.pricePerKg || 0);
                     } else if (dialogCategory === 'Direct Labor') {
-                      costValue = (item.hours ?? 0) * (item.hourlyRate ?? 0);
+                      costValue = (item.hours || 0) * (item.hourlyRate || 0);
                     } else {
-                      costValue = (item.qty ?? 0) * (item.unitPrice ?? 0);
+                      costValue = (item.qty || 0) * (item.unitPrice || 0);
                     }
                   }
                   return (
