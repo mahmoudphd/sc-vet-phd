@@ -17,8 +17,6 @@ import {
   AlertDialog
 } from '@radix-ui/themes';
 import { 
-  BarChart, 
-  Bar,
   PieChart,
   Pie,
   LineChart,
@@ -51,12 +49,16 @@ const EmployeeManagement = () => {
       department: 'Purchasing', status: 'inactive', trainingComplete: true, performance: 4.2 },
   ]);
 
+  // Department data that sums to 1,234 employees
   const departmentData = [
-    { name: 'Logistics', employees: 15 },
-    { name: 'Operations', employees: 22 },
-    { name: 'Purchasing', employees: 8 },
-    { name: 'Distribution', employees: 12 },
+    { name: 'Logistics', employees: 420, percentage: 34 },
+    { name: 'Operations', employees: 370, percentage: 30 },
+    { name: 'Purchasing', employees: 247, percentage: 20 },
+    { name: 'Distribution', employees: 197, percentage: 16 },
   ];
+
+  const totalEmployees = 1234; // Explicit total
+  const totalDepartments = departmentData.length; // Will be 4
 
   const performanceData = [
     { month: 'Jan', score: 4.2 },
@@ -81,11 +83,10 @@ const EmployeeManagement = () => {
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
     try {
-      // Simulate blockchain submission
       await new Promise(resolve => setTimeout(resolve, 1500));
-      toast.success('Employee data successfully submitted to blockchain!');
+      toast.success('Data submitted to blockchain!');
     } catch (error) {
-      toast.error('Failed to submit data to blockchain');
+      toast.error('Submission failed');
     } finally {
       setIsSubmitting(false);
       setIsBlockchainDialogOpen(false);
@@ -108,12 +109,11 @@ const EmployeeManagement = () => {
             <Select.Trigger placeholder="All departments" />
             <Select.Content>
               <Select.Item value="all">All departments</Select.Item>
-              <Select.Item value="Logistics">Logistics</Select.Item>
-              <Select.Item value="Operations">Operations</Select.Item>
-              <Select.Item value="Purchasing">Purchasing</Select.Item>
+              {departmentData.map(dept => (
+                <Select.Item key={dept.name} value={dept.name}>{dept.name}</Select.Item>
+              ))}
             </Select.Content>
           </Select.Root>
-          
           <Button 
             variant="soft" 
             color="blue"
@@ -121,7 +121,6 @@ const EmployeeManagement = () => {
           >
             Submit to Blockchain
           </Button>
-          
           <Dialog.Root>
             <Dialog.Trigger>
               <Button>Add Employee</Button>
@@ -141,9 +140,9 @@ const EmployeeManagement = () => {
                 <Select.Root>
                   <Select.Trigger placeholder="Select department" />
                   <Select.Content>
-                    <Select.Item value="Logistics">Logistics</Select.Item>
-                    <Select.Item value="Operations">Operations</Select.Item>
-                    <Select.Item value="Purchasing">Purchasing</Select.Item>
+                    {departmentData.map(dept => (
+                      <Select.Item key={dept.name} value={dept.name}>{dept.name}</Select.Item>
+                    ))}
                   </Select.Content>
                 </Select.Root>
                 <Flex gap="3" mt="4" justify="end">
@@ -158,14 +157,12 @@ const EmployeeManagement = () => {
         </Flex>
       </Flex>
 
-      {/* Blockchain Submission Dialog */}
       <AlertDialog.Root open={isBlockchainDialogOpen}>
         <AlertDialog.Content style={{ maxWidth: 450 }}>
           <AlertDialog.Title>Submit to Blockchain</AlertDialog.Title>
           <AlertDialog.Description size="2" mb="4">
-            Are you sure you want to submit employee data to the blockchain? This action cannot be undone.
+            Confirm submission of employee data to blockchain
           </AlertDialog.Description>
-
           <Flex gap="3" mt="4" justify="end">
             <Button 
               variant="soft" 
@@ -190,7 +187,13 @@ const EmployeeManagement = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Total Employees</Text>
-            <Heading size="7">1,234</Heading>
+            <Heading size="7">{totalEmployees.toLocaleString()}</Heading>
+          </Flex>
+        </Card>
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Departments</Text>
+            <Heading size="7">{totalDepartments}</Heading> {/* Shows 4 */}
           </Flex>
         </Card>
         <Card>
@@ -203,12 +206,6 @@ const EmployeeManagement = () => {
           <Flex direction="column" gap="1">
             <Text size="2">Avg. Performance</Text>
             <Heading size="7">4.7/5</Heading>
-          </Flex>
-        </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Departments</Text>
-            <Heading size="7">12</Heading>
           </Flex>
         </Card>
       </Grid>
@@ -248,16 +245,37 @@ const EmployeeManagement = () => {
                   outerRadius={80}
                   paddingAngle={5}
                   dataKey="employees"
+                  label={({ name, percentage }) => `${name} ${percentage}%`}
                 >
                   {departmentData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip 
+                  formatter={(value) => [`${value} employees`, 'Count']}
+                  labelFormatter={(name) => `Department: ${name}`}
+                />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <Flex justify="center" gap="4" mt="3" wrap="wrap">
+            {departmentData.map((dept, index) => (
+              <Flex align="center" gap="2" key={dept.name}>
+                <Box 
+                  style={{ 
+                    width: 12, 
+                    height: 12, 
+                    backgroundColor: COLORS[index % COLORS.length],
+                    borderRadius: '50%' 
+                  }} 
+                />
+                <Text size="2">
+                  {dept.name}: {dept.employees}
+                </Text>
+              </Flex>
+            ))}
+          </Flex>
         </Card>
       </Flex>
 
