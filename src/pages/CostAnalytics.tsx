@@ -74,7 +74,15 @@ interface SolutionDetails {
   costComparison?: { current: number; potential: number };
 }
 
-const SOLUTIONS_CONFIG = [
+interface SolutionConfig {
+  name: string;
+  actions: string[];
+  applyAdjustment: (item: Item) => void;
+  applicableTo: (CostCategory | '*')[];
+  details?: SolutionDetails;
+}
+
+const SOLUTIONS_CONFIG: SolutionConfig[] = [
   {
     name: 'Negotiating better prices with supplier',
     actions: ['Initiate supplier negotiation'],
@@ -260,7 +268,7 @@ function CostAnalytics() {
   const [pendingActions, setPendingActions] = useState<string[]>([]);
   const [solutionDialog, setSolutionDialog] = useState<{
     open: boolean;
-    solution: typeof SOLUTIONS_CONFIG[0] | null;
+    solution: SolutionConfig | null;
     category: CostCategory | null;
     itemIndex: number | null;
     selectedSupplier?: Supplier | null;
@@ -352,21 +360,22 @@ function CostAnalytics() {
       solutionDialog.solution.applyAdjustment(item);
 
       // Update solutions tracking
-      setSolutions(prev => ({
-        ...prev,
+      const updatedSolutions = {
+        ...solutions,
         [solutionDialog.category]: {
-          ...prev[solutionDialog.category],
+          ...solutions[solutionDialog.category],
           [solutionDialog.itemIndex]: solutionDialog.solution.name
         }
-      }));
+      };
       
+      setSolutions(updatedSolutions);
       setData(newData);
-      setPendingActions(prev => prev.filter(a => !solutionDialog.solution.actions.includes(a)));
+      setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
       setSolutionDialog({...solutionDialog, open: false});
       alert('Solution applied successfully!');
     } catch (error) {
       alert('Error applying solution');
-      setPendingActions(prev => prev.filter(a => !solutionDialog.solution.actions.includes(a)));
+      setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
       setSolutionDialog({...solutionDialog, open: false});
     }
   };
@@ -389,7 +398,7 @@ function CostAnalytics() {
   };
 
   const renderSolutionDialogContent = () => {
-    if (!solutionDialog.solution) return null;
+    if (!solutionDialog.solution || !solutionDialog.solution.details) return null;
 
     switch (solutionDialog.solution.name) {
       case 'Negotiating better prices with supplier':
@@ -399,74 +408,78 @@ function CostAnalytics() {
               <Box>
                 <Text size="2" color="gray">Current Price</Text>
                 <Text size="5" weight="bold">
-                  {formatCurrency(solutionDialog.solution.details.currentPrice!, currency)}
+                  {formatCurrency(solutionDialog.solution.details.currentPrice || 0, currency)}
                 </Text>
               </Box>
               <Box>
                 <Text size="2" color="gray">Potential Savings</Text>
                 <Text size="5" weight="bold" color="green">
                   {formatCurrency(
-                    solutionDialog.solution.details.currentPrice! - 
-                    (solutionDialog.selectedSupplier?.price || solutionDialog.solution.details.currentPrice! * 0.9), 
+                    (solutionDialog.solution.details.currentPrice || 0) - 
+                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0) * 0.9), 
                     currency
                   )}
                 </Text>
               </Box>
             </Flex>
 
-            <Heading size="4" mb="3">Supplier Comparison</Heading>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={solutionDialog.solution.details.suppliers}>
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
-                <Legend />
-                <Bar dataKey="price" fill="#3b82f6" name="Price" />
-                <Bar dataKey="rating" fill="#10b981" name="Rating" />
-              </BarChart>
-            </ResponsiveContainer>
+            {solutionDialog.solution.details.suppliers && (
+              <>
+                <Heading size="4" mb="3">Supplier Comparison</Heading>
+                <ResponsiveContainer width="100%" height={250}>
+                  <BarChart data={solutionDialog.solution.details.suppliers}>
+                    <XAxis dataKey="name" />
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
+                    <Legend />
+                    <Bar dataKey="price" fill="#3b82f6" name="Price" />
+                    <Bar dataKey="rating" fill="#10b981" name="Rating" />
+                  </BarChart>
+                </ResponsiveContainer>
 
-            <Table.Root mt="4">
-              <Table.Header>
-                <Table.Row>
-                  <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Select</Table.ColumnHeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {solutionDialog.solution.details.suppliers?.map((supplier, idx) => (
-                  <Table.Row key={idx} style={
-                    solutionDialog.selectedSupplier?.name === supplier.name ? 
-                    { backgroundColor: '#f0fdf4' } : {}
-                  }>
-                    <Table.Cell>{supplier.name}</Table.Cell>
-                    <Table.Cell>{formatCurrency(supplier.price, currency)}</Table.Cell>
-                    <Table.Cell>
-                      <Progress value={supplier.rating * 20} />
-                      {supplier.rating}/5
-                    </Table.Cell>
-                    <Table.Cell>{supplier.deliveryTime}</Table.Cell>
-                    <Table.Cell>{supplier.reliability}%</Table.Cell>
-                    <Table.Cell>
-                      <Button
-                        size="1"
-                        variant={solutionDialog.selectedSupplier?.name === supplier.name ? 'solid' : 'outline'}
-                        onClick={() => setSolutionDialog({
-                          ...solutionDialog,
-                          selectedSupplier: supplier
-                        })}
-                      >
-                        {solutionDialog.selectedSupplier?.name === supplier.name ? 'Selected' : 'Select'}
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table.Root>
+                <Table.Root mt="4">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Select</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {solutionDialog.solution.details.suppliers.map((supplier, idx) => (
+                      <Table.Row key={idx} style={
+                        solutionDialog.selectedSupplier?.name === supplier.name ? 
+                        { backgroundColor: '#f0fdf4' } : {}
+                      }>
+                        <Table.Cell>{supplier.name}</Table.Cell>
+                        <Table.Cell>{formatCurrency(supplier.price, currency)}</Table.Cell>
+                        <Table.Cell>
+                          <Progress value={supplier.rating * 20} />
+                          {supplier.rating}/5
+                        </Table.Cell>
+                        <Table.Cell>{supplier.deliveryTime}</Table.Cell>
+                        <Table.Cell>{supplier.reliability}%</Table.Cell>
+                        <Table.Cell>
+                          <Button
+                            size="1"
+                            variant={solutionDialog.selectedSupplier?.name === supplier.name ? 'solid' : 'outline'}
+                            onClick={() => setSolutionDialog({
+                              ...solutionDialog,
+                              selectedSupplier: supplier
+                            })}
+                          >
+                            {solutionDialog.selectedSupplier?.name === supplier.name ? 'Selected' : 'Select'}
+                          </Button>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </>
+            )}
           </Box>
         );
 
@@ -482,7 +495,7 @@ function CostAnalytics() {
                 <Text size="2" color="gray">Potential Savings</Text>
                 <Text size="5" weight="bold" color="green">
                   {formatCurrency(
-                    (solutionDialog.reductionPercentage! / 100) * 
+                    ((solutionDialog.reductionPercentage || 5) / 100) * 
                     (solutionDialog.category && solutionDialog.itemIndex !== null ?
                       calculateItemCost(
                         getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
@@ -494,19 +507,21 @@ function CostAnalytics() {
               </Box>
             </Flex>
 
-            <Box mb="4">
-              <Text weight="bold" mb="2">Training Options</Text>
-              <RadixSelect.Root>
-                <RadixSelect.Trigger placeholder="Select training program" />
-                <RadixSelect.Content>
-                  {solutionDialog.solution.details.trainingOptions?.map((option, i) => (
-                    <RadixSelect.Item key={i} value={option}>
-                      {option}
-                    </RadixSelect.Item>
-                  ))}
-                </RadixSelect.Content>
-              </RadixSelect.Root>
-            </Box>
+            {solutionDialog.solution.details.trainingOptions && (
+              <Box mb="4">
+                <Text weight="bold" mb="2">Training Options</Text>
+                <RadixSelect.Root>
+                  <RadixSelect.Trigger placeholder="Select training program" />
+                  <RadixSelect.Content>
+                    {solutionDialog.solution.details.trainingOptions.map((option, i) => (
+                      <RadixSelect.Item key={i} value={option}>
+                        {option}
+                      </RadixSelect.Item>
+                    ))}
+                  </RadixSelect.Content>
+                </RadixSelect.Root>
+              </Box>
+            )}
 
             <Box>
               <Flex justify="between" mb="2">
