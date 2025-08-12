@@ -245,7 +245,7 @@ function CostAnalytics() {
       setPendingActions(prev => [...prev, ...solution.actions]);
       await Promise.all(solution.actions.map(action => 
         new Promise(resolve => setTimeout(resolve, 1000))
-      );
+      ));
 
       solution.applyAdjustment(item);
       
