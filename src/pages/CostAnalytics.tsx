@@ -398,7 +398,21 @@ function CostAnalytics() {
   };
 
   const renderSolutionDialogContent = () => {
-    if (!solutionDialog.solution || !solutionDialog.solution.details) return null;
+    if (!solutionDialog.solution) return null;
+
+    // Default case for solutions without details
+    if (!solutionDialog.solution.details) {
+      return (
+        <Box>
+          <Text>This solution will perform the following actions:</Text>
+          <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
+            {solutionDialog.solution.actions.map((action, i) => (
+              <li key={i}>{action}</li>
+            ))}
+          </ul>
+        </Box>
+      );
+    }
 
     switch (solutionDialog.solution.name) {
       case 'Negotiating better prices with supplier':
