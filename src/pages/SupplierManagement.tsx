@@ -13,9 +13,9 @@ import {
   Dialog,
   TextField,
   Select,
-  DropdownMenu
+  DropdownMenu,
+  AlertDialog
 } from '@radix-ui/themes';
-
 import { 
   BarChart, 
   Bar,
@@ -26,7 +26,11 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+  ZAxis,
+  ReferenceLine
 } from 'recharts';
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
@@ -36,12 +40,14 @@ const SupplierManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedRegion, setSelectedRegion] = useState('all');
+  const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [suppliers, setSuppliers] = useState([
     { 
       id: 1, 
-      name: 'Global Pharma Distributors', 
-      contact: 'supply@globalpharma.com', 
+      name: 'Supplier A', 
+      contact: 'contact@supplierA.com', 
       location: 'Europe', 
       leadTime: 14, 
       compliance: 'certified', 
@@ -49,12 +55,13 @@ const SupplierManagement = () => {
       orderVolume: 24500,
       onTimeDelivery: 98,
       qualityRating: 4.9,
-      contracts: ['2023 Master Agreement']
+      contracts: ['2023 Master Agreement'],
+      riskScore: 12
     },
     { 
       id: 2, 
-      name: 'BioTech Raw Materials', 
-      contact: 'orders@biotechrm.com', 
+      name: 'Supplier B', 
+      contact: 'orders@supplierB.com', 
       location: 'North America', 
       leadTime: 21, 
       compliance: 'pending', 
@@ -62,7 +69,22 @@ const SupplierManagement = () => {
       orderVolume: 18200,
       onTimeDelivery: 92,
       qualityRating: 4.5,
-      contracts: []
+      contracts: [],
+      riskScore: 28
+    },
+    { 
+      id: 3, 
+      name: 'Supplier C', 
+      contact: 'support@supplierC.com', 
+      location: 'Asia', 
+      leadTime: 30, 
+      compliance: 'non-compliant', 
+      rating: 3.9,
+      orderVolume: 15600,
+      onTimeDelivery: 85,
+      qualityRating: 4.0,
+      contracts: ['2024 Quarterly Contract'],
+      riskScore: 42
     },
   ]);
 
@@ -83,11 +105,34 @@ const SupplierManagement = () => {
     (selectedRegion === 'all' || supplier.location === selectedRegion)
   );
 
+  // Enhanced risk data for visualization
+  const riskData = suppliers.map(supplier => ({
+    name: supplier.name,
+    leadTime: supplier.leadTime,
+    delivery: supplier.onTimeDelivery,
+    quality: supplier.qualityRating,
+    risk: supplier.riskScore,
+    size: supplier.orderVolume / 1000 // Scale for bubble size
+  }));
+
   const handleComplianceUpdate = (id: number, newStatus: string) => {
     setSuppliers(suppliers.map(supplier => 
       supplier.id === id ? { ...supplier, compliance: newStatus } : supplier
     ));
     toast.success(t('compliance-updated'));
+  };
+
+  const submitToBlockchain = async () => {
+    setIsSubmitting(true);
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      toast.success('Supplier data submitted to blockchain successfully!');
+    } catch (error) {
+      toast.error('Failed to submit data to blockchain');
+    } finally {
+      setIsSubmitting(false);
+      setIsBlockchainDialogOpen(false);
+    }
   };
 
   return (
@@ -110,6 +155,16 @@ const SupplierManagement = () => {
               ))}
             </Select.Content>
           </Select.Root>
+
+          {/* Green Submit to Blockchain Button */}
+          <Button 
+            variant="solid" 
+            color="green"
+            onClick={() => setIsBlockchainDialogOpen(true)}
+          >
+            Submit to Blockchain
+          </Button>
+
           <Dialog.Root>
             <Dialog.Trigger>
               <Button>{t('add-supplier')}</Button>
@@ -142,29 +197,56 @@ const SupplierManagement = () => {
         </Flex>
       </Flex>
 
+      {/* Blockchain Submission Dialog */}
+      <AlertDialog.Root open={isBlockchainDialogOpen}>
+        <AlertDialog.Content style={{ maxWidth: 450 }}>
+          <AlertDialog.Title>Submit to Blockchain</AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="4">
+            Are you sure you want to submit supplier data to the blockchain? This action cannot be undone.
+          </AlertDialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray" 
+              onClick={() => setIsBlockchainDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="solid" 
+              color="green"
+              onClick={submitToBlockchain}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Confirm'}
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('active-suppliers')}</Text>
-            <Heading size="7">248</Heading>
+            <Heading size="7">80</Heading> {/* Updated to 80 active suppliers */}
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('avg-lead-time')}</Text>
-            <Heading size="7">17.2 {t('days')}</Heading>
+            <Heading size="7">21.7 {t('days')}</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('on-time-delivery')}</Text>
-            <Heading size="7">96.4%</Heading>
+            <Heading size="7">91.7%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t('quality-compliance')}</Text>
-            <Heading size="7">98.1%</Heading>
+            <Heading size="7">4.5/5</Heading>
           </Flex>
         </Card>
       </Grid>
@@ -191,23 +273,54 @@ const SupplierManagement = () => {
           <Heading size="4" mb="3">{t('risk-distribution')}</Heading>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={suppliers.map(s => ({
-                name: s.name,
-                risk: (100 - s.onTimeDelivery) * (s.leadTime / 30)
-              }))}>
+              <ScatterChart>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" hide />
-                <YAxis />
-                <Tooltip />
-                <Line 
-                  type="monotone" 
-                  dataKey="risk" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
+                <XAxis 
+                  type="number" 
+                  dataKey="leadTime" 
+                  name="Lead Time (days)" 
+                  unit="d"
+                  domain={[0, 40]}
                 />
-              </LineChart>
+                <YAxis 
+                  type="number" 
+                  dataKey="delivery" 
+                  name="On-Time Delivery %" 
+                  unit="%"
+                  domain={[80, 100]}
+                />
+                <ZAxis 
+                  type="number" 
+                  dataKey="risk" 
+                  range={[50, 500]} 
+                  name="Risk Score"
+                />
+                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                <Legend />
+                <ReferenceLine y={90} stroke="orange" label="Target" />
+                <Scatter 
+                  name="Suppliers" 
+                  data={riskData} 
+                  fill="#3b82f6" 
+                  shape="circle"
+                />
+              </ScatterChart>
             </ResponsiveContainer>
           </div>
+          <Flex justify="center" mt="2" gap="3">
+            <Flex align="center" gap="1">
+              <Box style={{ width: 10, height: 10, backgroundColor: '#3b82f6', borderRadius: '50%' }} />
+              <Text size="1">Low Risk</Text>
+            </Flex>
+            <Flex align="center" gap="1">
+              <Box style={{ width: 10, height: 10, backgroundColor: '#60a5fa', borderRadius: '50%' }} />
+              <Text size="1">Medium Risk</Text>
+            </Flex>
+            <Flex align="center" gap="1">
+              <Box style={{ width: 10, height: 10, backgroundColor: '#93c5fd', borderRadius: '50%' }} />
+              <Text size="1">High Risk</Text>
+            </Flex>
+          </Flex>
         </Card>
       </Flex>
 
@@ -304,7 +417,6 @@ const SupplierManagement = () => {
         <Dialog.Content style={{ width: '80vw', height: '80vh' }}>
           <Dialog.Title>{t('global-supply-network')}</Dialog.Title>
           <div className="h-full w-full bg-gray-50 rounded-lg p-4">
-            {/* Would typically integrate a map library here */}
             <Flex align="center" justify="center" className="h-full">
               <Text color="gray">{t('map-integration-placeholder')}</Text>
             </Flex>
