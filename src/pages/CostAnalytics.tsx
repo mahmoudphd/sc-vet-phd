@@ -338,7 +338,7 @@ function CostAnalytics() {
     const newData = {...data};
 
     try {
-      setPendingActions(prev => [...prev, ...solutionDialog.solution.actions]);
+      setPendingActions(prev => [...prev, ...solutionDialog.solution?.actions || []]);
       
       // Apply specific adjustments based on solution type
       if (solutionDialog.solution.name === 'Negotiating better prices with supplier' && solutionDialog.selectedSupplier) {
