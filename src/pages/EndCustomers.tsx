@@ -10,7 +10,8 @@ import {
   Text,
   Box,
   Dialog,
-  TextField
+  TextField,
+  AlertDialog
 } from '@radix-ui/themes';
 import { 
   LineChart, 
@@ -27,6 +28,8 @@ import {
 
 const EndCustomers = () => {
   const [selectedReport, setSelectedReport] = useState('');
+  const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const customers = [
     { id: 'CUST-02501', productPurchased: 'Poultry Drug A', purchasedFrequency: 92, satisfactionLevel: 'high', rating: 4.7, lastPurchaseDate: '2025-01-15' },
@@ -49,11 +52,34 @@ const EndCustomers = () => {
     { name: 'Low Satisfaction', value: 30, color: '#93c5fd' },
   ];
 
+  const submitToBlockchain = async () => {
+    setIsSubmitting(true);
+    try {
+      // Simulate blockchain submission
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert('Data successfully submitted to blockchain!');
+    } catch (error) {
+      alert('Failed to submit data to blockchain');
+    } finally {
+      setIsSubmitting(false);
+      setIsBlockchainDialogOpen(false);
+    }
+  };
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">End Customer Management</Heading>
         <Flex gap="3">
+          {/* Dark green blockchain button */}
+          <Button 
+            variant="solid" 
+            style={{ backgroundColor: '#166534' }} // Dark green color
+            onClick={() => setIsBlockchainDialogOpen(true)}
+          >
+            Submit to Blockchain
+          </Button>
+
           <Dialog.Root>
             <Dialog.Trigger>
               <Button variant="soft">Safety Reporting</Button>
@@ -106,6 +132,32 @@ const EndCustomers = () => {
           </Dialog.Root>
         </Flex>
       </Flex>
+
+      {/* Blockchain Submission Dialog */}
+      <AlertDialog.Root open={isBlockchainDialogOpen}>
+        <AlertDialog.Content style={{ maxWidth: 450 }}>
+          <AlertDialog.Title>Submit to Blockchain</AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="4">
+            Are you sure you want to submit this customer data to the blockchain?
+          </AlertDialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray" 
+              onClick={() => setIsBlockchainDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              style={{ backgroundColor: '#166534' }} // Dark green color
+              onClick={submitToBlockchain}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Confirm'}
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
 
       <Grid columns="4" gap="4" mb="5">
         <Card>
