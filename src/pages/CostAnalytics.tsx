@@ -1,5 +1,4 @@
 // src/pages/CostAnalytics.tsx
-
 import React, { useState } from 'react';
 import {
   Box,
@@ -33,7 +32,75 @@ import {
   CostCategory,
 } from './simulateIoTCostData';
 
-const formatCurrency = (value: number, currency: string) =>
+// Enhanced solutions configuration
+const SOLUTIONS_CONFIG = [
+  {
+    name: 'Negotiating better prices with supplier',
+    actions: ['Initiate supplier price negotiation'],
+    applyAdjustment: (item: Item) => {
+      if ('pricePerKg' in item) item.pricePerKg! *= 0.9; // 10% reduction
+      if ('unitPrice' in item) item.unitPrice! *= 0.9;
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials']
+  },
+  {
+    name: 'Reducing waste in material usage',
+    actions: ['Schedule waste reduction training'],
+    applyAdjustment: (item: Item) => {
+      if ('concentrationKg' in item) item.concentrationKg! *= 0.95; // 5% reduction
+      if ('qty' in item) item.qty! *= 0.95;
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials']
+  },
+  {
+    name: 'Automation to reduce manual labor costs',
+    actions: ['Request automation assessment'],
+    applyAdjustment: (item: Item) => {
+      if ('hours' in item) item.hours! *= 0.8; // 20% reduction
+    },
+    applicableTo: ['Direct Labor']
+  },
+  {
+    name: 'Optimizing machine usage',
+    actions: ['Schedule preventive maintenance'],
+    applyAdjustment: (item: Item) => {
+      if ('unitPrice' in item) item.unitPrice! *= 0.85; // 15% reduction
+    },
+    applicableTo: ['Overhead']
+  },
+  {
+    name: 'Improving inventory management',
+    actions: ['Implement inventory tracking system'],
+    applyAdjustment: (item: Item) => {
+      if ('qty' in item) item.qty! *= 0.9; // 10% reduction
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials']
+  },
+  {
+    name: 'Minimize transportation costs',
+    actions: ['Analyze logistics network'],
+    applyAdjustment: (item: Item) => {
+      if ('unitPrice' in item) item.unitPrice! *= 0.8; // 20% reduction
+    },
+    applicableTo: ['Other Costs']
+  },
+  {
+    name: 'Reduce rework costs',
+    actions: ['Implement quality training program'],
+    applyAdjustment: (item: Item) => {
+      if ('qty' in item) item.qty! *= 0.7; // 30% reduction
+    },
+    applicableTo: ['Other Costs']
+  },
+  {
+    name: 'Other',
+    actions: ['Create custom improvement plan'],
+    applyAdjustment: (item: Item) => {},
+    applicableTo: ['*']
+  }
+];
+
+const formatCurrency = (value: number, currency: string) => 
   `${currency} ${value.toFixed(2)}`;
 
 const categories: CostCategory[] = [
@@ -45,17 +112,7 @@ const categories: CostCategory[] = [
 ];
 
 const products = ['Product A', 'Product B', 'Product C'];
-
-const solutionsOptions = [
-  'Negotiating better prices with supplier',
-  'Reducing waste in material usage',
-  'Automation to reduce manual labor costs',
-  'Optimizing machine usage',
-  'Improving inventory management',
-  'Minimize transportation costs',
-  'Reduce rework costs',
-  'Other',
-];
+const solutionsOptions = SOLUTIONS_CONFIG.map(s => s.name);
 
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
@@ -81,7 +138,8 @@ function CostAnalytics() {
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
   const [autoMode, setAutoMode] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState(products[0]);
-  const [showCostGap, setShowCostGap] = useState(true);
+  const [showTargetView, setShowTargetView] = useState(false);
+  const [data, setData] = useState(simulatedIoTCostData);
   const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
     'Direct Materials': {},
     'Packaging Materials': {},
@@ -89,22 +147,26 @@ function CostAnalytics() {
     'Overhead': {},
     'Other Costs': {},
   });
+  const [pendingActions, setPendingActions] = useState<string[]>([]);
 
-  const totals = simulatedIoTCostData.totals;
-
+  const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
 
+  const postOptimizationEstimate = totalActual - totalCostAfter;
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
-  const postOptimizationEstimate = totalCostAfter * (1 - profitMargin / 100);
+
+  const handleBenchmarkChange = (value: number) => {
+    setBenchmarkPrice(value);
+  };
 
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
     { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
     { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
   ];
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
@@ -113,27 +175,93 @@ function CostAnalytics() {
     gap: d.actual - targetCost,
   }));
 
-  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444'];
+  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
 
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
-  const handleSolutionChange = (category: CostCategory, index: number, value: string) => {
-    setSolutions((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [index]: value,
-      },
-    }));
+  const handleSolutionChange = async (category: CostCategory, index: number, solutionName: string) => {
+    const solution = SOLUTIONS_CONFIG.find(s => s.name === solutionName);
+    if (!solution) return;
+
+    if (!solution.applicableTo.includes('*') && !solution.applicableTo.includes(category)) {
+      alert('This solution is not applicable for the selected category');
+      return;
+    }
+
+    const item = getDetailsByCategory(category)[index];
+    const newData = {...data};
+
+    const confirmMessage = `This solution will:\n${
+      solution.actions.map(a => `• ${a}`).join('\n')
+    }\n\nApply these changes?`;
+
+    if (!window.confirm(confirmMessage)) return;
+
+    try {
+      setPendingActions(prev => [...prev, ...solution.actions]);
+      
+      // Simulate API calls
+      await Promise.all(solution.actions.map(action => 
+        new Promise(resolve => setTimeout(resolve, 1000))
+      );
+
+      solution.applyAdjustment(item);
+      
+      setSolutions(prev => ({
+        ...prev,
+        [category]: {...prev[category], [index]: solutionName}
+      }));
+      
+      setData(newData);
+      setPendingActions(prev => prev.filter(a => !solution.actions.includes(a)));
+      alert('Solution applied successfully!');
+    } catch (error) {
+      alert('Error applying solution');
+      setPendingActions(prev => prev.filter(a => !solution.actions.includes(a)));
+    }
   };
 
   const handleExportReport = () => {
     alert('Export Report functionality not implemented yet.');
   };
 
+  const handleTargetChange = (category: CostCategory, value: number) => {
+    setData((prev) => ({
+      ...prev,
+      totals: {
+        ...prev.totals,
+        [category]: {
+          ...prev.totals[category],
+          budget: value,
+        },
+      },
+    }));
+  };
+
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      {pendingActions.length > 0 && (
+        <Box style={{
+          position: 'fixed',
+          bottom: 20,
+          right: 20,
+          backgroundColor: '#fff',
+          padding: 16,
+          borderRadius: 8,
+          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+          zIndex: 1000
+        }}>
+          <Heading size="4" mb="2">Pending Actions</Heading>
+          {pendingActions.map((action, i) => (
+            <Flex key={i} align="center" gap="2" mb="1">
+              <Progress value={100} style={{width: 100}} />
+              <Text size="2">{action}</Text>
+            </Flex>
+          ))}
+        </Box>
+      )}
+
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -179,14 +307,18 @@ function CostAnalytics() {
           <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+          <Text size="2">Post-Optimization Estimate</Text>
+          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
+        </Box>
+        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Benchmark Price</Text>
           <input
             type="number"
             value={benchmarkPrice}
-            onChange={(e) => setBenchmarkPrice(parseFloat(e.target.value) || 0)}
-            style={{ padding: '8px', fontSize: '1rem', borderRadius: '4px', border: '1px solid #ccc', width: '100%' }}
-            min={0}
+            onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
+            style={{ width: '80px', marginTop: '4px' }}
           />
+          <Heading size="6" mt="2">{formatCurrency(benchmarkPrice, currency)}</Heading>
         </Box>
         <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
           <Text size="2">Profit Margin (%)</Text>
@@ -194,115 +326,58 @@ function CostAnalytics() {
             type="number"
             value={profitMargin}
             onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{ padding: '8px', fontSize: '1rem', borderRadius: '4px', border: '1px solid #ccc', width: '100%' }}
-            min={0}
-            max={100}
+            style={{ width: '80px', marginTop: '4px' }}
           />
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Progress to Target</Text>
-          <Progress value={Math.min((targetCost / totalActual) * 100, 100)} />
-          <Text>{Math.round((targetCost / totalActual) * 100)}%</Text>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
+          <Heading size="6" mt="2">{profitMargin}%</Heading>
         </Box>
       </Grid>
-
-      <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff', marginBottom: '1rem' }}>
-        <Button
-          style={{ backgroundColor: showCostGap ? '#10b981' : '#10b981', color: '#fff' }}
-          onClick={() => setShowCostGap(!showCostGap)}
-        >
-          {showCostGap ? 'Hide Cost Gap' : 'Show Cost Gap'}
-        </Button>
-      </Box>      <Flex gap="8" mb="6" style={{ height: 300 }}>
-        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={[
-                  {
-                    name: 'Direct Cost',
-                    value:
-                      totals['Direct Materials'].actual +
-                      totals['Packaging Materials'].actual +
-                      totals['Direct Labor'].actual,
-                  },
-                  { name: 'Overhead', value: totals['Overhead'].actual },
-                  { name: 'Other Costs', value: totals['Other Costs'].actual },
-                ]}
-                dataKey="value"
-                nameKey="name"
-                outerRadius={100}
-                label
-              >
-                <Cell fill={pieColors[0]} />
-                <Cell fill={pieColors[1]} />
-                <Cell fill={pieColors[2]} />
-              </Pie>
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </Box>
-
-        <Box style={{ flex: 1, border: '1px solid #ccc', borderRadius: 8, padding: 8, backgroundColor: '#fff' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={benchmarkTrendDataWithGap}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip formatter={(value: number) => formatCurrency(value, currency)} />
-              <Legend />
-              <Line type="monotone" dataKey="actual" stroke="#3b82f6" name="Actual Cost" />
-              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" />
-              <Line type="monotone" dataKey="targetCost" stroke="#ef4444" name="Target Cost" strokeDasharray="5 5" />
-              {showCostGap && (
-                <Line
-                  type="monotone"
-                  dataKey="gap"
-                  stroke="#10b981"
-                  name="Cost Gap"
-                  dot={false}
-                  isAnimationActive={false}
-                />
-              )}
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Flex>
 
       <Table.Root>
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Target Cost (Editable)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>View Details</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {categories.map((category) => (
-            <Table.Row key={category}>
-              <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-              <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
-              <Table.Cell>{formatCurrency(totals[category].budget, currency)}</Table.Cell>
-              <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
-              <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
-              <Table.Cell>
-                <Button onClick={() => setDialogCategory(category)}>View Details</Button>
-              </Table.Cell>
-            </Table.Row>
-          ))}
+          {categories.map((category) => {
+            const variance = totals[category].actual - totals[category].budget;
+            const varianceColor = variance <= 0 ? 'green' : 'red';
+            return (
+              <Table.Row key={category}>
+                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
+                <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+                <Table.Cell>
+                  <input
+                    type="number"
+                    value={totals[category].budget}
+                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                    style={{ width: '80px' }}
+                  />
+                </Table.Cell>
+                <Table.Cell style={{ color: varianceColor }}>
+                  {formatCurrency(variance, currency)}
+                </Table.Cell>
+                <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+                <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+                <Table.Cell>
+                  <Button onClick={() => setDialogCategory(category)}>View Details</Button>
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
           <Table.Row>
             <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
             <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
             <Table.Cell><b>{formatCurrency(totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalActual - totalTarget, currency)}</b></Table.Cell>
             <Table.Cell><b>100%</b></Table.Cell>
+            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
             <Table.Cell></Table.Cell>
           </Table.Row>
         </Table.Body>
@@ -313,52 +388,46 @@ function CostAnalytics() {
           <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
             <Flex justify="between" align="center" mb="3" mt="3">
-              <Text>Auto Mode</Text>
+              <Text>Auto IoT Mode</Text>
               <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
             </Flex>
-
-            {!autoMode && (
-              <Text color="gray" mb="3">
-                Manual input mode enabled. You can modify the cost data here.
-              </Text>
-            )}
-
+            <Flex justify="start" mb="3">
+              <Button
+                variant={showTargetView ? 'solid' : 'soft'}
+                onClick={() => setShowTargetView(false)}
+                style={{ marginRight: '8px' }}
+              >
+                Actual View
+              </Button>
+              <Button
+                variant={showTargetView ? 'soft' : 'solid'}
+                onClick={() => setShowTargetView(true)}
+              >
+                Target View
+              </Button>
+            </Flex>
             <Table.Root>
               <Table.Header>
                 <Table.Row>
                   <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>
-                    {dialogCategory === 'Direct Materials'
-                      ? 'Concentration (kg)'
-                      : dialogCategory === 'Direct Labor'
-                      ? 'Hours'
-                      : 'Qty'}
-                  </Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>
-                    {dialogCategory === 'Direct Materials'
-                      ? 'Price / Kg'
-                      : dialogCategory === 'Direct Labor'
-                      ? 'Hourly Rate'
-                      : 'Unit Price'}
-                  </Table.ColumnHeaderCell>
-                  <Table.ColumnHeaderCell>Cost</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Qty/Units</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Total Cost</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
-                {getDetailsByCategory(dialogCategory).map((item: Item, index: number) => {
+                {getDetailsByCategory(dialogCategory).map((item, index) => {
                   let costValue = item.cost ?? 0;
-
                   if (autoMode) {
                     if (dialogCategory === 'Direct Materials') {
                       costValue = (item.concentrationKg ?? 0) * (item.pricePerKg ?? 0);
                     } else if (dialogCategory === 'Direct Labor') {
-                      costValue = (item.hourlyRate ?? 0) * (item.hours ?? 0);
+                      costValue = (item.hours ?? 0) * (item.hourlyRate ?? 0);
                     } else {
-                      costValue = (item.unitPrice ?? 0) * (item.qty ?? 0);
+                      costValue = (item.qty ?? 0) * (item.unitPrice ?? 0);
                     }
                   }
-
                   return (
                     <Table.Row key={index}>
                       <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
@@ -381,9 +450,9 @@ function CostAnalytics() {
                             }
                             onChange={(e) => {
                               const value = parseFloat(e.target.value) || 0;
-                              item.concentrationKg = dialogCategory === 'Direct Materials' ? value : item.concentrationKg;
-                              item.hours = dialogCategory === 'Direct Labor' ? value : item.hours;
-                              item.qty = dialogCategory !== 'Direct Materials' && dialogCategory !== 'Direct Labor' ? value : item.qty;
+                              if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hours = value;
+                              else item.qty = value;
                             }}
                             style={{ width: '80px' }}
                           />
@@ -414,9 +483,9 @@ function CostAnalytics() {
                             }
                             onChange={(e) => {
                               const value = parseFloat(e.target.value) || 0;
-                              item.pricePerKg = dialogCategory === 'Direct Materials' ? value : item.pricePerKg;
-                              item.hourlyRate = dialogCategory === 'Direct Labor' ? value : item.hourlyRate;
-                              item.unitPrice = dialogCategory !== 'Direct Materials' && dialogCategory !== 'Direct Labor' ? value : item.unitPrice;
+                              if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                              else item.unitPrice = value;
                             }}
                             style={{ width: '80px' }}
                           />
@@ -426,15 +495,18 @@ function CostAnalytics() {
                       <Table.Cell>
                         <RadixSelect.Root
                           value={solutions[dialogCategory]?.[index] || ''}
-                          onValueChange={(value) =>
-                            handleSolutionChange(dialogCategory, index, value)
-                          }
+                          onValueChange={(value) => handleSolutionChange(dialogCategory, index, value)}
                         >
                           <RadixSelect.Trigger aria-label="Select solution" />
                           <RadixSelect.Content>
-                            {solutionsOptions.map((sol) => (
-                              <RadixSelect.Item key={sol} value={sol}>
-                                {sol}
+                            {SOLUTIONS_CONFIG.map((solution) => (
+                              <RadixSelect.Item 
+                                key={solution.name} 
+                                value={solution.name}
+                                disabled={!solution.applicableTo.includes('*') && 
+                                         !solution.applicableTo.includes(dialogCategory)}
+                              >
+                                {solution.name}
                               </RadixSelect.Item>
                             ))}
                           </RadixSelect.Content>
@@ -445,17 +517,123 @@ function CostAnalytics() {
                 })}
               </Table.Body>
             </Table.Root>
-
             <Flex justify="end" gap="3" mt="4">
-              <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>Submit</Button>
-              <Button variant="ghost" style={{ backgroundColor: '#3b82f6', color: '#fff' }} onClick={() => setDialogCategory(null)}>Close</Button>
+              <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>
+                Submit
+              </Button>
+              <Button
+                variant="ghost"
+                style={{ backgroundColor: '#3b82f6', color: '#fff' }}
+                onClick={() => setDialogCategory(null)}
+              >
+                Close
+              </Button>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
       )}
 
-      <Flex justify="center" mt="6">
-        <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>
+      <Flex mt="8" gap="6" wrap="wrap" justify="center">
+        <Box style={{
+          backgroundColor: '#fff',
+          padding: 20,
+          borderRadius: 10,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          minWidth: 300,
+          flex: '1 1 300px',
+        }}>
+          <Heading size="4" mb="3" align="center">
+            Cost Gap Analysis
+          </Heading>
+          <Text align="center" mb="4" size="2">
+            Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
+          </Text>
+          <Grid columns={{ initial: '3' }} gap="2">
+            {categories.map((category, index) => (
+              <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
+                <Text weight="bold" size="2" mb="2">
+                  {category}
+                </Text>
+                <Progress
+                  value={(totals[category].actual / totalActual) * 100}
+                  color={
+                    index === 0 ? 'blue' :
+                    index === 1 ? 'amber' :
+                    index === 2 ? 'red' :
+                    index === 3 ? 'green' :
+                    'purple'
+                  }
+                  size="2"
+                />
+                <Text mt="2" size="2">
+                  {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
+                </Text>
+              </Box>
+            ))}
+          </Grid>
+        </Box>
+        <Box style={{
+          backgroundColor: '#fff',
+          padding: 20,
+          borderRadius: 10,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          minWidth: 300,
+          flex: '1 1 300px',
+        }}>
+          <Heading size="4" mb="3" align="center">
+            Cost Breakdown Pie Chart
+          </Heading>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={categories.map((category) => ({
+                  name: category,
+                  value: totals[category].actual,
+                }))}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+              >
+                {categories.map((_, index) => (
+                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </Box>
+        <Box style={{
+          backgroundColor: '#fff',
+          padding: 20,
+          borderRadius: 10,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          minWidth: 300,
+          flex: '1 1 300px',
+        }}>
+          <Heading size="4" mb="3" align="center">
+            Benchmark Trend Line Chart
+          </Heading>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={benchmarkTrendDataWithGap}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="actual" stroke="#3b82f6" activeDot={{ r: 8 }} name="Actual Cost" />
+              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" strokeDasharray="5 5" />
+              <Line type="monotone" dataKey="targetCost" stroke="#10b981" name="Target Cost" strokeDasharray="3 4 5 2" />
+            </LineChart>
+          </ResponsiveContainer>
+        </Box>
+      </Flex>
+
+      <Flex justify="end" mt="6">
+        <Button style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
+          onClick={() => alert('Submit All clicked')}>
           Submit to Blockchain
         </Button>
       </Flex>
