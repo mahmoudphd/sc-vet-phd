@@ -149,14 +149,14 @@ const Distributors = () => {
   }, [distributors]);
 
   const complianceRate = useMemo(() => {
-    return (distributors.filter(d => d.compliance === 'gdp-certified').length / distributors.length * 100;
+    return (distributors.filter(d => d.compliance === 'gdp-certified').length / distributors.length) * 100;
   }, [distributors]);
 
   // CRUD operations
   const handleAddDistributor = async (data: z.infer<typeof distributorSchema>) => {
     try {
       const newDistributor = {
-        id: `DIST-${Math.random().toString(36).substr(2, 9)}`,
+        id: `DIST-${Math.random().toString(36).substring(2, 9)}`,
         ...data
       };
       setDistributors(prev => [...prev, newDistributor]);
@@ -174,7 +174,7 @@ const Distributors = () => {
     }
     setRegions(prev => [...prev, data.name]);
     toast.success(t("toast.region-added"));
-    setIsRegionModalOpen(false)
+    setIsRegionModalOpen(false);
     regionForm.reset();
   };
 
