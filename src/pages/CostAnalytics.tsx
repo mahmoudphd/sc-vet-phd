@@ -124,10 +124,10 @@ const OTHER_SOLUTION: SolutionConfig = {
 const simulatedIoTCostData: SimulatedIoTCostData = {
   totals: {
     'Direct Materials': { actual: 0, budget: 0, costAfter: 0 },
-    'Packaging Materials': { actual: 500, budget: 450, costAfter: 400 },
-    'Direct Labor': { actual: 800, budget: 750, costAfter: 700 },
-    'Overhead': { actual: 600, budget: 550, costAfter: 500 },
-    'Other Costs': { actual: 300, budget: 250, costAfter: 200 }
+    'Packaging Materials': { actual: 18, budget: 15, costAfter: 15 },
+    'Direct Labor': { actual: 3, budget: 2.5, costAfter: 2 },
+    'Overhead': { actual: 1.5, budget: 1.2, costAfter: 1 },
+    'Other Costs': { actual: 15, budget: 12, costAfter: 10 }
   },
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
@@ -135,36 +135,26 @@ const simulatedIoTCostData: SimulatedIoTCostData = {
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
     { name: 'Nicotinamide B3', concentrationKg: 0.010, pricePerKg: 400 },
     { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700 },
-    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 },
-    { name: 'Leucine', concentrationKg: 0.030, pricePerKg: 200 },
-    { name: 'Threonine', concentrationKg: 0.010, pricePerKg: 950 },
-    { name: 'Taurine', concentrationKg: 0.003, pricePerKg: 3000 },
-    { name: 'Glycine', concentrationKg: 0.003, pricePerKg: 4200 },
-    { name: 'Arginine', concentrationKg: 0.003, pricePerKg: 5000 },
-    { name: 'Cynarin', concentrationKg: 0.003, pricePerKg: 3900 },
-    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700 },
-    { name: 'Sorbitol', concentrationKg: 0.010, pricePerKg: 360 },
-    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070 },
-    { name: 'Betaine', concentrationKg: 0.020, pricePerKg: 1250 },
-    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90 },
-    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1 }
+    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 }
   ],
   packagingMaterials: [
-    { name: 'Bottles', qty: 100, unitPrice: 2 },
-    { name: 'Labels', qty: 200, unitPrice: 0.5 },
-    { name: 'Caps', qty: 100, unitPrice: 0.3 }
+    { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10 },
+    { name: 'Safety Seal', qty: 1, unitPrice: 3 },
+    { name: 'Cap', qty: 1, unitPrice: 5 }
   ],
   directLabor: [
-    { name: 'Mixing', hours: 40, hourlyRate: 15 },
-    { name: 'Quality Control', hours: 20, hourlyRate: 12 }
+    { name: 'Operator', hours: 0.5, hourlyRate: 3.5 },
+    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75 },
+    { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74 }
   ],
   overheadItems: [
-    { name: 'Electricity', cost: 200 },
-    { name: 'Rent', cost: 400 }
+    { name: 'Rent', cost: 1 },
+    { name: 'Electricity', cost: 0.5 }
   ],
   otherCosts: [
-    { name: 'Transportation', cost: 150 },
-    { name: 'Miscellaneous', cost: 150 }
+    { name: 'Transportation', qty: 1, unitPrice: 6.67 },
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33 },
+    { name: 'Rework', qty: 1, unitPrice: 5 }
   ]
 };
 
@@ -476,27 +466,31 @@ function CostAnalytics() {
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          value={supplier.price}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'price', e.target.value)
-                          }
-                        />
+                        <TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            value={supplier.price}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'price', e.target.value)
+                            }
+                          />
+                        </TextField.Root>
                       ) : formatCurrency(supplier.price, currency)}
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          min="1"
-                          max="5"
-                          step="0.1"
-                          value={supplier.rating}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'rating', e.target.value)
-                          }
-                        />
+                        <TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            min="1"
+                            max="5"
+                            step="0.1"
+                            value={supplier.rating}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'rating', e.target.value)
+                            }
+                          />
+                        </TextField.Root>
                       ) : (
                         <>
                           <Progress value={supplier.rating * 20} />
@@ -506,25 +500,29 @@ function CostAnalytics() {
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField
-                          value={supplier.deliveryTime}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
-                          }
-                        />
+                        <TextField.Root>
+                          <TextField.Input
+                            value={supplier.deliveryTime}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
+                            }
+                          />
+                        </TextField.Root>
                       ) : supplier.deliveryTime}
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={supplier.reliability}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'reliability', e.target.value)
-                          }
-                        />
+                        <TextField.Root>
+                          <TextField.Input
+                            type="number"
+                            min="1"
+                            max="100"
+                            value={supplier.reliability}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                              handleSupplierDataChange(idx, 'reliability', e.target.value)
+                            }
+                          />
+                        </TextField.Root>
                       ) : `${supplier.reliability}%`}
                     </Table.Cell>
                     <Table.Cell>
@@ -731,16 +729,7 @@ function CostAnalytics() {
               </Table.Header>
               <Table.Body>
                 {getDetailsByCategory(dialogCategory).map((item, index) => {
-                  let costValue = item.cost ?? 0;
-                  if (autoMode) {
-                    if (dialogCategory === 'Direct Materials') {
-                      costValue = (item.concentrationKg || 0) * (item.pricePerKg || 0);
-                    } else if (dialogCategory === 'Direct Labor') {
-                      costValue = (item.hours || 0) * (item.hourlyRate || 0);
-                    } else {
-                      costValue = (item.qty || 0) * (item.unitPrice || 0);
-                    }
-                  }
+                  let costValue = calculateItemCost(item, dialogCategory);
                   return (
                     <Table.Row key={index}>
                       <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
@@ -749,8 +738,8 @@ function CostAnalytics() {
                           dialogCategory === 'Direct Materials'
                             ? item.concentrationKg?.toFixed(3) ?? '-'
                             : dialogCategory === 'Direct Labor'
-                            ? item.hours ?? '-'
-                            : item.qty ?? '-'
+                            ? item.hours?.toFixed(2) ?? '-'
+                            : item.qty?.toFixed(2) ?? '-'
                         ) : (
                           <input
                             type="number"
