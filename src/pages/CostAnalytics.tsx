@@ -476,31 +476,27 @@ function CostAnalytics() {
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField.Root>
-                          <TextField.Input
-                            type="number"
-                            value={supplier.price}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleSupplierDataChange(idx, 'price', e.target.value)
-                            }
-                          />
-                        </TextField.Root>
+                        <TextField
+                          type="number"
+                          value={supplier.price}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                            handleSupplierDataChange(idx, 'price', e.target.value)
+                          }
+                        />
                       ) : formatCurrency(supplier.price, currency)}
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField.Root>
-                          <TextField.Input
-                            type="number"
-                            min="1"
-                            max="5"
-                            step="0.1"
-                            value={supplier.rating}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleSupplierDataChange(idx, 'rating', e.target.value)
-                            }
-                          />
-                        </TextField.Root>
+                        <TextField
+                          type="number"
+                          min="1"
+                          max="5"
+                          step="0.1"
+                          value={supplier.rating}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                            handleSupplierDataChange(idx, 'rating', e.target.value)
+                          }
+                        />
                       ) : (
                         <>
                           <Progress value={supplier.rating * 20} />
@@ -510,29 +506,25 @@ function CostAnalytics() {
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField.Root>
-                          <TextField.Input
-                            value={supplier.deliveryTime}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
-                            }
-                          />
-                        </TextField.Root>
+                        <TextField
+                          value={supplier.deliveryTime}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                            handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
+                          }
+                        />
                       ) : supplier.deliveryTime}
                     </Table.Cell>
                     <Table.Cell>
                       {supplierDialogEditable ? (
-                        <TextField.Root>
-                          <TextField.Input
-                            type="number"
-                            min="1"
-                            max="100"
-                            value={supplier.reliability}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                              handleSupplierDataChange(idx, 'reliability', e.target.value)
-                            }
-                          />
-                        </TextField.Root>
+                        <TextField
+                          type="number"
+                          min="1"
+                          max="100"
+                          value={supplier.reliability}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
+                            handleSupplierDataChange(idx, 'reliability', e.target.value)
+                          }
+                        />
                       ) : `${supplier.reliability}%`}
                     </Table.Cell>
                     <Table.Cell>
