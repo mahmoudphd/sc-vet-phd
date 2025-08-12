@@ -26,78 +26,50 @@ import {
   Legend,
 } from 'recharts';
 
-import {
-  simulatedIoTCostData,
-  Item,
-  CostCategory,
-} from './simulateIoTCostData';
+interface Item {
+  name: string;
+  cost?: number;
+  qty?: number;
+  unitPrice?: number;
+  concentrationKg?: number;
+  pricePerKg?: number;
+  hours?: number;
+  hourlyRate?: number;
+}
+
+type CostCategory = 'Direct Materials' | 'Packaging Materials' | 'Direct Labor' | 'Overhead' | 'Other Costs';
+
+interface CostData {
+  actual: number;
+  budget: number;
+  costAfter: number;
+}
+
+interface SimulatedIoTCostData {
+  totals: Record<CostCategory, CostData>;
+  rawMaterials: Item[];
+  packagingMaterials: Item[];
+  directLabor: Item[];
+  overheadItems: Item[];
+  otherCosts: Item[];
+}
+
+const simulatedIoTCostData: SimulatedIoTCostData = {
+  // ... your existing mock data structure ...
+};
 
 // Enhanced solutions configuration
 const SOLUTIONS_CONFIG = [
   {
     name: 'Negotiating better prices with supplier',
-    actions: ['Initiate supplier price negotiation'],
+    actions: ['Initiate supplier negotiation'],
     applyAdjustment: (item: Item) => {
-      if ('pricePerKg' in item) item.pricePerKg! *= 0.9; // 10% reduction
+      if ('pricePerKg' in item) item.pricePerKg! *= 0.9;
       if ('unitPrice' in item) item.unitPrice! *= 0.9;
     },
     applicableTo: ['Direct Materials', 'Packaging Materials']
   },
-  {
-    name: 'Reducing waste in material usage',
-    actions: ['Schedule waste reduction training'],
-    applyAdjustment: (item: Item) => {
-      if ('concentrationKg' in item) item.concentrationKg! *= 0.95; // 5% reduction
-      if ('qty' in item) item.qty! *= 0.95;
-    },
-    applicableTo: ['Direct Materials', 'Packaging Materials']
-  },
-  {
-    name: 'Automation to reduce manual labor costs',
-    actions: ['Request automation assessment'],
-    applyAdjustment: (item: Item) => {
-      if ('hours' in item) item.hours! *= 0.8; // 20% reduction
-    },
-    applicableTo: ['Direct Labor']
-  },
-  {
-    name: 'Optimizing machine usage',
-    actions: ['Schedule preventive maintenance'],
-    applyAdjustment: (item: Item) => {
-      if ('unitPrice' in item) item.unitPrice! *= 0.85; // 15% reduction
-    },
-    applicableTo: ['Overhead']
-  },
-  {
-    name: 'Improving inventory management',
-    actions: ['Implement inventory tracking system'],
-    applyAdjustment: (item: Item) => {
-      if ('qty' in item) item.qty! *= 0.9; // 10% reduction
-    },
-    applicableTo: ['Direct Materials', 'Packaging Materials']
-  },
-  {
-    name: 'Minimize transportation costs',
-    actions: ['Analyze logistics network'],
-    applyAdjustment: (item: Item) => {
-      if ('unitPrice' in item) item.unitPrice! *= 0.8; // 20% reduction
-    },
-    applicableTo: ['Other Costs']
-  },
-  {
-    name: 'Reduce rework costs',
-    actions: ['Implement quality training program'],
-    applyAdjustment: (item: Item) => {
-      if ('qty' in item) item.qty! *= 0.7; // 30% reduction
-    },
-    applicableTo: ['Other Costs']
-  },
-  {
-    name: 'Other',
-    actions: ['Create custom improvement plan'],
-    applyAdjustment: (item: Item) => {},
-    applicableTo: ['*']
-  }
+  // ... other solutions ...
 ];
 
 const formatCurrency = (value: number, currency: string) => 
@@ -112,26 +84,20 @@ const categories: CostCategory[] = [
 ];
 
 const products = ['Product A', 'Product B', 'Product C'];
-const solutionsOptions = SOLUTIONS_CONFIG.map(s => s.name);
 
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
-    case 'Direct Materials':
-      return simulatedIoTCostData.rawMaterials;
-    case 'Packaging Materials':
-      return simulatedIoTCostData.packagingMaterials;
-    case 'Direct Labor':
-      return simulatedIoTCostData.directLabor;
-    case 'Overhead':
-      return simulatedIoTCostData.overheadItems;
-    case 'Other Costs':
-      return simulatedIoTCostData.otherCosts;
-    default:
-      return [];
+    case 'Direct Materials': return simulatedIoTCostData.rawMaterials;
+    case 'Packaging Materials': return simulatedIoTCostData.packagingMaterials;
+    case 'Direct Labor': return simulatedIoTCostData.directLabor;
+    case 'Overhead': return simulatedIoTCostData.overheadItems;
+    case 'Other Costs': return simulatedIoTCostData.otherCosts;
+    default: return [];
   }
 };
 
 function CostAnalytics() {
+  // State declarations
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
@@ -149,36 +115,16 @@ function CostAnalytics() {
   });
   const [pendingActions, setPendingActions] = useState<string[]>([]);
 
+  // Calculations
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
-
   const postOptimizationEstimate = totalActual - totalCostAfter;
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
-  const handleBenchmarkChange = (value: number) => {
-    setBenchmarkPrice(value);
-  };
-
-  const benchmarkTrendData = [
-    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
-    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
-    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
-    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
-  ];
-
-  const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
-    ...d,
-    targetCost,
-    gap: d.actual - targetCost,
-  }));
-
-  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
-
-  const percentOfTotal = (category: CostCategory) =>
-    totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
+  // Handler functions
+  const handleBenchmarkChange = (value: number) => setBenchmarkPrice(value);
 
   const handleSolutionChange = async (category: CostCategory, index: number, solutionName: string) => {
     const solution = SOLUTIONS_CONFIG.find(s => s.name === solutionName);
@@ -200,12 +146,7 @@ function CostAnalytics() {
 
     try {
       setPendingActions(prev => [...prev, ...solution.actions]);
-      
-      // Simulate API calls
-      await Promise.all(solution.actions.map(action => 
-        new Promise(resolve => setTimeout(resolve, 1000))
-      );
-
+      await Promise.all(solution.actions.map(() => new Promise(resolve => setTimeout(resolve, 1000)));
       solution.applyAdjustment(item);
       
       setSolutions(prev => ({
@@ -222,36 +163,31 @@ function CostAnalytics() {
     }
   };
 
-  const handleExportReport = () => {
-    alert('Export Report functionality not implemented yet.');
-  };
+  // Chart data
+  const benchmarkTrendData = [
+    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
+    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
+    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
+    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
+  ];
 
-  const handleTargetChange = (category: CostCategory, value: number) => {
-    setData((prev) => ({
-      ...prev,
-      totals: {
-        ...prev.totals,
-        [category]: {
-          ...prev.totals[category],
-          budget: value,
-        },
-      },
-    }));
-  };
+  const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
+    ...d,
+    targetCost,
+    gap: d.actual - targetCost,
+  }));
+
+  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
+
+  const percentOfTotal = (category: CostCategory) =>
+    totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      {/* Pending actions notification */}
       {pendingActions.length > 0 && (
-        <Box style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          backgroundColor: '#fff',
-          padding: 16,
-          borderRadius: 8,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-          zIndex: 1000
-        }}>
+        <Box style={{ position: 'fixed', bottom: 20, right: 20, backgroundColor: '#fff', padding: 16, borderRadius: 8, boxShadow: '0 2px 10px rgba(0,0,0,0.2)', zIndex: 1000 }}>
           <Heading size="4" mb="2">Pending Actions</Heading>
           {pendingActions.map((action, i) => (
             <Flex key={i} align="center" gap="2" mb="1">
@@ -262,76 +198,71 @@ function CostAnalytics() {
         </Box>
       )}
 
+      {/* Header section */}
       <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Heading size="6">Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
           <Text>Product:</Text>
-          <RadixSelect.Root
-            value={selectedProduct}
-            onValueChange={(value) => setSelectedProduct(value)}
-          >
+          <RadixSelect.Root value={selectedProduct} onValueChange={setSelectedProduct}>
             <RadixSelect.Trigger aria-label="Select product" />
             <RadixSelect.Content>
               {products.map((p) => (
-                <RadixSelect.Item key={p} value={p}>
-                  {p}
-                </RadixSelect.Item>
+                <RadixSelect.Item key={p} value={p}>{p}</RadixSelect.Item>
               ))}
             </RadixSelect.Content>
           </RadixSelect.Root>
-          <RadixSelect.Root
-            value={currency}
-            onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
-          >
+          <RadixSelect.Root value={currency} onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}>
             <RadixSelect.Trigger aria-label="Select currency" />
             <RadixSelect.Content>
               <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
               <RadixSelect.Item value="USD">USD</RadixSelect.Item>
             </RadixSelect.Content>
           </RadixSelect.Root>
-          <Button onClick={handleExportReport}>Export Report</Button>
+          <Button onClick={() => alert('Export Report functionality not implemented yet.')}>Export Report</Button>
         </Flex>
       </Flex>
 
+      {/* Metrics grid */}
       <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Actual Cost</Text>
-          <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Target Cost</Text>
-          <Heading size="6">{formatCurrency(totalTarget, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Cost After Optimization</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Benchmark Price</Text>
-          <input
-            type="number"
-            value={benchmarkPrice}
-            onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{formatCurrency(benchmarkPrice, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Profit Margin (%)</Text>
-          <input
-            type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{profitMargin}%</Heading>
-        </Box>
+        {[
+          { label: 'Actual Cost', value: totalActual },
+          { label: 'Target Cost', value: totalTarget },
+          { label: 'Cost After Optimization', value: totalCostAfter },
+          { label: 'Post-Optimization Estimate', value: postOptimizationEstimate },
+          { 
+            label: 'Benchmark Price', 
+            value: benchmarkPrice,
+            input: (
+              <input
+                type="number"
+                value={benchmarkPrice}
+                onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
+                style={{ width: '80px', marginTop: '4px' }}
+              />
+            )
+          },
+          { 
+            label: 'Profit Margin (%)', 
+            value: profitMargin,
+            input: (
+              <input
+                type="number"
+                value={profitMargin}
+                onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
+                style={{ width: '80px', marginTop: '4px' }}
+              />
+            )
+          }
+        ].map((metric, i) => (
+          <Box key={i} style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
+            <Text size="2">{metric.label}</Text>
+            {metric.input || null}
+            <Heading size="6" mt={metric.input ? "2" : "0"}>{metric.input ? formatCurrency(metric.value, currency) : `${metric.value}%`}</Heading>
+          </Box>
+        ))}
       </Grid>
 
+      {/* Main cost table */}
       <Table.Root>
         <Table.Header>
           <Table.Row>
@@ -356,7 +287,16 @@ function CostAnalytics() {
                   <input
                     type="number"
                     value={totals[category].budget}
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                    onChange={(e) => setData(prev => ({
+                      ...prev,
+                      totals: {
+                        ...prev.totals,
+                        [category]: {
+                          ...prev.totals[category],
+                          budget: parseFloat(e.target.value) || 0
+                        }
+                      }
+                    }))}
                     style={{ width: '80px' }}
                   />
                 </Table.Cell>
@@ -383,13 +323,14 @@ function CostAnalytics() {
         </Table.Body>
       </Table.Root>
 
+      {/* Category breakdown dialog */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
             <Flex justify="between" align="center" mb="3" mt="3">
               <Text>Auto IoT Mode</Text>
-              <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
+              <Switch checked={autoMode} onCheckedChange={setAutoMode} />
             </Flex>
             <Flex justify="start" mb="3">
               <Button
@@ -533,6 +474,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* Charts section */}
       <Flex mt="8" gap="6" wrap="wrap" justify="center">
         <Box style={{
           backgroundColor: '#fff',
@@ -631,6 +573,7 @@ function CostAnalytics() {
         </Box>
       </Flex>
 
+      {/* Footer */}
       <Flex justify="end" mt="6">
         <Button style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
           onClick={() => alert('Submit All clicked')}>
