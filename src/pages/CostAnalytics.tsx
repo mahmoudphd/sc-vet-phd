@@ -8,11 +8,11 @@ import {
   Grid,
   Heading,
   Progress,
+  Slider,
   Switch,
   Table,
   Text,
   Select as RadixSelect,
-  TextField
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -26,7 +26,7 @@ import {
   ResponsiveContainer,
   Legend,
   BarChart,
-  Bar
+  Bar,
 } from 'recharts';
 
 interface Item {
@@ -58,22 +58,20 @@ interface SimulatedIoTCostData {
 }
 
 interface Supplier {
-  name: 'Supplier A' | 'Supplier B' | 'Supplier C';
+  name: string;
   price: number;
   rating: number;
   deliveryTime: string;
   reliability: number;
 }
 
-interface CostComparison {
-  current: number;
-  potential: number;
-}
-
 interface SolutionDetails {
   suppliers?: Supplier[];
   currentPrice?: number;
-  costComparison?: CostComparison;
+  wasteReductionPotential?: [number, number];
+  automationPotential?: [number, number];
+  trainingOptions?: string[];
+  costComparison?: { current: number; potential: number };
 }
 
 interface SolutionConfig {
@@ -84,74 +82,131 @@ interface SolutionConfig {
   details?: SolutionDetails;
 }
 
-const SOLUTION_OPTIONS = [
-  'Negotiating better prices with supplier',
-  'Reducing waste in material usage',
-  'Automation to reduce manual labor costs',
-  'Optimizing machine usage',
-  'Improving inventory management',
-  'Minimize transportation costs',
-  'Reduce rework costs',
-  'Other'
-] as const;
-
-const NEGOTIATION_SOLUTION: SolutionConfig = {
-  name: 'Negotiating better prices with supplier',
-  actions: ['Initiate supplier negotiation'],
-  applyAdjustment: (item: Item) => {
-    if ('pricePerKg' in item) item.pricePerKg! *= 0.9;
-    if ('unitPrice' in item) item.unitPrice! *= 0.9;
+const SOLUTIONS_CONFIG: SolutionConfig[] = [
+  {
+    name: 'Negotiating better prices with supplier',
+    actions: ['Initiate supplier negotiation'],
+    applyAdjustment: (item: Item) => {
+      if ('pricePerKg' in item) item.pricePerKg! *= 0.9;
+      if ('unitPrice' in item) item.unitPrice! *= 0.9;
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials'],
+    details: {
+      suppliers: [
+        { name: 'Supplier A', price: 45, rating: 4.5, deliveryTime: '2 weeks', reliability: 95 },
+        { name: 'Supplier B', price: 48, rating: 4.2, deliveryTime: '1 week', reliability: 90 },
+        { name: 'Supplier C', price: 42, rating: 4.0, deliveryTime: '3 weeks', reliability: 85 }
+        { name: 'Premium Supplier', price: 0, rating: 4.7, deliveryTime: '1 week', reliability: 97 },
+        { name: 'Standard Supplier', price: 0, rating: 4.2, deliveryTime: '2 weeks', reliability: 90 },
+        { name: 'Budget Supplier', price: 0, rating: 3.8, deliveryTime: '3 weeks', reliability: 85 }
+      ],
+      currentPrice: 50,
+      costComparison: { current: 50, potential: 45 }
+      currentPrice: 0,
+      costComparison: { current: 0, potential: 0 }
+    }
   },
-  applicableTo: ['Direct Materials', 'Packaging Materials'],
-  details: {
-    suppliers: [
-      { name: 'Supplier A', price: 0, rating: 4.5, deliveryTime: '2 weeks', reliability: 95 },
-      { name: 'Supplier B', price: 0, rating: 4.2, deliveryTime: '1 week', reliability: 90 },
-      { name: 'Supplier C', price: 0, rating: 4.0, deliveryTime: '3 weeks', reliability: 85 }
-    ],
-    currentPrice: 0
-  }
-};
-
-const OTHER_SOLUTION: SolutionConfig = {
-  name: 'Other',
-  actions: ['Create custom improvement plan'],
-  applyAdjustment: () => {},
-  applicableTo: ['*'],
-  details: undefined
-};
+  {
+@@ -131,50 +131,6 @@
+      costComparison: { current: 100, potential: 80 }
+    }
+  },
+  {
+    name: 'Optimizing machine usage',
+    actions: ['Schedule preventive maintenance'],
+    applyAdjustment: (item: Item) => {
+      if ('unitPrice' in item) item.unitPrice! *= 0.85;
+    },
+    applicableTo: ['Overhead'],
+    details: {
+      costComparison: { current: 100, potential: 85 }
+    }
+  },
+  {
+    name: 'Improving inventory management',
+    actions: ['Implement inventory tracking system'],
+    applyAdjustment: (item: Item) => {
+      if ('qty' in item) item.qty! *= 0.9;
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials'],
+    details: {
+      costComparison: { current: 100, potential: 90 }
+    }
+  },
+  {
+    name: 'Minimize transportation costs',
+    actions: ['Analyze logistics network'],
+    applyAdjustment: (item: Item) => {
+      if ('unitPrice' in item) item.unitPrice! *= 0.8;
+    },
+    applicableTo: ['Other Costs'],
+    details: {
+      costComparison: { current: 100, potential: 80 }
+    }
+  },
+  {
+    name: 'Reduce rework costs',
+    actions: ['Implement quality training program'],
+    applyAdjustment: (item: Item) => {
+      if ('qty' in item) item.qty! *= 0.7;
+    },
+    applicableTo: ['Other Costs'],
+    details: {
+      costComparison: { current: 100, potential: 70 }
+    }
+  },
+  {
+    name: 'Other',
+    actions: ['Create custom improvement plan'],
+@@ -185,23 +141,40 @@
 
 const simulatedIoTCostData: SimulatedIoTCostData = {
   totals: {
-    'Direct Materials': { actual: 0, budget: 0, costAfter: 0 },
-    'Packaging Materials': { actual: 18, budget: 15, costAfter: 15 },
-    'Direct Labor': { actual: 3, budget: 2.5, costAfter: 2 },
-    'Overhead': { actual: 1.5, budget: 1.2, costAfter: 1 },
-    'Other Costs': { actual: 15, budget: 12, costAfter: 10 }
+    'Direct Materials': { actual: 1000, budget: 950, costAfter: 900 },
+    'Direct Materials': { actual: 0, budget: 0, costAfter: 0 }, // Will be calculated
+    'Packaging Materials': { actual: 500, budget: 450, costAfter: 400 },
+    'Direct Labor': { actual: 800, budget: 750, costAfter: 700 },
+    'Overhead': { actual: 600, budget: 550, costAfter: 500 },
+    'Other Costs': { actual: 300, budget: 250, costAfter: 200 }
   },
   rawMaterials: [
+    { name: 'Material A', concentrationKg: 10, pricePerKg: 50 },
+    { name: 'Material B', concentrationKg: 5, pricePerKg: 30 }
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600 },
-    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 }
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
+    { name: 'Nicotinamide B3', concentrationKg: 0.010, pricePerKg: 400 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700 },
+    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 },
+    { name: 'Leucine', concentrationKg: 0.030, pricePerKg: 200 },
+    { name: 'Threonine', concentrationKg: 0.010, pricePerKg: 950 },
+    { name: 'Taurine', concentrationKg: 0.003, pricePerKg: 3000 },
+    { name: 'Glycine', concentrationKg: 0.003, pricePerKg: 4200 },
+    { name: 'Arginine', concentrationKg: 0.003, pricePerKg: 5000 },
+    { name: 'Cynarin', concentrationKg: 0.003, pricePerKg: 3900 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700 },
+    { name: 'Sorbitol', concentrationKg: 0.010, pricePerKg: 360 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070 },
+    { name: 'Betaine', concentrationKg: 0.020, pricePerKg: 1250 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90 },
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1 }
   ],
   packagingMaterials: [
-    { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10 },
-    { name: 'Safety Seal', qty: 1, unitPrice: 3 },
-    { name: 'Cap', qty: 1, unitPrice: 5 }
+    { name: 'Boxes', qty: 100, unitPrice: 2 },
+    { name: 'Labels', qty: 200, unitPrice: 0.5 }
+    { name: 'Bottles', qty: 100, unitPrice: 2 },
+    { name: 'Labels', qty: 200, unitPrice: 0.5 },
+    { name: 'Caps', qty: 100, unitPrice: 0.3 }
   ],
   directLabor: [
-    { name: 'Operator', hours: 0.5, hourlyRate: 3.5 },
-    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75 },
-    { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74 }
+    { name: 'Assembly', hours: 40, hourlyRate: 15 },
+    { name: 'Inspection', hours: 20, hourlyRate: 12 }
+    { name: 'Mixing', hours: 40, hourlyRate: 15 },
+    { name: 'Quality Control', hours: 20, hourlyRate: 12 }
   ],
   overheadItems: [
-    { name: 'Rent', cost: 1 },
-    { name: 'Electricity', cost: 0.5 }
-  ],
-  otherCosts: [
-    { name: 'Transportation', qty: 1, unitPrice: 6.67 },
-    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33 },
-    { name: 'Rework', qty: 1, unitPrice: 5 }
+    { name: 'Electricity', cost: 200 },
+@@ -213,6 +186,12 @@
   ]
 };
 
@@ -164,133 +219,67 @@ simulatedIoTCostData.totals['Direct Materials'].actual = simulatedIoTCostData.ra
 const formatCurrency = (value: number, currency: string) => 
   `${currency} ${value.toFixed(2)}`;
 
-const categories: CostCategory[] = [
-  'Direct Materials',
-  'Packaging Materials',
-  'Direct Labor',
-  'Overhead',
-  'Other Costs',
-];
-
-const products = ['Product A', 'Product B', 'Product C'];
-
-const getDetailsByCategory = (category: CostCategory): Item[] => {
-  switch (category) {
-    case 'Direct Materials': return simulatedIoTCostData.rawMaterials;
-    case 'Packaging Materials': return simulatedIoTCostData.packagingMaterials;
-    case 'Direct Labor': return simulatedIoTCostData.directLabor;
-    case 'Overhead': return simulatedIoTCostData.overheadItems;
-    case 'Other Costs': return simulatedIoTCostData.otherCosts;
-    default: return [];
-  }
-};
-
-const calculateItemCost = (item: Item, category: CostCategory): number => {
-  if (category === 'Direct Materials') {
-    return (item.concentrationKg || 0) * (item.pricePerKg || 0);
-  } else if (category === 'Direct Labor') {
-    return (item.hours || 0) * (item.hourlyRate || 0);
-  } else if ('cost' in item) {
-    return item.cost || 0;
-  } else {
-    return (item.qty || 0) * (item.unitPrice || 0);
-  }
-};
-
-function CostAnalytics() {
-  const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
-  const [benchmarkPrice, setBenchmarkPrice] = useState(220);
-  const [profitMargin, setProfitMargin] = useState(25);
-  const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
-  const [autoMode, setAutoMode] = useState(true);
-  const [selectedProduct, setSelectedProduct] = useState(products[0]);
-  const [showTargetView, setShowTargetView] = useState(false);
-  const [data, setData] = useState(simulatedIoTCostData);
-  const [solutions, setSolutions] = useState<Record<CostCategory, Record<number, string>>>({
-    'Direct Materials': {},
-    'Packaging Materials': {},
-    'Direct Labor': {},
-    'Overhead': {},
-    'Other Costs': {},
-  });
-  const [pendingActions, setPendingActions] = useState<string[]>([]);
-  const [solutionDialog, setSolutionDialog] = useState<{
-    open: boolean;
-    solution: SolutionConfig | null;
-    category: CostCategory | null;
-    itemIndex: number | null;
-    selectedSupplier?: Supplier | null;
-    reductionPercentage?: number;
-  }>({ 
-    open: false, 
-    solution: null, 
-    category: null, 
-    itemIndex: null,
-    selectedSupplier: null,
+@@ -282,6 +261,7 @@
     reductionPercentage: 5
   });
-  const [supplierDialogEditable, setSupplierDialogEditable] = useState(false);
-  const [editableSupplierData, setEditableSupplierData] = useState<Supplier[]>([]);
 
+  // Calculate totals based on current data
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
-  const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
-  const postOptimizationEstimate = totalActual - totalCostAfter;
-  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
+@@ -321,116 +301,170 @@
+      return;
+    }
 
-  const handleBenchmarkChange = (value: number) => {
-    setBenchmarkPrice(value);
-  };
-
-  const benchmarkTrendData = [
-    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
-    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
-    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
-    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
-  ];
-
-  const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
-    ...d,
-    targetCost,
-    gap: d.actual - targetCost,
-  }));
-
-  const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
-
-  const percentOfTotal = (category: CostCategory) =>
-    totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
-
-  const determineBestSupplier = (suppliers: Supplier[]) => {
-    return suppliers.reduce((prev, current) => 
-      (current.price < prev.price) ? current : prev
-    );
-  };
-
-  const handleSolutionChange = (category: CostCategory, index: number, solutionName: string) => {
-    if (solutionName === 'Negotiating better prices with supplier') {
+    setSolutionDialog({ 
+      open: true, 
+      solution,
+      category,
+      itemIndex: index,
+      selectedSupplier: null,
+      reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
+    });
+    // For supplier negotiation, set up dynamic suppliers based on current price
+    if (solution.name === 'Negotiating better prices with supplier') {
       const item = getDetailsByCategory(category)[index];
       const currentPrice = item.pricePerKg || item.unitPrice || 0;
       
-      const updatedSuppliers = NEGOTIATION_SOLUTION.details?.suppliers?.map(supplier => ({
-        ...supplier,
-        price: parseFloat((currentPrice * (supplier.name === 'Supplier A' ? 0.92 : supplier.name === 'Supplier B' ? 0.88 : 0.82)).toFixed(2))
-      })) || [];
+      // Generate dynamic suppliers based on current price
+      const dynamicSuppliers = [
+        { 
+          name: 'Premium Supplier', 
+          price: parseFloat((currentPrice * 0.92).toFixed(2)), // 8% discount
+          rating: 4.7, 
+          deliveryTime: '1 week', 
+          reliability: 97 
+        },
+        { 
+          name: 'Standard Supplier', 
+          price: parseFloat((currentPrice * 0.88).toFixed(2)), // 12% discount
+          rating: 4.2, 
+          deliveryTime: '2 weeks', 
+          reliability: 90 
+        },
+        { 
+          name: 'Budget Supplier', 
+          price: parseFloat((currentPrice * 0.82).toFixed(2)), // 18% discount
+          rating: 3.8, 
+          deliveryTime: '3 weeks', 
+          reliability: 85 
+        }
+      ];
 
-      setEditableSupplierData([...updatedSuppliers]);
-      
       setSolutionDialog({ 
         open: true, 
         solution: {
-          ...NEGOTIATION_SOLUTION,
+          ...solution,
           details: {
-            ...NEGOTIATION_SOLUTION.details,
-            suppliers: updatedSuppliers,
+            ...solution.details,
+            suppliers: dynamicSuppliers,
             currentPrice,
             costComparison: {
               current: currentPrice,
-              potential: updatedSuppliers[0].price
+              potential: dynamicSuppliers[0].price // Default to premium supplier
             }
           }
         },
@@ -298,26 +287,16 @@ function CostAnalytics() {
         itemIndex: index,
         selectedSupplier: null
       });
-    } else if (solutionName === 'Other') {
-      setSolutions(prev => ({
-        ...prev,
-        [category]: {
-          ...prev[category],
-          [index]: 'Other'
-        }
-      }));
     } else {
-      alert(`Solution "${solutionName}" will not be implemented in this demo`);
+      setSolutionDialog({ 
+        open: true, 
+        solution,
+        category,
+        itemIndex: index,
+        selectedSupplier: null,
+        reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
+      });
     }
-  };
-
-  const handleSupplierDataChange = (index: number, field: keyof Supplier, value: string | number) => {
-    const updatedSuppliers = [...editableSupplierData];
-    updatedSuppliers[index] = {
-      ...updatedSuppliers[index],
-      [field]: field === 'price' || field === 'rating' ? Number(value) : value
-    };
-    setEditableSupplierData(updatedSuppliers);
   };
 
   const applySolution = () => {
@@ -328,37 +307,50 @@ function CostAnalytics() {
 
     try {
       setPendingActions(prev => [...prev, ...solutionDialog.solution?.actions || []]);
-      
-      if (solutionDialog.solution.name === 'Negotiating better prices with supplier') {
-        const selectedSupplier = solutionDialog.selectedSupplier || 
-                               determineBestSupplier(editableSupplierData);
+
+      // Apply specific adjustments based on solution type
+      if (solutionDialog.solution.name === 'Negotiating better prices with supplier' && solutionDialog.selectedSupplier) {
+        if ('pricePerKg' in item) item.pricePerKg = solutionDialog.selectedSupplier.price;
+        if ('unitPrice' in item) item.unitPrice = solutionDialog.selectedSupplier.price;
         
-        if ('pricePerKg' in item) item.pricePerKg = selectedSupplier.price;
-        if ('unitPrice' in item) item.unitPrice = selectedSupplier.price;
-        
-        newData.totals[solutionDialog.category].costAfter = getDetailsByCategory(solutionDialog.category).reduce(
+        // Update the total cost for the category
+        newData.totals[solutionDialog.category].actual = getDetailsByCategory(solutionDialog.category).reduce(
           (sum, item) => sum + calculateItemCost(item, solutionDialog.category!), 
           0
         );
       }
 
-      setSolutions(prev => ({
-        ...prev,
-        [solutionDialog.category!]: {
-          ...prev[solutionDialog.category!],
-          [solutionDialog.itemIndex!]: solutionDialog.solution?.name || ''
+      if (solutionDialog.solution.name === 'Reducing waste in material usage' && solutionDialog.reductionPercentage) {
+        const reduction = 1 - (solutionDialog.reductionPercentage / 100);
+        if ('concentrationKg' in item) item.concentrationKg! *= reduction;
+        if ('qty' in item) item.qty! *= reduction;
+      }
+
+      if (solutionDialog.solution.name === 'Automation to reduce manual labor costs') {
+        if ('hours' in item) item.hours! *= 0.8;
+      }
+
+      // Apply the standard adjustment from the solution config
+      solutionDialog.solution.applyAdjustment(item);
+
+      // Update solutions tracking
+      const updatedSolutions = {
+        ...solutions,
+        [solutionDialog.category]: {
+          ...solutions[solutionDialog.category],
+          [solutionDialog.itemIndex]: solutionDialog.solution.name
         }
-      }));
-      
+      };
+
+      setSolutions(updatedSolutions);
       setData(newData);
       setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
       setSolutionDialog({...solutionDialog, open: false});
-      setSupplierDialogEditable(false);
+      alert('Solution applied successfully!');
     } catch (error) {
       alert('Error applying solution');
       setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
       setSolutionDialog({...solutionDialog, open: false});
-      setSupplierDialogEditable(false);
     }
   };
 
@@ -382,161 +374,248 @@ function CostAnalytics() {
   const renderSolutionDialogContent = () => {
     if (!solutionDialog.solution) return null;
 
-    if (solutionDialog.solution.name === 'Negotiating better prices with supplier') {
-      const suppliersToShow = supplierDialogEditable ? editableSupplierData : solutionDialog.solution.details?.suppliers || [];
-      const bestSupplier = determineBestSupplier(suppliersToShow);
-      
+    // Default case for solutions without details
+    if (!solutionDialog.solution.details) {
       return (
         <Box>
-          <Flex justify="between" align="center" mb="4">
-            <Text>Edit Mode</Text>
-            <Switch 
-              checked={supplierDialogEditable} 
-              onCheckedChange={(checked) => {
-                setSupplierDialogEditable(checked);
-                if (!checked) {
-                  setEditableSupplierData([...(solutionDialog.solution?.details?.suppliers || [])]);
-                }
-              }} 
-            />
-          </Flex>
-
-          <Flex justify="between" mb="4">
-            <Box>
-              <Text size="2" color="gray">Current Price/kg</Text>
-              <Text size="5" weight="bold">
-                {formatCurrency(solutionDialog.solution.details?.currentPrice || 0, currency)}
-              </Text>
-            </Box>
-            <Box>
-              <Text size="2" color="gray">Potential Savings/kg</Text>
-              <Text size="5" weight="bold" color="green">
-                {formatCurrency(
-                  (solutionDialog.solution.details?.currentPrice || 0) - 
-                  (solutionDialog.selectedSupplier?.price || bestSupplier.price), 
-                  currency
-                )}
-              </Text>
-            </Box>
-          </Flex>
-
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={suppliersToShow}>
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
-              <Legend />
-              <Bar dataKey="price" fill="#3b82f6" name="Price/kg" />
-              <Bar dataKey="rating" fill="#10b981" name="Rating" />
-            </BarChart>
-          </ResponsiveContainer>
-
-          <Table.Root mt="4">
-            <Table.Header>
-              <Table.Row>
-                <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>Select</Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {suppliersToShow.map((supplier, idx) => {
-                const isAutoSelected = !supplierDialogEditable && supplier.name === bestSupplier.name;
-                const isManuallySelected = solutionDialog.selectedSupplier?.name === supplier.name;
-                
-                return (
-                  <Table.Row 
-                    key={idx} 
-                    style={{
-                      ...(isAutoSelected ? { backgroundColor: '#f0fdf4', border: '1px solid #10b981' } : {}),
-                      ...(isManuallySelected ? { backgroundColor: '#e0f2fe' } : {})
-                    }}
-                  >
-                    <Table.Cell>
-                      {isAutoSelected && (
-                        <Text color="green" style={{ marginRight: 8 }}>✓</Text>
-                      )}
-                      {supplier.name}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          value={supplier.price}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'price', parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      ) : formatCurrency(supplier.price, currency)}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          min="1"
-                          max="5"
-                          step="0.1"
-                          value={supplier.rating}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'rating', parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      ) : (
-                        <>
-                          <Progress value={supplier.rating * 20} />
-                          {supplier.rating}/5
-                        </>
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {supplierDialogEditable ? (
-                        <TextField
-                          value={supplier.deliveryTime}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'deliveryTime', e.target.value)
-                          }
-                        />
-                      ) : supplier.deliveryTime}
-                    </Table.Cell>
-                    <Table.Cell>
-                      {supplierDialogEditable ? (
-                        <TextField
-                          type="number"
-                          min="1"
-                          max="100"
-                          value={supplier.reliability}
-                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => 
-                            handleSupplierDataChange(idx, 'reliability', parseFloat(e.target.value) || 0)
-                          }
-                        />
-                      ) : `${supplier.reliability}%`}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <Button
-                        size="1"
-                        variant={isAutoSelected || isManuallySelected ? 'solid' : 'outline'}
-                        onClick={() => setSolutionDialog({
-                          ...solutionDialog,
-                          selectedSupplier: supplier
-                        })}
-                      >
-                        {isAutoSelected ? 'Auto-Selected' : 
-                         isManuallySelected ? 'Selected' : 'Select'}
-                      </Button>
-                    </Table.Cell>
-                  </Table.Row>
-                );
-              })}
-            </Table.Body>
-          </Table.Root>
+          <Text>This solution will perform the following actions:</Text>
+          <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
+            {solutionDialog.solution.actions.map((action, i) => (
+              <li key={i}>{action}</li>
+            ))}
+          </ul>
         </Box>
       );
     }
 
-    return null;
+    switch (solutionDialog.solution.name) {
+      case 'Negotiating better prices with supplier':
+        return (
+          <Box>
+            <Flex justify="between" mb="4">
+              <Box>
+                <Text size="2" color="gray">Current Price</Text>
+                <Text size="2" color="gray">Current Price/kg</Text>
+                <Text size="5" weight="bold">
+                  {formatCurrency(solutionDialog.solution.details.currentPrice || 0, currency)}
+                </Text>
+              </Box>
+              <Box>
+                <Text size="2" color="gray">Potential Savings</Text>
+                <Text size="2" color="gray">Potential Savings/kg</Text>
+                <Text size="5" weight="bold" color="green">
+                  {formatCurrency(
+                    (solutionDialog.solution.details.currentPrice || 0) - 
+                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0) * 0.9), 
+                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0)), 
+                    currency
+                  )}
+                </Text>
+@@ -446,7 +480,7 @@
+                    <YAxis />
+                    <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
+                    <Legend />
+                    <Bar dataKey="price" fill="#3b82f6" name="Price" />
+                    <Bar dataKey="price" fill="#3b82f6" name="Price/kg" />
+                    <Bar dataKey="rating" fill="#10b981" name="Rating" />
+                  </BarChart>
+                </ResponsiveContainer>
+@@ -455,626 +489,626 @@
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Select</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {solutionDialog.solution.details.suppliers.map((supplier, idx) => (
+                      <Table.Row key={idx} style={
+                        solutionDialog.selectedSupplier?.name === supplier.name ? 
+                        { backgroundColor: '#f0fdf4' } : {}
+                      }>
+                        <Table.Cell>{supplier.name}</Table.Cell>
+                        <Table.Cell>{formatCurrency(supplier.price, currency)}</Table.Cell>
+                        <Table.Cell>
+                          <Progress value={supplier.rating * 20} />
+                          {supplier.rating}/5
+                        </Table.Cell>
+                        <Table.Cell>{supplier.deliveryTime}</Table.Cell>
+                        <Table.Cell>{supplier.reliability}%</Table.Cell>
+                        <Table.Cell>
+                          <Button
+                            size="1"
+                            variant={solutionDialog.selectedSupplier?.name === supplier.name ? 'solid' : 'outline'}
+                            onClick={() => setSolutionDialog({
+                              ...solutionDialog,
+                              selectedSupplier: supplier
+                            })}
+                          >
+                            {solutionDialog.selectedSupplier?.name === supplier.name ? 'Selected' : 'Select'}
+                          </Button>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </>
+            )}
+          </Box>
+        );
+
+      case 'Reducing waste in material usage':
+        return (
+          <Box>
+            <Flex justify="between" mb="4">
+              <Box>
+                <Text size="2" color="gray">Current Waste</Text>
+                <Text size="5" weight="bold">8-12%</Text>
+              </Box>
+              <Box>
+                <Text size="2" color="gray">Potential Savings</Text>
+                <Text size="5" weight="bold" color="green">
+                  {formatCurrency(
+                    ((solutionDialog.reductionPercentage || 5) / 100) * 
+                    (solutionDialog.category && solutionDialog.itemIndex !== null ?
+                      calculateItemCost(
+                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
+                        solutionDialog.category
+                      ) : 0),
+                    currency
+                  )}
+                </Text>
+              </Box>
+            </Flex>
+
+            {solutionDialog.solution.details.trainingOptions && (
+              <Box mb="4">
+                <Text weight="bold" mb="2">Training Options</Text>
+                <RadixSelect.Root>
+                  <RadixSelect.Trigger placeholder="Select training program" />
+                  <RadixSelect.Content>
+                    {solutionDialog.solution.details.trainingOptions.map((option, i) => (
+                      <RadixSelect.Item key={i} value={option}>
+                        {option}
+                      </RadixSelect.Item>
+                    ))}
+                  </RadixSelect.Content>
+                </RadixSelect.Root>
+              </Box>
+            )}
+
+            <Box>
+              <Flex justify="between" mb="2">
+                <Text weight="bold">Waste Reduction Target</Text>
+                <Text weight="bold">{solutionDialog.reductionPercentage}%</Text>
+              </Flex>
+              <Slider
+                value={[solutionDialog.reductionPercentage || 5]}
+                min={5}
+                max={15}
+                step={1}
+                onValueChange={([value]) => setSolutionDialog({
+                  ...solutionDialog,
+                  reductionPercentage: value
+                })}
+              />
+              <Flex justify="between" mt="1">
+                <Text size="1" color="gray">5%</Text>
+                <Text size="1" color="gray">15%</Text>
+              </Flex>
+            </Box>
+
+            <Box mt="4">
+              <Text size="2" color="gray">Implementation Timeline</Text>
+              <Progress value={0} mt="2" />
+              <Flex justify="between" mt="1">
+                <Text size="1">Now</Text>
+                <Text size="1">3-6 months</Text>
+              </Flex>
+            </Box>
+          </Box>
+        );
+
+      case 'Automation to reduce manual labor costs':
+        return (
+          <Box>
+            <Flex justify="between" mb="4">
+              <Box>
+                <Text size="2" color="gray">Current Labor Cost</Text>
+                <Text size="5" weight="bold">
+                  {solutionDialog.category && solutionDialog.itemIndex !== null ?
+                    formatCurrency(
+                      calculateItemCost(
+                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
+                        solutionDialog.category
+                      ),
+                      currency
+                    ) : '-'}
+                </Text>
+              </Box>
+              <Box>
+                <Text size="2" color="gray">Potential Savings</Text>
+                <Text size="5" weight="bold" color="green">
+                  {solutionDialog.category && solutionDialog.itemIndex !== null ?
+                    formatCurrency(
+                      calculateItemCost(
+                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
+                        solutionDialog.category
+                      ) * 0.2,
+                      currency
+                    ) : '-'}
+                </Text>
+              </Box>
+            </Flex>
+
+            <Box mb="4">
+              <Text weight="bold" mb="2">Automation Options</Text>
+              <RadixSelect.Root>
+                <RadixSelect.Trigger placeholder="Select automation solution" />
+                <RadixSelect.Content>
+                  <RadixSelect.Item value="robot">Robotic Assembly</RadixSelect.Item>
+                  <RadixSelect.Item value="cobot">Collaborative Robots</RadixSelect.Item>
+                  <RadixSelect.Item value="conveyor">Automated Conveyor System</RadixSelect.Item>
+                </RadixSelect.Content>
+              </RadixSelect.Root>
+            </Box>
+
+            <Box>
+              <Flex justify="between" mb="2">
+                <Text weight="bold">Labor Reduction</Text>
+                <Text weight="bold">20%</Text>
+              </Flex>
+              <Text size="2" color="gray" mb="2">
+                This solution will automatically reduce labor hours by 20%
+              </Text>
+            </Box>
+
+            <Box mt="4">
+              <Text size="2" color="gray">ROI Period</Text>
+              <Progress value={0} mt="2" />
+              <Flex justify="between" mt="1">
+                <Text size="1">Now</Text>
+                <Text size="1">12-18 months</Text>
+              </Flex>
+            </Box>
+          </Box>
+        );
+
+      default:
+        return (
+          <Box>
+            <Text>This solution will perform the following actions:</Text>
+            <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
+              {solutionDialog.solution.actions.map((action, i) => (
+                <li key={i}>{action}</li>
+              ))}
+            </ul>
+          </Box>
+        );
+    }
   };
 
   return (
@@ -718,7 +797,19 @@ function CostAnalytics() {
               </Table.Header>
               <Table.Body>
                 {getDetailsByCategory(dialogCategory).map((item, index) => {
-                  let costValue = calculateItemCost(item, dialogCategory);
+                  let costValue = item.cost ?? 0;
+                  if (autoMode) {
+                    if (dialogCategory === 'Direct Materials') {
+                      costValue = (item.concentrationKg ?? 0) * (item.pricePerKg ?? 0);
+                      costValue = (item.concentrationKg || 0) * (item.pricePerKg || 0);
+                    } else if (dialogCategory === 'Direct Labor') {
+                      costValue = (item.hours ?? 0) * (item.hourlyRate ?? 0);
+                      costValue = (item.hours || 0) * (item.hourlyRate || 0);
+                    } else {
+                      costValue = (item.qty ?? 0) * (item.unitPrice ?? 0);
+                      costValue = (item.qty || 0) * (item.unitPrice || 0);
+                    }
+                  }
                   return (
                     <Table.Row key={index}>
                       <Table.RowHeaderCell>{item.name}</Table.RowHeaderCell>
@@ -727,8 +818,8 @@ function CostAnalytics() {
                           dialogCategory === 'Direct Materials'
                             ? item.concentrationKg?.toFixed(3) ?? '-'
                             : dialogCategory === 'Direct Labor'
-                            ? item.hours?.toFixed(2) ?? '-'
-                            : item.qty?.toFixed(2) ?? '-'
+                            ? item.hours ?? '-'
+                            : item.qty ?? '-'
                         ) : (
                           <input
                             type="number"
@@ -790,16 +881,14 @@ function CostAnalytics() {
                         >
                           <RadixSelect.Trigger aria-label="Select solution" />
                           <RadixSelect.Content>
-                            {SOLUTION_OPTIONS.map((option) => (
+                            {SOLUTIONS_CONFIG.map((solution) => (
                               <RadixSelect.Item 
-                                key={option} 
-                                value={option}
-                                disabled={
-                                  option === 'Negotiating better prices with supplier' && 
-                                  !['Direct Materials', 'Packaging Materials'].includes(dialogCategory)
-                                }
+                                key={solution.name} 
+                                value={solution.name}
+                                disabled={!solution.applicableTo.includes('*') && 
+                                         !solution.applicableTo.includes(dialogCategory)}
                               >
-                                {option}
+                                {solution.name}
                               </RadixSelect.Item>
                             ))}
                           </RadixSelect.Content>
@@ -826,19 +915,17 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* Solution Details Dialog */}
       <Dialog.Root open={solutionDialog.open} onOpenChange={(open) => setSolutionDialog({...solutionDialog, open})}>
         <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh', overflowY: 'auto' }}>
           <Dialog.Title>{solutionDialog.solution?.name}</Dialog.Title>
-          
+
           {renderSolutionDialogContent()}
 
           <Flex gap="3" mt="4" justify="end">
             <Button 
               variant="soft" 
-              onClick={() => {
-                setSolutionDialog({...solutionDialog, open: false});
-                setSupplierDialogEditable(false);
-              }}
+              onClick={() => setSolutionDialog({...solutionDialog, open: false})}
             >
               Cancel
             </Button>
@@ -846,8 +933,7 @@ function CostAnalytics() {
               onClick={applySolution}
               disabled={
                 solutionDialog.solution?.name === 'Negotiating better prices with supplier' && 
-                !solutionDialog.selectedSupplier && 
-                !supplierDialogEditable
+                !solutionDialog.selectedSupplier
               }
             >
               Apply Solution
