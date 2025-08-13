@@ -45,6 +45,8 @@ interface Item {
   qualityRating?: number;
   deliveryTime?: number;
   reliability?: number;
+  totalCost?: number;  // Added this property
+  basis?: number;      // Added this property
 }
 
 interface CostTotals {
