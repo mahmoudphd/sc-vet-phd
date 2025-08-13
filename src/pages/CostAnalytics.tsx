@@ -33,7 +33,6 @@ import {
   CartesianGrid
 } from 'recharts';
 import { DownloadIcon, UploadIcon, UpdateIcon, MagicWandIcon } from '@radix-ui/react-icons';
-import { toast } from 'react-hot-toast';
 
 // ========== Data Types ==========
 interface Supplier {
@@ -78,7 +77,7 @@ const initialSuppliers: Supplier[] = [
   {
     id: 1,
     name: 'Supplier A',
-    pricePerKg: 513.00, // 5% discount from 540
+    pricePerKg: 513.00,
     rating: 4.7,
     delivery: '1 week',
     reliability: '97%',
@@ -88,7 +87,7 @@ const initialSuppliers: Supplier[] = [
   {
     id: 2,
     name: 'Supplier B',
-    pricePerKg: 486.00, // 10% discount
+    pricePerKg: 486.00,
     rating: 4.2,
     delivery: '2 weeks',
     reliability: '90%',
@@ -98,7 +97,7 @@ const initialSuppliers: Supplier[] = [
   {
     id: 3,
     name: 'Supplier C',
-    pricePerKg: 459.00, // 15% discount
+    pricePerKg: 459.00,
     rating: 3.8,
     delivery: '3 weeks',
     reliability: '85%',
@@ -218,11 +217,6 @@ const CostAnalyticsDashboard = () => {
   const [selectedTab, setSelectedTab] = useState<'actual' | 'target'>('actual');
   const [autoMode, setAutoMode] = useState(true);
   const [solutions, setSolutions] = useState<Record<string, Record<number, string>>>({});
-  const [selectedSolution, setSelectedSolution] = useState<{
-    category: string | null;
-    index: number | null;
-    solution: string | null;
-  }>({ category: null, index: null, solution: null });
 
   const formatCurrency = (value: number, curr: string) => {
     return new Intl.NumberFormat('en-US', {
@@ -241,7 +235,7 @@ const CostAnalyticsDashboard = () => {
     const selectedSupplier = updatedSuppliers.find(s => s.selected);
     if (selectedSupplier) {
       const savings = currentPrice - selectedSupplier.pricePerKg;
-      toast.success(`Selected ${selectedSupplier.name} with ${formatCurrency(savings, currency)} savings`);
+      console.log(`Selected ${selectedSupplier.name} with ${formatCurrency(savings, currency)} savings`);
     }
   };
 
@@ -274,7 +268,6 @@ const CostAnalyticsDashboard = () => {
   };
 
   const handleSolutionSelect = (category: string, index: number, solution: string) => {
-    setSelectedSolution({ category, index, solution });
     setSolutions(prev => ({
       ...prev,
       [category]: {
@@ -291,10 +284,6 @@ const CostAnalyticsDashboard = () => {
 
   const getCategoryItems = (category: string) => {
     return completeCostData.find(c => c.category === category)?.items || [];
-  };
-
-  const getCategoryData = (category: string) => {
-    return completeCostData.find(c => c.category === category) || completeCostData[0];
   };
 
   const MainCostTable = () => (
@@ -327,7 +316,11 @@ const CostAnalyticsDashboard = () => {
                       type="number"
                       value={category.target}
                       onChange={(e) => {
-                        // Handle target change
+                        const newData = [...completeCostData];
+                        const catIndex = newData.findIndex(c => c.category === category.category);
+                        if (catIndex !== -1) {
+                          newData[catIndex].target = parseFloat(e.target.value) || 0;
+                        }
                       }}
                       style={{
                         width: '80px',
@@ -831,7 +824,18 @@ const CostAnalyticsDashboard = () => {
                                 ? item.concentrationKg 
                                 : item.qty}
                               onChange={(e) => {
-                                // Handle quantity change logic
+                                const newData = [...completeCostData];
+                                const catIndex = newData.findIndex(c => c.category === categoryData.category);
+                                if (catIndex !== -1 && newData[catIndex].items) {
+                                  const itemIndex = newData[catIndex].items?.findIndex(i => i.name === item.name) ?? -1;
+                                  if (itemIndex !== -1) {
+                                    if (categoryData.category === 'Direct Materials') {
+                                      newData[catIndex].items![itemIndex].concentrationKg = parseFloat(e.target.value) || 0;
+                                    } else {
+                                      newData[catIndex].items![itemIndex].qty = parseFloat(e.target.value) || 0;
+                                    }
+                                  }
+                                }
                               }}
                               style={{ 
                                 width: '80px',
@@ -859,7 +863,18 @@ const CostAnalyticsDashboard = () => {
                                 ? item.pricePerKg 
                                 : item.unitPrice}
                               onChange={(e) => {
-                                // Handle price change logic
+                                const newData = [...completeCostData];
+                                const catIndex = newData.findIndex(c => c.category === categoryData.category);
+                                if (catIndex !== -1 && newData[catIndex].items) {
+                                  const itemIndex = newData[catIndex].items?.findIndex(i => i.name === item.name) ?? -1;
+                                  if (itemIndex !== -1) {
+                                    if (categoryData.category === 'Direct Materials') {
+                                      newData[catIndex].items![itemIndex].pricePerKg = parseFloat(e.target.value) || 0;
+                                    } else {
+                                      newData[catIndex].items![itemIndex].unitPrice = parseFloat(e.target.value) || 0;
+                                    }
+                                  }
+                                }
                               }}
                               style={{ 
                                 width: '80px',
@@ -872,7 +887,14 @@ const CostAnalyticsDashboard = () => {
                             />
                           )}
                         </Table.Cell>
-                        <Table.Cell>{formatCurrency(item.total, currency)}</Table.Cell>
+                        <Table.Cell>
+                          {formatCurrency(
+                            categoryData.category === 'Direct Materials'
+                              ? (item.concentrationKg || 0) * (item.pricePerKg || 0)
+                              : item.qty * item.unitPrice,
+                            currency
+                          )}
+                        </Table.Cell>
                         <Table.Cell>
                           <Select.Root
                             value={solutions[categoryData.category]?.[index] || ''}
@@ -1046,7 +1068,7 @@ const CostAnalyticsDashboard = () => {
             padding: '12px 24px',
             borderRadius: '6px'
           }}
-          onClick={() => toast.success('Data submitted to blockchain!')}
+          onClick={() => console.log('Data submitted to blockchain!')}
         >
           <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
