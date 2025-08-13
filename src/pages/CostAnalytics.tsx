@@ -132,10 +132,7 @@ const simulatedIoTCostData: SimulatedIoTCostData = {
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600 },
-    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
-    { name: 'Nicotinamide B3', concentrationKg: 0.010, pricePerKg: 400 },
-    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700 },
-    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 }
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 }
   ],
   packagingMaterials: [
     { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10 },
