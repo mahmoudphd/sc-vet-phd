@@ -96,18 +96,38 @@ const SOLUTIONS_CONFIG: SolutionConfig[] = [
         { name: 'Supplier A', price: 45, rating: 4.5, deliveryTime: '2 weeks', reliability: 95 },
         { name: 'Supplier B', price: 48, rating: 4.2, deliveryTime: '1 week', reliability: 90 },
         { name: 'Supplier C', price: 42, rating: 4.0, deliveryTime: '3 weeks', reliability: 85 }
-        { name: 'Premium Supplier', price: 0, rating: 4.7, deliveryTime: '1 week', reliability: 97 },
-        { name: 'Standard Supplier', price: 0, rating: 4.2, deliveryTime: '2 weeks', reliability: 90 },
-        { name: 'Budget Supplier', price: 0, rating: 3.8, deliveryTime: '3 weeks', reliability: 85 }
       ],
       currentPrice: 50,
       costComparison: { current: 50, potential: 45 }
-      currentPrice: 0,
-      costComparison: { current: 0, potential: 0 }
     }
   },
   {
-@@ -131,50 +131,6 @@
+    name: 'Reducing waste in material usage',
+    actions: ['Analyze waste patterns', 'Implement waste reduction program'],
+    applyAdjustment: (item: Item) => {
+      if ('concentrationKg' in item) item.concentrationKg! *= 0.9;
+      if ('qty' in item) item.qty! *= 0.9;
+    },
+    applicableTo: ['Direct Materials', 'Packaging Materials'],
+    details: {
+      wasteReductionPotential: [5, 15],
+      trainingOptions: [
+        'Lean Manufacturing',
+        'Six Sigma',
+        '5S Methodology'
+      ],
+      costComparison: { current: 100, potential: 90 }
+    }
+  },
+  {
+    name: 'Automation to reduce manual labor costs',
+    actions: ['Evaluate automation potential', 'Implement automation solution'],
+    applyAdjustment: (item: Item) => {
+      if ('hours' in item) item.hours! *= 0.8;
+    },
+    applicableTo: ['Direct Labor'],
+    details: {
+      automationPotential: [20, 40],
       costComparison: { current: 100, potential: 80 }
     }
   },
@@ -158,11 +178,13 @@ const SOLUTIONS_CONFIG: SolutionConfig[] = [
   {
     name: 'Other',
     actions: ['Create custom improvement plan'],
-@@ -185,23 +141,40 @@
+    applyAdjustment: (item: Item) => {},
+    applicableTo: ['*']
+  }
+];
 
 const simulatedIoTCostData: SimulatedIoTCostData = {
   totals: {
-    'Direct Materials': { actual: 1000, budget: 950, costAfter: 900 },
     'Direct Materials': { actual: 0, budget: 0, costAfter: 0 }, // Will be calculated
     'Packaging Materials': { actual: 500, budget: 450, costAfter: 400 },
     'Direct Labor': { actual: 800, budget: 750, costAfter: 700 },
@@ -170,8 +192,6 @@ const simulatedIoTCostData: SimulatedIoTCostData = {
     'Other Costs': { actual: 300, budget: 250, costAfter: 200 }
   },
   rawMaterials: [
-    { name: 'Material A', concentrationKg: 10, pricePerKg: 50 },
-    { name: 'Material B', concentrationKg: 5, pricePerKg: 30 }
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600 },
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
@@ -192,21 +212,23 @@ const simulatedIoTCostData: SimulatedIoTCostData = {
     { name: 'Water', concentrationKg: 0.571, pricePerKg: 1 }
   ],
   packagingMaterials: [
-    { name: 'Boxes', qty: 100, unitPrice: 2 },
-    { name: 'Labels', qty: 200, unitPrice: 0.5 }
     { name: 'Bottles', qty: 100, unitPrice: 2 },
     { name: 'Labels', qty: 200, unitPrice: 0.5 },
     { name: 'Caps', qty: 100, unitPrice: 0.3 }
   ],
   directLabor: [
-    { name: 'Assembly', hours: 40, hourlyRate: 15 },
-    { name: 'Inspection', hours: 20, hourlyRate: 12 }
     { name: 'Mixing', hours: 40, hourlyRate: 15 },
     { name: 'Quality Control', hours: 20, hourlyRate: 12 }
   ],
   overheadItems: [
     { name: 'Electricity', cost: 200 },
-@@ -213,6 +186,12 @@
+    { name: 'Rent', cost: 300 },
+    { name: 'Maintenance', cost: 100 }
+  ],
+  otherCosts: [
+    { name: 'Shipping', cost: 150 },
+    { name: 'Insurance', cost: 100 },
+    { name: 'Miscellaneous', cost: 50 }
   ]
 };
 
@@ -219,17 +241,95 @@ simulatedIoTCostData.totals['Direct Materials'].actual = simulatedIoTCostData.ra
 const formatCurrency = (value: number, currency: string) => 
   `${currency} ${value.toFixed(2)}`;
 
-@@ -282,6 +261,7 @@
+const pieColors = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+const benchmarkTrendData = [
+  { month: 'Jan', actual: 3200, benchmark: 3000 },
+  { month: 'Feb', actual: 3100, benchmark: 3000 },
+  { month: 'Mar', actual: 3300, benchmark: 3000 },
+  { month: 'Apr', actual: 3400, benchmark: 3000 },
+  { month: 'May', actual: 3500, benchmark: 3000 },
+  { month: 'Jun', actual: 3600, benchmark: 3000 },
+];
+
+const products = ['Product A', 'Product B', 'Product C', 'Product D'];
+
+const CostAnalytics: React.FC = () => {
+  const [data, setData] = useState<SimulatedIoTCostData>(simulatedIoTCostData);
+  const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
+  const [autoMode, setAutoMode] = useState(true);
+  const [showTargetView, setShowTargetView] = useState(false);
+  const [solutions, setSolutions] = useState<Record<string, Record<number, string>>>({});
+  const [solutionDialog, setSolutionDialog] = useState<{
+    open: boolean;
+    solution?: SolutionConfig;
+    category?: CostCategory | null;
+    itemIndex?: number | null;
+    selectedSupplier?: Supplier | null;
+    reductionPercentage?: number;
+  }>({
+    open: false,
+    solution: undefined,
+    category: null,
+    itemIndex: null,
+    selectedSupplier: null,
     reductionPercentage: 5
   });
+  const [pendingActions, setPendingActions] = useState<string[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState(products[0]);
+  const [currency, setCurrency] = useState<'EGP' | 'USD'>('USD');
+  const [benchmarkPrice, setBenchmarkPrice] = useState(3000);
+  const [profitMargin, setProfitMargin] = useState(20);
+
+  const categories: CostCategory[] = [
+    'Direct Materials',
+    'Packaging Materials',
+    'Direct Labor',
+    'Overhead',
+    'Other Costs'
+  ];
 
   // Calculate totals based on current data
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
-@@ -321,116 +301,170 @@
-      return;
+  const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
+  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
+  const postOptimizationEstimate = totalCostAfter * (1 + profitMargin / 100);
+
+  const benchmarkTrendDataWithGap = benchmarkTrendData.map(item => ({
+    ...item,
+    targetCost
+  }));
+
+  const percentOfTotal = (category: CostCategory) => 
+    Math.round((totals[category].actual / totalActual) * 100);
+
+  const getDetailsByCategory = (category: CostCategory): Item[] => {
+    switch (category) {
+      case 'Direct Materials': return data.rawMaterials;
+      case 'Packaging Materials': return data.packagingMaterials;
+      case 'Direct Labor': return data.directLabor;
+      case 'Overhead': return data.overheadItems;
+      case 'Other Costs': return data.otherCosts;
+      default: return [];
     }
+  };
+
+  const calculateItemCost = (item: Item, category: CostCategory): number => {
+    if (item.cost !== undefined) return item.cost;
+    if (category === 'Direct Materials') return (item.concentrationKg || 0) * (item.pricePerKg || 0);
+    if (category === 'Direct Labor') return (item.hours || 0) * (item.hourlyRate || 0);
+    return (item.qty || 0) * (item.unitPrice || 0);
+  };
+
+  const handleBenchmarkChange = (value: number) => {
+    setBenchmarkPrice(value);
+  };
+
+  const handleSolutionChange = (category: CostCategory, index: number, solutionName: string) => {
+    const solution = SOLUTIONS_CONFIG.find(s => s.name === solutionName);
+    if (!solution) return;
 
     setSolutionDialog({ 
       open: true, 
@@ -239,64 +339,6 @@ const formatCurrency = (value: number, currency: string) =>
       selectedSupplier: null,
       reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
     });
-    // For supplier negotiation, set up dynamic suppliers based on current price
-    if (solution.name === 'Negotiating better prices with supplier') {
-      const item = getDetailsByCategory(category)[index];
-      const currentPrice = item.pricePerKg || item.unitPrice || 0;
-      
-      // Generate dynamic suppliers based on current price
-      const dynamicSuppliers = [
-        { 
-          name: 'Premium Supplier', 
-          price: parseFloat((currentPrice * 0.92).toFixed(2)), // 8% discount
-          rating: 4.7, 
-          deliveryTime: '1 week', 
-          reliability: 97 
-        },
-        { 
-          name: 'Standard Supplier', 
-          price: parseFloat((currentPrice * 0.88).toFixed(2)), // 12% discount
-          rating: 4.2, 
-          deliveryTime: '2 weeks', 
-          reliability: 90 
-        },
-        { 
-          name: 'Budget Supplier', 
-          price: parseFloat((currentPrice * 0.82).toFixed(2)), // 18% discount
-          rating: 3.8, 
-          deliveryTime: '3 weeks', 
-          reliability: 85 
-        }
-      ];
-
-      setSolutionDialog({ 
-        open: true, 
-        solution: {
-          ...solution,
-          details: {
-            ...solution.details,
-            suppliers: dynamicSuppliers,
-            currentPrice,
-            costComparison: {
-              current: currentPrice,
-              potential: dynamicSuppliers[0].price // Default to premium supplier
-            }
-          }
-        },
-        category,
-        itemIndex: index,
-        selectedSupplier: null
-      });
-    } else {
-      setSolutionDialog({ 
-        open: true, 
-        solution,
-        category,
-        itemIndex: index,
-        selectedSupplier: null,
-        reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
-      });
-    }
   };
 
   const applySolution = () => {
@@ -394,37 +436,40 @@ const formatCurrency = (value: number, currency: string) =>
           <Box>
             <Flex justify="between" mb="4">
               <Box>
-                <Text size="2" color="gray">Current Price</Text>
                 <Text size="2" color="gray">Current Price/kg</Text>
                 <Text size="5" weight="bold">
                   {formatCurrency(solutionDialog.solution.details.currentPrice || 0, currency)}
                 </Text>
               </Box>
               <Box>
-                <Text size="2" color="gray">Potential Savings</Text>
                 <Text size="2" color="gray">Potential Savings/kg</Text>
                 <Text size="5" weight="bold" color="green">
                   {formatCurrency(
                     (solutionDialog.solution.details.currentPrice || 0) - 
                     (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0) * 0.9), 
-                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0)), 
                     currency
                   )}
                 </Text>
-@@ -446,7 +480,7 @@
+              </Box>
+            </Flex>
+
+            {solutionDialog.solution.details.suppliers && (
+              <>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={solutionDialog.solution.details.suppliers}>
+                    <XAxis dataKey="name" />
                     <YAxis />
                     <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
                     <Legend />
-                    <Bar dataKey="price" fill="#3b82f6" name="Price" />
                     <Bar dataKey="price" fill="#3b82f6" name="Price/kg" />
                     <Bar dataKey="rating" fill="#10b981" name="Rating" />
                   </BarChart>
                 </ResponsiveContainer>
-@@ -455,626 +489,626 @@
+
+                <Table.Root mt="4">
                   <Table.Header>
                     <Table.Row>
                       <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Price</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
@@ -800,13 +845,10 @@ const formatCurrency = (value: number, currency: string) =>
                   let costValue = item.cost ?? 0;
                   if (autoMode) {
                     if (dialogCategory === 'Direct Materials') {
-                      costValue = (item.concentrationKg ?? 0) * (item.pricePerKg ?? 0);
                       costValue = (item.concentrationKg || 0) * (item.pricePerKg || 0);
                     } else if (dialogCategory === 'Direct Labor') {
-                      costValue = (item.hours ?? 0) * (item.hourlyRate ?? 0);
                       costValue = (item.hours || 0) * (item.hourlyRate || 0);
                     } else {
-                      costValue = (item.qty ?? 0) * (item.unitPrice ?? 0);
                       costValue = (item.qty || 0) * (item.unitPrice || 0);
                     }
                   }
