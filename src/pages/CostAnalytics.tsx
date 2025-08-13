@@ -1,18 +1,19 @@
-// src/pages/CostAnalytics.tsx
 import React, { useState } from 'react';
 import {
   Box,
   Button,
+  Card,
   Dialog,
   Flex,
   Grid,
   Heading,
+  Inset,
   Progress,
-  Slider,
   Switch,
   Table,
   Text,
   Select as RadixSelect,
+  Badge
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -25,174 +26,105 @@ import {
   Tooltip,
   ResponsiveContainer,
   Legend,
-  BarChart,
-  Bar,
 } from 'recharts';
+import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
 interface Item {
   name: string;
-  cost?: number;
   qty?: number;
   unitPrice?: number;
+  cost?: number;
+  costAfter?: number;
   concentrationKg?: number;
   pricePerKg?: number;
   hours?: number;
   hourlyRate?: number;
+  qualityRating?: number;
+  deliveryTime?: number;
+  reliability?: number;
+  totalCost?: number;
+  basis?: number;
 }
 
-type CostCategory = 'Direct Materials' | 'Packaging Materials' | 'Direct Labor' | 'Overhead' | 'Other Costs';
-
-interface CostData {
+interface CostTotals {
   actual: number;
   budget: number;
   costAfter: number;
 }
 
-interface SimulatedIoTCostData {
-  totals: Record<CostCategory, CostData>;
+type CostCategory = 'Direct Materials' | 'Packaging Materials' | 'Direct Labor' | 'Overhead' | 'Other Costs';
+
+interface CostData {
   rawMaterials: Item[];
   packagingMaterials: Item[];
   directLabor: Item[];
   overheadItems: Item[];
   otherCosts: Item[];
+  totals: Record<CostCategory, CostTotals>;
 }
 
-interface Supplier {
+interface SupplierData {
+  id: number;
   name: string;
-  price: number;
-  rating: number;
-  deliveryTime: string;
+  pricePerKg?: number;
+  hourlyRate?: number;
+  unitPrice?: number;
+  qualityRating: number;
+  deliveryTime: number;
   reliability: number;
 }
 
-interface SolutionDetails {
-  suppliers?: Supplier[];
-  currentPrice?: number;
-  wasteReductionPotential?: [number, number];
-  automationPotential?: [number, number];
-  trainingOptions?: string[];
-  costComparison?: { current: number; potential: number };
-}
-
-interface SolutionConfig {
-  name: string;
-  actions: string[];
-  applyAdjustment: (item: Item) => void;
-  applicableTo: (CostCategory | '*')[];
-  details?: SolutionDetails;
-}
-
-const SOLUTIONS_CONFIG: SolutionConfig[] = [
-  {
-    name: 'Negotiating better prices with supplier',
-    actions: ['Initiate supplier negotiation'],
-    applyAdjustment: (item: Item) => {
-      if ('pricePerKg' in item) item.pricePerKg! *= 0.9;
-      if ('unitPrice' in item) item.unitPrice! *= 0.9;
-    },
-    applicableTo: ['Direct Materials', 'Packaging Materials'],
-    details: {
-      suppliers: [
-        { name: 'Premium Supplier', price: 0, rating: 4.7, deliveryTime: '1 week', reliability: 97 },
-        { name: 'Standard Supplier', price: 0, rating: 4.2, deliveryTime: '2 weeks', reliability: 90 },
-        { name: 'Budget Supplier', price: 0, rating: 3.8, deliveryTime: '3 weeks', reliability: 85 }
-      ],
-      currentPrice: 0,
-      costComparison: { current: 0, potential: 0 }
-    }
-  },
-  {
-    name: 'Reducing waste in material usage',
-    actions: ['Schedule waste reduction training'],
-    applyAdjustment: (item: Item) => {
-      if ('concentrationKg' in item) item.concentrationKg! *= 0.95;
-      if ('qty' in item) item.qty! *= 0.95;
-    },
-    applicableTo: ['Direct Materials', 'Packaging Materials'],
-    details: {
-      wasteReductionPotential: [5, 15],
-      trainingOptions: [
-        'Lean Manufacturing Training',
-        'Six Sigma Training',
-        'Waste Reduction Workshop'
-      ],
-      costComparison: { current: 100, potential: 85 }
-    }
-  },
-  {
-    name: 'Automation to reduce manual labor costs',
-    actions: ['Request automation assessment'],
-    applyAdjustment: (item: Item) => {
-      if ('hours' in item) item.hours! *= 0.8;
-    },
-    applicableTo: ['Direct Labor'],
-    details: {
-      automationPotential: [20, 40],
-      costComparison: { current: 100, potential: 80 }
-    }
-  },
-  {
-    name: 'Other',
-    actions: ['Create custom improvement plan'],
-    applyAdjustment: (item: Item) => {},
-    applicableTo: ['*']
-  }
-];
-
-const simulatedIoTCostData: SimulatedIoTCostData = {
-  totals: {
-    'Direct Materials': { actual: 0, budget: 0, costAfter: 0 }, // Will be calculated
-    'Packaging Materials': { actual: 500, budget: 450, costAfter: 400 },
-    'Direct Labor': { actual: 800, budget: 750, costAfter: 700 },
-    'Overhead': { actual: 600, budget: 550, costAfter: 500 },
-    'Other Costs': { actual: 300, budget: 250, costAfter: 200 }
-  },
+const simulatedIoTCostData: CostData = {
   rawMaterials: [
-    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540 },
-    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600 },
-    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300 },
-    { name: 'Nicotinamide B3', concentrationKg: 0.010, pricePerKg: 400 },
-    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700 },
-    { name: 'Vitamin B6', concentrationKg: 0.002, pricePerKg: 900 },
-    { name: 'Leucine', concentrationKg: 0.030, pricePerKg: 200 },
-    { name: 'Threonine', concentrationKg: 0.010, pricePerKg: 950 },
-    { name: 'Taurine', concentrationKg: 0.003, pricePerKg: 3000 },
-    { name: 'Glycine', concentrationKg: 0.003, pricePerKg: 4200 },
-    { name: 'Arginine', concentrationKg: 0.003, pricePerKg: 5000 },
-    { name: 'Cynarin', concentrationKg: 0.003, pricePerKg: 3900 },
-    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700 },
-    { name: 'Sorbitol', concentrationKg: 0.010, pricePerKg: 360 },
-    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070 },
-    { name: 'Betaine', concentrationKg: 0.020, pricePerKg: 1250 },
-    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90 },
-    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1 }
+    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, cost: 0.54 },
+    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, cost: 3.6 },
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, cost: 2.3 },
+    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, cost: 4 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, cost: 6.8 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, cost: 1.35 },
+    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, cost: 6 },
+    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, cost: 9.5 },
+    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, cost: 7.5 },
+    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, cost: 10.5 },
+    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, cost: 12.5 },
+    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, cost: 9.75 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, cost: 17.5 },
+    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, cost: 3.6 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, cost: 5.35 },
+    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, cost: 25 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, cost: 6.75 },
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, cost: 0.571 },
   ],
   packagingMaterials: [
-    { name: 'Bottles', qty: 100, unitPrice: 2 },
-    { name: 'Labels', qty: 200, unitPrice: 0.5 },
-    { name: 'Caps', qty: 100, unitPrice: 0.3 }
+    { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10 },
+    { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5 },
   ],
   directLabor: [
-    { name: 'Mixing', hours: 40, hourlyRate: 15 },
-    { name: 'Quality Control', hours: 20, hourlyRate: 12 }
+    { name: 'Operator', hours: 0.5, hourlyRate: 3.5, cost: 1.75 },
+    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75, cost: 0.88 },
+    { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74, cost: 0.37 },
   ],
   overheadItems: [
-    { name: 'Electricity', cost: 200 },
-    { name: 'Rent', cost: 400 }
+    { name: 'Rent', totalCost: 1000, basis: 1000, cost: 1 },
+    { name: 'Electricity', totalCost: 500, basis: 1000, cost: 0.5 },
+    { name: 'Maintenance', totalCost: 1500, basis: 1000, cost: 1.5 },
   ],
   otherCosts: [
-    { name: 'Transportation', cost: 150 },
-    { name: 'Miscellaneous', cost: 150 }
-  ]
+    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67 },
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33 },
+    { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5 },
+  ],
+  totals: {
+    'Direct Materials': { actual: 133.11, budget: 129, costAfter: 130 },
+    'Packaging Materials': { actual: 18, budget: 16, costAfter: 16 },
+    'Direct Labor': { actual: 3, budget: 2, costAfter: 2 },
+    'Overhead': { actual: 2, budget: 2, costAfter: 2 },
+    'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
+  }
 };
 
-// Calculate initial Direct Materials total
-simulatedIoTCostData.totals['Direct Materials'].actual = simulatedIoTCostData.rawMaterials.reduce(
-  (sum, item) => sum + (item.concentrationKg || 0) * (item.pricePerKg || 0), 
-  0
-);
-
-const formatCurrency = (value: number, currency: string) => 
+const formatCurrency = (value: number, currency: string) =>
   `${currency} ${value.toFixed(2)}`;
 
 const categories: CostCategory[] = [
@@ -205,26 +137,31 @@ const categories: CostCategory[] = [
 
 const products = ['Product A', 'Product B', 'Product C'];
 
+const solutionsOptions = [
+  'Negotiating better prices with supplier',
+  'Reducing waste in material usage',
+  'Automation to reduce manual labor costs',
+  'Optimizing machine usage',
+  'Improving inventory management',
+  'Minimize transportation costs',
+  'Reduce rework costs',
+  'Other',
+];
+
 const getDetailsByCategory = (category: CostCategory): Item[] => {
   switch (category) {
-    case 'Direct Materials': return simulatedIoTCostData.rawMaterials;
-    case 'Packaging Materials': return simulatedIoTCostData.packagingMaterials;
-    case 'Direct Labor': return simulatedIoTCostData.directLabor;
-    case 'Overhead': return simulatedIoTCostData.overheadItems;
-    case 'Other Costs': return simulatedIoTCostData.otherCosts;
-    default: return [];
-  }
-};
-
-const calculateItemCost = (item: Item, category: CostCategory): number => {
-  if (category === 'Direct Materials') {
-    return (item.concentrationKg || 0) * (item.pricePerKg || 0);
-  } else if (category === 'Direct Labor') {
-    return (item.hours || 0) * (item.hourlyRate || 0);
-  } else if ('cost' in item) {
-    return item.cost || 0;
-  } else {
-    return (item.qty || 0) * (item.unitPrice || 0);
+    case 'Direct Materials':
+      return simulatedIoTCostData.rawMaterials;
+    case 'Packaging Materials':
+      return simulatedIoTCostData.packagingMaterials;
+    case 'Direct Labor':
+      return simulatedIoTCostData.directLabor;
+    case 'Overhead':
+      return simulatedIoTCostData.overheadItems;
+    case 'Other Costs':
+      return simulatedIoTCostData.otherCosts;
+    default:
+      return [];
   }
 };
 
@@ -244,28 +181,39 @@ function CostAnalytics() {
     'Overhead': {},
     'Other Costs': {},
   });
-  const [pendingActions, setPendingActions] = useState<string[]>([]);
-  const [solutionDialog, setSolutionDialog] = useState<{
-    open: boolean;
-    solution: SolutionConfig | null;
-    category: CostCategory | null;
-    itemIndex: number | null;
-    selectedSupplier?: Supplier | null;
-    reductionPercentage?: number;
-  }>({ 
-    open: false, 
-    solution: null, 
-    category: null, 
-    itemIndex: null,
-    selectedSupplier: null,
-    reductionPercentage: 5
-  });
+  const [autoSelectedSuppliers, setAutoSelectedSuppliers] = useState<Record<number, boolean>>({});
+  const [supplierData, setSupplierData] = useState<SupplierData[]>([
+    {
+      id: 1,
+      name: 'Supplier A',
+      pricePerKg: 500,
+      qualityRating: 4,
+      deliveryTime: 7,
+      reliability: 5
+    },
+    {
+      id: 2,
+      name: 'Supplier B',
+      pricePerKg: 450,
+      qualityRating: 3,
+      deliveryTime: 10,
+      reliability: 4
+    },
+    {
+      id: 3,
+      name: 'Supplier C',
+      pricePerKg: 550,
+      qualityRating: 5,
+      deliveryTime: 5,
+      reliability: 5
+    }
+  ]);
 
-  // Calculate totals based on current data
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
+
   const postOptimizationEstimate = totalActual - totalCostAfter;
   const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
@@ -292,127 +240,67 @@ function CostAnalytics() {
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
-  const handleSolutionChange = (category: CostCategory, index: number, solutionName: string) => {
-    const solution = SOLUTIONS_CONFIG.find(s => s.name === solutionName);
-    if (!solution) return;
+  const handleSolutionChange = (category: CostCategory, index: number, value: string) => {
+    setSolutions((prev) => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [index]: value,
+      },
+    }));
 
-    if (!solution.applicableTo.includes('*') && !solution.applicableTo.includes(category)) {
-      alert('This solution is not applicable for the selected category');
-      return;
+    // Calculate cost reduction based on solution
+    const items = getDetailsByCategory(category);
+    const item = items[index];
+    let reductionFactor = 1;
+
+    switch (value) {
+      case 'Negotiating better prices with supplier':
+        reductionFactor = 0.9; // 10% reduction
+        break;
+      case 'Reducing waste in material usage':
+        reductionFactor = 0.85; // 15% reduction
+        break;
+      case 'Automation to reduce manual labor costs':
+        reductionFactor = 0.7; // 30% reduction
+        break;
+      case 'Optimizing machine usage':
+        reductionFactor = 0.8; // 20% reduction
+        break;
+      case 'Improving inventory management':
+        reductionFactor = 0.9; // 10% reduction
+        break;
+      case 'Minimize transportation costs':
+        reductionFactor = 0.85; // 15% reduction
+        break;
+      case 'Reduce rework costs':
+        reductionFactor = 0.75; // 25% reduction
+        break;
+      default:
+        reductionFactor = 1;
     }
 
-    // For supplier negotiation, set up dynamic suppliers based on current price
-    if (solution.name === 'Negotiating better prices with supplier') {
-      const item = getDetailsByCategory(category)[index];
-      const currentPrice = item.pricePerKg || item.unitPrice || 0;
+    // Update the data state
+    setData(prev => {
+      const newTotals = {...prev.totals};
+      const categoryItems = [...getDetailsByCategory(category)];
       
-      // Generate dynamic suppliers based on current price
-      const dynamicSuppliers = [
-        { 
-          name: 'Premium Supplier', 
-          price: parseFloat((currentPrice * 0.92).toFixed(2)), // 8% discount
-          rating: 4.7, 
-          deliveryTime: '1 week', 
-          reliability: 97 
-        },
-        { 
-          name: 'Standard Supplier', 
-          price: parseFloat((currentPrice * 0.88).toFixed(2)), // 12% discount
-          rating: 4.2, 
-          deliveryTime: '2 weeks', 
-          reliability: 90 
-        },
-        { 
-          name: 'Budget Supplier', 
-          price: parseFloat((currentPrice * 0.82).toFixed(2)), // 18% discount
-          rating: 3.8, 
-          deliveryTime: '3 weeks', 
-          reliability: 85 
-        }
-      ];
-
-      setSolutionDialog({ 
-        open: true, 
-        solution: {
-          ...solution,
-          details: {
-            ...solution.details,
-            suppliers: dynamicSuppliers,
-            currentPrice,
-            costComparison: {
-              current: currentPrice,
-              potential: dynamicSuppliers[0].price // Default to premium supplier
-            }
-          }
-        },
-        category,
-        itemIndex: index,
-        selectedSupplier: null
-      });
-    } else {
-      setSolutionDialog({ 
-        open: true, 
-        solution,
-        category,
-        itemIndex: index,
-        selectedSupplier: null,
-        reductionPercentage: solution.details?.wasteReductionPotential?.[0] || 5
-      });
-    }
-  };
-
-  const applySolution = () => {
-    if (!solutionDialog.solution || solutionDialog.category === null || solutionDialog.itemIndex === null) return;
-
-    const item = getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex];
-    const newData = {...data};
-
-    try {
-      setPendingActions(prev => [...prev, ...solutionDialog.solution?.actions || []]);
-      
-      // Apply specific adjustments based on solution type
-      if (solutionDialog.solution.name === 'Negotiating better prices with supplier' && solutionDialog.selectedSupplier) {
-        if ('pricePerKg' in item) item.pricePerKg = solutionDialog.selectedSupplier.price;
-        if ('unitPrice' in item) item.unitPrice = solutionDialog.selectedSupplier.price;
-        
-        // Update the total cost for the category
-        newData.totals[solutionDialog.category].actual = getDetailsByCategory(solutionDialog.category).reduce(
-          (sum, item) => sum + calculateItemCost(item, solutionDialog.category!), 
-          0
-        );
+      if (category === 'Direct Materials') {
+        categoryItems[index].costAfter = (categoryItems[index].concentrationKg || 0) * (categoryItems[index].pricePerKg || 0) * reductionFactor;
+      } else if (category === 'Direct Labor') {
+        categoryItems[index].costAfter = (categoryItems[index].hours || 0) * (categoryItems[index].hourlyRate || 0) * reductionFactor;
+      } else {
+        categoryItems[index].costAfter = (categoryItems[index].qty || 0) * (categoryItems[index].unitPrice || 0) * reductionFactor;
       }
       
-      if (solutionDialog.solution.name === 'Reducing waste in material usage' && solutionDialog.reductionPercentage) {
-        const reduction = 1 - (solutionDialog.reductionPercentage / 100);
-        if ('concentrationKg' in item) item.concentrationKg! *= reduction;
-        if ('qty' in item) item.qty! *= reduction;
-      }
-
-      if (solutionDialog.solution.name === 'Automation to reduce manual labor costs') {
-        if ('hours' in item) item.hours! *= 0.8;
-      }
-
-      // Apply the standard adjustment from the solution config
-      solutionDialog.solution.applyAdjustment(item);
-
-      // Update solutions tracking
-      const updatedSolutions = {
-        ...solutions,
-        [solutionDialog.category]: {
-          ...solutions[solutionDialog.category],
-          [solutionDialog.itemIndex]: solutionDialog.solution.name
-        }
+      // Recalculate category total
+      newTotals[category].costAfter = categoryItems.reduce((sum, item) => sum + (item.costAfter || item.cost || 0), 0);
+      
+      return {
+        ...prev,
+        totals: newTotals
       };
-      
-      setSolutions(updatedSolutions);
-      setData(newData);
-      setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
-      setSolutionDialog({...solutionDialog, open: false});
-    } catch (error) {
-      alert('Error applying solution');
-      setPendingActions(prev => prev.filter(a => !solutionDialog.solution?.actions.includes(a)));
-      setSolutionDialog({...solutionDialog, open: false});
-    }
+    });
   };
 
   const handleExportReport = () => {
@@ -432,404 +320,268 @@ function CostAnalytics() {
     }));
   };
 
-  const renderSolutionDialogContent = () => {
-    if (!solutionDialog.solution) return null;
+  const handleSubmitToBlockchain = () => {
+    alert('Data submitted to blockchain successfully!');
+  };
 
-    if (!solutionDialog.solution.details) {
-      return (
-        <Box>
-          <Text>This solution will perform the following actions:</Text>
-          <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
-            {solutionDialog.solution.actions.map((action, i) => (
-              <li key={i}>{action}</li>
-            ))}
-          </ul>
-        </Box>
+  const handleAutoSelectSupplier = (category: CostCategory, index: number) => {
+    const items = getDetailsByCategory(category);
+    const currentItem = items[index];
+    
+    if (category === 'Direct Materials' && currentItem.pricePerKg) {
+      // Calculate scores for each supplier
+      const ratedSuppliers = supplierData.map(supplier => {
+        const priceWeight = 0.4;
+        const qualityWeight = 0.3;
+        const deliveryWeight = 0.2;
+        const reliabilityWeight = 0.1;
+        
+        const priceScore = (1 - (supplier.pricePerKg || 0) / 600) * 100 * priceWeight;
+        const qualityScore = (supplier.qualityRating / 5) * 100 * qualityWeight;
+        const deliveryScore = (1 - (supplier.deliveryTime / 14)) * 100 * deliveryWeight;
+        const reliabilityScore = (supplier.reliability / 5) * 100 * reliabilityWeight;
+        
+        const totalScore = priceScore + qualityScore + deliveryScore + reliabilityScore;
+        
+        return {
+          ...supplier,
+          score: totalScore
+        };
+      });
+
+      // Select best supplier
+      const bestSupplier = ratedSuppliers.reduce((prev, current) => 
+        (prev.score || 0) > (current.score || 0) ? prev : current
       );
+
+      if (bestSupplier) {
+        // Update item with best supplier
+        currentItem.pricePerKg = bestSupplier.pricePerKg;
+        currentItem.name = `[Auto-selected] ${bestSupplier.name}`;
+        currentItem.qualityRating = bestSupplier.qualityRating;
+        currentItem.deliveryTime = bestSupplier.deliveryTime;
+        
+        setAutoSelectedSuppliers(prev => ({
+          ...prev,
+          [index]: true
+        }));
+
+        // Update cost after optimization
+        handleSolutionChange(category, index, 'Negotiating better prices with supplier');
+      }
     }
+  };
 
-    switch (solutionDialog.solution.name) {
-      case 'Negotiating better prices with supplier':
-        return (
-          <Box>
-            <Flex justify="between" mb="4">
-              <Box>
-                <Text size="2" color="gray">Current Price/kg</Text>
-                <Text size="5" weight="bold">
-                  {formatCurrency(solutionDialog.solution.details.currentPrice || 0, currency)}
-                </Text>
-              </Box>
-              <Box>
-                <Text size="2" color="gray">Potential Savings/kg</Text>
-                <Text size="5" weight="bold" color="green">
-                  {formatCurrency(
-                    (solutionDialog.solution.details.currentPrice || 0) - 
-                    (solutionDialog.selectedSupplier?.price || (solutionDialog.solution.details.currentPrice || 0)), 
-                    currency
-                  )}
-                </Text>
-              </Box>
-            </Flex>
+  const handleSubmitDialog = (category: CostCategory) => {
+    // Update the actual costs based on dialog changes
+    const items = getDetailsByCategory(category);
+    const newActual = items.reduce((sum, item) => {
+      if (category === 'Direct Materials') {
+        return sum + ((item.concentrationKg || 0) * (item.pricePerKg || 0));
+      } else if (category === 'Direct Labor') {
+        return sum + ((item.hours || 0) * (item.hourlyRate || 0));
+      } else if (category === 'Overhead') {
+        return sum + ((item.totalCost || 0) / (item.basis || 1));
+      } else {
+        return sum + ((item.qty || 0) * (item.unitPrice || 0));
+      }
+    }, 0);
 
-            {solutionDialog.solution.details.suppliers && (
-              <>
-                <Heading size="4" mb="3">Supplier Comparison</Heading>
-                <ResponsiveContainer width="100%" height={250}>
-                  <BarChart data={solutionDialog.solution.details.suppliers}>
-                    <XAxis dataKey="name" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => formatCurrency(Number(value), currency)} />
-                    <Legend />
-                    <Bar dataKey="price" fill="#3b82f6" name="Price/kg" />
-                    <Bar dataKey="rating" fill="#10b981" name="Rating" />
-                  </BarChart>
-                </ResponsiveContainer>
+    setData(prev => ({
+      ...prev,
+      totals: {
+        ...prev.totals,
+        [category]: {
+          ...prev.totals[category],
+          actual: newActual
+        }
+      }
+    }));
 
-                <Table.Root mt="4">
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Price/kg</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Delivery</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Reliability</Table.ColumnHeaderCell>
-                      <Table.ColumnHeaderCell>Select</Table.ColumnHeaderCell>
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-                    {solutionDialog.solution.details.suppliers.map((supplier, idx) => (
-                      <Table.Row key={idx} style={
-                        solutionDialog.selectedSupplier?.name === supplier.name ? 
-                        { backgroundColor: '#f0fdf4' } : {}
-                      }>
-                        <Table.Cell>{supplier.name}</Table.Cell>
-                        <Table.Cell>{formatCurrency(supplier.price, currency)}</Table.Cell>
-                        <Table.Cell>
-                          <Progress value={supplier.rating * 20} />
-                          {supplier.rating}/5
-                        </Table.Cell>
-                        <Table.Cell>{supplier.deliveryTime}</Table.Cell>
-                        <Table.Cell>{supplier.reliability}%</Table.Cell>
-                        <Table.Cell>
-                          <Button
-                            size="1"
-                            variant={solutionDialog.selectedSupplier?.name === supplier.name ? 'solid' : 'outline'}
-                            onClick={() => setSolutionDialog({
-                              ...solutionDialog,
-                              selectedSupplier: supplier
-                            })}
-                          >
-                            {solutionDialog.selectedSupplier?.name === supplier.name ? 'Selected' : 'Select'}
-                          </Button>
-                        </Table.Cell>
-                      </Table.Row>
-                    ))}
-                  </Table.Body>
-                </Table.Root>
-              </>
-            )}
-          </Box>
-        );
-
-      case 'Reducing waste in material usage':
-        return (
-          <Box>
-            <Flex justify="between" mb="4">
-              <Box>
-                <Text size="2" color="gray">Current Waste</Text>
-                <Text size="5" weight="bold">8-12%</Text>
-              </Box>
-              <Box>
-                <Text size="2" color="gray">Potential Savings</Text>
-                <Text size="5" weight="bold" color="green">
-                  {formatCurrency(
-                    ((solutionDialog.reductionPercentage || 5) / 100) * 
-                    (solutionDialog.category && solutionDialog.itemIndex !== null ?
-                      calculateItemCost(
-                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
-                        solutionDialog.category
-                      ) : 0),
-                    currency
-                  )}
-                </Text>
-              </Box>
-            </Flex>
-
-            {solutionDialog.solution.details.trainingOptions && (
-              <Box mb="4">
-                <Text weight="bold" mb="2">Training Options</Text>
-                <RadixSelect.Root>
-                  <RadixSelect.Trigger placeholder="Select training program" />
-                  <RadixSelect.Content>
-                    {solutionDialog.solution.details.trainingOptions.map((option, i) => (
-                      <RadixSelect.Item key={i} value={option}>
-                        {option}
-                      </RadixSelect.Item>
-                    ))}
-                  </RadixSelect.Content>
-                </RadixSelect.Root>
-              </Box>
-            )}
-
-            <Box>
-              <Flex justify="between" mb="2">
-                <Text weight="bold">Waste Reduction Target</Text>
-                <Text weight="bold">{solutionDialog.reductionPercentage}%</Text>
-              </Flex>
-              <Slider
-                value={[solutionDialog.reductionPercentage || 5]}
-                min={5}
-                max={15}
-                step={1}
-                onValueChange={([value]) => setSolutionDialog({
-                  ...solutionDialog,
-                  reductionPercentage: value
-                })}
-              />
-              <Flex justify="between" mt="1">
-                <Text size="1" color="gray">5%</Text>
-                <Text size="1" color="gray">15%</Text>
-              </Flex>
-            </Box>
-
-            <Box mt="4">
-              <Text size="2" color="gray">Implementation Timeline</Text>
-              <Progress value={0} mt="2" />
-              <Flex justify="between" mt="1">
-                <Text size="1">Now</Text>
-                <Text size="1">3-6 months</Text>
-              </Flex>
-            </Box>
-          </Box>
-        );
-
-      case 'Automation to reduce manual labor costs':
-        return (
-          <Box>
-            <Flex justify="between" mb="4">
-              <Box>
-                <Text size="2" color="gray">Current Labor Cost</Text>
-                <Text size="5" weight="bold">
-                  {solutionDialog.category && solutionDialog.itemIndex !== null ?
-                    formatCurrency(
-                      calculateItemCost(
-                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
-                        solutionDialog.category
-                      ),
-                      currency
-                    ) : '-'}
-                </Text>
-              </Box>
-              <Box>
-                <Text size="2" color="gray">Potential Savings</Text>
-                <Text size="5" weight="bold" color="green">
-                  {solutionDialog.category && solutionDialog.itemIndex !== null ?
-                    formatCurrency(
-                      calculateItemCost(
-                        getDetailsByCategory(solutionDialog.category)[solutionDialog.itemIndex],
-                        solutionDialog.category
-                      ) * 0.2,
-                      currency
-                    ) : '-'}
-                </Text>
-              </Box>
-            </Flex>
-
-            <Box mb="4">
-              <Text weight="bold" mb="2">Automation Options</Text>
-              <RadixSelect.Root>
-                <RadixSelect.Trigger placeholder="Select automation solution" />
-                <RadixSelect.Content>
-                  <RadixSelect.Item value="robot">Robotic Assembly</RadixSelect.Item>
-                  <RadixSelect.Item value="cobot">Collaborative Robots</RadixSelect.Item>
-                  <RadixSelect.Item value="conveyor">Automated Conveyor System</RadixSelect.Item>
-                </RadixSelect.Content>
-              </RadixSelect.Root>
-            </Box>
-
-            <Box>
-              <Flex justify="between" mb="2">
-                <Text weight="bold">Labor Reduction</Text>
-                <Text weight="bold">20%</Text>
-              </Flex>
-              <Text size="2" color="gray" mb="2">
-                This solution will automatically reduce labor hours by 20%
-              </Text>
-            </Box>
-
-            <Box mt="4">
-              <Text size="2" color="gray">ROI Period</Text>
-              <Progress value={0} mt="2" />
-              <Flex justify="between" mt="1">
-                <Text size="1">Now</Text>
-                <Text size="1">12-18 months</Text>
-              </Flex>
-            </Box>
-          </Box>
-        );
-
-      default:
-        return (
-          <Box>
-            <Text>This solution will perform the following actions:</Text>
-            <ul style={{ marginLeft: '20px', marginTop: '8px' }}>
-              {solutionDialog.solution.actions.map((action, i) => (
-                <li key={i}>{action}</li>
-              ))}
-            </ul>
-          </Box>
-        );
-    }
+    setDialogCategory(null);
   };
 
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      {pendingActions.length > 0 && (
-        <Box style={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          backgroundColor: '#fff',
-          padding: 16,
-          borderRadius: 8,
-          boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-          zIndex: 1000
-        }}>
-          <Heading size="4" mb="2">Pending Actions</Heading>
-          {pendingActions.map((action, i) => (
-            <Flex key={i} align="center" gap="2" mb="1">
-              <Progress value={100} style={{width: 100}} />
-              <Text size="2">{action}</Text>
-            </Flex>
-          ))}
-        </Box>
-      )}
-
-      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
+      <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
+        <Heading size="6" weight="bold">Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
-          <Text>Product:</Text>
-          <RadixSelect.Root
-            value={selectedProduct}
-            onValueChange={(value) => setSelectedProduct(value)}
-          >
-            <RadixSelect.Trigger aria-label="Select product" />
-            <RadixSelect.Content>
-              {products.map((p) => (
-                <RadixSelect.Item key={p} value={p}>
-                  {p}
-                </RadixSelect.Item>
-              ))}
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <RadixSelect.Root
-            value={currency}
-            onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
-          >
-            <RadixSelect.Trigger aria-label="Select currency" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
-              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <Button onClick={handleExportReport}>Export Report</Button>
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold">Product:</Text>
+            <RadixSelect.Root
+              value={selectedProduct}
+              onValueChange={(value) => setSelectedProduct(value)}
+            >
+              <RadixSelect.Trigger style={{ minWidth: '120px' }} />
+              <RadixSelect.Content>
+                {products.map((p) => (
+                  <RadixSelect.Item key={p} value={p}>
+                    {p}
+                  </RadixSelect.Item>
+                ))}
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+          
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold">Currency:</Text>
+            <RadixSelect.Root
+              value={currency}
+              onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
+            >
+              <RadixSelect.Trigger style={{ minWidth: '80px' }} />
+              <RadixSelect.Content>
+                <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
+                <RadixSelect.Item value="USD">USD</RadixSelect.Item>
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+
+          <Button variant="soft" onClick={handleExportReport}>
+            <DownloadIcon />
+            Export Report
+          </Button>
         </Flex>
       </Flex>
 
-      <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Actual Cost</Text>
-          <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Target Cost</Text>
-          <Heading size="6">{formatCurrency(totalTarget, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Cost After Optimization</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Benchmark Price</Text>
-          <input
-            type="number"
-            value={benchmarkPrice}
-            onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{formatCurrency(benchmarkPrice, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Profit Margin (%)</Text>
-          <input
-            type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{profitMargin}%</Heading>
-        </Box>
-      </Grid>
-
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target Cost (Editable)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {categories.map((category) => {
-            const variance = totals[category].actual - totals[category].budget;
-            const varianceColor = variance <= 0 ? 'green' : 'red';
-            return (
-              <Table.Row key={category}>
-                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
-                <Table.Cell>
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+        {[
+          { label: 'Actual Cost', value: totalActual, trend: 'down' },
+          { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
+          { label: 'Cost After Optimization', value: totalCostAfter, trend: 'up' },
+          { label: 'Post-Optimization Estimate', value: postOptimizationEstimate, trend: 'up' },
+          {
+            label: 'Benchmark Price',
+            value: benchmarkPrice,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              handleBenchmarkChange(parseFloat(e.target.value) || 0)
+          },
+          {
+            label: 'Profit Margin (%)',
+            value: profitMargin,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              setProfitMargin(parseFloat(e.target.value) || 0)
+          },
+        ].map((item, index) => (
+          <Card key={index} style={{ position: 'relative' }}>
+            <Flex direction="column" gap="2">
+              <Flex justify="between" align="center">
+                <Text size="2" color="gray">
+                  {item.label}
+                </Text>
+                {item.trend && (
+                  <Badge color={
+                    item.trend === 'up' ? 'green' : 
+                    item.trend === 'down' ? 'red' : 'gray'
+                  }>
+                    {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
+                  </Badge>
+                )}
+              </Flex>
+              
+              {item.editable ? (
+                <Flex align="center" gap="2">
                   <input
                     type="number"
-                    value={totals[category].budget}
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                    style={{ width: '80px' }}
+                    value={item.value}
+                    onChange={item.onChange}
+                    style={{
+                      width: '80px',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #e2e8f0'
+                    }}
                   />
-                </Table.Cell>
-                <Table.Cell style={{ color: varianceColor }}>
-                  {formatCurrency(variance, currency)}
-                </Table.Cell>
-                <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
-                <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
-                <Table.Cell>
-                  <Button onClick={() => setDialogCategory(category)}>View Details</Button>
-                </Table.Cell>
+                  <Text size="4" weight="bold">
+                    {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                  </Text>
+                </Flex>
+              ) : (
+                <Heading size="5">
+                  {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                </Heading>
+              )}
+            </Flex>
+          </Card>
+        ))}
+      </Grid>
+
+      <Card mb="6">
+        <Inset clip="padding-box" side="top" pb="current">
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Target Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
               </Table.Row>
-            );
-          })}
-          <Table.Row>
-            <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
-            <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalActual - totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>100%</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
-            <Table.Cell></Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
+            </Table.Header>
+            <Table.Body>
+              {categories.map((category) => {
+                const variance = totals[category].actual - totals[category].budget;
+                const varianceColor = variance <= 0 ? 'green' : 'red';
+                return (
+                  <Table.Row key={category}>
+                    <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
+                    <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+                    <Table.Cell>
+                      <input
+                        type="number"
+                        value={totals[category].budget}
+                        onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                        style={{
+                          width: '80px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell style={{ color: varianceColor }}>
+                      {formatCurrency(variance, currency)}
+                    </Table.Cell>
+                    <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+                    <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+                    <Table.Cell>
+                      <Button size="1" variant="outline" onClick={() => setDialogCategory(category)}>
+                        View Details
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+              <Table.Row style={{ backgroundColor: '#f8fafc' }}>
+                <Table.RowHeaderCell><Text weight="bold">Total</Text></Table.RowHeaderCell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalActual, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalTarget, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalActual - totalTarget, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter, currency)}</Text></Table.Cell>
+                <Table.Cell></Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Inset>
+      </Card>
 
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
+          <Dialog.Content style={{ 
+            maxWidth: '900px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <Dialog.Title style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
+              {dialogCategory} Breakdown
+            </Dialog.Title>
             <Flex justify="between" align="center" mb="3" mt="3">
               <Text>Auto IoT Mode</Text>
               <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
@@ -855,18 +607,24 @@ function CostAnalytics() {
                   <Table.ColumnHeaderCell>Item</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Qty/Units</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Unit Price</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Quality</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Delivery Time</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Total Cost</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>Solution</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>Supplier Selection</Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>
               <Table.Body>
                 {getDetailsByCategory(dialogCategory).map((item, index) => {
-                  let costValue = item.cost ?? 0;
+                  let costValue = item.cost || 0;
                   if (autoMode) {
                     if (dialogCategory === 'Direct Materials') {
                       costValue = (item.concentrationKg || 0) * (item.pricePerKg || 0);
                     } else if (dialogCategory === 'Direct Labor') {
                       costValue = (item.hours || 0) * (item.hourlyRate || 0);
+                    } else if (dialogCategory === 'Overhead') {
+                      costValue = (item.totalCost || 0) / (item.basis || 1);
                     } else {
                       costValue = (item.qty || 0) * (item.unitPrice || 0);
                     }
@@ -877,24 +635,29 @@ function CostAnalytics() {
                       <Table.Cell>
                         {autoMode ? (
                           dialogCategory === 'Direct Materials'
-                            ? item.concentrationKg?.toFixed(3) ?? '-'
+                            ? item.concentrationKg?.toFixed(6) ?? '-'
                             : dialogCategory === 'Direct Labor'
                             ? item.hours ?? '-'
+                            : dialogCategory === 'Overhead'
+                            ? (item.totalCost || 0) / (item.basis || 1)
                             : item.qty ?? '-'
                         ) : (
                           <input
                             type="number"
                             value={
                               dialogCategory === 'Direct Materials'
-                                ? item.concentrationKg ?? 0
+                                ? item.concentrationKg || 0
                                 : dialogCategory === 'Direct Labor'
-                                ? item.hours ?? 0
-                                : item.qty ?? 0
+                                ? item.hours || 0
+                                : dialogCategory === 'Overhead'
+                                ? (item.totalCost || 0) / (item.basis || 1)
+                                : item.qty || 0
                             }
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                               const value = parseFloat(e.target.value) || 0;
                               if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
                               else if (dialogCategory === 'Direct Labor') item.hours = value;
+                              else if (dialogCategory === 'Overhead') item.totalCost = value * (item.basis || 1);
                               else item.qty = value;
                             }}
                             style={{ width: '80px' }}
@@ -911,6 +674,8 @@ function CostAnalytics() {
                             ? item.hourlyRate
                               ? formatCurrency(item.hourlyRate, currency)
                               : '-'
+                            : dialogCategory === 'Overhead'
+                            ? '-'
                             : item.unitPrice
                             ? formatCurrency(item.unitPrice, currency)
                             : '-'
@@ -919,22 +684,32 @@ function CostAnalytics() {
                             type="number"
                             value={
                               dialogCategory === 'Direct Materials'
-                                ? item.pricePerKg ?? 0
+                                ? item.pricePerKg || 0
                                 : dialogCategory === 'Direct Labor'
-                                ? item.hourlyRate ?? 0
-                                : item.unitPrice ?? 0
+                                ? item.hourlyRate || 0
+                                : dialogCategory === 'Overhead'
+                                ? 0
+                                : item.unitPrice || 0
                             }
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                               const value = parseFloat(e.target.value) || 0;
                               if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
                               else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                              else if (dialogCategory === 'Overhead') {}
                               else item.unitPrice = value;
                             }}
                             style={{ width: '80px' }}
                           />
                         )}
                       </Table.Cell>
+                      <Table.Cell>
+                        {item.qualityRating ? `${item.qualityRating}/5` : '-'}
+                      </Table.Cell>
+                      <Table.Cell>
+                        {item.deliveryTime ? `${item.deliveryTime} days` : '-'}
+                      </Table.Cell>
                       <Table.Cell>{formatCurrency(costValue, currency)}</Table.Cell>
+                      <Table.Cell>{formatCurrency(item.costAfter || costValue, currency)}</Table.Cell>
                       <Table.Cell>
                         <RadixSelect.Root
                           value={solutions[dialogCategory]?.[index] || ''}
@@ -942,18 +717,43 @@ function CostAnalytics() {
                         >
                           <RadixSelect.Trigger aria-label="Select solution" />
                           <RadixSelect.Content>
-                            {SOLUTIONS_CONFIG.map((solution) => (
-                              <RadixSelect.Item 
-                                key={solution.name} 
-                                value={solution.name}
-                                disabled={!solution.applicableTo.includes('*') && 
-                                         !solution.applicableTo.includes(dialogCategory)}
-                              >
-                                {solution.name}
+                            {solutionsOptions.map((sol) => (
+                              <RadixSelect.Item key={sol} value={sol}>
+                                {sol}
                               </RadixSelect.Item>
                             ))}
                           </RadixSelect.Content>
                         </RadixSelect.Root>
+                      </Table.Cell>
+                      <Table.Cell>
+                        {dialogCategory === 'Direct Materials' && (
+                          <Flex gap="2">
+                            <Button 
+                              size="1" 
+                              variant="soft"
+                              onClick={() => handleAutoSelectSupplier(dialogCategory, index)}
+                              disabled={autoSelectedSuppliers[index]}
+                            >
+                              {autoSelectedSuppliers[index] ? 'Selected' : 'Auto Select'}
+                            </Button>
+                            <Button 
+                              size="1" 
+                              variant="outline"
+                              onClick={() => {
+                                const suppliersList = supplierData.map(s => `
+                                  - ${s.name}:
+                                  Price: ${s.pricePerKg} ${currency}
+                                  Quality: ${s.qualityRating}/5
+                                  Delivery: ${s.deliveryTime} days
+                                  Reliability: ${s.reliability}/5
+                                `).join('\n');
+                                alert(`Available Suppliers:\n${suppliersList}`);
+                              }}
+                            >
+                              View Suppliers
+                            </Button>
+                          </Flex>
+                        )}
                       </Table.Cell>
                     </Table.Row>
                   );
@@ -961,7 +761,10 @@ function CostAnalytics() {
               </Table.Body>
             </Table.Root>
             <Flex justify="end" gap="3" mt="4">
-              <Button style={{ backgroundColor: '#10b981', color: '#fff' }}>
+              <Button 
+                style={{ backgroundColor: '#10b981', color: '#fff' }}
+                onClick={() => handleSubmitDialog(dialogCategory)}
+              >
                 Submit
               </Button>
               <Button
@@ -976,134 +779,132 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* Solution Details Dialog */}
-      <Dialog.Root open={solutionDialog.open} onOpenChange={(open) => setSolutionDialog({...solutionDialog, open})}>
-        <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh', overflowY: 'auto' }}>
-          <Dialog.Title>{solutionDialog.solution?.name}</Dialog.Title>
-          
-          {renderSolutionDialogContent()}
-
-          <Flex gap="3" mt="4" justify="end">
-            <Button 
-              variant="soft" 
-              onClick={() => setSolutionDialog({...solutionDialog, open: false})}
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={applySolution}
-              disabled={
-                solutionDialog.solution?.name === 'Negotiating better prices with supplier' && 
-                !solutionDialog.selectedSupplier
-              }
-            >
-              Apply Solution
-            </Button>
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Cost Gap Analysis
+            </Heading>
+            <Text align="center" mb="4" size="2">
+              Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
+            </Text>
+            <Grid columns="3" gap="2">
+              {categories.map((category, index) => (
+                <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
+                  <Text weight="bold" size="2" mb="2">
+                    {category}
+                  </Text>
+                  <Progress
+                    value={(totals[category].actual / totalActual) * 100}
+                    color={
+                      index === 0 ? 'blue' :
+                      index === 1 ? 'amber' :
+                      index === 2 ? 'red' :
+                      index === 3 ? 'green' :
+                      'purple'
+                    }
+                    size="2"
+                  />
+                  <Text mt="2" size="2">
+                    {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
+                  </Text>
+                </Box>
+              ))}
+            </Grid>
           </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+        </Card>
 
-      <Flex mt="8" gap="6" wrap="wrap" justify="center">
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Cost Gap Analysis
-          </Heading>
-          <Text align="center" mb="4" size="2">
-            Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
-          </Text>
-          <Grid columns={{ initial: '3' }} gap="2">
-            {categories.map((category, index) => (
-              <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
-                <Text weight="bold" size="2" mb="2">
-                  {category}
-                </Text>
-                <Progress
-                  value={(totals[category].actual / totalActual) * 100}
-                  color={
-                    index === 0 ? 'blue' :
-                    index === 1 ? 'amber' :
-                    index === 2 ? 'red' :
-                    index === 3 ? 'green' :
-                    'purple'
-                  }
-                  size="2"
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Cost Breakdown
+            </Heading>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={categories.map((category) => ({
+                    name: category,
+                    value: totals[category].actual,
+                  }))}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                  labelLine={false}
+                >
+                  {categories.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [
+                    `${formatCurrency(value, currency)}`,
+                    name
+                  ]}
                 />
-                <Text mt="2" size="2">
-                  {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
-                </Text>
-              </Box>
-            ))}
-          </Grid>
-        </Box>
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Cost Breakdown Pie Chart
-          </Heading>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={categories.map((category) => ({
-                  name: category,
-                  value: totals[category].actual,
-                }))}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {categories.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Legend />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Box>
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Benchmark Trend Line Chart
-          </Heading>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={benchmarkTrendDataWithGap}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="actual" stroke="#3b82f6" activeDot={{ r: 8 }} name="Actual Cost" />
-              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" strokeDasharray="5 5" />
-              <Line type="monotone" dataKey="targetCost" stroke="#10b981" name="Target Cost" strokeDasharray="3 4 5 2" />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Flex>
+              </PieChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Benchmark Trend
+            </Heading>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={benchmarkTrendDataWithGap}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [
+                    `${formatCurrency(value, currency)}`,
+                    name
+                  ]}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="actual" 
+                  stroke="#3b82f6" 
+                  activeDot={{ r: 8 }} 
+                  name="Actual Cost" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="benchmark" 
+                  stroke="#f59e0b" 
+                  name="Benchmark Price" 
+                  strokeDasharray="5 5" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="targetCost" 
+                  stroke="#10b981" 
+                  name="Target Cost" 
+                  strokeDasharray="3 4 5 2" 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+      </Grid>
 
       <Flex justify="end" mt="6">
-        <Button style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
-          onClick={() => alert('Submit All clicked')}>
+        <Button 
+          size="2" 
+          style={{ 
+            backgroundColor: '#10b981', 
+            color: '#fff', 
+            fontWeight: 'bold',
+            padding: '12px 24px'
+          }}
+          onClick={handleSubmitToBlockchain}
+        >
+          <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
         </Button>
       </Flex>
