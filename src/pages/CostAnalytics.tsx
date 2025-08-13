@@ -150,6 +150,31 @@ const solutionsOptions = [
   'Other',
 ];
 
+// Create a CSS-in-JS object for hover styles
+const styles = {
+  hoverCard: {
+    transition: 'all 0.2s ease',
+    ':hover': {
+      transform: 'translateY(-2px)',
+      boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+    }
+  },
+  primaryButton: {
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    fontWeight: '500'
+  },
+  successButton: {
+    backgroundColor: '#10b981',
+    color: 'white',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    fontWeight: '500'
+  }
+};
+
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -346,10 +371,7 @@ function CostAnalytics() {
               }}>
                 {products.map((p) => (
                   <RadixSelect.Item key={p} value={p} style={{
-                    padding: '8px 12px',
-                    '&:hover': {
-                      backgroundColor: '#f3f4f6'
-                    }
+                    padding: '8px 12px'
                   }}>
                     {p}
                   </RadixSelect.Item>
@@ -376,16 +398,10 @@ function CostAnalytics() {
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
                 <RadixSelect.Item value="EGP" style={{
-                  padding: '8px 12px',
-                  '&:hover': {
-                    backgroundColor: '#f3f4f6'
-                  }
+                  padding: '8px 12px'
                 }}>EGP</RadixSelect.Item>
                 <RadixSelect.Item value="USD" style={{
-                  padding: '8px 12px',
-                  '&:hover': {
-                    backgroundColor: '#f3f4f6'
-                  }
+                  padding: '8px 12px'
                 }}>USD</RadixSelect.Item>
               </RadixSelect.Content>
             </RadixSelect.Root>
@@ -399,10 +415,7 @@ function CostAnalytics() {
               color: 'white',
               padding: '8px 16px',
               borderRadius: '6px',
-              fontWeight: '500',
-              '&:hover': {
-                backgroundColor: '#2563eb'
-              }
+              fontWeight: '500'
             }}
           >
             <DownloadIcon />
@@ -439,11 +452,7 @@ function CostAnalytics() {
               borderRadius: '12px',
               boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
               transition: 'all 0.2s ease',
-              backgroundColor: 'white',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-              }
+              backgroundColor: 'white'
             }}
           >
             <Flex direction="column" gap="2" p="4">
@@ -548,11 +557,7 @@ function CostAnalytics() {
                 const variance = totals[category].actual - totals[category].budget;
                 const varianceColor = variance <= 0 ? 'green' : 'red';
                 return (
-                  <Table.Row key={category} style={{ 
-                    '&:hover': {
-                      backgroundColor: '#f9fafb'
-                    }
-                  }}>
+                  <Table.Row key={category}>
                     <Table.RowHeaderCell style={{ 
                       padding: '12px 16px',
                       borderBottom: '1px solid #e5e7eb'
@@ -607,10 +612,7 @@ function CostAnalytics() {
                           borderRadius: '6px',
                           padding: '4px 8px',
                           fontSize: '0.875rem',
-                          borderColor: '#e5e7eb',
-                          '&:hover': {
-                            backgroundColor: '#f3f4f6'
-                          }
+                          borderColor: '#e5e7eb'
                         }}
                       >
                         View Details
@@ -682,12 +684,6 @@ function CostAnalytics() {
                 <Switch 
                   checked={autoMode} 
                   onCheckedChange={setAutoMode}
-                  style={{
-                    backgroundColor: autoMode ? '#3b82f6' : '#e5e7eb',
-                    '&:hover': {
-                      backgroundColor: autoMode ? '#2563eb' : '#d1d5db'
-                    }
-                  }}
                 />
               </Flex>
             </Flex>
@@ -733,11 +729,7 @@ function CostAnalytics() {
                   const totalCost = (qty || 0) * (unitPrice || 0);
 
                   return (
-                    <Table.Row key={index} style={{ 
-                      '&:hover': {
-                        backgroundColor: '#f9fafb'
-                      }
-                    }}>
+                    <Table.Row key={index}>
                       <Table.RowHeaderCell style={{ 
                         padding: '12px 16px',
                         borderBottom: '1px solid #e5e7eb'
@@ -817,10 +809,7 @@ function CostAnalytics() {
                               border: '1px solid #e5e7eb',
                               borderRadius: '6px',
                               padding: '6px 12px',
-                              fontSize: '0.875rem',
-                              '&:hover': {
-                                backgroundColor: '#f3f4f6'
-                              }
+                              fontSize: '0.875rem'
                             }}
                           />
                           <RadixSelect.Content style={{
@@ -834,10 +823,7 @@ function CostAnalytics() {
                                 value={sol}
                                 style={{
                                   padding: '8px 12px',
-                                  fontSize: '0.875rem',
-                                  '&:hover': {
-                                    backgroundColor: '#f3f4f6'
-                                  }
+                                  fontSize: '0.875rem'
                                 }}
                               >
                                 {sol}
@@ -858,10 +844,7 @@ function CostAnalytics() {
                   color: '#fff',
                   padding: '8px 16px',
                   borderRadius: '6px',
-                  fontWeight: '500',
-                  '&:hover': {
-                    backgroundColor: '#059669'
-                  }
+                  fontWeight: '500'
                 }}
                 onClick={() => handleSubmitDialog(dialogCategory)}
               >
@@ -874,10 +857,7 @@ function CostAnalytics() {
                   color: '#fff',
                   padding: '8px 16px',
                   borderRadius: '6px',
-                  fontWeight: '500',
-                  '&:hover': {
-                    backgroundColor: '#2563eb'
-                  }
+                  fontWeight: '500'
                 }}
                 onClick={() => setDialogCategory(null)}
               >
@@ -1059,14 +1039,7 @@ function CostAnalytics() {
                   </Table.Header>
                   <Table.Body>
                     {suppliers.map((supplier) => (
-                      <Table.Row 
-                        key={supplier.id}
-                        style={{ 
-                          '&:hover': {
-                            backgroundColor: '#f9fafb'
-                          }
-                        }}
-                      >
+                      <Table.Row key={supplier.id}>
                         <Table.Cell style={{ 
                           padding: '12px 16px',
                           borderBottom: '1px solid #e5e7eb'
@@ -1101,10 +1074,7 @@ function CostAnalytics() {
                               fontSize: '0.875rem',
                               backgroundColor: supplier.selected ? '#3b82f6' : 'white',
                               color: supplier.selected ? 'white' : '#1f2937',
-                              borderColor: '#e5e7eb',
-                              '&:hover': {
-                                backgroundColor: supplier.selected ? '#2563eb' : '#f3f4f6'
-                              }
+                              borderColor: '#e5e7eb'
                             }}
                           >
                             {supplier.selected ? 'Selected' : 'Select'}
@@ -1136,10 +1106,7 @@ function CostAnalytics() {
                     color: 'white',
                     padding: '8px 16px',
                     borderRadius: '6px',
-                    fontWeight: '500',
-                    '&:hover': {
-                      backgroundColor: '#059669'
-                    }
+                    fontWeight: '500'
                   }}
                 >
                   Apply Changes
@@ -1152,10 +1119,7 @@ function CostAnalytics() {
                     color: '#1f2937',
                     padding: '8px 16px',
                     borderRadius: '6px',
-                    fontWeight: '500',
-                    '&:hover': {
-                      backgroundColor: '#e5e7eb'
-                    }
+                    fontWeight: '500'
                   }}
                 >
                   Cancel
@@ -1193,12 +1157,7 @@ function CostAnalytics() {
                   style={{ 
                     padding: '12px',
                     borderRadius: '8px', 
-                    backgroundColor: '#f3f4f6',
-                    transition: 'all 0.2s ease',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                    }
+                    backgroundColor: '#f3f4f6'
                   }}
                 >
                   <Text weight="bold" size="2" mb="2" style={{ color: '#1f2937' }}>
@@ -1387,10 +1346,7 @@ function CostAnalytics() {
             color: '#fff', 
             fontWeight: '500',
             padding: '12px 24px',
-            borderRadius: '6px',
-            '&:hover': {
-              backgroundColor: '#059669'
-            }
+            borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
         >
