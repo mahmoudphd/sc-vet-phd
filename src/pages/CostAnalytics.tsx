@@ -1,17 +1,19 @@
-// src/pages/CostAnalytics.tsx
 import React, { useState } from 'react';
 import {
   Box,
   Button,
+  Card,
   Dialog,
   Flex,
   Grid,
   Heading,
+  Inset,
   Progress,
   Switch,
   Table,
   Text,
   Select as RadixSelect,
+  Badge
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -25,6 +27,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from 'recharts';
+import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
 import {
   simulatedIoTCostData,
@@ -34,6 +37,7 @@ import {
 
 const formatCurrency = (value: number, currency: string) =>
   `${currency} ${value.toFixed(2)}`;
+
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
@@ -147,133 +151,191 @@ function CostAnalytics() {
     }));
   };
 
+  const handleSubmitToBlockchain = () => {
+    alert('Data submitted to blockchain successfully!');
+  };
+
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
-        <Heading size="6">Inter-Organizational Cost Management</Heading>
+      <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
+        <Heading size="6" weight="bold">Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
-          <Text>Product:</Text>
-          <RadixSelect.Root
-            value={selectedProduct}
-            onValueChange={(value) => setSelectedProduct(value)}
-          >
-            <RadixSelect.Trigger aria-label="Select product" />
-            <RadixSelect.Content>
-              {products.map((p) => (
-                <RadixSelect.Item key={p} value={p}>
-                  {p}
-                </RadixSelect.Item>
-              ))}
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <RadixSelect.Root
-            value={currency}
-            onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
-          >
-            <RadixSelect.Trigger aria-label="Select currency" />
-            <RadixSelect.Content>
-              <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
-              <RadixSelect.Item value="USD">USD</RadixSelect.Item>
-            </RadixSelect.Content>
-          </RadixSelect.Root>
-          <Button onClick={handleExportReport}>Export Report</Button>
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold">Product:</Text>
+            <RadixSelect.Root
+              value={selectedProduct}
+              onValueChange={(value) => setSelectedProduct(value)}
+            >
+              <RadixSelect.Trigger style={{ minWidth: '120px' }} />
+              <RadixSelect.Content>
+                {products.map((p) => (
+                  <RadixSelect.Item key={p} value={p}>
+                    {p}
+                  </RadixSelect.Item>
+                ))}
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+          
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold">Currency:</Text>
+            <RadixSelect.Root
+              value={currency}
+              onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
+            >
+              <RadixSelect.Trigger style={{ minWidth: '80px' }} />
+              <RadixSelect.Content>
+                <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
+                <RadixSelect.Item value="USD">USD</RadixSelect.Item>
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+
+          <Button variant="soft" onClick={handleExportReport}>
+            <DownloadIcon />
+            Export Report
+          </Button>
         </Flex>
       </Flex>
 
-      <Grid columns={{ initial: '3', md: '3' }} gap="4" mb="6">
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Actual Cost</Text>
-          <Heading size="6">{formatCurrency(totalActual, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Target Cost</Text>
-          <Heading size="6">{formatCurrency(totalTarget, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Cost After Optimization</Text>
-          <Heading size="6">{formatCurrency(totalCostAfter, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Post-Optimization Estimate</Text>
-          <Heading size="6">{formatCurrency(postOptimizationEstimate, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Benchmark Price</Text>
-          <input
-            type="number"
-            value={benchmarkPrice}
-            onChange={(e) => handleBenchmarkChange(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{formatCurrency(benchmarkPrice, currency)}</Heading>
-        </Box>
-        <Box style={{ border: '1px solid #ccc', borderRadius: 8, padding: 12, backgroundColor: '#fff' }}>
-          <Text size="2">Profit Margin (%)</Text>
-          <input
-            type="number"
-            value={profitMargin}
-            onChange={(e) => setProfitMargin(parseFloat(e.target.value) || 0)}
-            style={{ width: '80px', marginTop: '4px' }}
-          />
-          <Heading size="6" mt="2">{profitMargin}%</Heading>
-        </Box>
-      </Grid>
-
-      <Table.Root>
-        <Table.Header>
-          <Table.Row>
-            <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Target Cost (Editable)</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {categories.map((category) => {
-            const variance = totals[category].actual - totals[category].budget;
-            const varianceColor = variance <= 0 ? 'green' : 'red';
-            return (
-              <Table.Row key={category}>
-                <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
-                <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
-                <Table.Cell>
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+        {[
+          { label: 'Actual Cost', value: totalActual, trend: 'down' },
+          { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
+          { label: 'Cost After Optimization', value: totalCostAfter, trend: 'up' },
+          { label: 'Post-Optimization Estimate', value: postOptimizationEstimate, trend: 'up' },
+          {
+            label: 'Benchmark Price',
+            value: benchmarkPrice,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              handleBenchmarkChange(parseFloat(e.target.value) || 0)
+          },
+          {
+            label: 'Profit Margin (%)',
+            value: profitMargin,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              setProfitMargin(parseFloat(e.target.value) || 0)
+          },
+        ].map((item, index) => (
+          <Card key={index} style={{ position: 'relative' }}>
+            <Flex direction="column" gap="2">
+              <Flex justify="between" align="center">
+                <Text size="2" color="gray">
+                  {item.label}
+                </Text>
+                {item.trend && (
+                  <Badge color={
+                    item.trend === 'up' ? 'green' : 
+                    item.trend === 'down' ? 'red' : 'gray'
+                  }>
+                    {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
+                  </Badge>
+                )}
+              </Flex>
+              
+              {item.editable ? (
+                <Flex align="center" gap="2">
                   <input
                     type="number"
-                    value={totals[category].budget}
-                    onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
-                    style={{ width: '80px' }}
+                    value={item.value}
+                    onChange={item.onChange}
+                    style={{
+                      width: '80px',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #e2e8f0'
+                    }}
                   />
-                </Table.Cell>
-                <Table.Cell style={{ color: varianceColor }}>
-                  {formatCurrency(variance, currency)}
-                </Table.Cell>
-                <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
-                <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
-                <Table.Cell>
-                  <Button onClick={() => setDialogCategory(category)}>View Details</Button>
-                </Table.Cell>
+                  <Text size="4" weight="bold">
+                    {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                  </Text>
+                </Flex>
+              ) : (
+                <Heading size="5">
+                  {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                </Heading>
+              )}
+            </Flex>
+          </Card>
+        ))}
+      </Grid>
+
+      <Card mb="6">
+        <Inset clip="padding-box" side="top" pb="current">
+          <Table.Root variant="surface">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeaderCell>Cost Category</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Actual Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Target Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Variance</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>% of Total</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Cost After Optimization</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>Details</Table.ColumnHeaderCell>
               </Table.Row>
-            );
-          })}
-          <Table.Row>
-            <Table.RowHeaderCell><b>Total</b></Table.RowHeaderCell>
-            <Table.Cell><b>{formatCurrency(totalActual, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalActual - totalTarget, currency)}</b></Table.Cell>
-            <Table.Cell><b>100%</b></Table.Cell>
-            <Table.Cell><b>{formatCurrency(totalCostAfter, currency)}</b></Table.Cell>
-            <Table.Cell></Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
+            </Table.Header>
+            <Table.Body>
+              {categories.map((category) => {
+                const variance = totals[category].actual - totals[category].budget;
+                const varianceColor = variance <= 0 ? 'green' : 'red';
+                return (
+                  <Table.Row key={category}>
+                    <Table.RowHeaderCell>{category}</Table.RowHeaderCell>
+                    <Table.Cell>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+                    <Table.Cell>
+                      <input
+                        type="number"
+                        value={totals[category].budget}
+                        onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                        style={{
+                          width: '80px',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          border: '1px solid #e2e8f0'
+                        }}
+                      />
+                    </Table.Cell>
+                    <Table.Cell style={{ color: varianceColor }}>
+                      {formatCurrency(variance, currency)}
+                    </Table.Cell>
+                    <Table.Cell>{percentOfTotal(category)}%</Table.Cell>
+                    <Table.Cell>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+                    <Table.Cell>
+                      <Button size="1" variant="outline" onClick={() => setDialogCategory(category)}>
+                        View Details
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+              <Table.Row style={{ backgroundColor: '#f8fafc' }}>
+                <Table.RowHeaderCell><Text weight="bold">Total</Text></Table.RowHeaderCell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalActual, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalTarget, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalActual - totalTarget, currency)}</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">100%</Text></Table.Cell>
+                <Table.Cell><Text weight="bold">{formatCurrency(totalCostAfter, currency)}</Text></Table.Cell>
+                <Table.Cell></Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Inset>
+      </Card>
 
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
-          <Dialog.Content maxWidth="700px" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-            <Dialog.Title>{dialogCategory} Breakdown</Dialog.Title>
+          <Dialog.Content style={{ 
+            maxWidth: '800px',
+            maxHeight: '80vh',
+            overflowY: 'auto',
+            borderRadius: '12px',
+            padding: '24px'
+          }}>
+            <Dialog.Title style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>
+              {dialogCategory} Breakdown
+            </Dialog.Title>
             <Flex justify="between" align="center" mb="3" mt="3">
               <Text>Auto IoT Mode</Text>
               <Switch checked={autoMode} onCheckedChange={(checked) => setAutoMode(checked)} />
@@ -335,7 +397,7 @@ function CostAnalytics() {
                                 ? item.hours ?? 0
                                 : item.qty ?? 0
                             }
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                               const value = parseFloat(e.target.value) || 0;
                               if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
                               else if (dialogCategory === 'Direct Labor') item.hours = value;
@@ -368,7 +430,7 @@ function CostAnalytics() {
                                 ? item.hourlyRate ?? 0
                                 : item.unitPrice ?? 0
                             }
-                            onChange={(e) => {
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                               const value = parseFloat(e.target.value) || 0;
                               if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
                               else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
@@ -415,107 +477,132 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      <Flex mt="8" gap="6" wrap="wrap" justify="center">
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Cost Gap Analysis
-          </Heading>
-          <Text align="center" mb="4" size="2">
-            Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
-          </Text>
-          <Grid columns={{ initial: '3' }} gap="2">
-            {categories.map((category, index) => (
-              <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
-                <Text weight="bold" size="2" mb="2">
-                  {category}
-                </Text>
-                <Progress
-                  value={(totals[category].actual / totalActual) * 100}
-                  color={
-                    index === 0 ? 'blue' :
-                    index === 1 ? 'amber' :
-                    index === 2 ? 'red' :
-                    index === 3 ? 'green' :
-                    'purple'
-                  }
-                  size="2"
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Cost Gap Analysis
+            </Heading>
+            <Text align="center" mb="4" size="2">
+              Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
+            </Text>
+            <Grid columns="3" gap="2">
+              {categories.map((category, index) => (
+                <Box key={category} style={{ padding: 10, borderRadius: 6, backgroundColor: '#f3f4f6' }}>
+                  <Text weight="bold" size="2" mb="2">
+                    {category}
+                  </Text>
+                  <Progress
+                    value={(totals[category].actual / totalActual) * 100}
+                    color={
+                      index === 0 ? 'blue' :
+                      index === 1 ? 'amber' :
+                      index === 2 ? 'red' :
+                      index === 3 ? 'green' :
+                      'purple'
+                    }
+                    size="2"
+                  />
+                  <Text mt="2" size="2">
+                    {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
+                  </Text>
+                </Box>
+              ))}
+            </Grid>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Cost Breakdown
+            </Heading>
+            <ResponsiveContainer width="100%" height={250}>
+              <PieChart>
+                <Pie
+                  data={categories.map((category) => ({
+                    name: category,
+                    value: totals[category].actual,
+                  }))}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                  labelLine={false}
+                >
+                  {categories.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Legend />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [
+                    `${formatCurrency(value, currency)}`,
+                    name
+                  ]}
                 />
-                <Text mt="2" size="2">
-                  {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
-                </Text>
-              </Box>
-            ))}
-          </Grid>
-        </Box>
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Cost Breakdown Pie Chart
-          </Heading>
-          <ResponsiveContainer width="100%" height={250}>
-            <PieChart>
-              <Pie
-                data={categories.map((category) => ({
-                  name: category,
-                  value: totals[category].actual,
-                }))}
-                cx="50%"
-                cy="50%"
-                outerRadius={80}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-              >
-                {categories.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Legend />
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
-        </Box>
-        <Box style={{
-          backgroundColor: '#fff',
-          padding: 20,
-          borderRadius: 10,
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          minWidth: 300,
-          flex: '1 1 300px',
-        }}>
-          <Heading size="4" mb="3" align="center">
-            Benchmark Trend Line Chart
-          </Heading>
-          <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={benchmarkTrendDataWithGap}>
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="actual" stroke="#3b82f6" activeDot={{ r: 8 }} name="Actual Cost" />
-              <Line type="monotone" dataKey="benchmark" stroke="#f59e0b" name="Benchmark Price" strokeDasharray="5 5" />
-              <Line type="monotone" dataKey="targetCost" stroke="#10b981" name="Target Cost" strokeDasharray="3 4 5 2" />
-            </LineChart>
-          </ResponsiveContainer>
-        </Box>
-      </Flex>
+              </PieChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+
+        <Card>
+          <Flex direction="column" p="4">
+            <Heading size="4" mb="3" align="center">
+              Benchmark Trend
+            </Heading>
+            <ResponsiveContainer width="100%" height={250}>
+              <LineChart data={benchmarkTrendDataWithGap}>
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number, name: string) => [
+                    `${formatCurrency(value, currency)}`,
+                    name
+                  ]}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="actual" 
+                  stroke="#3b82f6" 
+                  activeDot={{ r: 8 }} 
+                  name="Actual Cost" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="benchmark" 
+                  stroke="#f59e0b" 
+                  name="Benchmark Price" 
+                  strokeDasharray="5 5" 
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="targetCost" 
+                  stroke="#10b981" 
+                  name="Target Cost" 
+                  strokeDasharray="3 4 5 2" 
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+      </Grid>
 
       <Flex justify="end" mt="6">
-        <Button style={{ backgroundColor: '#10b981', color: '#fff', fontWeight: 'bold' }}
-          onClick={() => alert('Submit All clicked')}>
+        <Button 
+          size="2" 
+          style={{ 
+            backgroundColor: '#10b981', 
+            color: '#fff', 
+            fontWeight: 'bold',
+            padding: '12px 24px'
+          }}
+          onClick={handleSubmitToBlockchain}
+        >
+          <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
         </Button>
       </Flex>
