@@ -31,7 +31,7 @@ import {
   Bar,
   CartesianGrid
 } from 'recharts';
-import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
+import { DownloadIcon, UploadIcon, EyeOpenIcon } from '@radix-ui/react-icons';
 
 interface Item {
   name: string;
@@ -189,16 +189,16 @@ function CostAnalytics() {
 
   const generateSupplierPrices = (basePrice: number) => {
     const discounts = [
-      0.05 + Math.random() * 0.10,
-      0.05 + Math.random() * 0.10,
-      0.05 + Math.random() * 0.10
+      0.05 + Math.random() * 0.05,
+      0.05 + Math.random() * 0.05,
+      0.05 + Math.random() * 0.05
     ].sort(() => Math.random() - 0.5);
 
     return [
       {
         id: 1,
         name: 'Supplier A',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[0])).toFixed(2)),
+        pricePerKg: Math.round(basePrice * (1 - discounts[0]) * 100) / 100,
         rating: 4.7,
         delivery: '1 week',
         reliability: '97%',
@@ -207,7 +207,7 @@ function CostAnalytics() {
       {
         id: 2,
         name: 'Supplier B',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[1])).toFixed(2)),
+        pricePerKg: Math.round(basePrice * (1 - discounts[1]) * 100) / 100,
         rating: 4.2,
         delivery: '2 weeks',
         reliability: '90%',
@@ -216,7 +216,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[2])).toFixed(2)),
+        pricePerKg: Math.round(basePrice * (1 - discounts[2]) * 100) / 100,
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
@@ -369,6 +369,13 @@ function CostAnalytics() {
   };
 
   const tableCellStyle = {
+    fontWeight: 'normal',
+    padding: '12px 16px',
+    borderBottom: '1px solid #e5e7eb',
+    fontSize: '0.9rem'
+  };
+
+  const totalCellStyle = {
     fontWeight: 'bold',
     padding: '12px 16px',
     borderBottom: '1px solid #e5e7eb',
@@ -379,6 +386,32 @@ function CostAnalytics() {
     fontWeight: 'bold',
     color: '#1f2937',
     fontSize: '1.1rem'
+  };
+
+  const viewDetailsButtonStyle = {
+    backgroundColor: '#3b82f6',
+    color: 'white',
+    padding: '5px 12px',
+    borderRadius: '6px',
+    fontWeight: '500',
+    fontSize: '0.875rem',
+    border: '1px solid #2563eb',
+    boxShadow: '0 1px 2px rgba(0,0,0,0.05)',
+    transition: 'all 0.2s ease',
+    ':hover': {
+      backgroundColor: '#2563eb',
+      transform: 'translateY(-1px)'
+    }
+  };
+
+  const editableInputStyle = {
+    width: '80px',
+    padding: '6px 10px',
+    borderRadius: '6px',
+    border: '1px solid #3b82f6',
+    backgroundColor: '#f0f9ff',
+    fontSize: '14px',
+    marginRight: '4px'
   };
 
   return (
@@ -594,15 +627,9 @@ function CostAnalytics() {
                         size="1" 
                         variant="solid"
                         onClick={() => setDialogCategory(category)}
-                        style={{
-                          borderRadius: '6px',
-                          padding: '4px 12px',
-                          fontSize: '0.875rem',
-                          backgroundColor: '#3b82f6',
-                          color: 'white',
-                          fontWeight: 'bold'
-                        }}
+                        style={viewDetailsButtonStyle}
                       >
+                        <EyeOpenIcon width="14" height="14" style={{ marginRight: '6px' }} />
                         View Details
                       </Button>
                     </Table.Cell>
@@ -613,13 +640,13 @@ function CostAnalytics() {
                 backgroundColor: '#f8fafc',
                 fontWeight: 'bold'
               }}>
-                <Table.RowHeaderCell style={tableCellStyle}>Total</Table.RowHeaderCell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalActual, currency)}</Table.Cell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalTarget, currency)}</Table.Cell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalActual - totalTarget, currency)}</Table.Cell>
-                <Table.Cell style={tableCellStyle}>100%</Table.Cell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalCostAfter, currency)}</Table.Cell>
-                <Table.Cell style={tableCellStyle}></Table.Cell>
+                <Table.RowHeaderCell style={totalCellStyle}>Total</Table.RowHeaderCell>
+                <Table.Cell style={totalCellStyle}>{formatCurrency(totalActual, currency)}</Table.Cell>
+                <Table.Cell style={totalCellStyle}>{formatCurrency(totalTarget, currency)}</Table.Cell>
+                <Table.Cell style={totalCellStyle}>{formatCurrency(totalActual - totalTarget, currency)}</Table.Cell>
+                <Table.Cell style={totalCellStyle}>100%</Table.Cell>
+                <Table.Cell style={totalCellStyle}>{formatCurrency(totalCostAfter, currency)}</Table.Cell>
+                <Table.Cell style={totalCellStyle}></Table.Cell>
               </Table.Row>
             </Table.Body>
           </Table.Root>
@@ -689,8 +716,10 @@ function CostAnalytics() {
                             <Table.Cell style={tableCellStyle}>
                               {autoMode ? (
                                 dialogCategory === 'Direct Materials' 
-                                  ? (qty?.toFixed(6) || '-')
-                                  : (qty?.toString() || '-')
+                                  ? `${qty?.toString()} kg` 
+                                  : dialogCategory === 'Direct Labor'
+                                    ? `${qty} hrs`
+                                    : qty
                               ) : (
                                 <input
                                   type="number"
@@ -701,20 +730,15 @@ function CostAnalytics() {
                                     else if (dialogCategory === 'Direct Labor') item.hours = value;
                                     else if (item.qty !== undefined) item.qty = value;
                                   }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
-                                    fontSize: '14px'
-                                  }}
+                                  style={editableInputStyle}
+                                  step={dialogCategory === 'Direct Materials' ? 'any' : '1'}
+                                  min="0"
                                 />
                               )}
                             </Table.Cell>
                             <Table.Cell style={tableCellStyle}>
                               {autoMode ? (
-                                unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                unitPrice ? formatCurrency(unitPrice, currency) : formatCurrency(0, currency)
                               ) : (
                                 <input
                                   type="number"
@@ -725,14 +749,9 @@ function CostAnalytics() {
                                     else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
                                     else if (item.unitPrice !== undefined) item.unitPrice = value;
                                   }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
-                                    fontSize: '14px'
-                                  }}
+                                  style={editableInputStyle}
+                                  step="0.01"
+                                  min="0"
                                 />
                               )}
                             </Table.Cell>
@@ -749,13 +768,15 @@ function CostAnalytics() {
                                     border: '1px solid #e5e7eb',
                                     borderRadius: '6px',
                                     padding: '6px 12px',
-                                    fontSize: '0.875rem'
+                                    fontSize: '0.875rem',
+                                    width: '100%'
                                   }}
                                 />
                                 <RadixSelect.Content style={{
                                   backgroundColor: 'white',
                                   borderRadius: '6px',
-                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                                  zIndex: 1000
                                 }}>
                                   {solutionsOptions.map((sol) => (
                                     <RadixSelect.Item 
@@ -793,54 +814,104 @@ function CostAnalytics() {
                     <Table.Body>
                       {getDetailsByCategory(dialogCategory).map((item, index) => {
                         const currentQty = dialogCategory === 'Direct Materials' ? item.concentrationKg || 0 :
-                                        dialogCategory === 'Direct Labor' ? item.hours || 0 : item.qty || 0;
+                                         dialogCategory === 'Direct Labor' ? item.hours || 0 : item.qty || 0;
                         
                         const currentPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg || 0 :
-                                          dialogCategory === 'Direct Labor' ? item.hourlyRate || 0 : item.unitPrice || 0;
+                                           dialogCategory === 'Direct Labor' ? item.hourlyRate || 0 : item.unitPrice || 0;
 
-                        const targetQty = currentQty * 0.9;
-                        const targetPrice = currentPrice * 0.95;
-                        const savings = (currentQty * currentPrice) - (targetQty * targetPrice);
+                        const [targetQty, setTargetQty] = useState(parseFloat((currentQty * 0.9).toString()));
+                        const [targetPrice, setTargetPrice] = useState(parseFloat((currentPrice * 0.95).toString()));
+
+                        const savings = parseFloat(((currentQty * currentPrice) - (targetQty * targetPrice)).toFixed(2));
+                        const qtyReduction = parseFloat(((1 - (targetQty / currentQty)) * 100).toFixed(1));
+                        const priceReduction = parseFloat(((1 - (targetPrice / currentPrice)) * 100).toFixed(1));
 
                         return (
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableCellStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
                               {dialogCategory === 'Direct Materials' 
-                                ? `${currentQty.toFixed(6)} kg` 
+                                ? `${currentQty.toString()} kg` 
                                 : dialogCategory === 'Direct Labor'
                                   ? `${currentQty} hrs`
                                   : currentQty}
+                              <br />
+                              {formatCurrency(currentPrice, currency)}
                             </Table.Cell>
                             <Table.Cell style={tableCellStyle}>
+                              <div style={{ marginBottom: '8px' }}>
+                                <input
+                                  type="number"
+                                  value={targetQty}
+                                  onChange={(e) => {
+                                    const newValue = parseFloat(e.target.value) || 0;
+                                    setTargetQty(newValue);
+                                  }}
+                                  style={editableInputStyle}
+                                  step={dialogCategory === 'Direct Materials' ? 'any' : '1'}
+                                  min="0"
+                                />
+                                {dialogCategory === 'Direct Materials' ? ' kg' : 
+                                 dialogCategory === 'Direct Labor' ? ' hrs' : ''}
+                              </div>
                               <input
                                 type="number"
-                                value={targetQty.toFixed(6)}
+                                value={targetPrice}
                                 onChange={(e) => {
-                                  // Handle target quantity change
+                                  const newValue = parseFloat(e.target.value) || 0;
+                                  setTargetPrice(newValue);
                                 }}
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
+                                style={editableInputStyle}
+                                step="0.01"
+                                min="0"
                               />
                             </Table.Cell>
                             <Table.Cell style={tableCellStyle}>
-                              {((1 - (targetQty / currentQty)) * 100).toFixed(1)}%
+                              <div style={{ color: '#3b82f6', fontWeight: 'bold' }}>
+                                {qtyReduction}% Qty
+                              </div>
+                              <div style={{ color: '#3b82f6', fontWeight: 'bold' }}>
+                                {priceReduction}% Price
+                              </div>
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
-                              color: savings > 0 ? '#10b981' : '#ef4444'
+                              color: savings > 0 ? '#10b981' : '#ef4444',
+                              fontWeight: 'bold'
                             }}>
                               {formatCurrency(savings, currency)}
                             </Table.Cell>
                           </Table.Row>
                         );
                       })}
+                      
+                      <Table.Row style={{ backgroundColor: '#f8fafc' }}>
+                        <Table.RowHeaderCell style={totalCellStyle}>Total</Table.RowHeaderCell>
+                        <Table.Cell style={totalCellStyle}></Table.Cell>
+                        <Table.Cell style={totalCellStyle}></Table.Cell>
+                        <Table.Cell style={totalCellStyle}></Table.Cell>
+                        <Table.Cell style={{ 
+                          ...totalCellStyle,
+                          color: getDetailsByCategory(dialogCategory).reduce((sum, item) => {
+                            const currentQty = item.concentrationKg || item.hours || item.qty || 0;
+                            const currentPrice = item.pricePerKg || item.hourlyRate || item.unitPrice || 0;
+                            const targetQty = currentQty * 0.9;
+                            const targetPrice = currentPrice * 0.95;
+                            return sum + (currentQty * currentPrice) - (targetQty * targetPrice);
+                          }, 0) > 0 ? '#10b981' : '#ef4444'
+                        }}>
+                          {formatCurrency(
+                            getDetailsByCategory(dialogCategory).reduce((sum, item) => {
+                              const currentQty = item.concentrationKg || item.hours || item.qty || 0;
+                              const currentPrice = item.pricePerKg || item.hourlyRate || item.unitPrice || 0;
+                              const targetQty = currentQty * 0.9;
+                              const targetPrice = currentPrice * 0.95;
+                              return sum + (currentQty * currentPrice) - (targetQty * targetPrice);
+                            }, 0),
+                            currency
+                          )}
+                        </Table.Cell>
+                      </Table.Row>
                     </Table.Body>
                   </Table.Root>
                 </Tabs.Content>
