@@ -13,9 +13,7 @@ import {
   Table,
   Text,
   Select as RadixSelect,
-  Badge,
-  Tabs,
-  Avatar
+  Badge
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -30,14 +28,9 @@ import {
   Legend,
   BarChart,
   Bar,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  CartesianGrid
 } from 'recharts';
-import { DownloadIcon, UploadIcon, StarFilledIcon } from '@radix-ui/react-icons';
+import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
 interface Item {
   name: string;
@@ -159,7 +152,6 @@ const solutionsOptions = [
 
 function CostAnalytics() {
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
-  const [viewMode, setViewMode] = useState<'actual' | 'target'>('actual');
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
   const [profitMargin, setProfitMargin] = useState(25);
   const [currency, setCurrency] = useState<'EGP' | 'USD'>('EGP');
@@ -218,6 +210,33 @@ function CostAnalytics() {
     }
   };
 
+  const autoSelectBestSupplier = () => {
+    // Selection criteria: Price (40%), Rating (30%), Reliability (20%), Delivery (10%)
+    const weightedSuppliers = suppliers.map(supplier => {
+      const priceScore = (1 - (supplier.pricePerKg / currentPrice)) * 40;
+      const ratingScore = (supplier.rating / 5) * 30;
+      const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
+      
+      // Convert delivery time to score (shorter delivery = higher score)
+      const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
+      const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
+      
+      const totalScore = priceScore + ratingScore + reliabilityScore + deliveryScore;
+      
+      return {
+        ...supplier,
+        score: totalScore
+      };
+    });
+
+    // Select supplier with highest score
+    const bestSupplier = weightedSuppliers.reduce((prev, current) => 
+      (prev.score > current.score) ? prev : current
+    );
+
+    handleSupplierSelect(bestSupplier.id);
+  };
+
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -258,65 +277,6 @@ function CostAnalytics() {
     }));
   };
 
-  const autoSelectBestSupplier = () => {
-    if (suppliers.length === 0) return;
-
-    const parseDeliveryTime = (delivery: string) => {
-      const match = delivery.match(/\d+/);
-      return match ? parseInt(match[0]) : 3;
-    };
-
-    const parseReliability = (reliability: string) => {
-      const match = reliability.match(/\d+/);
-      return match ? parseFloat(match[0]) / 100 : 0.85;
-    };
-
-    const WEIGHTS = {
-      PRICE: 0.40,
-      RATING: 0.25,
-      RELIABILITY: 0.20,
-      DELIVERY: 0.15
-    };
-
-    const suppliersWithScores = suppliers.map(supplier => {
-      const deliveryWeeks = parseDeliveryTime(supplier.delivery);
-      const reliability = parseReliability(supplier.reliability);
-
-      const priceScore = 1 - (supplier.pricePerKg / currentPrice);
-      const ratingScore = supplier.rating / 5;
-      const deliveryScore = 1 - (deliveryWeeks / 4);
-      const reliabilityScore = reliability;
-
-      const totalScore = 
-        (priceScore * WEIGHTS.PRICE) +
-        (ratingScore * WEIGHTS.RATING) +
-        (reliabilityScore * WEIGHTS.RELIABILITY) +
-        (deliveryScore * WEIGHTS.DELIVERY);
-
-      return {
-        ...supplier,
-        score: totalScore * 100,
-        priceScore: priceScore * 100,
-        ratingScore: ratingScore * 100,
-        reliabilityScore: reliabilityScore * 100,
-        deliveryScore: deliveryScore * 100
-      };
-    });
-
-    suppliersWithScores.sort((a, b) => b.score - a.score);
-    
-    const bestSupplier = suppliersWithScores[0];
-    
-    setSuppliers(prev => prev.map(s => ({
-      ...s,
-      selected: s.id === bestSupplier.id
-    })));
-    
-    setPotentialSavings(currentPrice - bestSupplier.pricePerKg);
-
-    return suppliersWithScores;
-  };
-
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
     setSelectedSolution({ category, index, solution });
     handleSolutionChange(category, index, solution);
@@ -324,10 +284,6 @@ function CostAnalytics() {
     if (category === 'Direct Materials') {
       const item = data.rawMaterials[index];
       setCurrentPrice(item.pricePerKg || 0);
-      
-      if (solution.includes('Negotiating better prices')) {
-        setTimeout(autoSelectBestSupplier, 100);
-      }
     }
   };
 
@@ -393,22 +349,8 @@ function CostAnalytics() {
     setDialogCategory(null);
   };
 
-  const handleApplySupplier = () => {
-    const selectedSupplier = suppliers.find(s => s.selected);
-    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
-      const items = [...getDetailsByCategory(selectedSolution.category)];
-      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-      setData(prev => ({
-        ...prev,
-        rawMaterials: [...prev.rawMaterials]
-      }));
-    }
-    setSelectedSolution({ category: null, index: null, solution: null });
-  };
-
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      {/* Header Section */}
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -484,7 +426,6 @@ function CostAnalytics() {
         </Flex>
       </Flex>
 
-      {/* Metrics Grid */}
       <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
@@ -567,7 +508,6 @@ function CostAnalytics() {
         ))}
       </Grid>
 
-      {/* Main Cost Table */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -721,7 +661,6 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
-      {/* Category Breakdown Dialog */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
@@ -751,277 +690,155 @@ function CostAnalytics() {
               </Flex>
             </Flex>
 
-            <Tabs.Root value={viewMode} onValueChange={(value) => setViewMode(value as 'actual' | 'target')}>
-              <Tabs.List>
-                <Tabs.Trigger value="actual">Actual View</Tabs.Trigger>
-                <Tabs.Trigger value="target">Target View</Tabs.Trigger>
-              </Tabs.List>
+            <Table.Root variant="surface">
+              <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={{ 
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    padding: '12px 16px'
+                  }}>Item</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ 
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    padding: '12px 16px'
+                  }}>Qty/Units</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ 
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    padding: '12px 16px'
+                  }}>Unit Price</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ 
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    padding: '12px 16px'
+                  }}>Total Cost</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ 
+                    fontWeight: '600',
+                    fontSize: '0.875rem',
+                    padding: '12px 16px'
+                  }}>Solution</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {getDetailsByCategory(dialogCategory).map((item, index) => {
+                  const qty = dialogCategory === 'Direct Materials' ? item.concentrationKg :
+                             dialogCategory === 'Direct Labor' ? item.hours : item.qty;
+                  
+                  const unitPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg :
+                                  dialogCategory === 'Direct Labor' ? item.hourlyRate : item.unitPrice;
 
-              <Box pt="3">
-                <Tabs.Content value="actual">
-                  <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
-                      <Table.Row>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Qty/Units</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Unit Price</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Total Cost</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Solution</Table.ColumnHeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const qty = dialogCategory === 'Direct Materials' ? item.concentrationKg :
-                                    dialogCategory === 'Direct Labor' ? item.hours : item.qty;
-                        
-                        const unitPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg :
-                                        dialogCategory === 'Direct Labor' ? item.hourlyRate : item.unitPrice;
+                  const totalCost = (qty || 0) * (unitPrice || 0);
 
-                        const totalCost = (qty || 0) * (unitPrice || 0);
-
-                        return (
-                          <Table.Row key={index}>
-                            <Table.RowHeaderCell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>{item.name}</Table.RowHeaderCell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>
-                              {autoMode ? (
-                                dialogCategory === 'Direct Materials' 
-                                  ? (qty?.toFixed(6) || '-')
-                                  : (qty?.toString() || '-')
-                              ) : (
-                                <input
-                                  type="number"
-                                  value={qty || 0}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const value = parseFloat(e.target.value) || 0;
-                                    if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
-                                    else if (dialogCategory === 'Direct Labor') item.hours = value;
-                                    else if (item.qty !== undefined) item.qty = value;
-                                  }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
-                                    fontSize: '14px'
-                                  }}
-                                />
-                              )}
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>
-                              {autoMode ? (
-                                unitPrice ? formatCurrency(unitPrice, currency) : '-'
-                              ) : (
-                                <input
-                                  type="number"
-                                  value={unitPrice || 0}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const value = parseFloat(e.target.value) || 0;
-                                    if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
-                                    else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
-                                    else if (item.unitPrice !== undefined) item.unitPrice = value;
-                                  }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
-                                    fontSize: '14px'
-                                  }}
-                                />
-                              )}
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>{formatCurrency(totalCost, currency)}</Table.Cell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>
-                              <RadixSelect.Root
-                                value={solutions[dialogCategory]?.[index] || ''}
-                                onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
+                  return (
+                    <Table.Row key={index}>
+                      <Table.RowHeaderCell style={{ 
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>{item.name}</Table.RowHeaderCell>
+                      <Table.Cell style={{ 
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>
+                        {autoMode ? (
+                          dialogCategory === 'Direct Materials' 
+                            ? (qty?.toFixed(6) || '-')
+                            : (qty?.toString() || '-')
+                        ) : (
+                          <input
+                            type="number"
+                            value={qty || 0}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hours = value;
+                              else if (item.qty !== undefined) item.qty = value;
+                            }}
+                            style={{ 
+                              width: '80px',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #e2e8f0',
+                              backgroundColor: '#f9fafb',
+                              fontSize: '14px'
+                            }}
+                          />
+                        )}
+                      </Table.Cell>
+                      <Table.Cell style={{ 
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>
+                        {autoMode ? (
+                          unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                        ) : (
+                          <input
+                            type="number"
+                            value={unitPrice || 0}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                              const value = parseFloat(e.target.value) || 0;
+                              if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
+                              else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                              else if (item.unitPrice !== undefined) item.unitPrice = value;
+                            }}
+                            style={{ 
+                              width: '80px',
+                              padding: '6px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #e2e8f0',
+                              backgroundColor: '#f9fafb',
+                              fontSize: '14px'
+                            }}
+                          />
+                        )}
+                      </Table.Cell>
+                      <Table.Cell style={{ 
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>{formatCurrency(totalCost, currency)}</Table.Cell>
+                      <Table.Cell style={{ 
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>
+                        <RadixSelect.Root
+                          value={solutions[dialogCategory]?.[index] || ''}
+                          onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
+                        >
+                          <RadixSelect.Trigger 
+                            aria-label="Select solution" 
+                            style={{
+                              backgroundColor: 'white',
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '6px',
+                              padding: '6px 12px',
+                              fontSize: '0.875rem'
+                            }}
+                          />
+                          <RadixSelect.Content style={{
+                            backgroundColor: 'white',
+                            borderRadius: '6px',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                          }}>
+                            {solutionsOptions.map((sol) => (
+                              <RadixSelect.Item 
+                                key={sol} 
+                                value={sol}
+                                style={{
+                                  padding: '8px 12px',
+                                  fontSize: '0.875rem'
+                                }}
                               >
-                                <RadixSelect.Trigger 
-                                  aria-label="Select solution" 
-                                  style={{
-                                    backgroundColor: 'white',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '6px',
-                                    padding: '6px 12px',
-                                    fontSize: '0.875rem'
-                                  }}
-                                />
-                                <RadixSelect.Content style={{
-                                  backgroundColor: 'white',
-                                  borderRadius: '6px',
-                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                                }}>
-                                  {solutionsOptions.map((sol) => (
-                                    <RadixSelect.Item 
-                                      key={sol} 
-                                      value={sol}
-                                      style={{
-                                        padding: '8px 12px',
-                                        fontSize: '0.875rem'
-                                      }}
-                                    >
-                                      {sol}
-                                    </RadixSelect.Item>
-                                  ))}
-                                </RadixSelect.Content>
-                              </RadixSelect.Root>
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table.Root>
-                </Tabs.Content>
-
-                <Tabs.Content value="target">
-                  <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
-                      <Table.Row>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Target Qty</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Target Price</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Target Cost</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={{ 
-                          fontWeight: '600',
-                          fontSize: '0.875rem',
-                          padding: '12px 16px'
-                        }}>Potential Savings</Table.ColumnHeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const actualQty = dialogCategory === 'Direct Materials' ? item.concentrationKg || 0 :
-                                        dialogCategory === 'Direct Labor' ? item.hours || 0 : item.qty || 0;
-                        
-                        const actualPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg || 0 :
-                                          dialogCategory === 'Direct Labor' ? item.hourlyRate || 0 : item.unitPrice || 0;
-
-                        const targetQty = actualQty * 0.9; // 10% reduction target
-                        const targetPrice = actualPrice * 0.95; // 5% reduction target
-                        const targetCost = targetQty * targetPrice;
-                        const actualCost = actualQty * actualPrice;
-                        const potentialSavings = actualCost - targetCost;
-
-                        return (
-                          <Table.Row key={index}>
-                            <Table.RowHeaderCell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>{item.name}</Table.RowHeaderCell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>
-                              <input
-                                type="number"
-                                value={targetQty.toFixed(6)}
-                                onChange={(e) => {
-                                  // Handle target quantity change
-                                }}
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>
-                              <input
-                                type="number"
-                                value={targetPrice.toFixed(2)}
-                                onChange={(e) => {
-                                  // Handle target price change
-                                }}
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb'
-                            }}>{formatCurrency(targetCost, currency)}</Table.Cell>
-                            <Table.Cell style={{ 
-                              color: potentialSavings > 0 ? '#10b981' : '#ef4444',
-                              padding: '12px 16px',
-                              borderBottom: '1px solid #e5e7eb',
-                              fontWeight: '500'
-                            }}>
-                              {formatCurrency(potentialSavings, currency)}
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table.Root>
-                </Tabs.Content>
-              </Box>
-            </Tabs.Root>
-
+                                {sol}
+                              </RadixSelect.Item>
+                            ))}
+                          </RadixSelect.Content>
+                        </RadixSelect.Root>
+                      </Table.Cell>
+                    </Table.Row>
+                  );
+                })}
+              </Table.Body>
+            </Table.Root>
             <Flex justify="end" gap="3" mt="4">
               <Button 
                 style={{ 
@@ -1053,296 +870,297 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* Supplier Selection Dialog */}
       {selectedSolution.solution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
           <Dialog.Content style={{ 
-            maxWidth: '900px',
-            padding: '24px',
+            maxWidth: '800px',
+            padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            border: '1px solid #e5e7eb',
             backgroundColor: 'white'
           }}>
-            <Flex direction="column" gap="2" mb="4">
-              <Dialog.Title style={{
-                fontSize: '20px',
-                fontWeight: 700,
-                color: '#111827',
-                lineHeight: '1.5'
+            <Dialog.Title style={{ 
+              fontSize: '1.25rem',
+              fontWeight: '600',
+              color: '#1f2937',
+              marginBottom: '16px'
+            }}>
+              Supplier Negotiation
+            </Dialog.Title>
+            
+            <Flex direction="column" gap="4">
+              <Card style={{
+                borderRadius: '8px',
+                backgroundColor: '#f9fafb',
+                padding: '16px'
               }}>
-                Raw Materials Supplier Analysis
-              </Dialog.Title>
-              <Text size="2" style={{ 
-                color: '#6B7280',
-                fontWeight: 500
-              }}>
-                Intelligent supplier selection for raw materials cost optimization
-              </Text>
-            </Flex>
-
-            <Grid columns="2" gap="4" mb="4">
-              {/* Selected Supplier Card */}
-              <Card style={{ padding: '16px' }}>
-                <Flex direction="column" gap="3">
-                  <Heading size="4" weight="bold" style={{ color: '#111827' }}>
-                    Recommended Supplier
-                  </Heading>
-                  
-                  {suppliers.filter(s => s.selected).map(supplier => (
-                    <Box key={supplier.id}>
-                      <Flex align="center" gap="3" mb="3">
-                        <div style={{
-                          width: '40px',
-                          height: '40px',
-                          borderRadius: '50%',
-                          backgroundColor: '#3B82F6',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          color: 'white',
-                          fontWeight: '700'
-                        }}>
-                          {supplier.name[0]}
-                        </div>
-                        <Flex direction="column">
-                          <Text size="3" weight="bold">{supplier.name}</Text>
-                          <Badge color="green" style={{ fontWeight: '600' }}>Best Match</Badge>
-                        </Flex>
-                      </Flex>
-
-                      <Grid columns="2" gap="3">
-                        <Box>
-                          <Text size="1" style={{ color: '#6B7280', fontWeight: '600' }}>PRICE/KG</Text>
-                          <Text size="3" weight="bold" style={{ color: '#111827' }}>
-                            {formatCurrency(supplier.pricePerKg, currency)}
-                          </Text>
-                        </Box>
-                        <Box>
-                          <Text size="1" style={{ color: '#6B7280', fontWeight: '600' }}>RATING</Text>
-                          <Flex align="center" gap="1">
-                            <Text size="3" weight="bold" style={{ color: '#111827' }}>
-                              {supplier.rating}
-                            </Text>
-                            <Text size="1" style={{ color: '#6B7280' }}>/5</Text>
-                          </Flex>
-                        </Box>
-                        <Box>
-                          <Text size="1" style={{ color: '#6B7280', fontWeight: '600' }}>DELIVERY</Text>
-                          <Text size="3" weight="bold" style={{ color: '#111827' }}>
-                            {supplier.delivery}
-                          </Text>
-                        </Box>
-                        <Box>
-                          <Text size="1" style={{ color: '#6B7280', fontWeight: '600' }}>RELIABILITY</Text>
-                          <Text size="3" weight="bold" style={{ color: '#111827' }}>
-                            {supplier.reliability}
-                          </Text>
-                        </Box>
-                      </Grid>
-
-                      <Box mt="3" style={{ 
-                        padding: '12px',
-                        backgroundColor: '#F0FDF4',
-                        borderRadius: '6px'
-                      }}>
-                        <Flex justify="between">
-                          <Text size="2" weight="bold">Potential Savings:</Text>
-                          <Text size="2" weight="bold" style={{ color: '#10B981' }}>
-                            {formatCurrency(potentialSavings, currency)} ({((potentialSavings/currentPrice)*100).toFixed(1)}%)
-                          </Text>
-                        </Flex>
-                      </Box>
-                    </Box>
-                  ))}
+                <Flex justify="between" align="center">
+                  <Text weight="bold" style={{ color: '#1f2937' }}>Current Price/kg:</Text>
+                  <Text style={{ color: '#1f2937', fontWeight: '500' }}>{formatCurrency(currentPrice, currency)}</Text>
+                </Flex>
+                <Flex justify="between" align="center" mt="2">
+                  <Text weight="bold" style={{ color: '#1f2937' }}>Potential Savings/kg:</Text>
+                  <Text 
+                    style={{ 
+                      color: potentialSavings > 0 ? '#10b981' : '#ef4444',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {formatCurrency(potentialSavings, currency)}
+                  </Text>
                 </Flex>
               </Card>
 
-              {/* Comparison Chart */}
-              <Card style={{ padding: '16px' }}>
-                <Heading size="4" weight="bold" style={{ 
-                  color: '#111827',
-                  marginBottom: '12px'
+              <Button 
+                onClick={autoSelectBestSupplier}
+                style={{
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  padding: '8px 16px',
+                  borderRadius: '6px',
+                  fontWeight: '500'
+                }}
+              >
+                Auto Select Best Supplier
+              </Button>
+
+              <Card style={{
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                padding: '16px'
+              }}>
+                <Heading size="4" mb="3" style={{ 
+                  color: '#1f2937',
+                  fontWeight: '600'
                 }}>
-                  Key Metrics Comparison
+                  Supplier Comparison
                 </Heading>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart
-                    data={suppliers}
+                    data={suppliers.map(s => ({
+                      name: s.name,
+                      price: s.pricePerKg,
+                      rating: s.rating
+                    }))}
                     margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                    layout="vertical"
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                     <XAxis 
-                      type="number" 
-                      stroke="#6B7280"
-                      tick={{ fontWeight: 500 }}
+                      dataKey="name" 
+                      tick={{ fill: '#4b5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
                     />
                     <YAxis 
-                      dataKey="name" 
-                      type="category" 
-                      width={80} 
-                      stroke="#6B7280"
-                      tick={{ fontWeight: 600 }}
+                      yAxisId="left" 
+                      orientation="left" 
+                      stroke="#3b82f6" 
+                      tick={{ fill: '#4b5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
+                    />
+                    <YAxis 
+                      yAxisId="right" 
+                      orientation="right" 
+                      stroke="#f59e0b" 
+                      tick={{ fill: '#4b5563', fontSize: 12 }}
+                      axisLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip 
                       formatter={(value, name) => [
-                        name === 'pricePerKg' ? formatCurrency(Number(value), currency) : value,
-                        name === 'pricePerKg' ? 'Price/kg' : 'Rating'
+                        name === 'Price' ? formatCurrency(Number(value), currency) : value,
+                        name
                       ]}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #e5e7eb',
+                        borderRadius: '6px',
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                      }}
                     />
+                    <Legend />
                     <Bar 
-                      dataKey="pricePerKg" 
-                      name="Price" 
-                      fill="#3B82F6" 
-                      radius={[0, 4, 4, 0]} 
-                    />
+                      yAxisId="left" 
+                      dataKey="price" 
+                      name="Price/kg" 
+                      fill="#3b82f6"
+                      animationBegin={0}
+                      animationDuration={1000}
+                    >
+                      {suppliers.map((_, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
+                        />
+                      ))}
+                    </Bar>
                     <Bar 
+                      yAxisId="right" 
                       dataKey="rating" 
                       name="Rating" 
-                      fill="#10B981" 
-                      radius={[0, 4, 4, 0]} 
-                    />
+                      fill="#f59e0b"
+                      animationBegin={0}
+                      animationDuration={1000}
+                    >
+                      {suppliers.map((_, index) => (
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={suppliers[index].selected ? '#10b981' : '#f59e0b'}
+                        />
+                      ))}
+                    </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
-            </Grid>
 
-            {/* Suppliers Table */}
-            <Card style={{ marginBottom: '16px' }}>
-              <Table.Root>
-                <Table.Header>
-                  <Table.Row>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Supplier</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Price/kg</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Rating</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Delivery</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Reliability</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell style={{ fontWeight: 700 }}>Action</Table.ColumnHeaderCell>
-                  </Table.Row>
-                </Table.Header>
-                <Table.Body>
-                  {suppliers.map((supplier) => (
-                    <Table.Row key={supplier.id}>
-                      <Table.Cell style={{ fontWeight: 600 }}>{supplier.name}</Table.Cell>
-                      <Table.Cell style={{ fontWeight: 600 }}>
-                        {formatCurrency(supplier.pricePerKg, currency)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        <Flex align="center" gap="1">
-                          <Text weight="bold">{supplier.rating}</Text>
-                          <Text size="1" style={{ color: '#6B7280' }}>/5</Text>
-                        </Flex>
-                      </Table.Cell>
-                      <Table.Cell>{supplier.delivery}</Table.Cell>
-                      <Table.Cell>{supplier.reliability}</Table.Cell>
-                      <Table.Cell>
-                        <Button 
-                          size="1" 
-                          variant={supplier.selected ? 'solid' : 'outline'}
-                          onClick={() => handleSupplierSelect(supplier.id)}
-                          style={{ 
-                            fontWeight: 600,
-                            minWidth: '80px'
-                          }}
-                        >
-                          {supplier.selected ? 'Selected' : 'Select'}
-                        </Button>
-                      </Table.Cell>
+              <Card style={{
+                borderRadius: '8px',
+                backgroundColor: 'white',
+                padding: '16px'
+              }}>
+                <Table.Root>
+                  <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Supplier</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Price/kg</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Rating</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Delivery</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Reliability</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={{ 
+                        fontWeight: '600',
+                        fontSize: '0.875rem',
+                        padding: '12px 16px'
+                      }}>Select</Table.ColumnHeaderCell>
                     </Table.Row>
-                  ))}
-                </Table.Body>
-              </Table.Root>
-            </Card>
+                  </Table.Header>
+                  <Table.Body>
+                    {suppliers.map((supplier) => (
+                      <Table.Row key={supplier.id}>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>{supplier.name}</Table.Cell>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>{formatCurrency(supplier.pricePerKg, currency)}</Table.Cell>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>{supplier.rating}/5</Table.Cell>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>{supplier.delivery}</Table.Cell>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>{supplier.reliability}</Table.Cell>
+                        <Table.Cell style={{ 
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #e5e7eb'
+                        }}>
+                          <Button
+                            size="1"
+                            variant={supplier.selected ? 'solid' : 'outline'}
+                            onClick={() => handleSupplierSelect(supplier.id)}
+                            style={{
+                              borderRadius: '6px',
+                              padding: '4px 8px',
+                              fontSize: '0.875rem',
+                              backgroundColor: supplier.selected ? '#3b82f6' : 'white',
+                              color: supplier.selected ? 'white' : '#1f2937',
+                              borderColor: '#e5e7eb'
+                            }}
+                          >
+                            {supplier.selected ? 'Selected' : 'Select'}
+                          </Button>
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+              </Card>
 
-            <Flex justify="end" gap="3">
-              <Button 
-                style={{ 
-                  fontWeight: 600,
-                  padding: '8px 16px',
-                  backgroundColor: '#3B82F6',
-                  color: 'white'
-                }}
-                onClick={handleApplySupplier}
-              >
-                Apply Selection
-              </Button>
+              <Flex justify="end" gap="3" mt="4">
+                <Button 
+                  variant="soft"
+                  onClick={() => {
+                    const selectedSupplier = suppliers.find(s => s.selected);
+                    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
+                      const items = [...getDetailsByCategory(selectedSolution.category)];
+                      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
+                      setData(prev => ({
+                        ...prev,
+                        rawMaterials: [...prev.rawMaterials]
+                      }));
+                    }
+                    setSelectedSolution({ category: null, index: null, solution: null });
+                  }}
+                  style={{
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Apply Changes
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedSolution({ category: null, index: null, solution: null })}
+                  style={{
+                    backgroundColor: '#f3f4f6',
+                    color: '#1f2937',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Cancel
+                </Button>
+              </Flex>
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
       )}
 
-      {/* Charts Section */}
-      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
-          padding: '16px'
+          padding: '16px',
+          height: '400px'
         }}>
-          <Flex direction="column" p="4">
-            <Heading size="4" mb="3" align="center" style={{ 
-              color: '#1f2937',
-              fontWeight: '600'
-            }}>
-              Cost Gap Analysis
-            </Heading>
-            <Text align="center" mb="4" size="2" style={{ 
-              color: '#4b5563',
-              fontWeight: '500'
-            }}>
-              Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
-            </Text>
-            <Grid columns="3" gap="2">
-              {categories.map((category, index) => (
-                <Box 
-                  key={category} 
-                  style={{ 
-                    padding: '12px',
-                    borderRadius: '8px', 
-                    backgroundColor: '#f3f4f6'
-                  }}
-                >
-                  <Text weight="bold" size="2" mb="2" style={{ color: '#1f2937' }}>
-                    {category}
-                  </Text>
-                  <Progress
-                    value={(totals[category].actual / totalActual) * 100}
-                    color={
-                      index === 0 ? 'blue' :
-                      index === 1 ? 'amber' :
-                      index === 2 ? 'red' :
-                      index === 3 ? 'green' :
-                      'purple'
-                    }
-                    size="2"
-                    style={{
-                      height: '8px',
-                      borderRadius: '4px'
-                    }}
-                  />
-                  <Text mt="2" size="2" style={{ color: '#4b5563' }}>
-                    {formatCurrency(totals[category].actual, currency)} ({percentOfTotal(category)}%)
-                  </Text>
-                </Box>
-              ))}
-            </Grid>
-          </Flex>
-        </Card>
-
-        <Card style={{
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          backgroundColor: 'white',
-          padding: '16px'
-        }}>
-          <Flex direction="column" p="4">
+          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={{ 
               color: '#1f2937',
               fontWeight: '600'
             }}>
               Cost Breakdown
             </Heading>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
                   data={categories.map((category) => ({
@@ -1354,34 +1172,17 @@ function CostAnalytics() {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => (
-                    <text
-                      x={0}
-                      y={0}
-                      fill="#374151"
-                      textAnchor="middle"
-                      dominantBaseline="central"
-                      style={{
-                        fontSize: '12px',
-                        fontWeight: '500'
-                      }}
-                    >
-                      {`${(percent * 100).toFixed(1)}%`}
-                    </text>
-                  )}
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
                   labelLine={false}
                 >
                   {categories.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
                   ))}
                 </Pie>
-                <Legend />
                 <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${formatCurrency(value, currency)}`,
-                    name
-                  ]}
+                  formatter={(value: number) => formatCurrency(value, currency)}
                 />
+                <Legend />
               </PieChart>
             </ResponsiveContainer>
           </Flex>
@@ -1391,53 +1192,92 @@ function CostAnalytics() {
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
-          padding: '16px'
+          padding: '16px',
+          height: '400px'
         }}>
-          <Flex direction="column" p="4">
+          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={{ 
               color: '#1f2937',
               fontWeight: '600'
             }}>
               Benchmark Trend
             </Heading>
-            <ResponsiveContainer width="100%" height={250}>
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={benchmarkTrendDataWithGap}>
+                <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
                 <Tooltip 
-                  formatter={(value: number, name: string) => [
-                    `${formatCurrency(value, currency)}`,
-                    name
-                  ]}
+                  formatter={(value: number) => formatCurrency(value, currency)}
                 />
                 <Legend />
                 <Line 
                   type="monotone" 
                   dataKey="actual" 
                   stroke="#3b82f6" 
-                  name="Actual Cost"
+                  strokeWidth={2}
                 />
                 <Line 
                   type="monotone" 
                   dataKey="benchmark" 
                   stroke="#f59e0b" 
-                  name="Benchmark Price" 
+                  strokeWidth={2}
                   strokeDasharray="5 5"
                 />
                 <Line 
                   type="monotone" 
                   dataKey="targetCost" 
                   stroke="#10b981" 
-                  name="Target Cost" 
+                  strokeWidth={2}
                   strokeDasharray="3 4 5 2"
                 />
               </LineChart>
             </ResponsiveContainer>
           </Flex>
         </Card>
+
+        <Card style={{
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          backgroundColor: 'white',
+          padding: '16px',
+          gridColumn: '1 / -1'
+        }}>
+          <Flex direction="column">
+            <Heading size="4" mb="3" align="center" style={{ 
+              color: '#1f2937',
+              fontWeight: '600'
+            }}>
+              Cost Gap Analysis
+            </Heading>
+            <Text align="center" mb="4" size="2">
+              Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
+            </Text>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart
+                data={categories.map(category => ({
+                  name: category,
+                  actual: totals[category].actual,
+                  target: totals[category].budget,
+                  gap: totals[category].actual - totals[category].budget
+                }))}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => formatCurrency(value, currency)}
+                />
+                <Legend />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Bar dataKey="target" fill="#10b981" name="Target Cost" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
       </Grid>
 
-      {/* Submit Button */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
