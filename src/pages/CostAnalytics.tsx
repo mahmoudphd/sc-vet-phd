@@ -152,6 +152,7 @@ const solutionsOptions = [
 ];
 
 function CostAnalytics() {
+  // State management
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target'>('actual');
   const [benchmarkPrice, setBenchmarkPrice] = useState(220);
@@ -176,6 +177,7 @@ function CostAnalytics() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
 
+  // Helper functions
   const getDetailsByCategory = (category: CostCategory): Item[] => {
     switch (category) {
       case 'Direct Materials': return data.rawMaterials;
@@ -281,6 +283,7 @@ function CostAnalytics() {
     }));
   };
 
+  // Calculations
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -307,6 +310,7 @@ function CostAnalytics() {
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
+  // Event handlers
   const handleBenchmarkChange = (value: number) => {
     setBenchmarkPrice(value);
   };
@@ -415,6 +419,7 @@ function CostAnalytics() {
 
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {/* Header section */}
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#111827' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -497,6 +502,7 @@ function CostAnalytics() {
         </Flex>
       </Flex>
 
+      {/* Summary cards */}
       <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
@@ -580,6 +586,7 @@ function CostAnalytics() {
         ))}
       </Grid>
 
+      {/* Main cost table */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
@@ -673,8 +680,8 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
-      {/* Category Details Dialog */}
-      <Dialog.Root open={!!dialogCategory} onOpenChange={() => setDialogCategory(null)}>
+      {/* Category Details Dialog - Fixed implementation */}
+      <Dialog.Root open={!!dialogCategory} onOpenChange={(open) => !open && setDialogCategory(null)}>
         <Dialog.Content style={{ 
           maxWidth: '900px',
           maxHeight: '85vh',
@@ -1287,6 +1294,7 @@ function CostAnalytics() {
         </Dialog.Content>
       </Dialog.Root>
 
+      {/* Charts section */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
@@ -1429,6 +1437,7 @@ function CostAnalytics() {
         </Card>
       </Grid>
 
+      {/* Footer */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
