@@ -334,6 +334,7 @@ function CostAnalytics() {
 
   const handleSubmitDialog = (category: CostCategory) => {
     const items = getDetailsByCategory(category);
+    
     const newActual = items.reduce((sum, item) => {
       if (category === 'Direct Materials') {
         return sum + ((item.concentrationKg || 0) * (item.pricePerKg || 0));
@@ -346,6 +347,7 @@ function CostAnalytics() {
       }
     }, 0);
 
+    // Update the main state correctly
     setData(prev => ({
       ...prev,
       totals: {
@@ -388,28 +390,6 @@ function CostAnalytics() {
     fontWeight: '600',
     color: '#111827',
     fontSize: '1.1rem'
-  };
-
-  const viewDetailsButtonStyle = {
-    backgroundColor: '#4f46e5',
-    color: 'white',
-    padding: '6px 16px',
-    borderRadius: '8px',
-    fontWeight: '500',
-    fontSize: '0.875rem',
-    border: 'none',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-    cursor: 'pointer'
-  };
-
-  const editableInputStyle = {
-    width: '80px',
-    padding: '6px 10px',
-    borderRadius: '6px',
-    border: '1px solid #d1d5db',
-    backgroundColor: '#f9fafb',
-    fontSize: '14px',
-    marginRight: '4px'
   };
 
   return (
@@ -799,13 +779,50 @@ function CostAnalytics() {
                                   <input
                                     type="number"
                                     value={qty || 0}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    onChange={(e) => {
                                       const value = parseFloat(e.target.value) || 0;
-                                      if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
-                                      else if (dialogCategory === 'Direct Labor') item.hours = value;
-                                      else if (item.qty !== undefined) item.qty = value;
+                                      const updatedItems = [...getDetailsByCategory(dialogCategory)];
+                                      
+                                      if (dialogCategory === 'Direct Materials') {
+                                        updatedItems[index].concentrationKg = value;
+                                      } else if (dialogCategory === 'Direct Labor') {
+                                        updatedItems[index].hours = value;
+                                      } else {
+                                        updatedItems[index].qty = value;
+                                      }
+
+                                      // Update the main state
+                                      setData(prev => {
+                                        const newData = { ...prev };
+                                        switch(dialogCategory) {
+                                          case 'Direct Materials': 
+                                            newData.rawMaterials = updatedItems as Item[];
+                                            break;
+                                          case 'Packaging Materials':
+                                            newData.packagingMaterials = updatedItems as Item[];
+                                            break;
+                                          case 'Direct Labor':
+                                            newData.directLabor = updatedItems as Item[];
+                                            break;
+                                          case 'Overhead':
+                                            newData.overheadItems = updatedItems as Item[];
+                                            break;
+                                          case 'Other Costs':
+                                            newData.otherCosts = updatedItems as Item[];
+                                            break;
+                                        }
+                                        return newData;
+                                      });
                                     }}
-                                    style={editableInputStyle}
+                                    style={{
+                                      width: '80px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #d1d5db',
+                                      backgroundColor: '#f9fafb',
+                                      fontSize: '14px',
+                                      marginRight: '4px'
+                                    }}
                                     step={dialogCategory === 'Direct Materials' ? 'any' : '1'}
                                     min="0"
                                   />
@@ -818,13 +835,50 @@ function CostAnalytics() {
                                   <input
                                     type="number"
                                     value={unitPrice || 0}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                    onChange={(e) => {
                                       const value = parseFloat(e.target.value) || 0;
-                                      if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
-                                      else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
-                                      else if (item.unitPrice !== undefined) item.unitPrice = value;
+                                      const updatedItems = [...getDetailsByCategory(dialogCategory)];
+                                      
+                                      if (dialogCategory === 'Direct Materials') {
+                                        updatedItems[index].pricePerKg = value;
+                                      } else if (dialogCategory === 'Direct Labor') {
+                                        updatedItems[index].hourlyRate = value;
+                                      } else {
+                                        updatedItems[index].unitPrice = value;
+                                      }
+
+                                      // Update the main state
+                                      setData(prev => {
+                                        const newData = { ...prev };
+                                        switch(dialogCategory) {
+                                          case 'Direct Materials': 
+                                            newData.rawMaterials = updatedItems as Item[];
+                                            break;
+                                          case 'Packaging Materials':
+                                            newData.packagingMaterials = updatedItems as Item[];
+                                            break;
+                                          case 'Direct Labor':
+                                            newData.directLabor = updatedItems as Item[];
+                                            break;
+                                          case 'Overhead':
+                                            newData.overheadItems = updatedItems as Item[];
+                                            break;
+                                          case 'Other Costs':
+                                            newData.otherCosts = updatedItems as Item[];
+                                            break;
+                                        }
+                                        return newData;
+                                      });
                                     }}
-                                    style={editableInputStyle}
+                                    style={{
+                                      width: '80px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #d1d5db',
+                                      backgroundColor: '#f9fafb',
+                                      fontSize: '14px',
+                                      marginRight: '4px'
+                                    }}
                                     step="0.01"
                                     min="0"
                                   />
@@ -930,7 +984,15 @@ function CostAnalytics() {
                                       const newValue = parseFloat(e.target.value) || 0;
                                       setTargetQty(newValue);
                                     }}
-                                    style={editableInputStyle}
+                                    style={{
+                                      width: '80px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #d1d5db',
+                                      backgroundColor: '#f9fafb',
+                                      fontSize: '14px',
+                                      marginRight: '4px'
+                                    }}
                                     step={dialogCategory === 'Direct Materials' ? 'any' : '1'}
                                     min="0"
                                   />
@@ -944,7 +1006,15 @@ function CostAnalytics() {
                                     const newValue = parseFloat(e.target.value) || 0;
                                     setTargetPrice(newValue);
                                   }}
-                                  style={editableInputStyle}
+                                  style={{
+                                    width: '80px',
+                                    padding: '6px 10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #d1d5db',
+                                    backgroundColor: '#f9fafb',
+                                    fontSize: '14px',
+                                    marginRight: '4px'
+                                  }}
                                   step="0.01"
                                   min="0"
                                 />
