@@ -653,8 +653,9 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
-      {dialogCategory && (
-        <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
+      {/* Fixed Dialog Root for Category Details */}
+      <Dialog.Root open={!!dialogCategory} onOpenChange={() => setDialogCategory(null)}>
+        {dialogCategory && (
           <Dialog.Content style={{ 
             maxWidth: '800px',
             maxHeight: '80vh',
@@ -946,11 +947,12 @@ function CostAnalytics() {
               </Button>
             </Flex>
           </Dialog.Content>
-        </Dialog.Root>
-      )}
+        )}
+      </Dialog.Root>
 
-      {selectedSolution.solution && (
-        <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
+      {/* Fixed Dialog Root for Supplier Negotiation */}
+      <Dialog.Root open={!!selectedSolution.solution} onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
+        {selectedSolution.solution && (
           <Dialog.Content style={{ 
             maxWidth: '800px',
             padding: '20px',
@@ -1185,8 +1187,8 @@ function CostAnalytics() {
               </Flex>
             </Flex>
           </Dialog.Content>
-        </Dialog.Root>
-      )}
+        )}
+      </Dialog.Root>
 
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
