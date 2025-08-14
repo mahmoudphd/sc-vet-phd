@@ -21,31 +21,11 @@ export interface Item {
 
 export const simulatedIoTCostData = {
   totals: {
-    'Direct Materials': {
-      actual: 133.11,
-      budget: 140,
-      costAfter: 120,
-    },
-    'Packaging Materials': {
-      actual: 45,
-      budget: 50,
-      costAfter: 43,
-    },
-    'Direct Labor': {
-      actual: 38,
-      budget: 40,
-      costAfter: 37,
-    },
-    Overhead: {
-      actual: 30,
-      budget: 32,
-      costAfter: 29,
-    },
-    'Other Costs': {
-      actual: 20,
-      budget: 25,
-      costAfter: 19,
-    },
+    'Direct Materials': { actual: 133.11, budget: 140, costAfter: 120 },
+    'Packaging Materials': { actual: 45, budget: 50, costAfter: 43 },
+    'Direct Labor': { actual: 38, budget: 40, costAfter: 37 },
+    'Overhead': { actual: 30, budget: 32, costAfter: 29 },
+    'Other Costs': { actual: 20, budget: 25, costAfter: 19 },
   },
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, weightKg: 0.001, cost: 0.54 },
