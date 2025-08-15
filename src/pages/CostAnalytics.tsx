@@ -34,25 +34,25 @@ import {
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
 // Style definitions
-const tableHeaderStyle = {
+const tableHeaderStyle: React.CSSProperties = {
   backgroundColor: '#f3f4f6',
   fontWeight: 'bold',
   color: '#1f2937',
   padding: '12px 16px',
 };
 
-const tableRowHeaderStyle = {
+const tableRowHeaderStyle: React.CSSProperties = {
   fontWeight: 'bold',
   color: '#1f2937',
   padding: '12px 16px',
 };
 
-const tableCellStyle = {
+const tableCellStyle: React.CSSProperties = {
   padding: '12px 16px',
   borderBottom: '1px solid #e5e7eb',
 };
 
-const cardTitleStyle = {
+const cardTitleStyle: React.CSSProperties = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px',
@@ -189,7 +189,7 @@ const getDetailsByCategory = (category: CostCategory, dataToUse = initialData): 
   }
 };
 
-const getDetailsSafely = (category: CostCategory | null | undefined, dataToUse = initialData): Item[] => {
+const getDetailsSafely = (category: CostCategory | null, dataToUse = initialData): Item[] => {
   return category ? getDetailsByCategory(category, dataToUse) : [];
 };
 
@@ -421,7 +421,9 @@ function CostAnalytics() {
     alert('Data submitted to blockchain successfully!');
   };
 
-  const handleSubmitDialog = (category: CostCategory) => {
+  const handleSubmitDialog = (category: CostCategory | null) => {
+    if (!category) return;
+    
     const items = getDetailsByCategory(category);
     const newActual = items.reduce((sum, item) => sum + calculateActualCost(item), 0);
 
@@ -960,7 +962,7 @@ function CostAnalytics() {
                   borderRadius: '6px',
                   fontWeight: 'bold'
                 }}
-                onClick={() => dialogCategory && handleSubmitDialog(dialogCategory)}
+                onClick={() => handleSubmitDialog(dialogCategory)}
               >
                 Submit
               </Button>
