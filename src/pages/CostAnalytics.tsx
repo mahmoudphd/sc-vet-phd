@@ -33,6 +33,31 @@ import {
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
+// Style definitions
+const tableHeaderStyle = {
+  backgroundColor: '#f3f4f6',
+  fontWeight: 'bold',
+  color: '#1f2937',
+  padding: '12px 16px',
+};
+
+const tableRowHeaderStyle = {
+  fontWeight: 'bold',
+  color: '#1f2937',
+  padding: '12px 16px',
+};
+
+const tableCellStyle = {
+  padding: '12px 16px',
+  borderBottom: '1px solid #e5e7eb',
+};
+
+const cardTitleStyle = {
+  color: '#1f2937',
+  fontWeight: 'bold',
+  marginBottom: '16px',
+};
+
 interface Item {
   name: string;
   qty?: number;
@@ -87,7 +112,7 @@ const initialData: CostData = {
     'Overhead': { actual: 2, budget: 2, costAfter: 2 },
     'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
   },
-    rawMaterials: [
+  rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, targetQty: 0.0009, targetPrice: 513 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, targetQty: 0.0054, targetPrice: 570 },
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, targetQty: 0.0009, targetPrice: 2185 },
@@ -150,7 +175,6 @@ const solutionsOptions = [
   'Other',
 ];
 
-// Safe data access functions
 const getDetailsByCategory = (category: CostCategory, dataToUse = initialData): Item[] => {
   switch (category) {
     case 'Direct Materials': return dataToUse.rawMaterials;
@@ -194,7 +218,6 @@ function CostAnalytics() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
 
-  // Helper functions
   const formatNumber = (value: number, decimalPlaces: number = 3) => {
     return value.toLocaleString(undefined, {
       minimumFractionDigits: 0,
@@ -330,27 +353,29 @@ function CostAnalytics() {
       selected: supplier.id === id
     })));
     
-    const selectedSupplier = suppliers.find(s => s.id === id);
-    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
-      const items = [...getDetailsSafely(selectedSolution.category)];
-      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-      
-      setData(prev => {
-        const newData = {...prev};
-        switch(selectedSolution.category) {
-          case 'Direct Materials': newData.rawMaterials = items; break;
-          case 'Packaging Materials': newData.packagingMaterials = items; break;
-          case 'Direct Labor': newData.directLabor = items; break;
-          case 'Overhead': newData.overheadItems = items; break;
-          case 'Other Costs': newData.otherCosts = items; break;
-        }
+    if (selectedSolution.category && selectedSolution.index !== null) {
+      const selectedSupplier = suppliers.find(s => s.id === id);
+      if (selectedSupplier) {
+        const items = [...getDetailsSafely(selectedSolution.category)];
+        items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
         
-        updateCategoryTotals(selectedSolution.category, newData);
-        return newData;
-      });
-      
-      const savings = currentPrice - selectedSupplier.pricePerKg;
-      setPotentialSavings(Math.round(savings * 100) / 100);
+        setData(prev => {
+          const newData = {...prev};
+          switch(selectedSolution.category) {
+            case 'Direct Materials': newData.rawMaterials = items; break;
+            case 'Packaging Materials': newData.packagingMaterials = items; break;
+            case 'Direct Labor': newData.directLabor = items; break;
+            case 'Overhead': newData.overheadItems = items; break;
+            case 'Other Costs': newData.otherCosts = items; break;
+          }
+          
+          updateCategoryTotals(selectedSolution.category, newData);
+          return newData;
+        });
+        
+        const savings = currentPrice - selectedSupplier.pricePerKg;
+        setPotentialSavings(Math.round(savings * 100) / 100);
+      }
     }
   };
 
@@ -415,7 +440,6 @@ function CostAnalytics() {
   };
 
   useEffect(() => {
-    // Initialize all category totals
     const newData = {...data};
     categories.forEach(category => {
       updateCategoryTotals(category, newData);
@@ -423,7 +447,6 @@ function CostAnalytics() {
     setData(newData);
   }, []);
 
-  // Calculate totals
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -431,7 +454,6 @@ function CostAnalytics() {
   const postOptimizationEstimate = Math.round((totalActual - totalCostAfter) * 100) / 100;
   const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100) * 100) / 100;
 
-  // Chart data
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
@@ -451,7 +473,6 @@ function CostAnalytics() {
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
-  // UI Components
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       {/* Header Section */}
