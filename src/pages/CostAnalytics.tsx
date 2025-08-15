@@ -215,10 +215,22 @@ const CostAnalytics = () => {
     return actualTotal - savings;
   }, [data.rawMaterials, data.totals]);
 
+  const getCategoryKey = (category: CostCategory): 
+    'rawMaterials' | 'packagingMaterials' | 'directLabor' | 'overheadItems' | 'otherCosts' => {
+    switch(category) {
+      case 'Direct Materials': return 'rawMaterials';
+      case 'Packaging Materials': return 'packagingMaterials';
+      case 'Direct Labor': return 'directLabor';
+      case 'Overhead': return 'overheadItems';
+      case 'Other Costs': return 'otherCosts';
+    }
+  };
+
   const updateItemTarget = useCallback((category: CostCategory, index: number, field: keyof Item, value: number) => {
     setData(prev => {
       const updatedData = { ...prev };
-      const categoryItems = [...updatedData[getCategoryKey(category)]];
+      const categoryKey = getCategoryKey(category);
+      const categoryItems = [...updatedData[categoryKey]] as Item[];
       
       categoryItems[index] = {
         ...categoryItems[index],
@@ -240,21 +252,10 @@ const CostAnalytics = () => {
 
       return {
         ...updatedData,
-        [getCategoryKey(category)]: categoryItems
+        [categoryKey]: categoryItems
       };
     });
   }, []);
-
-  const getCategoryKey = (category: CostCategory): keyof CostData => {
-    switch(category) {
-      case 'Direct Materials': return 'rawMaterials';
-      case 'Packaging Materials': return 'packagingMaterials';
-      case 'Direct Labor': return 'directLabor';
-      case 'Overhead': return 'overheadItems';
-      case 'Other Costs': return 'otherCosts';
-      default: return 'rawMaterials';
-    }
-  };
 
   const { totalActual, totalTarget, totalCostAfter } = useMemo(() => {
     const totals = data.totals;
