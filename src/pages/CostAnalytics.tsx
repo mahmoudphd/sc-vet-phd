@@ -87,6 +87,7 @@ const initialData: CostData = {
     'Overhead': { actual: 2, budget: 2, costAfter: 2 },
     'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
   },
+  },
   rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, targetQty: 0.0009, targetPrice: 513 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, targetQty: 0.0054, targetPrice: 570 },
@@ -150,33 +151,7 @@ const solutionsOptions = [
   'Other',
 ];
 
-const tableHeaderStyle = {
-  fontWeight: 'bold',
-  padding: '12px 16px',
-  backgroundColor: '#f3f4f6',
-  fontSize: '0.9rem'
-};
-
-const tableCellStyle = {
-  fontWeight: 'normal',
-  padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
-  fontSize: '0.9rem'
-};
-
-const tableRowHeaderStyle = {
-  fontWeight: 'bold',
-  padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
-  fontSize: '0.9rem'
-};
-
-const cardTitleStyle = {
-  color: '#1f2937',
-  fontWeight: 'bold',
-  marginBottom: '16px'
-};
-
+// Safe data access functions
 const getDetailsByCategory = (category: CostCategory, dataToUse = initialData): Item[] => {
   switch (category) {
     case 'Direct Materials': return dataToUse.rawMaterials;
@@ -192,8 +167,7 @@ const getDetailsByCategory = (category: CostCategory, dataToUse = initialData): 
 };
 
 const getDetailsSafely = (category: CostCategory | null | undefined, dataToUse = initialData): Item[] => {
-  if (!category) return [];
-  return getDetailsByCategory(category, dataToUse);
+  return category ? getDetailsByCategory(category, dataToUse) : [];
 };
 
 function CostAnalytics() {
@@ -221,6 +195,7 @@ function CostAnalytics() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
 
+  // Helper functions
   const formatNumber = (value: number, decimalPlaces: number = 3) => {
     return value.toLocaleString(undefined, {
       minimumFractionDigits: 0,
@@ -246,9 +221,7 @@ function CostAnalytics() {
 
   const calculateCostAfterOptimization = (category: CostCategory, dataToUse = data): number => {
     const items = getDetailsByCategory(category, dataToUse);
-    return items.reduce((sum, item) => {
-      return sum + calculateActualCost(item);
-    }, 0);
+    return items.reduce((sum, item) => sum + calculateActualCost(item), 0);
   };
 
   const calculatePotentialSavings = (item: Item): number => {
@@ -272,7 +245,6 @@ function CostAnalytics() {
       }
       
       updateCategoryTotals(category, newData);
-      
       return newData;
     });
   };
@@ -291,7 +263,7 @@ function CostAnalytics() {
     };
   };
 
-  const generateSupplierPrices = (basePrice: number) => {
+  const generateSupplierPrices = (basePrice: number): Supplier[] => {
     const discounts = [
       0.05 + Math.random() * 0.10,
       0.05 + Math.random() * 0.10,
@@ -385,7 +357,7 @@ function CostAnalytics() {
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
     setSelectedSolution({ category, index, solution });
-    setSolutions((prev) => ({
+    setSolutions(prev => ({
       ...prev,
       [category]: {
         ...prev[category],
@@ -452,6 +424,7 @@ function CostAnalytics() {
     setData(newData);
   }, []);
 
+  // Calculate totals
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -459,6 +432,7 @@ function CostAnalytics() {
   const postOptimizationEstimate = Math.round((totalActual - totalCostAfter) * 100) / 100;
   const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100) * 100) / 100;
 
+  // Chart data
   const benchmarkTrendData = [
     { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
     { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
@@ -478,8 +452,10 @@ function CostAnalytics() {
   const percentOfTotal = (category: CostCategory) =>
     totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
 
+  // UI Components
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      {/* Header Section */}
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -528,12 +504,8 @@ function CostAnalytics() {
                 borderRadius: '6px',
                 boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
               }}>
-                <RadixSelect.Item value="EGP" style={{
-                  padding: '8px 12px'
-                }}>EGP</RadixSelect.Item>
-                <RadixSelect.Item value="USD" style={{
-                  padding: '8px 12px'
-                }}>USD</RadixSelect.Item>
+                <RadixSelect.Item value="EGP">EGP</RadixSelect.Item>
+                <RadixSelect.Item value="USD">USD</RadixSelect.Item>
               </RadixSelect.Content>
             </RadixSelect.Root>
           </Flex>
@@ -555,6 +527,7 @@ function CostAnalytics() {
         </Flex>
       </Flex>
 
+      {/* Summary Cards */}
       <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
@@ -576,16 +549,13 @@ function CostAnalytics() {
               setProfitMargin(parseFloat(e.target.value) || 0)
           },
         ].map((item, index) => (
-          <Card 
-            key={index} 
-            style={{ 
-              position: 'relative',
-              borderRadius: '12px',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              transition: 'all 0.2s ease',
-              backgroundColor: 'white'
-            }}
-          >
+          <Card key={index} style={{ 
+            position: 'relative',
+            borderRadius: '12px',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+            transition: 'all 0.2s ease',
+            backgroundColor: 'white'
+          }}>
             <Flex direction="column" gap="2" p="4">
               <Flex justify="between" align="center">
                 <Text size="2" color="gray" weight="bold">
@@ -637,6 +607,7 @@ function CostAnalytics() {
         ))}
       </Grid>
 
+      {/* Main Cost Table */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -723,6 +694,7 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
+      {/* Category Detail Dialog */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
@@ -990,6 +962,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* Supplier Selection Dialog */}
       {selectedSolution.solution && selectedSolution.category && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
           <Dialog.Content style={{ 
@@ -1239,6 +1212,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* Charts Section */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
@@ -1363,6 +1337,7 @@ function CostAnalytics() {
         </Card>
       </Grid>
 
+      {/* Submit Button */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
