@@ -87,8 +87,7 @@ const initialData: CostData = {
     'Overhead': { actual: 2, budget: 2, costAfter: 2 },
     'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
   },
-  },
-  rawMaterials: [
+    rawMaterials: [
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, targetQty: 0.0009, targetPrice: 513 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, targetQty: 0.0054, targetPrice: 570 },
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, targetQty: 0.0009, targetPrice: 2185 },
