@@ -232,7 +232,7 @@ function CostAnalytics() {
       {
         id: 1,
         name: 'Supplier A',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[0])).toFixed(2),
+        pricePerKg: parseFloat((basePrice * (1 - discounts[0])).toFixed(2)),
         rating: 4.7,
         delivery: '1 week',
         reliability: '97%',
@@ -241,7 +241,7 @@ function CostAnalytics() {
       {
         id: 2,
         name: 'Supplier B',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[1])).toFixed(2),
+        pricePerKg: parseFloat((basePrice * (1 - discounts[1])).toFixed(2)),
         rating: 4.2,
         delivery: '2 weeks',
         reliability: '90%',
@@ -250,7 +250,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: parseFloat((basePrice * (1 - discounts[2])).toFixed(2),
+        pricePerKg: parseFloat((basePrice * (1 - discounts[2])).toFixed(2)),
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
