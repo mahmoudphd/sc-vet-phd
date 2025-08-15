@@ -218,8 +218,7 @@ function CostAnalytics() {
     }).format(value);
   };
 
-  const getDetailsByCategory = (category: CostCategory | null, dataToUse = data): Item[] => {
-    if (!category) return [];
+  const getDetailsByCategory = (category: CostCategory, dataToUse = data): Item[] => {
     switch (category) {
       case 'Direct Materials': return dataToUse.rawMaterials;
       case 'Packaging Materials': return dataToUse.packagingMaterials;
@@ -237,13 +236,6 @@ function CostAnalytics() {
     return (item.qty || 0) * (item.unitPrice || 0);
   };
 
-  const calculateCostAfterOptimization = (category: CostCategory, dataToUse = data): number => {
-    const items = getDetailsByCategory(category, dataToUse);
-    return items.reduce((sum, item) => {
-      return sum + calculateActualCost(item);
-    }, 0);
-  };
-
   const calculatePotentialSavings = (item: Item): number => {
     const currentCost = calculateActualCost(item);
     const targetCost = (item.targetQty || 0) * (item.targetPrice || 0);
@@ -256,6 +248,7 @@ function CostAnalytics() {
       const categoryItems = [...getDetailsByCategory(category, newData)];
       categoryItems[index][field] = value;
       
+      // Update the specific category array
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
         case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
@@ -264,6 +257,7 @@ function CostAnalytics() {
         case 'Other Costs': newData.otherCosts = categoryItems; break;
       }
       
+      // Recalculate totals
       updateCategoryTotals(category, newData);
       
       return newData;
@@ -274,13 +268,11 @@ function CostAnalytics() {
     const items = getDetailsByCategory(category, dataToUpdate);
     const actualTotal = items.reduce((sum, item) => sum + calculateActualCost(item), 0);
     const targetTotal = items.reduce((sum, item) => sum + ((item.targetQty || 0) * (item.targetPrice || 0)), 0);
-    const costAfterTotal = calculateCostAfterOptimization(category, dataToUpdate);
     
     dataToUpdate.totals[category] = {
       ...dataToUpdate.totals[category],
-      actual: Math.round(actualTotal * 100) / 100,
-      budget: Math.round(targetTotal * 100) / 100,
-      costAfter: Math.round(costAfterTotal * 100) / 100
+      actual: actualTotal,
+      budget: targetTotal
     };
   };
 
@@ -351,24 +343,7 @@ function CostAnalytics() {
     })));
     
     const selectedSupplier = suppliers.find(s => s.id === id);
-    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
-      const items = [...getDetailsByCategory(selectedSolution.category)];
-      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-      
-      setData(prev => {
-        const newData = {...prev};
-        switch(selectedSolution.category) {
-          case 'Direct Materials': newData.rawMaterials = items; break;
-          case 'Packaging Materials': newData.packagingMaterials = items; break;
-          case 'Direct Labor': newData.directLabor = items; break;
-          case 'Overhead': newData.overheadItems = items; break;
-          case 'Other Costs': newData.otherCosts = items; break;
-        }
-        
-        updateCategoryTotals(selectedSolution.category, newData);
-        return newData;
-      });
-      
+    if (selectedSupplier) {
       const savings = currentPrice - selectedSupplier.pricePerKg;
       setPotentialSavings(Math.round(savings * 100) / 100);
     }
@@ -981,7 +956,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {selectedSolution.solution && selectedSolution.category && (
+      {selectedSolution.solution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
           <Dialog.Content style={{ 
             maxWidth: '800px',
@@ -1184,20 +1159,11 @@ function CostAnalytics() {
                     if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
                       const items = [...getDetailsByCategory(selectedSolution.category)];
                       items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-                      
-                      setData(prev => {
-                        const newData = {...prev};
-                        switch(selectedSolution.category) {
-                          case 'Direct Materials': newData.rawMaterials = items; break;
-                          case 'Packaging Materials': newData.packagingMaterials = items; break;
-                          case 'Direct Labor': newData.directLabor = items; break;
-                          case 'Overhead': newData.overheadItems = items; break;
-                          case 'Other Costs': newData.otherCosts = items; break;
-                        }
-                        
-                        updateCategoryTotals(selectedSolution.category, newData);
-                        return newData;
-                      });
+                      setData(prev => ({
+                        ...prev,
+                        rawMaterials: [...prev.rawMaterials]
+                      }));
+                      updateCategoryTotals(selectedSolution.category, {...data});
                     }
                     setSelectedSolution({ category: null, index: null, solution: null });
                   }}
