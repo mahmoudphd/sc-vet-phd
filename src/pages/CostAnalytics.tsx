@@ -218,7 +218,8 @@ function CostAnalytics() {
     }).format(value);
   };
 
-  const getDetailsByCategory = (category: CostCategory, dataToUse = data): Item[] => {
+  const getDetailsByCategory = (category: CostCategory | null, dataToUse = data): Item[] => {
+    if (!category) return [];
     switch (category) {
       case 'Direct Materials': return dataToUse.rawMaterials;
       case 'Packaging Materials': return dataToUse.packagingMaterials;
@@ -980,7 +981,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {selectedSolution.solution && (
+      {selectedSolution.solution && selectedSolution.category && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
           <Dialog.Content style={{ 
             maxWidth: '800px',
