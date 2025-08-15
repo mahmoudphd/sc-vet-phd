@@ -177,6 +177,25 @@ const cardTitleStyle = {
   marginBottom: '16px'
 };
 
+const getDetailsByCategory = (category: CostCategory, dataToUse = initialData): Item[] => {
+  switch (category) {
+    case 'Direct Materials': return dataToUse.rawMaterials;
+    case 'Packaging Materials': return dataToUse.packagingMaterials;
+    case 'Direct Labor': return dataToUse.directLabor;
+    case 'Overhead': return dataToUse.overheadItems;
+    case 'Other Costs': return dataToUse.otherCosts;
+    default: {
+      const exhaustiveCheck: never = category;
+      return exhaustiveCheck;
+    }
+  }
+};
+
+const getDetailsSafely = (category: CostCategory | null | undefined, dataToUse = initialData): Item[] => {
+  if (!category) return [];
+  return getDetailsByCategory(category, dataToUse);
+};
+
 function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
@@ -216,18 +235,6 @@ function CostAnalytics() {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
     }).format(value);
-  };
-
-  const getDetailsByCategory = (category: CostCategory | null, dataToUse = data): Item[] => {
-    if (!category) return [];
-    switch (category) {
-      case 'Direct Materials': return dataToUse.rawMaterials;
-      case 'Packaging Materials': return dataToUse.packagingMaterials;
-      case 'Direct Labor': return dataToUse.directLabor;
-      case 'Overhead': return dataToUse.overheadItems;
-      case 'Other Costs': return dataToUse.otherCosts;
-      default: return [];
-    }
   };
 
   const calculateActualCost = (item: Item): number => {
@@ -323,6 +330,8 @@ function CostAnalytics() {
   };
 
   const autoSelectBestSupplier = () => {
+    if (!selectedSolution.category) return;
+    
     const weightedSuppliers = suppliers.map(supplier => {
       const priceScore = (1 - (supplier.pricePerKg / currentPrice)) * 40;
       const ratingScore = (supplier.rating / 5) * 30;
@@ -352,7 +361,7 @@ function CostAnalytics() {
     
     const selectedSupplier = suppliers.find(s => s.id === id);
     if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
-      const items = [...getDetailsByCategory(selectedSolution.category)];
+      const items = [...getDetailsSafely(selectedSolution.category)];
       items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
       
       setData(prev => {
@@ -1182,7 +1191,7 @@ function CostAnalytics() {
                   onClick={() => {
                     const selectedSupplier = suppliers.find(s => s.selected);
                     if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
-                      const items = [...getDetailsByCategory(selectedSolution.category)];
+                      const items = [...getDetailsSafely(selectedSolution.category)];
                       items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
                       
                       setData(prev => {
