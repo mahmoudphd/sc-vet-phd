@@ -8,7 +8,6 @@ import {
   Grid,
   Heading,
   Inset,
-  Progress,
   Switch,
   Table,
   Text,
@@ -238,17 +237,12 @@ function CostAnalytics() {
     return (item.qty || 0) * (item.unitPrice || 0);
   };
 
-  const calculatePotentialSavings = (item: Item): number => {
-    const currentCost = calculateActualCost(item);
-    const targetCost = (item.targetQty || 0) * (item.targetPrice || 0);
-    return currentCost - targetCost;
-  };
-
   const calculateCostAfter = (item: Item): number => {
     if (item.costAfter !== undefined) return item.costAfter;
-    const currentCost = calculateActualCost(item);
-    const potentialSavings = calculatePotentialSavings(item);
-    return currentCost - potentialSavings;
+    if (item.targetQty !== undefined && item.targetPrice !== undefined) {
+      return (item.targetQty || 0) * (item.targetPrice || 0);
+    }
+    return calculateActualCost(item);
   };
 
   const calculateSavingsPercentage = (item: Item): string => {
@@ -263,13 +257,6 @@ function CostAnalytics() {
       const categoryItems = [...getDetailsByCategory(category, newData)];
       categoryItems[index][field] = value;
       
-      // Calculate new costAfter based on updated target values
-      const currentCost = calculateActualCost(categoryItems[index]);
-      const potentialSavings = currentCost - 
-        ((categoryItems[index].targetQty || 0) * (categoryItems[index].targetPrice || 0));
-      categoryItems[index].costAfter = currentCost - potentialSavings;
-      
-      // Update the specific category array
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
         case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
@@ -278,7 +265,6 @@ function CostAnalytics() {
         case 'Other Costs': newData.otherCosts = categoryItems; break;
       }
       
-      // Recalculate totals
       updateCategoryTotals(category, newData);
       
       return newData;
@@ -385,7 +371,6 @@ function CostAnalytics() {
           item.costAfter = (item.qty || 0) * selectedSupplier.pricePerKg;
         }
         
-        // Update the specific category array
         switch (selectedSolution.category) {
           case 'Direct Materials': newData.rawMaterials = categoryItems; break;
           case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
@@ -394,7 +379,6 @@ function CostAnalytics() {
           case 'Other Costs': newData.otherCosts = categoryItems; break;
         }
         
-        // Recalculate totals
         updateCategoryTotals(selectedSolution.category, newData);
         
         return newData;
@@ -466,7 +450,6 @@ function CostAnalytics() {
   };
 
   useEffect(() => {
-    // Initialize all category totals
     const newData = {...data};
     categories.forEach(category => {
       updateCategoryTotals(category, newData);
@@ -968,10 +951,10 @@ function CostAnalytics() {
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
-                              color: calculatePotentialSavings(item) > 0 ? '#10b981' : '#ef4444',
+                              color: calculateActualCost(item) - calculateCostAfter(item) > 0 ? '#10b981' : '#ef4444',
                               fontWeight: 'bold'
                             }}>
-                              {formatCurrency(calculatePotentialSavings(item), currency)}
+                              {formatCurrency(calculateActualCost(item) - calculateCostAfter(item), currency)}
                             </Table.Cell>
                           </Table.Row>
                         );
