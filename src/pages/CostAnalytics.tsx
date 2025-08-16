@@ -88,23 +88,23 @@ const initialData: CostData = {
     'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
   },
   rawMaterials: [
-    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 513, targetQty: 0.0009, targetPrice: 513 },
-    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 570, targetQty: 0.0054, targetPrice: 570 },
-    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2185, targetQty: 0.0009, targetPrice: 2185 },
-    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 380, targetQty: 0.009, targetPrice: 380 },
-    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1615, targetQty: 0.0036, targetPrice: 1615 },
-    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 855, targetQty: 0.00135, targetPrice: 855 },
-    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 190, targetQty: 0.027, targetPrice: 190 },
-    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 902.5, targetQty: 0.009, targetPrice: 902.5 },
-    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2850, targetQty: 0.00225, targetPrice: 2850 },
-    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3990, targetQty: 0.00225, targetPrice: 3990 },
-    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4750, targetQty: 0.00225, targetPrice: 4750 },
-    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3705, targetQty: 0.00225, targetPrice: 3705 },
-    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 665, targetQty: 0.0225, targetPrice: 665 },
-    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 342, targetQty: 0.009, targetPrice: 342 },
-    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1016.5, targetQty: 0.0045, targetPrice: 1016.5 },
-    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1187.5, targetQty: 0.018, targetPrice: 1187.5 },
-    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 85.5, targetQty: 0.0675, targetPrice: 85.5 },
+    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 0.513, targetQty: 0.0009, targetPrice: 513 },
+    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 0.570, targetQty: 0.0054, targetPrice: 570 },
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.185, targetQty: 0.0009, targetPrice: 2185 },
+    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.380, targetQty: 0.009, targetPrice: 380 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.615, targetQty: 0.0036, targetPrice: 1615 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.855, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.190, targetQty: 0.027, targetPrice: 190 },
+    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.9025, targetQty: 0.009, targetPrice: 902.5 },
+    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.850, targetQty: 0.00225, targetPrice: 2850 },
+    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.990, targetQty: 0.00225, targetPrice: 3990 },
+    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.750, targetQty: 0.00225, targetPrice: 4750 },
+    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.705, targetQty: 0.00225, targetPrice: 3705 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.665, targetQty: 0.0225, targetPrice: 665 },
+    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.342, targetQty: 0.009, targetPrice: 342 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.0165, targetQty: 0.0045, targetPrice: 1016.5 },
+    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.1875, targetQty: 0.018, targetPrice: 1187.5 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 0.0855, targetQty: 0.0675, targetPrice: 85.5 },
     { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, costAfter: 0.95, targetQty: 0.5139, targetPrice: 0.95 },
   ],
   packagingMaterials: [
@@ -213,8 +213,8 @@ function CostAnalytics() {
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2
+      minimumFractionDigits: 3,
+      maximumFractionDigits: 3
     }).format(value);
   };
 
@@ -243,7 +243,16 @@ function CostAnalytics() {
   };
 
   const calculateCostAfter = (item: Item): number => {
-    return item.costAfter || calculateActualCost(item) - calculatePotentialSavings(item);
+    if (item.costAfter !== undefined) return item.costAfter;
+    const currentCost = calculateActualCost(item);
+    const potentialSavings = calculatePotentialSavings(item);
+    return currentCost - potentialSavings;
+  };
+
+  const calculateSavingsPercentage = (item: Item): string => {
+    const actual = calculateActualCost(item);
+    const after = calculateCostAfter(item);
+    return ((actual - after) / actual * 100).toFixed(1) + '%';
   };
 
   const updateTargetValues = (category: CostCategory, index: number, field: 'targetQty' | 'targetPrice', value: number) => {
@@ -945,48 +954,20 @@ function CostAnalytics() {
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
                       {getDetailsByCategory(dialogCategory).map((item, index) => {
                         const costAfter = calculateCostAfter(item);
                         const savings = calculateActualCost(item) - costAfter;
+                        const savingsPercentage = calculateSavingsPercentage(item);
                         
                         return (
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
-                              <input
-                                type="number"
-                                value={costAfter}
-                                onChange={(e) => {
-                                  const value = parseFloat(e.target.value) || 0;
-                                  setData(prev => {
-                                    const newData = {...prev};
-                                    const categoryItems = [...getDetailsByCategory(dialogCategory, newData)];
-                                    categoryItems[index].costAfter = value;
-                                    
-                                    switch (dialogCategory) {
-                                      case 'Direct Materials': newData.rawMaterials = categoryItems; break;
-                                      case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
-                                      case 'Direct Labor': newData.directLabor = categoryItems; break;
-                                      case 'Overhead': newData.overheadItems = categoryItems; break;
-                                      case 'Other Costs': newData.otherCosts = categoryItems; break;
-                                    }
-                                    
-                                    updateCategoryTotals(dialogCategory, newData);
-                                    return newData;
-                                  });
-                                }}
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
+                              {formatCurrency(costAfter, currency)}
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
@@ -994,6 +975,12 @@ function CostAnalytics() {
                               fontWeight: 'bold'
                             }}>
                               {formatCurrency(savings, currency)}
+                            </Table.Cell>
+                            <Table.Cell style={{ 
+                              ...tableCellStyle,
+                              color: savings > 0 ? '#10b981' : '#ef4444',
+                            }}>
+                              {savingsPercentage}
                             </Table.Cell>
                           </Table.Row>
                         );
