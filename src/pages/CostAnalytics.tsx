@@ -79,6 +79,12 @@ interface Supplier {
   selected?: boolean;
 }
 
+interface SelectedSolution {
+  category: CostCategory;
+  index: number;
+  solution: string;
+}
+
 const initialData: CostData = {
   totals: {
     'Direct Materials': { actual: 133.11, budget: 129, costAfter: 130 },
@@ -193,11 +199,7 @@ function CostAnalytics() {
     'Overhead': {},
     'Other Costs': {},
   });
-  const [selectedSolution, setSelectedSolution] = useState<{
-    category: CostCategory | null;
-    index: number | null;
-    solution: string | null;
-  }>({ category: null, index: null, solution: null });
+  const [selectedSolution, setSelectedSolution] = useState<SelectedSolution | null>(null);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
@@ -336,6 +338,8 @@ function CostAnalytics() {
   };
 
   const autoSelectBestSupplier = () => {
+    if (!selectedSolution) return;
+    
     const weightedSuppliers = suppliers.map(supplier => {
       const priceScore = (1 - (supplier.pricePerKg / currentPrice)) * 40;
       const ratingScore = (supplier.rating / 5) * 30;
@@ -358,17 +362,18 @@ function CostAnalytics() {
   };
 
   const handleSupplierSelect = (id: number) => {
+    if (!selectedSolution) return;
+    
     setSuppliers(prev => prev.map(supplier => ({
       ...supplier,
       selected: supplier.id === id
     })));
     
     const selectedSupplier = suppliers.find(s => s.id === id);
-    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
+    if (selectedSupplier) {
       const savings = currentPrice - selectedSupplier.pricePerKg;
       setPotentialSavings(Math.round(savings * 100) / 100);
       
-      // Update costAfter based on selected supplier
       setData(prev => {
         const newData = {...prev};
         const categoryItems = [...getDetailsByCategory(selectedSolution.category, newData)];
@@ -398,7 +403,8 @@ function CostAnalytics() {
   };
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
-    setSelectedSolution({ category, index, solution });
+    const newSelectedSolution = { category, index, solution };
+    setSelectedSolution(newSelectedSolution);
     setSolutions((prev) => ({
       ...prev,
       [category]: {
@@ -1049,8 +1055,8 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {selectedSolution.solution && (
-        <Dialog.Root open onOpenChange={() => setSelectedSolution({ category: null, index: null, solution: null })}>
+      {selectedSolution && (
+        <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
             maxWidth: '800px',
             padding: '20px',
@@ -1249,7 +1255,7 @@ function CostAnalytics() {
                   variant="solid"
                   onClick={() => {
                     const selectedSupplier = suppliers.find(s => s.selected);
-                    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
+                    if (selectedSupplier && selectedSolution) {
                       const items = [...getDetailsByCategory(selectedSolution.category)];
                       items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
                       setData(prev => ({
@@ -1258,7 +1264,7 @@ function CostAnalytics() {
                       }));
                       updateCategoryTotals(selectedSolution.category, {...data});
                     }
-                    setSelectedSolution({ category: null, index: null, solution: null });
+                    setSelectedSolution(null);
                   }}
                   style={{
                     backgroundColor: '#2563eb',
@@ -1272,7 +1278,7 @@ function CostAnalytics() {
                 </Button>
                 <Button
                   variant="ghost"
-                  onClick={() => setSelectedSolution({ category: null, index: null, solution: null })}
+                  onClick={() => setSelectedSolution(null)}
                   style={{
                     backgroundColor: '#f3f4f6',
                     color: '#1f2937',
