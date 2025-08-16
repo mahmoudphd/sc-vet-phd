@@ -350,7 +350,9 @@ function CostAnalytics() {
           }
           
           if (selectedSolution.category) {
-            updateCategoryTotals(selectedSolution.category, newData);
+  updateCategoryTotals(selectedSolution.category, newData);
+}
+
           }
           return newData;
         });
