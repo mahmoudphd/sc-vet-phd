@@ -328,24 +328,38 @@ function CostAnalytics() {
   };
 
   const handleSupplierSelect = (id: number) => {
-    setSuppliers(prev => prev.map(supplier => ({
-      ...supplier,
-      selected: supplier.id === id
-    })));
-    
-    if (selectedSolution.category && selectedSolution.index !== null) {
-      const selectedSupplier = suppliers.find(s => s.id === id);
-      if (selectedSupplier) {
-        const items = [...getDetailsSafely(selectedSolution.category)];
-        items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
+  setSuppliers(prev => prev.map(supplier => ({
+    ...supplier,
+    selected: supplier.id === id
+  })));
+  
+  if (selectedSolution.category && selectedSolution.index !== null) {
+    const selectedSupplier = suppliers.find(s => s.id === id);
+    if (selectedSupplier) {
+      const items = [...getDetailsSafely(selectedSolution.category)];
+      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
+      
+      setData(prev => {
+        const newData = {...prev};
+        switch(selectedSolution.category) {
+          case 'Direct Materials': newData.rawMaterials = items; break;
+          case 'Packaging Materials': newData.packagingMaterials = items; break;
+          case 'Direct Labor': newData.directLabor = items; break;
+          case 'Overhead': newData.overheadItems = items; break;
+          case 'Other Costs': newData.otherCosts = items; break;
+        }
         
-        setData(prev => {
-          const newData = {...prev};
-          switch(selectedSolution.category) {
-            case 'Direct Materials': newData.rawMaterials = items; break;
-            case 'Packaging Materials': newData.packagingMaterials = items; break;
-            case 'Direct Labor': newData.directLabor = items; break;
-            case 'Overhead': newData.overheadItems = items; break;
+        if (selectedSolution.category) {
+          updateCategoryTotals(selectedSolution.category, newData);
+        }
+        return newData;
+      });
+      
+      const savings = currentPrice - selectedSupplier.pricePerKg;
+      setPotentialSavings(Math.round(savings * 100) / 100);
+    }
+  }
+};
             case 'Other Costs': newData.otherCosts = items; break;
           }
           
@@ -358,45 +372,7 @@ function CostAnalytics() {
       }
     }  };
 
-  const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
-    setSelectedSolution({ category, index, solution });
-    setSolutions(prev => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [index]: solution,
-      },
-    }));
-    
-    if (category === 'Direct Materials') {
-      const item = data.rawMaterials[index];
-      setCurrentPrice(item.pricePerKg || 0);
-      setSuppliers(generateSupplierPrices(item.pricePerKg || 0));
-    }
-  };
-
-  const handleBenchmarkChange = (value: number) => {
-    setBenchmarkPrice(Math.round(value * 100) / 100);
-  };
-
-  const handleExportReport = () => {
-    alert('Export Report functionality not implemented yet.');
-  };
-
-  const handleTargetChange = (category: CostCategory, value: number) => {
-    setData(prev => ({
-      ...prev,
-      totals: {
-        ...prev.totals,
-        [category]: {
-          ...prev.totals[category],
-          budget: Math.round(value * 100) / 100,
-        },
-      },
-    }));
-  };
-
-  const handleSubmitToBlockchain = () => {
+    const handleSubmitToBlockchain = () => {
     alert('Data submitted to blockchain successfully!');
   };
 
