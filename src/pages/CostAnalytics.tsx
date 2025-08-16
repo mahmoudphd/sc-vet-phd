@@ -356,8 +356,7 @@ function CostAnalytics() {
         const savings = currentPrice - selectedSupplier.pricePerKg;
         setPotentialSavings(Math.round(savings * 100) / 100);
       }
-    }
-  };
+    }  };
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
     setSelectedSolution({ category, index, solution });
