@@ -350,14 +350,8 @@ function CostAnalytics() {
           }
           
           if (selectedSolution.category) {
-}if (selectedSolution.category) {
   updateCategoryTotals(selectedSolution.category, newData);
 }
-
-
-          }
-          return newData;
-        });
         
         const savings = currentPrice - selectedSupplier.pricePerKg;
         setPotentialSavings(Math.round(savings * 100) / 100);
