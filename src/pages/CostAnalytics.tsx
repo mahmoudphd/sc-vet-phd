@@ -364,9 +364,36 @@ function CostAnalytics() {
     })));
     
     const selectedSupplier = suppliers.find(s => s.id === id);
-    if (selectedSupplier) {
+    if (selectedSupplier && selectedSolution.category && selectedSolution.index !== null) {
       const savings = currentPrice - selectedSupplier.pricePerKg;
       setPotentialSavings(Math.round(savings * 100) / 100);
+      
+      // Update costAfter based on selected supplier
+      setData(prev => {
+        const newData = {...prev};
+        const categoryItems = [...getDetailsByCategory(selectedSolution.category, newData)];
+        const item = categoryItems[selectedSolution.index];
+        
+        if (selectedSolution.category === 'Direct Materials') {
+          item.costAfter = (item.concentrationKg || 0) * selectedSupplier.pricePerKg;
+        } else if (selectedSolution.category === 'Packaging Materials') {
+          item.costAfter = (item.qty || 0) * selectedSupplier.pricePerKg;
+        }
+        
+        // Update the specific category array
+        switch (selectedSolution.category) {
+          case 'Direct Materials': newData.rawMaterials = categoryItems; break;
+          case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
+          case 'Direct Labor': newData.directLabor = categoryItems; break;
+          case 'Overhead': newData.overheadItems = categoryItems; break;
+          case 'Other Costs': newData.otherCosts = categoryItems; break;
+        }
+        
+        // Recalculate totals
+        updateCategoryTotals(selectedSolution.category, newData);
+        
+        return newData;
+      });
     }
   };
 
