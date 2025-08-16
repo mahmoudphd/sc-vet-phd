@@ -350,8 +350,10 @@ function CostAnalytics() {
           }
           
           if (selectedSolution.category) {
+}if (selectedSolution.category) {
   updateCategoryTotals(selectedSolution.category, newData);
 }
+
 
           }
           return newData;
