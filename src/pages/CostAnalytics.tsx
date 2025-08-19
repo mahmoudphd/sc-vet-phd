@@ -230,8 +230,8 @@ function CostAnalytics() {
 
   const formatNumber = (value: number, decimalPlaces: number = 2) => {
     return value.toLocaleString(undefined, {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: decimalPlaces
+      minimumFractionDigits: decimalPlaces > 0 ? 2 : 0,
+      maximumFractionDigits: decimalPlaces > 0 ? 2 : 0
     });
   };
 
@@ -239,8 +239,8 @@ function CostAnalytics() {
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
   };
 
@@ -315,9 +315,9 @@ function CostAnalytics() {
     
     dataToUpdate.totals[category] = {
       ...dataToUpdate.totals[category],
-      actual: Math.round(actualTotal),
-      budget: Math.round(targetTotal),
-      costAfter: Math.round(costAfterTotal)
+      actual: actualTotal,
+      budget: targetTotal,
+      costAfter: costAfterTotal
     };
   };
 
@@ -332,7 +332,7 @@ function CostAnalytics() {
       {
         id: 1,
         name: 'Supplier A',
-        pricePerKg: Math.round(basePrice * (1 - discounts[0])),
+        pricePerKg: basePrice * (1 - discounts[0]),
         rating: 4.7,
         delivery: '1 week',
         reliability: '97%',
@@ -341,7 +341,7 @@ function CostAnalytics() {
       {
         id: 2,
         name: 'Supplier B',
-        pricePerKg: Math.round(basePrice * (1 - discounts[1])),
+        pricePerKg: basePrice * (1 - discounts[1]),
         rating: 4.2,
         delivery: '2 weeks',
         reliability: '90%',
@@ -350,7 +350,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: Math.round(basePrice * (1 - discounts[2])),
+        pricePerKg: basePrice * (1 - discounts[2]),
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
@@ -364,7 +364,7 @@ function CostAnalytics() {
       const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
       const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
       const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
-      const totalScore = Math.round(priceScore + ratingScore + reliabilityScore + deliveryScore);
+      const totalScore = priceScore + ratingScore + reliabilityScore + deliveryScore;
       
       return {
         ...supplier,
@@ -394,7 +394,7 @@ function CostAnalytics() {
     const selectedSupplier = suppliers.find(s => s.id === id);
     if (selectedSupplier) {
       const savings = currentPrice - selectedSupplier.pricePerKg;
-      setPotentialSavings(Math.round(savings));
+      setPotentialSavings(savings);
       
       setData(prev => {
         const newData = {...prev};
@@ -446,7 +446,7 @@ function CostAnalytics() {
   };
 
   const handleBenchmarkChange = (value: number) => {
-    setBenchmarkPrice(Math.round(value));
+    setBenchmarkPrice(value);
   };
 
   const handleExportReport = () => {
@@ -460,7 +460,7 @@ function CostAnalytics() {
         ...prev.totals,
         [category]: {
           ...prev.totals[category],
-          budget: Math.round(value),
+          budget: value,
         },
       },
     }));
@@ -481,8 +481,8 @@ function CostAnalytics() {
         ...prev.totals,
         [category]: {
           ...prev.totals[category],
-          actual: Math.round(newActual),
-          costAfter: Math.round(newCostAfter)
+          actual: newActual,
+          costAfter: newCostAfter
         }
       }
     }));
@@ -502,8 +502,8 @@ function CostAnalytics() {
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
-  const postOptimizationEstimate = Math.round((totalActual - totalCostAfter));
-  const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100));
+  const postOptimizationEstimate = totalActual - totalCostAfter;
+  const targetCost = benchmarkPrice * (1 - profitMargin / 100);
 
   const benchmarkTrendData = [
     { month: 'Jan', actual: 170, benchmark: benchmarkPrice },
@@ -516,7 +516,7 @@ function CostAnalytics() {
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
     ...d,
     targetCost,
-    gap: Math.round((d.actual - targetCost)),
+    gap: d.actual - targetCost,
   }));
 
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
@@ -715,7 +715,7 @@ function CostAnalytics() {
                     <Table.RowHeaderCell style={tableRowHeaderStyle}>{category}</Table.RowHeaderCell>
                     
                     <Table.Cell style={tableCellStyle}>
-                      {formatCurrency(Math.round(actualTotal), currency)}
+                      {formatCurrency(actualTotal, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
@@ -738,15 +738,15 @@ function CostAnalytics() {
                       ...tableCellStyle,
                       color: varianceColor
                     }}>
-                      {formatCurrency(Math.round(variance), currency)}
+                      {formatCurrency(variance, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
-                      {totalActual === 0 ? '0.00' : ((Math.round(actualTotal) / totalActual) * 100).toFixed(2)}%
+                      {totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2)}%
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
-                      {formatCurrency(Math.round(costAfterTotal), currency)}
+                      {formatCurrency(costAfterTotal, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
@@ -875,8 +875,8 @@ function CostAnalytics() {
                             <Table.Cell style={tableCellStyle}>
                               {autoMode ? (
                                 dialogCategory === 'Direct Materials' 
-                                  ? formatNumber(qty || 0)
-                                  : (qty?.toString() || '-')
+                                  ? formatNumber(qty || 0, 4)
+                                  : formatNumber(qty || 0, 2)
                               ) : (
                                 <input
                                   type="number"
@@ -1002,6 +1002,10 @@ function CostAnalytics() {
                                 min="0"
                                 style={{ 
                                     width: '80px',
+                                    padding: '6px 10px',
+                                    borderRadius: '6px',
+                                    border: '1px solid #e2e8f0',
+                                    backgroundColor: 'width: '80px',
                                     padding: '6px 10px',
                                     borderRadius: '6px',
                                     border: '1px solid #e2e8f0',
@@ -1294,7 +1298,7 @@ function CostAnalytics() {
                             supplier.score && supplier.score >= 60 ? 'blue' : 
                             'orange'
                           }>
-                            {supplier.score}/100
+                            {supplier.score ? Math.round(supplier.score) : 0}/100
                           </Badge>
                         </Table.Cell>
                         <Table.Cell style={tableCellStyle}>
@@ -1444,8 +1448,7 @@ function CostAnalytics() {
                 <Line 
                   type="monotone" 
                   dataKey="targetCost" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
+                  stroke="#10b981"                   strokeWidth={2}
                   strokeDasharray="3 4 5 2"
                 />
               </LineChart>
