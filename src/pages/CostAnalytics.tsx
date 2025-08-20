@@ -77,10 +77,10 @@ interface CostData {
 interface Material {
   name: string;
   tests: {
+    identity: { status: 'Passed' | 'Failed' | 'Not Tested' };
     purity: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    potency: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    contaminants: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    microbiology: { status: 'Passed' | 'Failed' | 'Not Tested' };
+    microbial: { status: 'Passed' | 'Failed' | 'Not Tested' };
+    endotoxins: { status: 'Passed' | 'Failed' | 'Not Tested' };
   };
   certificate: boolean;
   supplier: {
@@ -216,7 +216,7 @@ const tableCellStyle = {
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid ',
+  borderBottom: '1px solid #e5e7eb',
   fontSize: '0.9rem'
 };
 
@@ -244,6 +244,96 @@ const calculateComplianceScore = (material: Material): number => {
   const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
 
   return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
+};
+
+const TestDetailsTooltip = ({ supplier, x, y, onClose }) => {
+  if (!supplier) return null;
+
+  const material = supplier.material;
+  const complianceScore = calculateComplianceScore(material);
+  
+  const weights = {
+    tests: 40,
+    certificate: 20,
+    supplier: 15,
+    expiry: 15,
+    blockchain: 10
+  };
+
+  const testScore = (Object.values(material.tests)
+    .filter(test => test.status === 'Passed').length / 4) * weights.tests;
+  
+  const certScore = material.certificate ? weights.certificate : 0;
+  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
+  const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
+  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        top: y + 20,
+        left: x,
+        backgroundColor: 'white',
+        border: '1px solid #e5e7eb',
+        borderRadius: '8px',
+        padding: '12px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        zIndex: 1000,
+        minWidth: '250px'
+      }}
+      onMouseLeave={onClose}
+    >
+      <Text size="2" weight="bold" style={{ marginBottom: '8px', display: 'block' }}>
+        Quality Test Details
+      </Text>
+      
+      <Flex direction="column" gap="2">
+        <Flex justify="between">
+          <Text size="1">Identity:</Text>
+          <Text size="1" weight="bold" style={{ 
+            color: material.tests.identity.status === 'Passed' ? '#10b981' : '#ef4444' 
+          }}>
+            {material.tests.identity.status === 'Passed' ? 'Passed' : material.tests.identity.status === 'Failed' ? 'Failed' : 'Not Tested'}
+          </Text>
+        </Flex>
+        
+        <Flex justify="between">
+          <Text size="1">Purity:</Text>
+          <Text size="1" weight="bold" style={{ 
+            color: material.tests.purity.status === 'Passed' ? '#10b981' : '#ef4444' 
+          }}>
+            {material.tests.purity.status === 'Passed' ? 'Passed' : material.tests.purity.status === 'Failed' ? 'Failed' : 'Not Tested'}
+          </Text>
+        </Flex>
+        
+        <Flex justify="between">
+          <Text size="1">Microbial:</Text>
+          <Text size="1" weight="bold" style={{ 
+            color: material.tests.microbial.status === 'Passed' ? '#10b981' : '#ef4444' 
+          }}>
+            {material.tests.microbial.status === 'Passed' ? 'Passed' : material.tests.microbial.status === 'Failed' ? 'Failed' : 'Not Tested'}
+          </Text>
+        </Flex>
+        
+        <Flex justify="between">
+          <Text size="1">Endotoxins:</Text>
+          <Text size="1" weight="bold" style={{ 
+            color: material.tests.endotoxins.status === 'Passed' ? '#10b981' : '#ef4444' 
+          }}>
+            {material.tests.endotoxins.status === 'Passed' ? 'Passed' : material.tests.endotoxins.status === 'Failed' ? 'Failed' : 'Not Tested'}
+          </Text>
+        </Flex>
+        
+        <Box style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
+        
+        <Flex justify="between">
+          <Text size="1" weight="bold">Compliance Score:</Text>
+          <Text size="1" weight="bold">{complianceScore}/100</Text>
+        </Flex>
+      </Flex>
+    </div>
+  );
 };
 
 function CostAnalytics() {
@@ -343,86 +433,6 @@ function CostAnalytics() {
     return ((actual - after) / actual * 100).toFixed(1) + '%';
   };
 
-  const ComplianceTooltip = () => {
-    if (!complianceTooltip.visible || !complianceTooltip.supplier) return null;
-
-    const { supplier } = complianceTooltip;
-    const material = supplier.material;
-    const complianceScore = calculateComplianceScore(material);
-    
-    const weights = {
-      tests: 40,
-      certificate: 20,
-      supplier: 15,
-      expiry: 15,
-      blockchain: 10
-    };
-
-    const testScore = (Object.values(material.tests)
-      .filter(test => test.status === 'Passed').length / 4) * weights.tests;
-    
-    const certScore = material.certificate ? weights.certificate : 0;
-    const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
-    const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
-    const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
-
-    return (
-      <div
-        style={{
-          position: 'fixed',
-          top: complianceTooltip.y + 20,
-          left: complianceTooltip.x,
-          backgroundColor: 'white',
-          border: '1px solid #e5e7eb',
-          borderRadius: '8px',
-          padding: '12px',
-          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-          zIndex: 1000,
-          minWidth: '250px'
-        }}
-        onMouseLeave={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
-      >
-        <Text size="2" weight="bold" style={{ marginBottom: '8px', display: 'block' }}>
-          Compliance Score Details
-        </Text>
-        
-        <Flex direction="column" gap="2">
-          <Flex justify="between">
-            <Text size="1">Tests (40%):</Text>
-            <Text size="1" weight="bold">{Math.round(testScore)}/40</Text>
-          </Flex>
-          
-          <Flex justify="between">
-            <Text size="1">Certificate (20%):</Text>
-            <Text size="1" weight="bold">{certScore}/20</Text>
-          </Flex>
-          
-          <Flex justify="between">
-            <Text size="1">Supplier (15%):</Text>
-            <Text size="1" weight="bold">{supplierScore}/15</Text>
-          </Flex>
-          
-          <Flex justify="between">
-            <Text size="1">Expiry (15%):</Text>
-            <Text size="1" weight="bold">{expiryScore}/15</Text>
-          </Flex>
-          
-          <Flex justify="between">
-            <Text size="1">Blockchain (10%):</Text>
-            <Text size="1" weight="bold">{blockchainScore}/10</Text>
-          </Flex>
-          
-          <Box style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
-          
-          <Flex justify="between">
-            <Text size="1" weight="bold">Total:</Text>
-            <Text size="1" weight="bold">{complianceScore}/100</Text>
-          </Flex>
-        </Flex>
-      </div>
-    );
-  };
-
   const generateSupplierPrices = (basePrice: number, materialName: string) => {
     const discounts = [
       0.01 + Math.random() * 0.04,
@@ -437,10 +447,10 @@ function CostAnalytics() {
       return {
         name: materialName,
         tests: {
+          identity: { status: testStatuses[Math.floor(Math.random() * 3)] },
           purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          potency: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          contaminants: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          microbiology: { status: testStatuses[Math.floor(Math.random() * 3)] }
+          microbial: { status: testStatuses[Math.floor(Math.random() * 3)] },
+          endotoxins: { status: testStatuses[Math.floor(Math.random() * 3)] }
         },
         certificate: Math.random() > 0.3,
         supplier: {
@@ -693,6 +703,53 @@ function CostAnalytics() {
     return totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2);
   };
 
+  const getCategoryColumns = (category: CostCategory) => {
+    switch (category) {
+      case 'Direct Materials':
+        return [
+          { header: 'Item', key: 'name' },
+          { header: 'Concentration (Kg)', key: 'concentration' },
+          { header: 'Price/Kg', key: 'pricePerKg' },
+          { header: 'Total Cost', key: 'totalCost' },
+          { header: 'Solution', key: 'solution' }
+        ];
+      case 'Packaging Materials':
+        return [
+          { header: 'Item', key: 'name' },
+          { header: 'Quantity', key: 'qty' },
+          { header: 'Unit Price', key: 'unitPrice' },
+          { header: 'Total Cost', key: 'totalCost' },
+          { header: 'Solution', key: 'solution' }
+        ];
+      case 'Direct Labor':
+        return [
+          { header: 'Role', key: 'name' },
+          { header: 'Hours', key: 'hours' },
+          { header: 'Hourly Rate', key: 'hourlyRate' },
+          { header: 'Total Cost', key: 'totalCost' },
+          { header: 'Solution', key: 'solution' }
+        ];
+      case 'Overhead':
+        return [
+          { header: 'Item', key: 'name' },
+          { header: 'Total Cost', key: 'totalCost' },
+          { header: 'Basis', key: 'basis' },
+          { header: 'Cost per Unit', key: 'cost' },
+          { header: 'Solution', key: 'solution' }
+        ];
+      case 'Other Costs':
+        return [
+          { header: 'Item', key: 'name' },
+          { header: 'Quantity', key: 'qty' },
+          { header: 'Unit Price', key: 'unitPrice' },
+          { header: 'Total Cost', key: 'totalCost' },
+          { header: 'Solution', key: 'solution' }
+        ];
+      default:
+        return [];
+    }
+  };
+
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
@@ -905,7 +962,7 @@ function CostAnalytics() {
                           width: '80px',
                           padding: '6px 10px',
                           borderRadius: '6px',
-                          border: '1px solid ',
+                          border: '1px solid #e2e8f0',
                           backgroundColor: '#f9fafb',
                           fontSize: '14px'
                         }}
@@ -1036,11 +1093,11 @@ function CostAnalytics() {
                   <Table.Root variant="surface">
                     <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Concentration (Kg)</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Price/Kg</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Total Cost</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Solution</Table.ColumnHeaderCell>
+                        {getCategoryColumns(dialogCategory).map((column, idx) => (
+                          <Table.ColumnHeaderCell key={idx} style={tableHeaderStyle}>
+                            {column.header}
+                          </Table.ColumnHeaderCell>
+                        ))}
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1060,80 +1117,205 @@ function CostAnalytics() {
                         return (
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
-                            <Table.Cell style={tableCellStyle}>
-                              {dialogCategory === 'Direct Materials' ? (
-                                formatNumber(concentration || 0, 6, true)
-                              ) : dialogCategory === 'Direct Labor' ? (
-                                autoMode ? (
-                                  formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
-                                ) : (
-                                  <input
-                                    type="number"
-                                    value={item.hours || 0}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                      const value = parseFloat(e.target.value) || 0;
-                                      item.hours = value;
-                                      updateCategoryTotals(dialogCategory, {...data});
-                                    }}
-                                    style={{ 
-                                      width: '80px',
-                                      padding: '6px 10px',
-                                      borderRadius: '6px',
-                                      border: '1px solid #e2e8f0',
-                                      backgroundColor: '#f9fafb',
-                                      fontSize: '14px'
-                                    }}
-                                  />
-                                )
-                              ) : (
-                                autoMode ? (
-                                  (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
-                                ) : (
-                                  <input
-                                    type="number"
-                                    value={item.qty || 0}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                      const value = parseFloat(e.target.value) || 0;
-                                      item.qty = value;
-                                      updateCategoryTotals(dialogCategory, {...data});
-                                    }}
-                                    style={{ 
-                                      width: '80px',
-                                      padding: '6px 10px',
-                                      borderRadius: '6px',
-                                      border: '1px solid #e2e8f0',
-                                      backgroundColor: '#f9fafb',
-                                      fontSize: '14px'
-                                    }}
-                                  />
-                                )
-                              )}
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              {autoMode ? (
-                                unitPrice ? formatCurrency(unitPrice, currency) : '-'
-                              ) : (
-                                <input
-                                  type="number"
-                                  value={unitPrice || 0}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const value = parseFloat(e.target.value) || 0;
-                                    if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
-                                    else if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
-                                    else if (item.unitPrice !== undefined) item.unitPrice = value;
-                                    updateCategoryTotals(dialogCategory, {...data});
-                                  }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: 'white',
-                                    fontSize: '14px'
-                                  }}
-                                />
-                              )}
-                            </Table.Cell>
+                            
+                            {dialogCategory === 'Direct Materials' && (
+                              <>
+                                <Table.Cell style={tableCellStyle}>
+                                  {formatNumber(concentration || 0, 6, true)}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={unitPrice || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: 'white',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                              </>
+                            )}
+                            
+                            {dialogCategory === 'Packaging Materials' && (
+                              <>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={item.qty || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        item.qty = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: '#f9fafb',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={unitPrice || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        if (item.unitPrice !== undefined) item.unitPrice = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: 'white',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                              </>
+                            )}
+                            
+                            {dialogCategory === 'Direct Labor' && (
+                              <>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={item.hours || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        item.hours = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: '#f9fafb',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={unitPrice || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: 'white',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                              </>
+                            )}
+                            
+                            {dialogCategory === 'Overhead' && (
+                              <>
+                                <Table.Cell style={tableCellStyle}>
+                                  {formatCurrency(item.totalCost || 0, currency)}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {item.basis}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {formatCurrency((item.totalCost || 0) / (item.basis || 1), currency)}
+                                </Table.Cell>
+                              </>
+                            )}
+                            
+                            {dialogCategory === 'Other Costs' && (
+                              <>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={item.qty || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        item.qty = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: '#f9fafb',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={unitPrice || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        if (item.unitPrice !== undefined) item.unitPrice = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
+                                      style={{ 
+                                        width: '80px',
+                                        padding: '6px 10px',
+                                        borderRadius: '6px',
+                                        border: '1px solid #e2e8f0',
+                                        backgroundColor: 'white',
+                                        fontSize: '14px'
+                                      }}
+                                    />
+                                  )}
+                                </Table.Cell>
+                              </>
+                            )}
+                            
                             <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
                             <Table.Cell style={tableCellStyle}>
                               <RadixSelect.Root
@@ -1215,7 +1397,7 @@ function CostAnalytics() {
                                   padding: '6px 10px',
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
+                                  backgroundColor: 'f9fafb',
                                   fontSize: '14px'
                                 }}
                               />
@@ -1438,7 +1620,7 @@ function CostAnalytics() {
                       ]}
                       contentStyle={{
                         backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
+                        border: '1px solid ',
                         borderRadius: '6px',
                         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                       }}
@@ -1506,7 +1688,7 @@ function CostAnalytics() {
                             cursor: 'pointer',
                             position: 'relative'
                           }}
-                          onMouseEnter={(e) => {
+                          onClick={(e) => {
                             const rect = e.currentTarget.getBoundingClientRect();
                             setComplianceTooltip({
                               visible: true,
@@ -1515,7 +1697,6 @@ function CostAnalytics() {
                               supplier: supplier
                             });
                           }}
-                          onMouseLeave={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
                         >
                           {supplier.complianceScore}/100
                         </Table.Cell>
@@ -1749,7 +1930,14 @@ function CostAnalytics() {
         </Button>
       </Flex>
 
-      {complianceTooltip.visible && <ComplianceTooltip />}
+      {complianceTooltip.visible && (
+        <TestDetailsTooltip 
+          supplier={complianceTooltip.supplier} 
+          x={complianceTooltip.x} 
+          y={complianceTooltip.y}
+          onClose={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
+        />
+      )}
     </Box>
   );
 }
