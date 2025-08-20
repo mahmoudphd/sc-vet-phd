@@ -202,7 +202,7 @@ const tableCellStyle = {
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-   borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid #e5e7eb',
   fontSize: '0.9rem'
 };
 
@@ -846,7 +846,7 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
-      {/* DIALOG FOR CATEGORY DETAILS */}
+      {/* CATEGORY DETAIL DIALOG SECTION */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
@@ -1157,7 +1157,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* SUPPLIER SELECTION DIALOG */}
+      {/* SUPPLIER SELECTION DIALOG SECTION */}
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
@@ -1391,7 +1391,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* CHARTS AND VISUALIZATIONS SECTION */}
+      {/* DATA VISUALIZATION SECTION */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
