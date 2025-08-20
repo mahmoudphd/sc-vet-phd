@@ -1,4 +1,3 @@
-// ==================== IMPORTS AND TYPE DEFINITIONS ====================
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -33,7 +32,6 @@ import {
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
-// ==================== INTERFACE DEFINITIONS ====================
 interface Item {
   name: string;
   qty?: number;
@@ -76,6 +74,23 @@ interface CostData {
   totals: Record<CostCategory, CostTotals>;
 }
 
+interface Material {
+  name: string;
+  tests: {
+    purity: { status: 'Passed' | 'Failed' | 'Not Tested' };
+    potency: { status: 'Passed' | 'Failed' | 'Not Tested' };
+    contaminants: { status: 'Passed' | 'Failed' | 'Not Tested' };
+    microbiology: { status: 'Passed' | 'Failed' | 'Not Tested' };
+  };
+  certificate: boolean;
+  supplier: {
+    status: 'Approved' | 'Pending' | 'Rejected';
+    name: string;
+  };
+  expiryDate: string;
+  blockchainRegistered: boolean;
+}
+
 interface Supplier {
   id: number;
   name: string;
@@ -84,6 +99,9 @@ interface Supplier {
   delivery: string;
   reliability: string;
   selected?: boolean;
+  score: number;
+  complianceScore: number;
+  material: Material;
 }
 
 interface SelectedSolution {
@@ -92,7 +110,6 @@ interface SelectedSolution {
   solution: string;
 }
 
-// ==================== INITIAL DATA CONFIGURATION ====================
 const initialData: CostData = {
   totals: {
     'Direct Materials': { actual: 133, budget: 129, costAfter: 130 },
@@ -143,7 +160,6 @@ const initialData: CostData = {
   ],
 };
 
-// ==================== INITIALIZE ORIGINAL VALUES ====================
 initialData.rawMaterials = initialData.rawMaterials.map(item => ({
   ...item,
   originalPricePerKg: item.pricePerKg,
@@ -162,7 +178,6 @@ initialData.directLabor = initialData.directLabor.map(item => ({
   originalHours: item.hours
 }));
 
-// ==================== CONSTANTS AND CONFIGURATION ====================
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
@@ -184,7 +199,6 @@ const solutionsOptions = [
   'Other',
 ];
 
-// ==================== STYLE DEFINITIONS ====================
 const tableHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
@@ -202,7 +216,7 @@ const tableCellStyle = {
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid ',
   fontSize: '0.9rem'
 };
 
@@ -212,9 +226,27 @@ const cardTitleStyle = {
   marginBottom: '16px'
 };
 
-// ==================== MAIN COMPONENT DEFINITION ====================
+const calculateComplianceScore = (material: Material): number => {
+  const weights = {
+    tests: 40,
+    certificate: 20,
+    supplier: 15,
+    expiry: 15,
+    blockchain: 10
+  };
+
+  const testScore = (Object.values(material.tests)
+    .filter(test => test.status === 'Passed').length / 4) * weights.tests;
+  
+  const certScore = material.certificate ? weights.certificate : 0;
+  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
+  const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
+  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
+
+  return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
+};
+
 function CostAnalytics() {
-  // ==================== STATE MANAGEMENT ====================
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -234,9 +266,23 @@ function CostAnalytics() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
+  const [complianceTooltip, setComplianceTooltip] = useState<{
+    visible: boolean;
+    x: number;
+    y: number;
+    supplier: Supplier | null;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0,
+    supplier: null
+  });
 
-  // ==================== UTILITY FUNCTIONS ====================
-  const formatNumber = (value: number, decimalPlaces: number = 2) => {
+  const formatNumber = (value: number, decimalPlaces: number = 2, showExact: boolean = false) => {
+    if (showExact) {
+      const fixedValue = value.toFixed(6);
+      return fixedValue.replace(/(\.\d*?[1-9])0+$/, "$1").replace(/\.0+$/, "");
+    }
     return value.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: decimalPlaces
@@ -244,12 +290,14 @@ function CostAnalytics() {
   };
 
   const formatCurrency = (value: number, currency: string) => {
+    const roundedValue = Math.round(value * 100) / 100;
+    
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: currency,
       minimumFractionDigits: 2,
       maximumFractionDigits: 2
-    }).format(value);
+    }).format(roundedValue);
   };
 
   const getDetailsByCategory = (category: CostCategory, dataToUse = data): Item[] => {
@@ -264,7 +312,6 @@ function CostAnalytics() {
   };
 
   const calculateActualCost = (item: Item): number => {
-    // Use original values to calculate actual cost
     if ('concentrationKg' in item && item.originalConcentrationKg !== undefined) 
       return (item.originalConcentrationKg || 0) * (item.originalPricePerKg || item.pricePerKg || 0);
     
@@ -281,15 +328,12 @@ function CostAnalytics() {
   };
 
   const calculateCostAfter = (item: Item): number => {
-    // If costAfter is explicitly set
     if (item.costAfter !== undefined) return item.costAfter;
     
-    // If target quantities/prices are set
     if (item.targetQty !== undefined && item.targetPrice !== undefined) {
       return (item.targetQty || 0) * (item.targetPrice || 0);
     }
     
-    // If no modifications, return to actual value
     return calculateActualCost(item);
   };
 
@@ -299,7 +343,216 @@ function CostAnalytics() {
     return ((actual - after) / actual * 100).toFixed(1) + '%';
   };
 
-  // ==================== DATA UPDATE FUNCTIONS ====================
+  const ComplianceTooltip = () => {
+    if (!complianceTooltip.visible || !complianceTooltip.supplier) return null;
+
+    const { supplier } = complianceTooltip;
+    const material = supplier.material;
+    const complianceScore = calculateComplianceScore(material);
+    
+    const weights = {
+      tests: 40,
+      certificate: 20,
+      supplier: 15,
+      expiry: 15,
+      blockchain: 10
+    };
+
+    const testScore = (Object.values(material.tests)
+      .filter(test => test.status === 'Passed').length / 4) * weights.tests;
+    
+    const certScore = material.certificate ? weights.certificate : 0;
+    const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
+    const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
+    const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
+
+    return (
+      <div
+        style={{
+          position: 'fixed',
+          top: complianceTooltip.y + 20,
+          left: complianceTooltip.x,
+          backgroundColor: 'white',
+          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          padding: '12px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+          zIndex: 1000,
+          minWidth: '250px'
+        }}
+        onMouseLeave={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
+      >
+        <Text size="2" weight="bold" style={{ marginBottom: '8px', display: 'block' }}>
+          Compliance Score Details
+        </Text>
+        
+        <Flex direction="column" gap="2">
+          <Flex justify="between">
+            <Text size="1">Tests (40%):</Text>
+            <Text size="1" weight="bold">{Math.round(testScore)}/40</Text>
+          </Flex>
+          
+          <Flex justify="between">
+            <Text size="1">Certificate (20%):</Text>
+            <Text size="1" weight="bold">{certScore}/20</Text>
+          </Flex>
+          
+          <Flex justify="between">
+            <Text size="1">Supplier (15%):</Text>
+            <Text size="1" weight="bold">{supplierScore}/15</Text>
+          </Flex>
+          
+          <Flex justify="between">
+            <Text size="1">Expiry (15%):</Text>
+            <Text size="1" weight="bold">{expiryScore}/15</Text>
+          </Flex>
+          
+          <Flex justify="between">
+            <Text size="1">Blockchain (10%):</Text>
+            <Text size="1" weight="bold">{blockchainScore}/10</Text>
+          </Flex>
+          
+          <Box style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
+          
+          <Flex justify="between">
+            <Text size="1" weight="bold">Total:</Text>
+            <Text size="1" weight="bold">{complianceScore}/100</Text>
+          </Flex>
+        </Flex>
+      </div>
+    );
+  };
+
+  const generateSupplierPrices = (basePrice: number, materialName: string) => {
+    const discounts = [
+      0.01 + Math.random() * 0.04,
+      0.01 + Math.random() * 0.04,
+      0.01 + Math.random() * 0.04
+    ].sort(() => Math.random() - 0.5);
+
+    const generateRandomMaterial = (supplierName: string): Material => {
+      const testStatuses: ('Passed' | 'Failed' | 'Not Tested')[] = ['Passed', 'Failed', 'Not Tested'];
+      const supplierStatuses: ('Approved' | 'Pending' | 'Rejected')[] = ['Approved', 'Pending', 'Rejected'];
+      
+      return {
+        name: materialName,
+        tests: {
+          purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
+          potency: { status: testStatuses[Math.floor(Math.random() * 3)] },
+          contaminants: { status: testStatuses[Math.floor(Math.random() * 3)] },
+          microbiology: { status: testStatuses[Math.floor(Math.random() * 3)] }
+        },
+        certificate: Math.random() > 0.3,
+        supplier: {
+          status: supplierStatuses[Math.floor(Math.random() * 3)],
+          name: supplierName
+        },
+        expiryDate: new Date(Date.now() + Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        blockchainRegistered: Math.random() > 0.4
+      };
+    };
+
+    const suppliers = [
+      {
+        id: 1,
+        name: 'Supplier A',
+        pricePerKg: Math.round(basePrice * (1 - discounts[0]) * 100) / 100,
+        rating: 4.7,
+        delivery: '1 week',
+        reliability: '97%',
+        selected: false,
+        material: generateRandomMaterial('Supplier A')
+      },
+      {
+        id: 2,
+        name: 'Supplier B',
+        pricePerKg: Math.round(basePrice * (1 - discounts[1]) * 100) / 100,
+        rating: 4.2,
+        delivery: '2 weeks',
+        reliability: '90%',
+        selected: false,
+        material: generateRandomMaterial('Supplier B')
+      },
+      {
+        id: 3,
+        name: 'Supplier C',
+        pricePerKg: Math.round(basePrice * (1 - discounts[2]) * 100) / 100,
+        rating: 3.8,
+        delivery: '3 weeks',
+        reliability: '85%',
+        selected: false,
+        material: generateRandomMaterial('Supplier C')
+      }
+    ];
+
+    return suppliers.map(supplier => {
+      const complianceScore = calculateComplianceScore(supplier.material);
+      
+      const priceScore = (1 - (supplier.pricePerKg / basePrice)) * 40;
+      const ratingScore = (supplier.rating / 5) * 30;
+      const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
+      const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
+      const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
+      
+      const totalScore = priceScore + ratingScore + reliabilityScore + deliveryScore + complianceScore;
+      
+      return {
+        ...supplier,
+        score: Math.round(totalScore * 100) / 100,
+        complianceScore: complianceScore
+      };
+    });
+  };
+
+  const autoSelectBestSupplier = () => {
+    if (!selectedSolution) return;
+    
+    const bestSupplier = suppliers.reduce((prev, current) => 
+      (prev.score > current.score) ? prev : current
+    );
+
+    handleSupplierSelect(bestSupplier.id);
+  };
+
+  const handleSupplierSelect = (id: number) => {
+    if (!selectedSolution) return;
+    
+    setSuppliers(prev => prev.map(supplier => ({
+      ...supplier,
+      selected: supplier.id === id
+    })));
+    
+    const selectedSupplier = suppliers.find(s => s.id === id);
+    if (selectedSupplier) {
+      const savings = currentPrice - selectedSupplier.pricePerKg;
+      setPotentialSavings(Math.round(savings * 100) / 100);
+      
+      setData(prev => {
+        const newData = {...prev};
+        const categoryItems = [...getDetailsByCategory(selectedSolution.category, newData)];
+        const item = categoryItems[selectedSolution.index];
+        
+        if (selectedSolution.category === 'Direct Materials') {
+          item.costAfter = (item.concentrationKg || 0) * selectedSupplier.pricePerKg;
+        } else if (selectedSolution.category === 'Packaging Materials') {
+          item.costAfter = (item.qty || 0) * selectedSupplier.pricePerKg;
+        }
+        
+        switch (selectedSolution.category) {
+          case 'Direct Materials': newData.rawMaterials = categoryItems; break;
+          case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
+          case 'Direct Labor': newData.directLabor = categoryItems; break;
+          case 'Overhead': newData.overheadItems = categoryItems; break;
+          case 'Other Costs': newData.otherCosts = categoryItems; break;
+        }
+        
+        updateCategoryTotals(selectedSolution.category, newData);
+        
+        return newData;
+      });
+    }
+  };
+
   const updateTargetValues = (category: CostCategory, index: number, field: 'targetQty' | 'targetPrice', value: number) => {
     setData(prev => {
       const newData = {...prev};
@@ -334,115 +587,10 @@ function CostAnalytics() {
     };
   };
 
-  // ==================== SUPPLIER MANAGEMENT FUNCTIONS ====================
-  const generateSupplierPrices = (basePrice: number) => {
-    const discounts = [
-      0.05 + Math.random() * 0.10,
-      0.05 + Math.random() * 0.10,
-      0.05 + Math.random() * 0.10
-    ].sort(() => Math.random() - 0.5);
-
-    return [
-      {
-        id: 1,
-        name: 'Supplier A',
-        pricePerKg: Math.round(basePrice * (1 - discounts[0]) * 100) / 100,
-        rating: 4.7,
-        delivery: '1 week',
-        reliability: '97%',
-        selected: false
-      },
-      {
-        id: 2,
-        name: 'Supplier B',
-        pricePerKg: Math.round(basePrice * (1 - discounts[1]) * 100) / 100,
-        rating: 4.2,
-        delivery: '2 weeks',
-        reliability: '90%',
-        selected: false
-      },
-      {
-        id: 3,
-        name: 'Supplier C',
-        pricePerKg: Math.round(basePrice * (1 - discounts[2]) * 100) / 100,
-        rating: 3.8,
-        delivery: '3 weeks',
-        reliability: '85%',
-        selected: false
-      }
-    ];
-  };
-
-  const autoSelectBestSupplier = () => {
-    if (!selectedSolution) return;
-    
-    const weightedSuppliers = suppliers.map(supplier => {
-      const priceScore = (1 - (supplier.pricePerKg / currentPrice)) * 40;
-      const ratingScore = (supplier.rating / 5) * 30;
-      const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
-      const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
-      const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
-      const totalScore = priceScore + ratingScore + reliabilityScore + deliveryScore;
-      
-      return {
-        ...supplier,
-        score: totalScore
-      };
-    });
-
-    const bestSupplier = weightedSuppliers.reduce((prev, current) => 
-      (prev.score > current.score) ? prev : current
-    );
-
-    handleSupplierSelect(bestSupplier.id);
-  };
-
-  const handleSupplierSelect = (id: number) => {
-    if (!selectedSolution) return;
-    
-    setSuppliers(prev => prev.map(supplier => ({
-      ...supplier,
-      selected: supplier.id === id
-    })));
-    
-    const selectedSupplier = suppliers.find(s => s.id === id);
-    if (selectedSupplier) {
-      const savings = currentPrice - selectedSupplier.pricePerKg;
-      setPotentialSavings(Math.round(savings * 100) / 100);
-      
-      setData(prev => {
-        const newData = {...prev};
-        const categoryItems = [...getDetailsByCategory(selectedSolution.category, newData)];
-        const item = categoryItems[selectedSolution.index];
-        
-        // Update costAfter only without affecting original data
-        if (selectedSolution.category === 'Direct Materials') {
-          item.costAfter = (item.concentrationKg || 0) * selectedSupplier.pricePerKg;
-        } else if (selectedSolution.category === 'Packaging Materials') {
-          item.costAfter = (item.qty || 0) * selectedSupplier.pricePerKg;
-        }
-        
-        switch (selectedSolution.category) {
-          case 'Direct Materials': newData.rawMaterials = categoryItems; break;
-          case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
-          case 'Direct Labor': newData.directLabor = categoryItems; break;
-          case 'Overhead': newData.overheadItems = categoryItems; break;
-          case 'Other Costs': newData.otherCosts = categoryItems; break;
-        }
-        
-        updateCategoryTotals(selectedSolution.category, newData);
-        
-        return newData;
-      });
-    }
-  };
-
-  // ==================== EVENT HANDLER FUNCTIONS ====================
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
     const item = getDetailsByCategory(category)[index];
     setCurrentPrice(item.pricePerKg || 0);
     
-    // Save original price
     if (!item.originalPricePerKg) {
       item.originalPricePerKg = item.pricePerKg;
     }
@@ -458,7 +606,7 @@ function CostAnalytics() {
     }));
     
     if (category === 'Direct Materials') {
-      setSuppliers(generateSupplierPrices(item.pricePerKg || 0));
+      setSuppliers(generateSupplierPrices(item.pricePerKg || 0, item.name));
     }
   };
 
@@ -507,7 +655,6 @@ function CostAnalytics() {
     setDialogCategory(null);
   };
 
-  // ==================== EFFECT HOOKS ====================
   useEffect(() => {
     const newData = {...data};
     categories.forEach(category => {
@@ -516,7 +663,6 @@ function CostAnalytics() {
     setData(newData);
   }, []);
 
-  // ==================== CALCULATED VALUES ====================
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -547,10 +693,8 @@ function CostAnalytics() {
     return totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2);
   };
 
-  // ==================== COMPONENT RENDERING ====================
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
-      {/* HEADER SECTION */}
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -626,7 +770,6 @@ function CostAnalytics() {
         </Flex>
       </Flex>
 
-      {/* SUMMARY CARDS SECTION */}
       <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
@@ -667,7 +810,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' ? 'red' : 'gray'
+                      item.trend === 'down' : 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -709,7 +852,6 @@ function CostAnalytics() {
         ))}
       </Grid>
 
-      {/* MAIN COST TABLE SECTION */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -731,13 +873,15 @@ function CostAnalytics() {
             
             <Table.Body>
               {categories.map((category) => {
-                // Calculate actual cost from original values
-                const actualTotal = getDetailsByCategory(category)
-                  .reduce((sum, item) => sum + calculateActualCost(item), 0);
+                const actualTotal = Math.round(
+                  getDetailsByCategory(category)
+                    .reduce((sum, item) => sum + calculateActualCost(item), 0) * 100
+                ) / 100;
                 
-                // Calculate cost after optimization from modified values
-                const costAfterTotal = getDetailsByCategory(category)
-                  .reduce((sum, item) => sum + calculateCostAfter(item), 0);
+                const costAfterTotal = Math.round(
+                  getDetailsByCategory(category)
+                    .reduce((sum, item) => sum + calculateCostAfter(item), 0) * 100
+                ) / 100;
                 
                 const variance = actualTotal - totals[category].budget;
                 const varianceColor = variance <= 0 ? 'green' : 'red';
@@ -746,9 +890,8 @@ function CostAnalytics() {
                   <Table.Row key={category}>
                     <Table.RowHeaderCell style={tableRowHeaderStyle}>{category}</Table.RowHeaderCell>
                     
-                    {/* Actual Cost - fixed based on original values only */}
                     <Table.Cell style={tableCellStyle}>
-                      {formatCurrency(Math.round(actualTotal), currency)}
+                      {formatCurrency(actualTotal, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
@@ -756,6 +899,8 @@ function CostAnalytics() {
                         type="number"
                         value={totals[category].budget}
                         onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                        step="0.01"
+                        min="0"
                         style={{
                           width: '80px',
                           padding: '6px 10px',
@@ -771,16 +916,15 @@ function CostAnalytics() {
                       ...tableCellStyle,
                       color: varianceColor
                     }}>
-                      {formatCurrency(Math.round(variance), currency)}
+                      {formatCurrency(variance, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
-                      {totalActual === 0 ? '0.00' : ((Math.round(actualTotal) / totalActual) * 100).toFixed(2)}%
+                      {totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2)}%
                     </Table.Cell>
                     
-                    {/* Cost After Optimization - changes based on modifications */}
                     <Table.Cell style={tableCellStyle}>
-                      {formatCurrency(Math.round(costAfterTotal), currency)}
+                      {formatCurrency(costAfterTotal, currency)}
                     </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
@@ -804,7 +948,6 @@ function CostAnalytics() {
                 );
               })}
               
-              {/* Final total row */}
               <Table.Row style={{ 
                 backgroundColor: '#f8fafc',
                 fontWeight: 'bold'
@@ -812,30 +955,36 @@ function CostAnalytics() {
                 <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
                 <Table.Cell style={tableCellStyle}>
                   {formatCurrency(
-                    categories.reduce((sum, category) => 
-                      sum + getDetailsByCategory(category).reduce(
-                        (catSum, item) => catSum + calculateActualCost(item), 0
-                      ), 0), 
+                    Math.round(
+                      categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateActualCost(item), 0
+                        ), 0) * 100
+                    ) / 100, 
                     currency
                   )}
                 </Table.Cell>
                 <Table.Cell style={tableCellStyle}>{formatCurrency(totalTarget, currency)}</Table.Cell>
                 <Table.Cell style={tableCellStyle}>
                   {formatCurrency(
-                    categories.reduce((sum, category) => 
-                      sum + getDetailsByCategory(category).reduce(
-                        (catSum, item) => catSum + calculateActualCost(item), 0
-                      ), 0) - totalTarget, 
+                    Math.round(
+                      (categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateActualCost(item), 0
+                        ), 0) - totalTarget) * 100
+                    ) / 100, 
                     currency
                   )}
                 </Table.Cell>
                 <Table.Cell style={tableCellStyle}>100%</Table.Cell>
                 <Table.Cell style={tableCellStyle}>
                   {formatCurrency(
-                    categories.reduce((sum, category) => 
-                      sum + getDetailsByCategory(category).reduce(
-                        (catSum, item) => catSum + calculateCostAfter(item), 0
-                      ), 0), 
+                    Math.round(
+                      categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateCostAfter(item), 0
+                        ), 0) * 100
+                    ) / 100, 
                     currency
                   )}
                 </Table.Cell>
@@ -846,7 +995,6 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
-      {/* CATEGORY DETAIL DIALOG SECTION */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
@@ -889,19 +1037,23 @@ function CostAnalytics() {
                     <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Qty/Units</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Unit Price</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Concentration (Kg)</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Price/Kg</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Total Cost</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Solution</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
                       {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const qty = dialogCategory === 'Direct Materials' ? item.concentrationKg :
-                                    dialogCategory === 'Direct Labor' ? item.hours : item.qty;
+                        const concentration = dialogCategory === 'Direct Materials' ? 
+                          (item.originalConcentrationKg !== undefined ? item.originalConcentrationKg : item.concentrationKg) : 
+                          null;
                         
-                        const unitPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg :
-                                        dialogCategory === 'Direct Labor' ? item.hourlyRate : item.unitPrice;
+                        const unitPrice = dialogCategory === 'Direct Materials' ? 
+                          (item.originalPricePerKg !== undefined ? item.originalPricePerKg : item.pricePerKg) :
+                          dialogCategory === 'Direct Labor' ? 
+                          (item.originalHourlyRate !== undefined ? item.originalHourlyRate : item.hourlyRate) : 
+                          (item.originalUnitPrice !== undefined ? item.originalUnitPrice : item.unitPrice);
 
                         const totalCost = calculateActualCost(item);
 
@@ -909,30 +1061,52 @@ function CostAnalytics() {
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
-                              {autoMode ? (
-                                dialogCategory === 'Direct Materials' 
-                                  ? formatNumber(qty || 0)
-                                  : (qty?.toString() || '-')
+                              {dialogCategory === 'Direct Materials' ? (
+                                formatNumber(concentration || 0, 6, true)
+                              ) : dialogCategory === 'Direct Labor' ? (
+                                autoMode ? (
+                                  formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
+                                ) : (
+                                  <input
+                                    type="number"
+                                    value={item.hours || 0}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                      const value = parseFloat(e.target.value) || 0;
+                                      item.hours = value;
+                                      updateCategoryTotals(dialogCategory, {...data});
+                                    }}
+                                    style={{ 
+                                      width: '80px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #e2e8f0',
+                                      backgroundColor: '#f9fafb',
+                                      fontSize: '14px'
+                                    }}
+                                  />
+                                )
                               ) : (
-                                <input
-                                  type="number"
-                                  value={qty || 0}
-                                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                    const value = parseFloat(e.target.value) || 0;
-                                    if (dialogCategory === 'Direct Materials') item.concentrationKg = value;
-                                    else if (dialogCategory === 'Direct Labor') item.hours = value;
-                                    else if (item.qty !== undefined) item.qty = value;
-                                    updateCategoryTotals(dialogCategory, {...data});
-                                  }}
-                                  style={{ 
-                                    width: '80px',
-                                    padding: '6px 10px',
-                                    borderRadius: '6px',
-                                    border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
-                                    fontSize: '14px'
-                                  }}
-                                />
+                                autoMode ? (
+                                  (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
+                                ) : (
+                                  <input
+                                    type="number"
+                                    value={item.qty || 0}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                      const value = parseFloat(e.target.value) || 0;
+                                      item.qty = value;
+                                      updateCategoryTotals(dialogCategory, {...data});
+                                    }}
+                                    style={{ 
+                                      width: '80px',
+                                      padding: '6px 10px',
+                                      borderRadius: '6px',
+                                      border: '1px solid #e2e8f0',
+                                      backgroundColor: '#f9fafb',
+                                      fontSize: '14px'
+                                    }}
+                                  />
+                                )
                               )}
                             </Table.Cell>
                             <Table.Cell style={tableCellStyle}>
@@ -954,7 +1128,7 @@ function CostAnalytics() {
                                     padding: '6px 10px',
                                     borderRadius: '6px',
                                     border: '1px solid #e2e8f0',
-                                    backgroundColor: '#f9fafb',
+                                    backgroundColor: 'white',
                                     fontSize: '14px'
                                   }}
                                 />
@@ -1157,7 +1331,6 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* SUPPLIER SELECTION DIALOG SECTION */}
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
@@ -1311,6 +1484,8 @@ function CostAnalytics() {
                       <Table.ColumnHeaderCell style={tableHeaderStyle}>Rating</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell style={tableHeaderStyle}>Delivery</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell style={tableHeaderStyle}>Reliability</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={tableHeaderStyle}>Compliance</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell style={tableHeaderStyle}>Total Score</Table.ColumnHeaderCell>
                       <Table.ColumnHeaderCell style={tableHeaderStyle}>Select</Table.ColumnHeaderCell>
                     </Table.Row>
                   </Table.Header>
@@ -1322,6 +1497,36 @@ function CostAnalytics() {
                         <Table.Cell style={tableCellStyle}>{supplier.rating}/5</Table.Cell>
                         <Table.Cell style={tableCellStyle}>{supplier.delivery}</Table.Cell>
                         <Table.Cell style={tableCellStyle}>{supplier.reliability}</Table.Cell>
+                        <Table.Cell 
+                          style={{
+                            ...tableCellStyle,
+                            fontWeight: 'bold',
+                            color: supplier.complianceScore > 80 ? '#10b981' : 
+                                  supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
+                            cursor: 'pointer',
+                            position: 'relative'
+                          }}
+                          onMouseEnter={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            setComplianceTooltip({
+                              visible: true,
+                              x: rect.left,
+                              y: rect.top,
+                              supplier: supplier
+                            });
+                          }}
+                          onMouseLeave={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
+                        >
+                          {supplier.complianceScore}/100
+                        </Table.Cell>
+                        <Table.Cell style={{
+                          ...tableCellStyle,
+                          fontWeight: 'bold',
+                          color: supplier.score > 200 ? '#10b981' : 
+                                supplier.score > 150 ? '#f59e0b' : '#ef4444'
+                        }}>
+                          {supplier.score}/200
+                        </Table.Cell>
                         <Table.Cell style={tableCellStyle}>
                           <Button
                             size="1"
@@ -1391,7 +1596,6 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
-      {/* DATA VISUALIZATION SECTION */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
@@ -1528,7 +1732,6 @@ function CostAnalytics() {
         </Card>
       </Grid>
 
-      {/* BLOCKCHAIN SUBMISSION SECTION */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
@@ -1545,6 +1748,8 @@ function CostAnalytics() {
           Submit to Blockchain
         </Button>
       </Flex>
+
+      {complianceTooltip.visible && <ComplianceTooltip />}
     </Box>
   );
 }
