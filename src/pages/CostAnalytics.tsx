@@ -810,7 +810,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' : 'red' : 'gray'
+                      item.trend === 'down' ? 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -905,7 +905,7 @@ function CostAnalytics() {
                           width: '80px',
                           padding: '6px 10px',
                           borderRadius: '6px',
-                          border: '1px solid #e2e8f0',
+                          border: '1px solid ',
                           backgroundColor: '#f9fafb',
                           fontSize: '14px'
                         }}
