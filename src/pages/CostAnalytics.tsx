@@ -202,7 +202,7 @@ const tableCellStyle = {
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid '#e5e7eb',
+   borderBottom: '1px solid #e5e7eb',
   fontSize: '0.9rem'
 };
 
