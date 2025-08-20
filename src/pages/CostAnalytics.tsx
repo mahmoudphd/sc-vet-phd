@@ -1,3 +1,4 @@
+// ==================== IMPORTS AND TYPE DEFINITIONS ====================
 import React, { useState, useEffect } from 'react';
 import {
   Box,
@@ -32,6 +33,7 @@ import {
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
+// ==================== INTERFACE DEFINITIONS ====================
 interface Item {
   name: string;
   qty?: number;
@@ -49,6 +51,12 @@ interface Item {
   basis?: number;
   targetQty?: number;
   targetPrice?: number;
+  originalPricePerKg?: number;
+  originalConcentrationKg?: number;
+  originalQty?: number;
+  originalUnitPrice?: number;
+  originalHours?: number;
+  originalHourlyRate?: number;
 }
 
 interface CostTotals {
@@ -84,32 +92,33 @@ interface SelectedSolution {
   solution: string;
 }
 
+// ==================== INITIAL DATA CONFIGURATION ====================
 const initialData: CostData = {
   totals: {
-    'Direct Materials': { actual: 133.11, budget: 129, costAfter: 130 },
+    'Direct Materials': { actual: 133, budget: 129, costAfter: 130 },
     'Packaging Materials': { actual: 18, budget: 16, costAfter: 16 },
     'Direct Labor': { actual: 3, budget: 2, costAfter: 2 },
     'Overhead': { actual: 2, budget: 2, costAfter: 2 },
     'Other Costs': { actual: 15, budget: 13, costAfter: 14 },
   },
   rawMaterials: [
-    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 0.513, targetQty: 0.0009, targetPrice: 513 },
-    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 0.570, targetQty: 0.0054, targetPrice: 570 },
-    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.185, targetQty: 0.0009, targetPrice: 2185 },
-    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.380, targetQty: 0.009, targetPrice: 380 },
-    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.615, targetQty: 0.0036, targetPrice: 1615 },
-    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.855, targetQty: 0.00135, targetPrice: 855 },
-    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.190, targetQty: 0.027, targetPrice: 190 },
-    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.9025, targetQty: 0.009, targetPrice: 902.5 },
-    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.850, targetQty: 0.00225, targetPrice: 2850 },
-    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.990, targetQty: 0.00225, targetPrice: 3990 },
-    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.750, targetQty: 0.00225, targetPrice: 4750 },
-    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.705, targetQty: 0.00225, targetPrice: 3705 },
-    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.665, targetQty: 0.0225, targetPrice: 665 },
-    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.342, targetQty: 0.009, targetPrice: 342 },
-    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.0165, targetQty: 0.0045, targetPrice: 1016.5 },
-    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.1875, targetQty: 0.018, targetPrice: 1187.5 },
-    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 0.0855, targetQty: 0.0675, targetPrice: 85.5 },
+    { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 0.51, targetQty: 0.0009, targetPrice: 513 },
+    { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 0.57, targetQty: 0.0054, targetPrice: 570 },
+    { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.19, targetQty: 0.0009, targetPrice: 2185 },
+    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.38, targetQty: 0.009, targetPrice: 380 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.62, targetQty: 0.0036, targetPrice: 1615 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.19, targetQty: 0.027, targetPrice: 190 },
+    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.90, targetQty: 0.009, targetPrice: 902.5 },
+    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.85, targetQty: 0.00225, targetPrice: 2850 },
+    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.99, targetQty: 0.00225, targetPrice: 3990 },
+    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.75, targetQty: 0.00225, targetPrice: 4750 },
+    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.71, targetQty: 0.00225, targetPrice: 3705 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.67, targetQty: 0.0225, targetPrice: 665 },
+    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.34, targetQty: 0.009, targetPrice: 342 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.02, targetQty: 0.0045, targetPrice: 1016.5 },
+    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.19, targetQty: 0.018, targetPrice: 1187.5 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 0.09, targetQty: 0.0675, targetPrice: 85.5 },
     { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, costAfter: 0.95, targetQty: 0.5139, targetPrice: 0.95 },
   ],
   packagingMaterials: [
@@ -134,6 +143,26 @@ const initialData: CostData = {
   ],
 };
 
+// ==================== INITIALIZE ORIGINAL VALUES ====================
+initialData.rawMaterials = initialData.rawMaterials.map(item => ({
+  ...item,
+  originalPricePerKg: item.pricePerKg,
+  originalConcentrationKg: item.concentrationKg
+}));
+
+initialData.packagingMaterials = initialData.packagingMaterials.map(item => ({
+  ...item,
+  originalUnitPrice: item.unitPrice,
+  originalQty: item.qty
+}));
+
+initialData.directLabor = initialData.directLabor.map(item => ({
+  ...item,
+  originalHourlyRate: item.hourlyRate,
+  originalHours: item.hours
+}));
+
+// ==================== CONSTANTS AND CONFIGURATION ====================
 const categories: CostCategory[] = [
   'Direct Materials',
   'Packaging Materials',
@@ -155,6 +184,7 @@ const solutionsOptions = [
   'Other',
 ];
 
+// ==================== STYLE DEFINITIONS ====================
 const tableHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
@@ -172,7 +202,7 @@ const tableCellStyle = {
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid '#e5e7eb',
   fontSize: '0.9rem'
 };
 
@@ -182,7 +212,9 @@ const cardTitleStyle = {
   marginBottom: '16px'
 };
 
+// ==================== MAIN COMPONENT DEFINITION ====================
 function CostAnalytics() {
+  // ==================== STATE MANAGEMENT ====================
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -203,7 +235,8 @@ function CostAnalytics() {
   const [currentPrice, setCurrentPrice] = useState(0);
   const [potentialSavings, setPotentialSavings] = useState(0);
 
-  const formatNumber = (value: number, decimalPlaces: number = 3) => {
+  // ==================== UTILITY FUNCTIONS ====================
+  const formatNumber = (value: number, decimalPlaces: number = 2) => {
     return value.toLocaleString(undefined, {
       minimumFractionDigits: 0,
       maximumFractionDigits: decimalPlaces
@@ -214,8 +247,8 @@ function CostAnalytics() {
     return new Intl.NumberFormat(undefined, {
       style: 'currency',
       currency: currency,
-      minimumFractionDigits: 3,
-      maximumFractionDigits: 3
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
     }).format(value);
   };
 
@@ -231,17 +264,32 @@ function CostAnalytics() {
   };
 
   const calculateActualCost = (item: Item): number => {
-    if ('concentrationKg' in item) return (item.concentrationKg || 0) * (item.pricePerKg || 0);
-    if ('hours' in item) return (item.hours || 0) * (item.hourlyRate || 0);
-    if ('totalCost' in item) return (item.totalCost || 0) / (item.basis || 1);
+    // Use original values to calculate actual cost
+    if ('concentrationKg' in item && item.originalConcentrationKg !== undefined) 
+      return (item.originalConcentrationKg || 0) * (item.originalPricePerKg || item.pricePerKg || 0);
+    
+    if ('hours' in item && item.originalHours !== undefined) 
+      return (item.originalHours || 0) * (item.originalHourlyRate || item.hourlyRate || 0);
+    
+    if ('totalCost' in item) 
+      return (item.totalCost || 0) / (item.basis || 1);
+    
+    if (item.originalQty !== undefined && item.originalUnitPrice !== undefined)
+      return (item.originalQty || 0) * (item.originalUnitPrice || 0);
+    
     return (item.qty || 0) * (item.unitPrice || 0);
   };
 
   const calculateCostAfter = (item: Item): number => {
+    // If costAfter is explicitly set
     if (item.costAfter !== undefined) return item.costAfter;
+    
+    // If target quantities/prices are set
     if (item.targetQty !== undefined && item.targetPrice !== undefined) {
       return (item.targetQty || 0) * (item.targetPrice || 0);
     }
+    
+    // If no modifications, return to actual value
     return calculateActualCost(item);
   };
 
@@ -251,6 +299,7 @@ function CostAnalytics() {
     return ((actual - after) / actual * 100).toFixed(1) + '%';
   };
 
+  // ==================== DATA UPDATE FUNCTIONS ====================
   const updateTargetValues = (category: CostCategory, index: number, field: 'targetQty' | 'targetPrice', value: number) => {
     setData(prev => {
       const newData = {...prev};
@@ -279,12 +328,13 @@ function CostAnalytics() {
     
     dataToUpdate.totals[category] = {
       ...dataToUpdate.totals[category],
-      actual: actualTotal,
-      budget: targetTotal,
-      costAfter: costAfterTotal
+      actual: Math.round(actualTotal),
+      budget: Math.round(targetTotal),
+      costAfter: Math.round(costAfterTotal)
     };
   };
 
+  // ==================== SUPPLIER MANAGEMENT FUNCTIONS ====================
   const generateSupplierPrices = (basePrice: number) => {
     const discounts = [
       0.05 + Math.random() * 0.10,
@@ -365,6 +415,7 @@ function CostAnalytics() {
         const categoryItems = [...getDetailsByCategory(selectedSolution.category, newData)];
         const item = categoryItems[selectedSolution.index];
         
+        // Update costAfter only without affecting original data
         if (selectedSolution.category === 'Direct Materials') {
           item.costAfter = (item.concentrationKg || 0) * selectedSupplier.pricePerKg;
         } else if (selectedSolution.category === 'Packaging Materials') {
@@ -386,7 +437,16 @@ function CostAnalytics() {
     }
   };
 
+  // ==================== EVENT HANDLER FUNCTIONS ====================
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
+    const item = getDetailsByCategory(category)[index];
+    setCurrentPrice(item.pricePerKg || 0);
+    
+    // Save original price
+    if (!item.originalPricePerKg) {
+      item.originalPricePerKg = item.pricePerKg;
+    }
+
     const newSelectedSolution = { category, index, solution };
     setSelectedSolution(newSelectedSolution);
     setSolutions((prev) => ({
@@ -398,14 +458,12 @@ function CostAnalytics() {
     }));
     
     if (category === 'Direct Materials') {
-      const item = data.rawMaterials[index];
-      setCurrentPrice(item.pricePerKg || 0);
       setSuppliers(generateSupplierPrices(item.pricePerKg || 0));
     }
   };
 
   const handleBenchmarkChange = (value: number) => {
-    setBenchmarkPrice(Math.round(value * 100) / 100);
+    setBenchmarkPrice(Math.round(value));
   };
 
   const handleExportReport = () => {
@@ -419,7 +477,7 @@ function CostAnalytics() {
         ...prev.totals,
         [category]: {
           ...prev.totals[category],
-          budget: Math.round(value * 100) / 100,
+          budget: Math.round(value),
         },
       },
     }));
@@ -440,8 +498,8 @@ function CostAnalytics() {
         ...prev.totals,
         [category]: {
           ...prev.totals[category],
-          actual: Math.round(newActual * 100) / 100,
-          costAfter: Math.round(newCostAfter * 100) / 100
+          actual: Math.round(newActual),
+          costAfter: Math.round(newCostAfter)
         }
       }
     }));
@@ -449,6 +507,7 @@ function CostAnalytics() {
     setDialogCategory(null);
   };
 
+  // ==================== EFFECT HOOKS ====================
   useEffect(() => {
     const newData = {...data};
     categories.forEach(category => {
@@ -457,34 +516,41 @@ function CostAnalytics() {
     setData(newData);
   }, []);
 
+  // ==================== CALCULATED VALUES ====================
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
   const totalCostAfter = categories.reduce((sum, category) => sum + totals[category].costAfter, 0);
-  const postOptimizationEstimate = Math.round((totalActual - totalCostAfter) * 100) / 100;
-  const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100) * 100) / 100;
+  const postOptimizationEstimate = Math.round((totalActual - totalCostAfter));
+  const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100));
 
   const benchmarkTrendData = [
-    { month: 'Jan', actual: 169.61, benchmark: benchmarkPrice },
-    { month: 'Feb', actual: 170.5, benchmark: benchmarkPrice },
-    { month: 'Mar', actual: 168.0, benchmark: benchmarkPrice },
-    { month: 'Apr', actual: 171.2, benchmark: benchmarkPrice },
+    { month: 'Jan', actual: 170, benchmark: benchmarkPrice },
+    { month: 'Feb', actual: 171, benchmark: benchmarkPrice },
+    { month: 'Mar', actual: 168, benchmark: benchmarkPrice },
+    { month: 'Apr', actual: 171, benchmark: benchmarkPrice },
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
   ];
 
   const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
     ...d,
     targetCost,
-    gap: Math.round((d.actual - targetCost) * 100) / 100,
+    gap: Math.round((d.actual - targetCost)),
   }));
 
   const pieColors = ['#3b82f6', '#f59e0b', '#ef4444', '#10b981', '#a855f7'];
 
-  const percentOfTotal = (category: CostCategory) =>
-    totalActual === 0 ? '0.00' : ((totals[category].actual / totalActual) * 100).toFixed(2);
+  const percentOfTotal = (category: CostCategory) => {
+    const actualTotal = getDetailsByCategory(category)
+      .reduce((sum, item) => sum + calculateActualCost(item), 0);
+    
+    return totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2);
+  };
 
+  // ==================== COMPONENT RENDERING ====================
   return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      {/* HEADER SECTION */}
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -560,6 +626,7 @@ function CostAnalytics() {
         </Flex>
       </Flex>
 
+      {/* SUMMARY CARDS SECTION */}
       <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
@@ -642,6 +709,7 @@ function CostAnalytics() {
         ))}
       </Grid>
 
+      {/* MAIN COST TABLE SECTION */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -660,14 +728,29 @@ function CostAnalytics() {
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
+            
             <Table.Body>
               {categories.map((category) => {
-                const variance = totals[category].actual - totals[category].budget;
+                // Calculate actual cost from original values
+                const actualTotal = getDetailsByCategory(category)
+                  .reduce((sum, item) => sum + calculateActualCost(item), 0);
+                
+                // Calculate cost after optimization from modified values
+                const costAfterTotal = getDetailsByCategory(category)
+                  .reduce((sum, item) => sum + calculateCostAfter(item), 0);
+                
+                const variance = actualTotal - totals[category].budget;
                 const varianceColor = variance <= 0 ? 'green' : 'red';
+                
                 return (
                   <Table.Row key={category}>
                     <Table.RowHeaderCell style={tableRowHeaderStyle}>{category}</Table.RowHeaderCell>
-                    <Table.Cell style={tableCellStyle}>{formatCurrency(totals[category].actual, currency)}</Table.Cell>
+                    
+                    {/* Actual Cost - fixed based on original values only */}
+                    <Table.Cell style={tableCellStyle}>
+                      {formatCurrency(Math.round(actualTotal), currency)}
+                    </Table.Cell>
+                    
                     <Table.Cell style={tableCellStyle}>
                       <input
                         type="number"
@@ -683,14 +766,23 @@ function CostAnalytics() {
                         }}
                       />
                     </Table.Cell>
+                    
                     <Table.Cell style={{ 
                       ...tableCellStyle,
                       color: varianceColor
                     }}>
-                      {formatCurrency(variance, currency)}
+                      {formatCurrency(Math.round(variance), currency)}
                     </Table.Cell>
-                    <Table.Cell style={tableCellStyle}>{percentOfTotal(category)}%</Table.Cell>
-                    <Table.Cell style={tableCellStyle}>{formatCurrency(totals[category].costAfter, currency)}</Table.Cell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      {totalActual === 0 ? '0.00' : ((Math.round(actualTotal) / totalActual) * 100).toFixed(2)}%
+                    </Table.Cell>
+                    
+                    {/* Cost After Optimization - changes based on modifications */}
+                    <Table.Cell style={tableCellStyle}>
+                      {formatCurrency(Math.round(costAfterTotal), currency)}
+                    </Table.Cell>
+                    
                     <Table.Cell style={tableCellStyle}>
                       <Button 
                         size="1" 
@@ -711,16 +803,42 @@ function CostAnalytics() {
                   </Table.Row>
                 );
               })}
+              
+              {/* Final total row */}
               <Table.Row style={{ 
                 backgroundColor: '#f8fafc',
                 fontWeight: 'bold'
               }}>
                 <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalActual, currency)}</Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    categories.reduce((sum, category) => 
+                      sum + getDetailsByCategory(category).reduce(
+                        (catSum, item) => catSum + calculateActualCost(item), 0
+                      ), 0), 
+                    currency
+                  )}
+                </Table.Cell>
                 <Table.Cell style={tableCellStyle}>{formatCurrency(totalTarget, currency)}</Table.Cell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalActual - totalTarget, currency)}</Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    categories.reduce((sum, category) => 
+                      sum + getDetailsByCategory(category).reduce(
+                        (catSum, item) => catSum + calculateActualCost(item), 0
+                      ), 0) - totalTarget, 
+                    currency
+                  )}
+                </Table.Cell>
                 <Table.Cell style={tableCellStyle}>100%</Table.Cell>
-                <Table.Cell style={tableCellStyle}>{formatCurrency(totalCostAfter, currency)}</Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    categories.reduce((sum, category) => 
+                      sum + getDetailsByCategory(category).reduce(
+                        (catSum, item) => catSum + calculateCostAfter(item), 0
+                      ), 0), 
+                    currency
+                  )}
+                </Table.Cell>
                 <Table.Cell style={tableCellStyle}></Table.Cell>
               </Table.Row>
             </Table.Body>
@@ -728,6 +846,7 @@ function CostAnalytics() {
         </Inset>
       </Card>
 
+      {/* DIALOG FOR CATEGORY DETAILS */}
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
@@ -1038,6 +1157,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* SUPPLIER SELECTION DIALOG */}
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
@@ -1173,14 +1293,7 @@ function CostAnalytics() {
                       fill="#f59e0b"
                       animationBegin={0}
                       animationDuration={1000}
-                    >
-                      {suppliers.map((_, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={suppliers[index].selected ? '#10b981' : '#f59e0b'}
-                        />
-                      ))}
-                    </Bar>
+                    />
                   </BarChart>
                 </ResponsiveContainer>
               </Card>
@@ -1278,6 +1391,7 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* CHARTS AND VISUALIZATIONS SECTION */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
@@ -1295,7 +1409,9 @@ function CostAnalytics() {
                 <Pie
                   data={categories.map((category) => ({
                     name: category,
-                    value: totals[category].actual,
+                    value: getDetailsByCategory(category).reduce(
+                      (sum, item) => sum + calculateActualCost(item), 0
+                    ),
                   }))}
                   cx="50%"
                   cy="50%"
@@ -1375,15 +1491,25 @@ function CostAnalytics() {
               Cost Gap Analysis
             </Heading>
             <Text align="center" mb="4" size="2">
-              Total Cost Gap: {formatCurrency(totalActual - targetCost, currency)}
+              Total Cost Gap: {formatCurrency(
+                categories.reduce((sum, category) => 
+                  sum + getDetailsByCategory(category).reduce(
+                    (catSum, item) => catSum + calculateActualCost(item), 0
+                  ), 0) - targetCost, 
+                currency
+              )}
             </Text>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart
                 data={categories.map(category => ({
                   name: category,
-                  actual: totals[category].actual,
+                  actual: getDetailsByCategory(category).reduce(
+                    (sum, item) => sum + calculateActualCost(item), 0
+                  ),
                   target: totals[category].budget,
-                  gap: totals[category].actual - totals[category].budget
+                  gap: getDetailsByCategory(category).reduce(
+                    (sum, item) => sum + calculateActualCost(item), 0
+                  ) - totals[category].budget
                 }))}
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
@@ -1402,6 +1528,7 @@ function CostAnalytics() {
         </Card>
       </Grid>
 
+      {/* BLOCKCHAIN SUBMISSION SECTION */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
