@@ -74,14 +74,20 @@ interface CostData {
   totals: Record<CostCategory, CostTotals>;
 }
 
+interface MaterialTest {
+  status: 'Passed' | 'Failed' | 'Not Tested';
+}
+
+interface MaterialTests {
+  identity: MaterialTest;
+  purity: MaterialTest;
+  microbial: MaterialTest;
+  endotoxins: MaterialTest;
+}
+
 interface Material {
   name: string;
-  tests: {
-    identity: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    purity: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    microbial: { status: 'Passed' | 'Failed' | 'Not Tested' };
-    endotoxins: { status: 'Passed' | 'Failed' | 'Not Tested' };
-  };
+  tests: MaterialTests;
   certificate: boolean;
   supplier: {
     status: 'Approved' | 'Pending' | 'Rejected';
@@ -246,7 +252,14 @@ const calculateComplianceScore = (material: Material): number => {
   return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
 };
 
-const TestDetailsTooltip = ({ supplier, x, y, onClose }) => {
+interface TestDetailsTooltipProps {
+  supplier: Supplier | null;
+  x: number;
+  y: number;
+  onClose: () => void;
+}
+
+const TestDetailsTooltip = ({ supplier, x, y, onClose }: TestDetailsTooltipProps) => {
   if (!supplier) return null;
 
   const material = supplier.material;
@@ -261,7 +274,7 @@ const TestDetailsTooltip = ({ supplier, x, y, onClose }) => {
   };
 
   const testScore = (Object.values(material.tests)
-    .filter(test => test.status === 'Passed').length / 4) * weights.tests;
+    .filter((test: MaterialTest) => test.status === 'Passed').length / 4) * weights.tests;
   
   const certScore = material.certificate ? weights.certificate : 0;
   const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
@@ -867,7 +880,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' ? 'red' : 'gray'
+                      item.trend === 'down' : 'red' 
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1167,7 +1180,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid ',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1259,8 +1272,7 @@ function CostAnalytics() {
                                 <Table.Cell style={tableCellStyle}>
                                   {item.basis}
                                 </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {formatCurrency((item.totalCost || 0) / (item.basis || 1), currency)}
+                                <Table.Cell style {formatCurrency((item.totalCost || 0) / (item.basis || 1), currency)}
                                 </Table.Cell>
                               </>
                             )}
@@ -1610,17 +1622,17 @@ function CostAnalytics() {
                       yAxisId="right" 
                       orientation="right" 
                       stroke="#f59e0b" 
-                      tick={{ fill: '#4b5563', fontSize: 12 }}
+                      tick={{ fill: '                      #4b5563', fontSize: 12 }}
                       axisLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip 
-                      formatter={(value, name) => [
-                        name === 'Price' ? formatCurrency(Number(value), currency) : value,
-                        name
+                      formatter={(value: number, name: string) => [
+                        name === 'price' ? formatCurrency(Number(value), currency) : value,
+                        name === 'price' ? 'Price/kg' : 'Rating'
                       ]}
                       contentStyle={{
                         backgroundColor: 'white',
-                        border: '1px solid ',
+                        border: '1px solid #e5e7eb',
                         borderRadius: '6px',
                         boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                       }}
