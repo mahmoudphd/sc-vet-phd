@@ -346,18 +346,25 @@ const DetailItem = ({ label, value }: { label: string; value: React.ReactNode })
   </Flex>
 );
 
-// Utility functions
+// Utility functions - Improved
 const calculateComplianceScore = (material: Material): number => {
-  const testScores = Object.values(material.tests)
-    .filter(test => test.status === 'Passed')
-    .length * 25; // Each test worth 25 points (100/4)
+  const weights = {
+    tests: 40,        // 40% for tests (10% each)
+    certificate: 20,  // 20% for certificate
+    supplier: 15,     // 15% for supplier
+    expiry: 15,       // 15% for expiry
+    blockchain: 10    // 10% for blockchain
+  };
 
-  const certScore = material.certificate ? 20 : 0;
-  const supplierScore = material.supplier.status === 'Approved' ? 20 : 0;
-  const expiryScore = new Date(material.expiryDate) > new Date() ? 20 : 0;
-  const blockchainScore = material.blockchainRegistered ? 20 : 0;
+  const testScore = (Object.values(material.tests)
+    .filter(test => test.status === 'Passed').length / 4) * weights.tests;
+  
+  const certScore = material.certificate ? weights.certificate : 0;
+  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
+  const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
+  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
 
-  return Math.min(100, testScores + certScore + supplierScore + expiryScore + blockchainScore);
+  return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
 };
 
 const checkALCOACompliance = (material: Material): boolean => {
