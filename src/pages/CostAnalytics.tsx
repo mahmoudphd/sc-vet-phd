@@ -1272,38 +1272,7 @@ function CostAnalytics() {
                                 <Table.Cell style={tableCellStyle}>
                                   {item.basis}
                                 </Table.Cell>
-                                <Table.Cell style {formatCurrency((item.totalCost || 0) / (item.basis || 1), currency)}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            {dialogCategory === 'Other Costs' && (
-                              <>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={item.qty || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        item.qty = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: '#f9fafb',
-                                        fontSize: '14px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
+                                <Table.Cell style{autoMode ? (
                                     unitPrice ? formatCurrency(unitPrice, currency) : '-'
                                   ) : (
                                     <input
@@ -1456,8 +1425,7 @@ function CostAnalytics() {
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1555,7 +1523,7 @@ function CostAnalytics() {
                   <Text style={{ color: '#1f2937', fontWeight: 'bold' }}>{formatCurrency(currentPrice, currency)}</Text>
                 </Flex>
                 <Flex justify="between" align="center" mt="2">
-                  <Text weight="bold" style={{ color: '#1f2937' }}>Potential Savings/kg:</Text>
+                  <Text weight="bold" style={{ color: '##1f2937' }}>Potential Savings/kg:</Text>
                   <Text 
                     style={{ 
                       color: potentialSavings > 0 ? '#10b981' : '#ef4444',
@@ -1622,7 +1590,7 @@ function CostAnalytics() {
                       yAxisId="right" 
                       orientation="right" 
                       stroke="#f59e0b" 
-                      tick={{ fill: '                      #4b5563', fontSize: 12 }}
+                      tick={{ fill: '#4b5563', fontSize: 12 }}
                       axisLine={{ stroke: '#e5e7eb' }}
                     />
                     <Tooltip 
