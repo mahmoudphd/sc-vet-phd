@@ -40,8 +40,6 @@ interface Item {
   costAfter?: number;
   concentrationKg?: number;
   pricePerKg?: number;
-  hours?: number;
-  hourlyRate?: number;
   qualityRating?: number;
   deliveryTime?: number;
   reliability?: number;
@@ -880,7 +878,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' : 'red' 
+                      item.trend === 'down' ? 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1180,7 +1178,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid ',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1272,15 +1270,16 @@ function CostAnalytics() {
                                 <Table.Cell style={tableCellStyle}>
                                   {item.basis}
                                 </Table.Cell>
-                                <Table.Cell style{autoMode ? (
-                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
+                                <Table.Cell style={tableCellStyle}>
+                                  {autoMode ? (
+                                    formatCurrency(item.cost || 0, currency)
                                   ) : (
                                     <input
                                       type="number"
-                                      value={unitPrice || 0}
+                                      value={item.cost || 0}
                                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
-                                        if (item.unitPrice !== undefined) item.unitPrice = value;
+                                        item.cost = value;
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
@@ -1378,7 +1377,7 @@ function CostAnalytics() {
                                   padding: '6px 10px',
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
-                                  backgroundColor: 'f9fafb',
+                                  backgroundColor: '#f9fafb',
                                   fontSize: '14px'
                                 }}
                               />
@@ -1425,7 +1424,8 @@ function CostAnalytics() {
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1500,7 +1500,7 @@ function CostAnalytics() {
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb',
+            border: '1px solid ',
             backgroundColor: 'white'
           }}>
             <Dialog.Title style={{ 
@@ -1523,7 +1523,7 @@ function CostAnalytics() {
                   <Text style={{ color: '#1f2937', fontWeight: 'bold' }}>{formatCurrency(currentPrice, currency)}</Text>
                 </Flex>
                 <Flex justify="between" align="center" mt="2">
-                  <Text weight="bold" style={{ color: '##1f2937' }}>Potential Savings/kg:</Text>
+                  <Text weight="bold" style={{ color: '#1f2937' }}>Potential Savings/kg:</Text>
                   <Text 
                     style={{ 
                       color: potentialSavings > 0 ? '#10b981' : '#ef4444',
@@ -1904,7 +1904,7 @@ function CostAnalytics() {
             borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
-        >
+          >
           <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
         </Button>
