@@ -31,7 +31,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
-}
+
 interface Item {
   name: string;
   qty?: number;
