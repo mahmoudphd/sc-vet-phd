@@ -31,7 +31,7 @@ import {
   CartesianGrid
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
-
+}
 interface Item {
   name: string;
   qty?: number;
@@ -53,8 +53,9 @@ interface Item {
   originalUnitPrice?: number;
   originalHours?: number;
   originalHourlyRate?: number;
+  hours?: number; // Added missing property
+  hourlyRate?: number; // Added missing property
 }
-
 interface CostTotals {
   actual: number;
   budget: number;
