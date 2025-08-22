@@ -1017,9 +1017,6 @@ function CostAnalytics() {
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style
-كمل
-typescript
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
@@ -1169,8 +1166,7 @@ typescript
                 color: '#1f2937'
               }}>
                 {dialogCategory} Breakdown
-              </Dialog.Title>
-              <Flex align="center" gap="2">
+              </Dialog.Title>              <Flex align="center" gap="2">
                 <Text size="2" style={{ color: '#4b5563' }}>Auto IoT Mode</Text>
                 <Switch 
                   checked={autoMode} 
@@ -1427,7 +1423,8 @@ typescript
                 </Tabs.Content>
 
                 <Tabs.Content value="target">
-                  <Table.Root variant="surface"><Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                  <Table.Root variant="surface">
+                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1485,7 +1482,7 @@ typescript
                                   padding: '6px 10px',
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
+                                  backgroundColor: 'f9fafb',
                                   fontSize: '14px'
                                 }}
                               />
@@ -1954,7 +1951,8 @@ typescript
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1'
-        }}>          <Flex direction="column">
+        }}>
+          <Flex direction="column">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
