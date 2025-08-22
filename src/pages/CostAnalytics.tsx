@@ -2083,15 +2083,21 @@ function CostAnalytics() {
                   strokeDasharray="5 5"
                   name="Benchmark Price"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="targetCost" 
-                  stroke '#10b981' 
-                  strokeWidth={2}
-                  strokeDasharray="3 4 5 2"
-                  name="Target Cost"
-                />
-                <Line 
+               <Line 
+  type="monotone" 
+  dataKey="targetCost" 
+  stroke="#10b981" 
+  strokeWidth={2}
+  strokeDasharray="3 4 5 2"
+  name="Target Cost"
+/>
+<Line 
+  type="monotone" 
+  dataKey="gap" 
+  stroke="#ef4444" 
+  strokeWidth={2}
+  name="Cost Gap"
+/>
                   type="monotone" 
                   dataKey="gap" 
                   stroke="#ef4444" 
