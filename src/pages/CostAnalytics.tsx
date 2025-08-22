@@ -1709,13 +1709,13 @@ function CostAnalytics() {
                     />
                     <Legend />
                     <Bar 
-                      yAxisId="left" 
-                      dataKey="price" 
-                      name="Price/kg" 
-                      fill="#3b82f6"
-                      animationBegin={0}
-                      animationDuration={1000}
-                    >
+  yAxisId="right" 
+  dataKey="rating" 
+  name="Rating" 
+  fill="#f59e0b"
+  animationBegin={0}
+  animationDuration={1000}
+/>
                       {suppliers.map((_, index) => (
                         <Cell 
                           key={`cell-${index}`} 
