@@ -56,7 +56,6 @@ interface Item {
   hours?: number;
   hourlyRate?: number;
 }
-
 interface CostTotals {
   actual: number;
   budget: number;
@@ -548,7 +547,7 @@ function CostAnalytics() {
     });
   };
 
-  // NEW FUNCTION: Update costAfter value for any item with 5% limit
+  // NEW FUNCTION: Update costAfter value for any item
   const updateCostAfterValue = (category: CostCategory, index: number, value: number) => {
     setData(prev => {
       const newData = {...prev};
@@ -557,11 +556,10 @@ function CostAnalytics() {
       const actualCost = calculateActualCost(item);
       
       // Set maximum allowed value (savings not exceeding 5%)
-      const maxAllowedSavings = actualCost * 0.05;
-      const minAllowedCostAfter = actualCost - maxAllowedSavings;
+      const maxAllowedCostAfter = actualCost * 0.95;
       
       // Ensure the new value is not less than 95% of actual cost
-      item.costAfter = Math.max(value, minAllowedCostAfter);
+      item.costAfter = Math.max(value, maxAllowedCostAfter);
       
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
@@ -1291,7 +1289,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1438,7 +1436,6 @@ function CostAnalytics() {
                         const costAfter = calculateCostAfter(item);
                         const savings = calculateActualCost(item) - costAfter;
                         const savingsPercentage = calculateSavingsPercentage(item);
-                        const maxAllowedSavings = calculateActualCost(item) * 0.05;
                         
                         return (
                           <Table.Row key={index}>
@@ -1447,14 +1444,12 @@ function CostAnalytics() {
                               <input
                                 type="number"
                                 value={costAfter}
-                                onChange={(e) => updateCostAfterValue(
-                                  dialogCategory, 
+                                onChange={(e) => updateCostAfterValue(                                  dialogCategory, 
                                   index, 
                                   parseFloat(e.target.value) || 0
                                 )}
                                 step="0.01"
-                                min={calculateActualCost(item) * 0.95}
-                                max={calculateActualCost(item)}
+                                min="0"
                                 style={{ 
                                   width: '80px',
                                   padding: '6px 10px',
@@ -1471,70 +1466,16 @@ function CostAnalytics() {
                               fontWeight: 'bold'
                             }}>
                               {formatCurrency(savings, currency)}
-                              {savings > maxAllowedSavings && (
-                                <Text size="1" color="red" style={{display: 'block'}}>
-                                  Max: {formatCurrency(maxAllowedSavings, currency)}
-                                </Text>
-                              )}
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
                               color: savings > 0 ? '#10b981' : '#ef4444',
                             }}>
                               {savingsPercentage}
-                              {savings > maxAllowedSavings && (
-                                <Text size="1" color="red" style={{display: 'block'}}>
-                                  Max: 5%
-                                </Text>
-                              )}
                             </Table.Cell>
                           </Table.Row>
                         );
                       })}
-                      
-                      {/* إضافة صف الإجمالي */}
-                      <Table.Row style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}}>
-                        <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
-                        <Table.Cell style={tableCellStyle}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateCostAfter(item), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                        <Table.Cell style={tableCellStyle}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                        <Table.Cell style={tableCellStyle}>
-                          {totalActual === 0 ? '0.00' : 
-                            ((getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
-                            ) / getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateActualCost(item), 0
-                            ) * 100).toFixed(2))}%
-                        </Table.Cell>
-                      </Table.Row>
-                      
-                      {/* إضافة Cost Gap المحسوب */}
-                      <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
-                        <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
-                        <Table.Cell style={tableCellStyle} colSpan={3}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateActualCost(item), 0
-                            ) - getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateCostAfter(item), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
                     </Table.Body>
                   </Table.Root>
                 </Tabs.Content>
@@ -1575,7 +1516,7 @@ function CostAnalytics() {
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '1200px', // زيادة العرض لاستيعاب المخططين
+            maxWidth: '1000px',
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
@@ -1632,12 +1573,11 @@ function CostAnalytics() {
                 Auto Select Best Supplier
               </Button>
 
-              <Grid columns="2" gap="4" style={{height: '350px'}}>
+              <Grid columns="2" gap="4">
                 <Card style={{
                   borderRadius: '8px',
                   backgroundColor: 'white',
-                  padding: '16px',
-                  height: '100%'
+                  padding: '16px'
                 }}>
                   <Heading size="4" mb="3" style={{ 
                     color: '#1f2937',
@@ -1645,7 +1585,7 @@ function CostAnalytics() {
                   }}>
                     Supplier Comparison
                   </Heading>
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width="100%" height={300}>
                     <BarChart
                       data={suppliers.map(s => ({
                         name: s.name,
@@ -1714,7 +1654,7 @@ function CostAnalytics() {
                   </ResponsiveContainer>
                 </Card>
 
-                <Box style={{height: '100%'}}>
+                <Box>
                   <CompliancePieChart supplier={complianceTooltip.supplier} />
                 </Box>
               </Grid>
@@ -1925,14 +1865,6 @@ function CostAnalytics() {
                   strokeWidth={2}
                   strokeDasharray="3 4 5 2"
                   name="Target Cost"
-                />
-                {/* إضافة خط جديد لعرض Cost Gap */}
-                <Line 
-                  type="monotone" 
-                  dataKey="gap" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  name="Cost Gap"
                 />
               </LineChart>
             </ResponsiveContainer>
