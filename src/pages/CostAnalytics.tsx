@@ -1017,6 +1017,9 @@ function CostAnalytics() {
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style
+كمل
+typescript
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
@@ -1424,8 +1427,7 @@ function CostAnalytics() {
                 </Tabs.Content>
 
                 <Tabs.Content value="target">
-                  <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                  <Table.Root variant="surface"><Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1602,7 +1604,7 @@ function CostAnalytics() {
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid ',
+            border: '1px solid #e5e7eb',
             backgroundColor: 'white'
           }}>
             <Dialog.Title style={{ 
@@ -1709,13 +1711,13 @@ function CostAnalytics() {
                     />
                     <Legend />
                     <Bar 
-  yAxisId="right" 
-  dataKey="rating" 
-  name="Rating" 
-  fill="#f59e0b"
-  animationBegin={0}
-  animationDuration={1000}
-/>
+                      yAxisId="left" 
+                      dataKey="price" 
+                      name="Price/kg" 
+                      fill="#3b82f6"
+                      animationBegin={0}
+                      animationDuration={1000}
+                    >
                       {suppliers.map((_, index) => (
                         <Cell 
                           key={`cell-${index}`} 
@@ -1728,7 +1730,8 @@ function CostAnalytics() {
                       dataKey="rating" 
                       name="Rating" 
                       fill="#f59e0b"
-                      animationBegin                      animationDuration={1000}
+                      animationBegin={0}
+                      animationDuration={1000}
                     />
                   </BarChart>
                 </ResponsiveContainer>
@@ -1951,8 +1954,7 @@ function CostAnalytics() {
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1'
-        }}>
-          <Flex direction="column">
+        }}>          <Flex direction="column">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
@@ -2005,7 +2007,7 @@ function CostAnalytics() {
             borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
-          >
+        >
           <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
         </Button>
