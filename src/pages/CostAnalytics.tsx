@@ -241,59 +241,203 @@ const calculateComplianceScore = (material: Material): number => {
     blockchain: 10
   };
 
-  const testScore = (Object.values(material.tests)
-    .filter(test => test.status === 'Passed').length / 4) * weights.tests;
-  
+  const testCount = Object.keys(material.tests).length;
+  const passedTests = Object.values(material.tests)
+    .filter(test => test.status === 'Passed').length;
+  const testScore = (passedTests / testCount) * weights.tests;
+
   const certScore = material.certificate ? weights.certificate : 0;
   const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
-  const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
+  
+  const isExpiryValid = new Date(material.expiryDate) > new Date();
+  const expiryScore = isExpiryValid ? weights.expiry : 0;
+  
   const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
 
-  return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
+  const totalScore = testScore + certScore + supplierScore + expiryScore + blockchainScore;
+  return Math.min(Math.round(totalScore), 100);
 };
 
-const CompliancePieChart = ({ supplier }: { supplier: Supplier | null }) => {
-  if (!supplier) return null;
+const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
+  const complianceScore = calculateComplianceScore(supplier.material);
   
-  const material = supplier.material;
-  const complianceScore = calculateComplianceScore(material);
-  
-  // Pie chart data
-  const pieData = [
-    { name: 'Quality Tests', value: 40, passed: Object.values(material.tests).filter(test => test.status === 'Passed').length },
-    { name: 'Certificate', value: material.certificate ? 20 : 0 },
-    { name: 'Supplier Status', value: material.supplier.status === 'Approved' ? 15 : 0 },
-    { name: 'Expiry Date', value: new Date(material.expiryDate) > new Date() ? 15 : 0 },
-    { name: 'Blockchain', value: material.blockchainRegistered ? 10 : 0 },
-  ].filter(item => item.value > 0);
+  const calculateTestScore = (tests: MaterialTests): number => {
+    const passedTests = Object.values(tests).filter(test => test.status === 'Passed').length;
+    return (passedTests / Object.keys(tests).length) * 40;
+  };
+
+  const getTestName = (testKey: string): string => {
+    const testNames: Record<string, string> = {
+      identity: 'Identity Test',
+      purity: 'Purity Test',
+      microbial: 'Microbial Test',
+      endotoxins: 'Endotoxins Test'
+    };
+    return testNames[testKey] || testKey;
+  };
+
+  const getSupplierStatusText = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'Approved': 'Approved',
+      'Pending': 'Pending Review',
+      'Rejected': 'Rejected'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getComplianceAssessment = (score: number, material: Material): string => {
+    if (score >= 90) {
+      return "This supplier has excellent compliance. All requirements are fully met.";
+    } else if (score >= 80) {
+      return "This supplier has very good compliance. There are a few minor areas for improvement.";
+    } else if (score >= 70) {
+      return "This supplier has acceptable compliance but needs improvement in some areas to ensure full compliance.";
+    } else {
+      const issues = [];
+      if (Object.values(material.tests).some(t => t.status !== 'Passed')) {
+        issues.push("some quality tests did not pass");
+      }
+      if (!material.certificate) issues.push("no quality certificate");
+      if (material.supplier.status !== 'Approved') issues.push("supplier status not approved");
+      if (new Date(material.expiryDate) <= new Date()) issues.push("product expired");
+      if (!material.blockchainRegistered) issues.push("not registered on blockchain");
+      
+      return `This supplier has poor compliance. Needs improvement in: ${issues.join(', ')}.`;
+    }
+  };
 
   return (
-    <div style={{ width: '300px', height: '300px' }}>
-      <Heading size="2" align="center" mb="2">
-        Compliance Details: {supplier.name}
-      </Heading>
-      <ResponsiveContainer width="100%" height="80%">
-        <PieChart>
-          <Pie
-            data={pieData}
-            cx="50%"
-            cy="50%"
-            outerRadius={80}
-            fill="#8884d8"
-            dataKey="value"
-            label={({ name, value }) => `${name}: ${value}%`}
-          >
-            {pieData.map((entry, index) => (
-              <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend />
-        </PieChart>
-      </ResponsiveContainer>
-      <Text size="2" weight="bold" align="center">
-        Total Score: {complianceScore}/100
-      </Text>
+    <div style={{ padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '16px' 
+      }}>
+        <h3 style={{ margin: 0, color: '#1e293b' }}>Compliance Details</h3>
+        <div style={{ 
+          padding: '4px 12px', 
+          borderRadius: '20px', 
+          backgroundColor: complianceScore >= 80 ? '#dcfce7' : 
+                          complianceScore >= 60 ? '#fef3c7' : '#fee2e2',
+          color: complianceScore >= 80 ? '#166534' : 
+                 complianceScore >= 60 ? '#92400e' : '#991b1b',
+          fontWeight: 'bold'
+        }}>
+          {complianceScore}/100
+        </div>
+      </div>
+
+      <div style={{ marginBottom: '20px' }}>
+        {[
+          { 
+            name: 'Quality Tests', 
+            value: calculateTestScore(supplier.material.tests), 
+            max: 40,
+            details: `(${Object.values(supplier.material.tests).filter(t => t.status === 'Passed').length} of 4 passed)`
+          },
+          { 
+            name: 'Quality Certificate', 
+            value: supplier.material.certificate ? 20 : 0, 
+            max: 20,
+            details: supplier.material.certificate ? 'Available' : 'Not available'
+          },
+          { 
+            name: 'Supplier Status', 
+            value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
+            max: 15,
+            details: getSupplierStatusText(supplier.material.supplier.status)
+          },
+          { 
+            name: 'Expiry Date', 
+            value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
+            max: 15,
+            details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired'
+          },
+          { 
+            name: 'Blockchain Registration', 
+            value: supplier.material.blockchainRegistered ? 10 : 0, 
+            max: 10,
+            details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered'
+          }
+        ].map((item, index) => (
+          <div key={index} style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+              <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.name}</span>
+              <span style={{ fontSize: '14px', color: '#64748b' }}>
+                {item.value}/{item.max} - {item.details}
+              </span>
+            </div>
+            <div style={{
+              height: '8px',
+              backgroundColor: '#e2e8f0',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${(item.value / item.max) * 100}%`,
+                backgroundColor: item.value > 0 ? '#10b981' : '#ef4444',
+                borderRadius: '4px',
+                transition: 'width 0.3s ease'
+              }} />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ 
+        backgroundColor: 'white', 
+        padding: '12px', 
+        borderRadius: '6px',
+        border: '1px solid #e2e8f0'
+      }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Quality Tests Details:</h4>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
+          {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
+            <div key={index} style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              fontSize: '13px'
+            }}>
+              <div style={{
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: status === 'Passed' ? '#10b981' : 
+                                status === 'Failed' ? '#ef4444' : '#94a3b8',
+                marginRight: '8px'
+              }} />
+              <span style={{ marginRight: '4px' }}>{getTestName(test)}:</span>
+              <span style={{ 
+                fontWeight: '500',
+                color: status === 'Passed' ? '#10b981' : 
+                       status === 'Failed' ? '#ef4444' : '#64748b'
+              }}>
+                {status === 'Passed' ? 'Passed' : status === 'Failed' ? 'Failed' : 'Not Tested'}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ 
+        marginTop: '16px', 
+        padding: '12px', 
+        backgroundColor: '#fffbeb',
+        borderRadius: '6px',
+        border: '1px solid #fde68a'
+      }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Assessment:</h4>
+        <p style={{ 
+          margin: 0, 
+          fontSize: '13px', 
+          color: '#92400e',
+          lineHeight: '1.5'
+        }}>
+          {getComplianceAssessment(complianceScore, supplier.material)}
+        </p>
+      </div>
     </div>
   );
 };
@@ -392,11 +536,11 @@ function CostAnalytics() {
   const calculateSavingsPercentage = (item: Item): string => {
     const actual = calculateActualCost(item);
     const after = calculateCostAfter(item);
-    return ((actual - after) / actual * 100).toFixed(1) + '%';
+    const percentage = ((actual - after) / actual * 100);
+    return `${percentage.toFixed(1)}%`;
   };
 
   const generateSupplierPrices = (basePrice: number, materialName: string) => {
-    // Convert base price to integer
     const intBasePrice = Math.round(basePrice);
     
     const discounts = [
@@ -548,7 +692,6 @@ function CostAnalytics() {
     });
   };
 
-  // NEW FUNCTION: Update costAfter value for any item with 5% limit
   const updateCostAfterValue = (category: CostCategory, index: number, value: number) => {
     setData(prev => {
       const newData = {...prev};
@@ -556,11 +699,9 @@ function CostAnalytics() {
       const item = categoryItems[index];
       const actualCost = calculateActualCost(item);
       
-      // Set maximum allowed value (savings not exceeding 5%)
       const maxAllowedSavings = actualCost * 0.05;
       const minAllowedCostAfter = actualCost - maxAllowedSavings;
       
-      // Ensure the new value is not less than 95% of actual cost
       item.costAfter = Math.max(value, minAllowedCostAfter);
       
       switch (category) {
@@ -765,6 +906,138 @@ function CostAnalytics() {
       );
     }
     return null;
+  };
+
+  const CostAfterView = ({ category, data, updateCostAfterValue }: { category: CostCategory, data: CostData, updateCostAfterValue: (category: CostCategory, index: number, value: number) => void }) => {
+    return (
+      <Table.Root variant="surface">
+        <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+          <Table.Row>
+            <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Before</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+        <Table.Body>
+          {getDetailsByCategory(category, data).map((item, index) => {
+            const costBefore = calculateActualCost(item);
+            const costAfter = calculateCostAfter(item);
+            const savings = costBefore - costAfter;
+            const savingsPercentage = ((savings / costBefore) * 100).toFixed(1);
+            const exceedsLimit = parseFloat(savingsPercentage) > 5;
+            
+            return (
+              <Table.Row key={index}>
+                <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(costBefore, currency)}
+                </Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  <input
+                    type="number"
+                    value={costAfter}
+                    onChange={(e) => updateCostAfterValue(
+                      category, 
+                      index, 
+                      parseFloat(e.target.value) || 0
+                    )}
+                    step="0.01"
+                    min={costBefore * 0.95}
+                    max={costBefore}
+                    style={{ 
+                      width: '80px',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#f9fafb',
+                      fontSize: '14px'
+                    }}
+                  />
+                </Table.Cell>
+                <Table.Cell style={{ 
+                  ...tableCellStyle,
+                  color: savings > 0 ? (exceedsLimit ? '#ef4444' : '#10b981') : '#ef4444',
+                  fontWeight: 'bold'
+                }}>
+                  {formatCurrency(savings, currency)}
+                </Table.Cell>
+                <Table.Cell style={{ 
+                  ...tableCellStyle,
+                  color: savings > 0 ? (exceedsLimit ? '#ef4444' : '#10b981') : '#ef4444',
+                  fontWeight: 'bold'
+                }}>
+                  {savingsPercentage}%
+                </Table.Cell>
+              </Table.Row>
+            );
+          })}
+          
+          <Table.Row style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}}>
+            <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
+            <Table.Cell style={tableCellStyle}>
+              {formatCurrency(
+                getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateActualCost(item), 0
+                ), 
+                currency
+              )}
+            </Table.Cell>
+            <Table.Cell style={tableCellStyle}>
+              {formatCurrency(
+                getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateCostAfter(item), 0
+                ), 
+                currency
+              )}
+            </Table.Cell>
+            <Table.Cell style={tableCellStyle}>
+              {formatCurrency(
+                getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
+                ), 
+                currency
+              )}
+            </Table.Cell>
+            <Table.Cell style={tableCellStyle}>
+              {(() => {
+                const totalBefore = getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateActualCost(item), 0
+                );
+                const totalAfter = getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateCostAfter(item), 0
+                );
+                const totalSavingsPercentage = totalBefore === 0 ? 0 : ((totalBefore - totalAfter) / totalBefore) * 100;
+                const exceedsTotalLimit = totalSavingsPercentage > 5;
+                
+                return (
+                  <span style={{ 
+                    color: exceedsTotalLimit ? '#ef4444' : '#10b981',
+                  }}>
+                    {totalBefore === 0 ? '0.0' : totalSavingsPercentage.toFixed(1)}%
+                  </span>
+                );
+              })()}
+            </Table.Cell>
+          </Table.Row>
+          
+          <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
+            <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
+            <Table.Cell style={tableCellStyle} colSpan={4}>
+              {formatCurrency(
+                getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateActualCost(item), 0
+                ) - getDetailsByCategory(category, data).reduce(
+                  (sum, item) => sum + calculateCostAfter(item), 0
+                ), 
+                currency
+              )}
+            </Table.Cell>
+          </Table.Row>
+        </Table.Body>
+      </Table.Root>
+    );
   };
 
   return (
@@ -1424,119 +1697,11 @@ function CostAnalytics() {
                 </Tabs.Content>
 
                 <Tabs.Content value="costAfter">
-                  <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
-                      <Table.Row>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const costAfter = calculateCostAfter(item);
-                        const savings = calculateActualCost(item) - costAfter;
-                        const savingsPercentage = calculateSavingsPercentage(item);
-                        const maxAllowedSavings = calculateActualCost(item) * 0.05;
-                        
-                        return (
-                          <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
-                            <Table.Cell style={tableCellStyle}>
-                              <input
-                                type="number"
-                                value={costAfter}
-                                onChange={(e) => updateCostAfterValue(
-                                  dialogCategory, 
-                                  index, 
-                                  parseFloat(e.target.value) || 0
-                                )}
-                                step="0.01"
-                                min={calculateActualCost(item) * 0.95}
-                                max={calculateActualCost(item)}
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              ...tableCellStyle,
-                              color: savings > 0 ? '#10b981' : '#ef4444',
-                              fontWeight: 'bold'
-                            }}>
-                              {formatCurrency(savings, currency)}
-                              {savings > maxAllowedSavings && (
-                                <Text size="1" color="red" style={{display: 'block'}}>
-                                  Max: {formatCurrency(maxAllowedSavings, currency)}
-                                </Text>
-                              )}
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              ...tableCellStyle,
-                              color: savings > 0 ? '#10b981' : '#ef4444',
-                            }}>
-                              {savingsPercentage}
-                              {savings > maxAllowedSavings && (
-                                <Text size="1" color="red" style={{display: 'block'}}>
-                                  Max: 5%
-                                </Text>
-                              )}
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                      
-                      {/* إضافة صف الإجمالي */}
-                      <Table.Row style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}}>
-                        <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
-                        <Table.Cell style={tableCellStyle}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateCostAfter(item), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                        <Table.Cell style={tableCellStyle}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                        <Table.Cell style={tableCellStyle}>
-                          {totalActual === 0 ? '0.00' : 
-                            ((getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
-                            ) / getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateActualCost(item), 0
-                            ) * 100).toFixed(2))}%
-                        </Table.Cell>
-                      </Table.Row>
-                      
-                      {/* إضافة Cost Gap المحسوب */}
-                      <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
-                        <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
-                        <Table.Cell style={tableCellStyle} colSpan={3}>
-                          {formatCurrency(
-                            getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateActualCost(item), 0
-                            ) - getDetailsByCategory(dialogCategory).reduce(
-                              (sum, item) => sum + calculateCostAfter(item), 0
-                            ), 
-                            currency
-                          )}
-                        </Table.Cell>
-                      </Table.Row>
-                    </Table.Body>
-                  </Table.Root>
+                  <CostAfterView 
+                    category={dialogCategory} 
+                    data={data} 
+                    updateCostAfterValue={updateCostAfterValue} 
+                  />
                 </Tabs.Content>
               </Box>
             </Tabs.Root>
@@ -1575,7 +1740,7 @@ function CostAnalytics() {
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '1200px', // زيادة العرض لاستيعاب المخططين
+            maxWidth: '1200px',
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
@@ -1715,7 +1880,7 @@ function CostAnalytics() {
                 </Card>
 
                 <Box style={{height: '100%'}}>
-                  <CompliancePieChart supplier={complianceTooltip.supplier} />
+                  <EnhancedComplianceDisplay supplier={complianceTooltip.supplier || suppliers[0]} />
                 </Box>
               </Grid>
 
@@ -1921,12 +2086,11 @@ function CostAnalytics() {
                 <Line 
                   type="monotone" 
                   dataKey="targetCost" 
-                  stroke="#10b981" 
+                  stroke '#10b981' 
                   strokeWidth={2}
                   strokeDasharray="3 4 5 2"
                   name="Target Cost"
                 />
-                {/* إضافة خط جديد لعرض Cost Gap */}
                 <Line 
                   type="monotone" 
                   dataKey="gap" 
