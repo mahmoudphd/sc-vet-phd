@@ -1370,7 +1370,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
