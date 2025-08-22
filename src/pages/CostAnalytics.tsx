@@ -251,161 +251,48 @@ const calculateComplianceScore = (material: Material): number => {
   return Math.round(testScore + certScore + supplierScore + expiryScore + blockchainScore);
 };
 
-interface TestDetailsTooltipProps {
-  supplier: Supplier | null;
-  x: number;
-  y: number;
-  onClose: () => void;
-}
-
-const TestDetailsTooltip = ({ supplier, x, y, onClose }: TestDetailsTooltipProps) => {
+const CompliancePieChart = ({ supplier }: { supplier: Supplier | null }) => {
   if (!supplier) return null;
-
+  
   const material = supplier.material;
   const complianceScore = calculateComplianceScore(material);
   
-  const weights = {
-    tests: 40,
-    certificate: 20,
-    supplier: 15,
-    expiry: 15,
-    blockchain: 10
-  };
-
-  const testScore = (Object.values(material.tests)
-    .filter((test: MaterialTest) => test.status === 'Passed').length / 4) * weights.tests;
-  
-  const certScore = material.certificate ? weights.certificate : 0;
-  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
-  const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
-  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
-
-  // Calculate points for each test
-  const testPoints = Object.values(material.tests).map(test => 
-    test.status === 'Passed' ? weights.tests / 4 : 0
-  );
+  // Pie chart data
+  const pieData = [
+    { name: 'Quality Tests', value: 40, passed: Object.values(material.tests).filter(test => test.status === 'Passed').length },
+    { name: 'Certificate', value: material.certificate ? 20 : 0 },
+    { name: 'Supplier Status', value: material.supplier.status === 'Approved' ? 15 : 0 },
+    { name: 'Expiry Date', value: new Date(material.expiryDate) > new Date() ? 15 : 0 },
+    { name: 'Blockchain', value: material.blockchainRegistered ? 10 : 0 },
+  ].filter(item => item.value > 0);
 
   return (
-    <div
-      style={{
-        position: 'fixed',
-        top: y + 20,
-        left: x,
-        backgroundColor: 'white',
-        border: '1px solid #e5e7eb',
-        borderRadius: '8px',
-        padding: '16px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        zIndex: 1000,
-        minWidth: '300px'
-      }}
-      onMouseLeave={onClose}
-    >
-      <Text size="2" weight="bold" style={{ marginBottom: '12px', display: 'block' }}>
-        Quality Test Details: {supplier.name}
+    <div style={{ width: '300px', height: '300px' }}>
+      <Heading size="2" align="center" mb="2">
+        Compliance Details: {supplier.name}
+      </Heading>
+      <ResponsiveContainer width="100%" height="80%">
+        <PieChart>
+          <Pie
+            data={pieData}
+            cx="50%"
+            cy="50%"
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            label={({ name, value }) => `${name}: ${value}%`}
+          >
+            {pieData.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'][index % 5]} />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+      <Text size="2" weight="bold" align="center">
+        Total Score: {complianceScore}/100
       </Text>
-      
-      <Flex direction="column" gap="3">
-        {/* Test details */}
-        <Box>
-          <Text size="1" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
-            Tests (40%):
-          </Text>
-          <Flex direction="column" gap="1">
-            <Flex justify="between">
-              <Text size="1">Identity:</Text>
-              <Text size="1" weight="bold" style={{ 
-                color: material.tests.identity.status === 'Passed' ? '#10b981' : '#ef4444' 
-              }}>
-                {material.tests.identity.status === 'Passed' ? 'Passed' : material.tests.identity.status === 'Failed' ? 'Failed' : 'Not Tested'} 
-                ({testPoints[0]}/10)
-              </Text>
-            </Flex>
-            
-            <Flex justify="between">
-              <Text size="1">Purity:</Text>
-              <Text size="1" weight="bold" style={{ 
-                color: material.tests.purity.status === 'Passed' ? '#10b981' : '#ef4444' 
-              }}>
-                {material.tests.purity.status === 'Passed' ? 'Passed' : material.tests.purity.status === 'Failed' ? 'Failed' : 'Not Tested'} 
-                ({testPoints[1]}/10)
-              </Text>
-            </Flex>
-            
-            <Flex justify="between">
-              <Text size="1">Microbial:</Text>
-              <Text size="1" weight="bold" style={{ 
-                color: material.tests.microbial.status === 'Passed' ? '#10b981' : '#ef4444' 
-              }}>
-                {material.tests.microbial.status === 'Passed' ? 'Passed' : material.tests.microbial.status === 'Failed' ? 'Failed' : 'Not Tested'} 
-                ({testPoints[2]}/10)
-              </Text>
-            </Flex>
-            
-            <Flex justify="between">
-              <Text size="1">Endotoxins:</Text>
-              <Text size="1" weight="bold" style={{ 
-                color: material.tests.endotoxins.status === 'Passed' ? '#10b981' : '#ef4444' 
-              }}>
-                {material.tests.endotoxins.status === 'Passed' ? 'Passed' : material.tests.endotoxins.status === 'Failed' ? 'Failed' : 'Not Tested'} 
-                ({testPoints[3]}/10)
-              </Text>
-            </Flex>
-          </Flex>
-        </Box>
-        
-        <Box style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
-        
-        {/* Certificate */}
-        <Flex justify="between">
-          <Text size="1">Certificate (20%):</Text>
-          <Text size="1" weight="bold" style={{ 
-            color: material.certificate ? '#10b981' : '#ef4444' 
-          }}>
-            {material.certificate ? 'Available' : 'Not Available'} ({certScore}/20)
-          </Text>
-        </Flex>
-        
-        {/* Supplier status */}
-        <Flex justify="between">
-          <Text size="1">Supplier Status (15%):</Text>
-          <Text size="1" weight="bold" style={{ 
-            color: material.supplier.status === 'Approved' ? '#10b981' : 
-                   material.supplier.status === 'Pending' ? '#f59e0b' : '#ef4444' 
-          }}>
-            {material.supplier.status === 'Approved' ? 'Approved' : 
-             material.supplier.status === 'Pending' ? 'Pending' : 'Rejected'} ({supplierScore}/15)
-          </Text>
-        </Flex>
-        
-        {/* Expiry date */}
-        <Flex justify="between">
-          <Text size="1">Expiry Date (15%):</Text>
-          <Text size="1" weight="bold" style={{ 
-            color: new Date(material.expiryDate) > new Date() ? '#10b981' : '#ef4444' 
-          }}>
-            {new Date(material.expiryDate) > new Date() ? 'Valid' : 'Expired'} ({expiryScore}/15)
-          </Text>
-        </Flex>
-        
-        {/* Blockchain */}
-        <Flex justify="between">
-          <Text size="1">Blockchain (10%):</Text>
-          <Text size="1" weight="bold" style={{ 
-            color: material.blockchainRegistered ? '#10b981' : '#ef4444' 
-          }}>
-            {material.blockchainRegistered ? 'Registered' : 'Not Registered'} ({blockchainScore}/10)
-          </Text>
-        </Flex>
-        
-        <Box style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
-        
-        {/* Total score */}
-        <Flex justify="between">
-          <Text size="1" weight="bold">Total Score:</Text>
-          <Text size="1" weight="bold">{complianceScore}/100</Text>
-        </Flex>
-      </Flex>
     </div>
   );
 };
@@ -508,6 +395,9 @@ function CostAnalytics() {
   };
 
   const generateSupplierPrices = (basePrice: number, materialName: string) => {
+    // Convert base price to integer
+    const intBasePrice = Math.round(basePrice);
+    
     const discounts = [
       0.01 + Math.random() * 0.04,
       0.01 + Math.random() * 0.04,
@@ -540,7 +430,7 @@ function CostAnalytics() {
       {
         id: 1,
         name: 'Supplier A',
-        pricePerKg: Math.round(basePrice * (1 - discounts[0]) * 100) / 100,
+        pricePerKg: Math.round(intBasePrice * (1 - discounts[0])),
         rating: 4.7,
         delivery: '1 week',
         reliability: '97%',
@@ -550,7 +440,7 @@ function CostAnalytics() {
       {
         id: 2,
         name: 'Supplier B',
-        pricePerKg: Math.round(basePrice * (1 - discounts[1]) * 100) / 100,
+        pricePerKg: Math.round(intBasePrice * (1 - discounts[1])),
         rating: 4.2,
         delivery: '2 weeks',
         reliability: '90%',
@@ -560,7 +450,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: Math.round(basePrice * (1 - discounts[2]) * 100) / 100,
+        pricePerKg: Math.round(intBasePrice * (1 - discounts[2])),
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
@@ -572,7 +462,7 @@ function CostAnalytics() {
     return suppliers.map(supplier => {
       const complianceScore = calculateComplianceScore(supplier.material);
       
-      const priceScore = (1 - (supplier.pricePerKg / basePrice)) * 40;
+      const priceScore = (1 - (supplier.pricePerKg / intBasePrice)) * 40;
       const ratingScore = (supplier.rating / 5) * 30;
       const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
       const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
@@ -662,7 +552,14 @@ function CostAnalytics() {
     setData(prev => {
       const newData = {...prev};
       const categoryItems = [...getDetailsByCategory(category, newData)];
-      categoryItems[index].costAfter = value;
+      const item = categoryItems[index];
+      const actualCost = calculateActualCost(item);
+      
+      // Set maximum allowed value (savings not exceeding 5%)
+      const maxAllowedCostAfter = actualCost * 0.95;
+      
+      // Ensure the new value is not less than 95% of actual cost
+      item.costAfter = Math.max(value, maxAllowedCostAfter);
       
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
@@ -775,17 +672,16 @@ function CostAnalytics() {
   const postOptimizationEstimate = Math.round((totalActual - totalCostAfter));
   const targetCost = Math.round(benchmarkPrice * (1 - profitMargin / 100));
 
-  const benchmarkTrendData = [
-    { month: 'Jan', actual: 170, benchmark: benchmarkPrice },
-    { month: 'Feb', actual: 171, benchmark: benchmarkPrice },
-    { month: 'Mar', actual: 168, benchmark: benchmarkPrice },
-    { month: 'Apr', actual: 171, benchmark: benchmarkPrice },
-    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, costAfter: totalCostAfter, postOptimization: postOptimizationEstimate },
+  const costGapData = [
+    { month: 'Jan', actual: 170, benchmark: benchmarkPrice, targetCost: targetCost },
+    { month: 'Feb', actual: 171, benchmark: benchmarkPrice, targetCost: targetCost },
+    { month: 'Mar', actual: 168, benchmark: benchmarkPrice, targetCost: targetCost },
+    { month: 'Apr', actual: 171, benchmark: benchmarkPrice, targetCost: targetCost },
+    { month: 'May', actual: totalActual, benchmark: benchmarkPrice, targetCost: targetCost, costAfter: totalCostAfter },
   ];
 
-  const benchmarkTrendDataWithGap = benchmarkTrendData.map((d) => ({
+  const costGapDataWithGap = costGapData.map((d) => ({
     ...d,
-    targetCost,
     gap: Math.round((d.actual - targetCost)),
   }));
 
@@ -843,6 +739,30 @@ function CostAnalytics() {
       default:
         return [];
     }
+  };
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div style={{ 
+          backgroundColor: 'white', 
+          padding: '10px', 
+          border: '1px solid #ccc',
+          borderRadius: '5px'
+        }}>
+          <p>{`Month: ${label}`}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {`${entry.name}: ${formatCurrency(entry.value, currency)}`}
+              {entry.name === 'actual' && (
+                <span>{` (Cost Gap: ${formatCurrency(entry.value - targetCost, currency)})`}</span>
+              )}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
   };
 
   return (
@@ -1524,8 +1444,7 @@ function CostAnalytics() {
                               <input
                                 type="number"
                                 value={costAfter}
-                                onChange={(e) => updateCostAfterValue(
-                                  dialogCategory, 
+                                onChange={(e) => updateCostAfterValue(                                  dialogCategory, 
                                   index, 
                                   parseFloat(e.target.value) || 0
                                 )}
@@ -1597,7 +1516,7 @@ function CostAnalytics() {
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '800px',
+            maxWidth: '1000px',
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
@@ -1654,85 +1573,91 @@ function CostAnalytics() {
                 Auto Select Best Supplier
               </Button>
 
-              <Card style={{
-                borderRadius: '8px',
-                backgroundColor: 'white',
-                padding: '16px'
-              }}>
-                <Heading size="4" mb="3" style={{ 
-                  color: '#1f2937',
-                  fontWeight: 'bold'
+              <Grid columns="2" gap="4">
+                <Card style={{
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  padding: '16px'
                 }}>
-                  Supplier Comparison
-                </Heading>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart
-                    data={suppliers.map(s => ({
-                      name: s.name,
-                      price: s.pricePerKg,
-                      rating: s.rating
-                    }))}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fill: '#4b5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      yAxisId="left" 
-                      orientation="left" 
-                      stroke="#3b82f6" 
-                      tick={{ fill: '#4b5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <YAxis 
-                      yAxisId="right" 
-                      orientation="right" 
-                      stroke="#f59e0b" 
-                      tick={{ fill: '#4b5563', fontSize: 12 }}
-                      axisLine={{ stroke: '#e5e7eb' }}
-                    />
-                    <Tooltip 
-                      formatter={(value: number, name: string) => [
-                        name === 'price' ? formatCurrency(Number(value), currency) : value,
-                        name === 'price' ? 'Price/kg' : 'Rating'
-                      ]}
-                      contentStyle={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e5e7eb',
-                        borderRadius: '6px',
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                      }}
-                    />
-                    <Legend />
-                    <Bar 
-                      yAxisId="left" 
-                      dataKey="price" 
-                      name="Price/kg" 
-                      fill="#3b82f6"
-                      animationBegin={0}
-                      animationDuration={1000}
+                  <Heading size="4" mb="3" style={{ 
+                    color: '#1f2937',
+                    fontWeight: 'bold'
+                  }}>
+                    Supplier Comparison
+                  </Heading>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart
+                      data={suppliers.map(s => ({
+                        name: s.name,
+                        price: s.pricePerKg,
+                        rating: s.rating
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                     >
-                      {suppliers.map((_, index) => (
-                        <Cell 
-                          key={`cell-${index}`} 
-                          fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
-                        />
-                      ))}
-                    </Bar>
-                    <Bar 
-                      yAxisId="right" 
-                      dataKey="rating" 
-                      name="Rating" 
-                      fill="#f59e0b"
-                      animationBegin={0}
-                      animationDuration={1000}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Card>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        yAxisId="left" 
+                        orientation="left" 
+                        stroke="#3b82f6" 
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        yAxisId="right" 
+                        orientation="right" 
+                        stroke="#f59e0b" 
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <Tooltip 
+                        formatter={(value: number, name: string) => [
+                          name === 'price' ? formatCurrency(Number(value), currency) : value,
+                          name === 'price' ? 'Price/kg' : 'Rating'
+                        ]}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      <Legend />
+                      <Bar 
+                        yAxisId="left" 
+                        dataKey="price" 
+                        name="Price/kg" 
+                        fill="#3b82f6"
+                        animationBegin={0}
+                        animationDuration={1000}
+                      >
+                        {suppliers.map((_, index) => (
+                          <Cell 
+                            key={`cell-${index}`} 
+                            fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
+                          />
+                        ))}
+                      </Bar>
+                      <Bar 
+                        yAxisId="right" 
+                        dataKey="rating" 
+                        name="Rating" 
+                        fill="#f59e0b"
+                        animationBegin={0}
+                        animationDuration={1000}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
+
+                <Box>
+                  <CompliancePieChart supplier={complianceTooltip.supplier} />
+                </Box>
+              </Grid>
 
               <Card style={{
                 borderRadius: '8px',
@@ -1909,22 +1834,21 @@ function CostAnalytics() {
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-              Benchmark Trend
+              Cost Gap Calculation
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={benchmarkTrendDataWithGap}>
+              <LineChart data={costGapDataWithGap}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="month" />
                 <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value, currency)}
-                />
+                <Tooltip content={<CustomTooltip />} />
                 <Legend />
                 <Line 
                   type="monotone" 
                   dataKey="actual" 
                   stroke="#3b82f6" 
                   strokeWidth={2}
+                  name="Actual Cost"
                 />
                 <Line 
                   type="monotone" 
@@ -1932,6 +1856,7 @@ function CostAnalytics() {
                   stroke="#f59e0b" 
                   strokeWidth={2}
                   strokeDasharray="5 5"
+                  name="Benchmark Price"
                 />
                 <Line 
                   type="monotone" 
@@ -1939,6 +1864,7 @@ function CostAnalytics() {
                   stroke="#10b981" 
                   strokeWidth={2}
                   strokeDasharray="3 4 5 2"
+                  name="Target Cost"
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -2010,15 +1936,6 @@ function CostAnalytics() {
           Submit to Blockchain
         </Button>
       </Flex>
-
-      {complianceTooltip.visible && (
-        <TestDetailsTooltip 
-          supplier={complianceTooltip.supplier} 
-          x={complianceTooltip.x} 
-          y={complianceTooltip.y}
-          onClose={() => setComplianceTooltip({ visible: false, x: 0, y: 0, supplier: null })}
-        />
-      )}
     </Box>
   );
 }
