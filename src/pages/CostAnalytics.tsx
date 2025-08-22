@@ -53,8 +53,8 @@ interface Item {
   originalUnitPrice?: number;
   originalHours?: number;
   originalHourlyRate?: number;
-  hours?: number; // Added missing property
-  hourlyRate?: number; // Added missing property
+  hours?: number;
+  hourlyRate?: number;
 }
 interface CostTotals {
   actual: number;
@@ -280,6 +280,11 @@ const TestDetailsTooltip = ({ supplier, x, y, onClose }: TestDetailsTooltipProps
   const expiryScore = new Date(material.expiryDate) > new Date() ? weights.expiry : 0;
   const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
 
+  // Calculate points for each test
+  const testPoints = Object.values(material.tests).map(test => 
+    test.status === 'Passed' ? weights.tests / 4 : 0
+  );
+
   return (
     <div
       style={{
@@ -289,58 +294,115 @@ const TestDetailsTooltip = ({ supplier, x, y, onClose }: TestDetailsTooltipProps
         backgroundColor: 'white',
         border: '1px solid #e5e7eb',
         borderRadius: '8px',
-        padding: '12px',
+        padding: '16px',
         boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
         zIndex: 1000,
-        minWidth: '250px'
+        minWidth: '300px'
       }}
       onMouseLeave={onClose}
     >
-      <Text size="2" weight="bold" style={{ marginBottom: '8px', display: 'block' }}>
-        Quality Test Details
+      <Text size="2" weight="bold" style={{ marginBottom: '12px', display: 'block' }}>
+        Quality Test Details: {supplier.name}
       </Text>
       
-      <Flex direction="column" gap="2">
+      <Flex direction="column" gap="3">
+        {/* Test details */}
+        <Box>
+          <Text size="1" weight="bold" style={{ marginBottom: '6px', display: 'block' }}>
+            Tests (40%):
+          </Text>
+          <Flex direction="column" gap="1">
+            <Flex justify="between">
+              <Text size="1">Identity:</Text>
+              <Text size="1" weight="bold" style={{ 
+                color: material.tests.identity.status === 'Passed' ? '#10b981' : '#ef4444' 
+              }}>
+                {material.tests.identity.status === 'Passed' ? 'Passed' : material.tests.identity.status === 'Failed' ? 'Failed' : 'Not Tested'} 
+                ({testPoints[0]}/10)
+              </Text>
+            </Flex>
+            
+            <Flex justify="between">
+              <Text size="1">Purity:</Text>
+              <Text size="1" weight="bold" style={{ 
+                color: material.tests.purity.status === 'Passed' ? '#10b981' : '#ef4444' 
+              }}>
+                {material.tests.purity.status === 'Passed' ? 'Passed' : material.tests.purity.status === 'Failed' ? 'Failed' : 'Not Tested'} 
+                ({testPoints[1]}/10)
+              </Text>
+            </Flex>
+            
+            <Flex justify="between">
+              <Text size="1">Microbial:</Text>
+              <Text size="1" weight="bold" style={{ 
+                color: material.tests.microbial.status === 'Passed' ? '#10b981' : '#ef4444' 
+              }}>
+                {material.tests.microbial.status === 'Passed' ? 'Passed' : material.tests.microbial.status === 'Failed' ? 'Failed' : 'Not Tested'} 
+                ({testPoints[2]}/10)
+              </Text>
+            </Flex>
+            
+            <Flex justify="between">
+              <Text size="1">Endotoxins:</Text>
+              <Text size="1" weight="bold" style={{ 
+                color: material.tests.endotoxins.status === 'Passed' ? '#10b981' : '#ef4444' 
+              }}>
+                {material.tests.endotoxins.status === 'Passed' ? 'Passed' : material.tests.endotoxins.status === 'Failed' ? 'Failed' : 'Not Tested'} 
+                ({testPoints[3]}/10)
+              </Text>
+            </Flex>
+          </Flex>
+        </Box>
+        
+        <Box style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
+        
+        {/* Certificate */}
         <Flex justify="between">
-          <Text size="1">Identity:</Text>
+          <Text size="1">Certificate (20%):</Text>
           <Text size="1" weight="bold" style={{ 
-            color: material.tests.identity.status === 'Passed' ? '#10b981' : '#ef4444' 
+            color: material.certificate ? '#10b981' : '#ef4444' 
           }}>
-            {material.tests.identity.status === 'Passed' ? 'Passed' : material.tests.identity.status === 'Failed' ? 'Failed' : 'Not Tested'}
+            {material.certificate ? 'Available' : 'Not Available'} ({certScore}/20)
           </Text>
         </Flex>
         
+        {/* Supplier status */}
         <Flex justify="between">
-          <Text size="1">Purity:</Text>
+          <Text size="1">Supplier Status (15%):</Text>
           <Text size="1" weight="bold" style={{ 
-            color: material.tests.purity.status === 'Passed' ? '#10b981' : '#ef4444' 
+            color: material.supplier.status === 'Approved' ? '#10b981' : 
+                   material.supplier.status === 'Pending' ? '#f59e0b' : '#ef4444' 
           }}>
-            {material.tests.purity.status === 'Passed' ? 'Passed' : material.tests.purity.status === 'Failed' ? 'Failed' : 'Not Tested'}
+            {material.supplier.status === 'Approved' ? 'Approved' : 
+             material.supplier.status === 'Pending' ? 'Pending' : 'Rejected'} ({supplierScore}/15)
           </Text>
         </Flex>
         
+        {/* Expiry date */}
         <Flex justify="between">
-          <Text size="1">Microbial:</Text>
+          <Text size="1">Expiry Date (15%):</Text>
           <Text size="1" weight="bold" style={{ 
-            color: material.tests.microbial.status === 'Passed' ? '#10b981' : '#ef4444' 
+            color: new Date(material.expiryDate) > new Date() ? '#10b981' : '#ef4444' 
           }}>
-            {material.tests.microbial.status === 'Passed' ? 'Passed' : material.tests.microbial.status === 'Failed' ? 'Failed' : 'Not Tested'}
+            {new Date(material.expiryDate) > new Date() ? 'Valid' : 'Expired'} ({expiryScore}/15)
           </Text>
         </Flex>
         
+        {/* Blockchain */}
         <Flex justify="between">
-          <Text size="1">Endotoxins:</Text>
+          <Text size="1">Blockchain (10%):</Text>
           <Text size="1" weight="bold" style={{ 
-            color: material.tests.endotoxins.status === 'Passed' ? '#10b981' : '#ef4444' 
+            color: material.blockchainRegistered ? '#10b981' : '#ef4444' 
           }}>
-            {material.tests.endotoxins.status === 'Passed' ? 'Passed' : material.tests.endotoxins.status === 'Failed' ? 'Failed' : 'Not Tested'}
+            {material.blockchainRegistered ? 'Registered' : 'Not Registered'} ({blockchainScore}/10)
           </Text>
         </Flex>
         
-        <Box style={{ height: '1px', backgroundColor: '#e5e7eb', margin: '4px 0' }} />
+        <Box style={{ height: '1px', backgroundColor: '#e5e7eb' }} />
         
+        {/* Total score */}
         <Flex justify="between">
-          <Text size="1" weight="bold">Compliance Score:</Text>
+          <Text size="1" weight="bold">Total Score:</Text>
           <Text size="1" weight="bold">{complianceScore}/100</Text>
         </Flex>
       </Flex>
@@ -580,6 +642,27 @@ function CostAnalytics() {
       const newData = {...prev};
       const categoryItems = [...getDetailsByCategory(category, newData)];
       categoryItems[index][field] = value;
+      
+      switch (category) {
+        case 'Direct Materials': newData.rawMaterials = categoryItems; break;
+        case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
+        case 'Direct Labor': newData.directLabor = categoryItems; break;
+        case 'Overhead': newData.overheadItems = categoryItems; break;
+        case 'Other Costs': newData.otherCosts = categoryItems; break;
+      }
+      
+      updateCategoryTotals(category, newData);
+      
+      return newData;
+    });
+  };
+
+  // NEW FUNCTION: Update costAfter value for any item
+  const updateCostAfterValue = (category: CostCategory, index: number, value: number) => {
+    setData(prev => {
+      const newData = {...prev};
+      const categoryItems = [...getDetailsByCategory(category, newData)];
+      categoryItems[index].costAfter = value;
       
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
@@ -1287,7 +1370,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1439,7 +1522,25 @@ function CostAnalytics() {
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
-                              {formatCurrency(costAfter, currency)}
+                              <input
+                                type="number"
+                                value={costAfter}
+                                onChange={(e) => updateCostAfterValue(
+                                  dialogCategory, 
+                                  index, 
+                                  parseFloat(e.target.value) || 0
+                                )}
+                                step="0.01"
+                                min="0"
+                                style={{ 
+                                  width: '80px',
+                                  padding: '6px 10px',
+                                  borderRadius: '6px',
+                                  border: '1px solid #e2e8f0',
+                                  backgroundColor: '#f9fafb',
+                                  fontSize: '14px'
+                                }}
+                              />
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
@@ -1627,8 +1728,7 @@ function CostAnalytics() {
                       dataKey="rating" 
                       name="Rating" 
                       fill="#f59e0b"
-                      animationBegin={0}
-                      animationDuration={1000}
+                      animationBegin                      animationDuration={1000}
                     />
                   </BarChart>
                 </ResponsiveContainer>
