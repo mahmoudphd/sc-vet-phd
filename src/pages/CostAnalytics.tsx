@@ -1637,7 +1637,8 @@ function CostAnalytics() {
                                         borderRadius: '6px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14 }}
+                                        fontSize: '14px'  
+                                      }}
                                     />
                                   )}
                                 </Table.Cell>
