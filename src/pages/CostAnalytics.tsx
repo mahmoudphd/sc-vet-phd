@@ -29,7 +29,8 @@ import {
   Legend,
   BarChart,
   Bar,
-  CartesianGrid
+  CartesianGrid,
+  ComposedChart
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
@@ -1153,8 +1154,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       );
     }
     return null;
-  }; return (
-    <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+  };  return (
+    <Box p="4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
         <Flex gap="3" align="center" wrap="wrap">
@@ -1461,7 +1462,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             borderRadius: '12px',
             padding: '24px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb',
+            border: '1px solid ',
             backgroundColor: 'white'
           }}>
             <Flex justify="between" align="center" mb="4">
@@ -1706,7 +1707,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   borderRadius: '6px',
                                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                                 }}>
-                                  {solutionsOptions.map((sol) => (                                    <RadixSelect.Item 
+                                  {solutionsOptions.map((sol) => (
+                                    <RadixSelect.Item 
                                       key={sol} 
                                       value={sol}
                                       style={{
@@ -1729,7 +1731,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: '##f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1747,7 +1749,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
@@ -1850,9 +1852,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      {selectedSolution && (
+      )}      {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
             maxWidth: '1400px',
@@ -1890,7 +1890,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       <Text style={{ color: '#1f2937', fontWeight: 'bold' }}>{formatCurrency(currentPrice, currency)}</Text>
                     </Flex>
                     <Flex justify="between">
-                      <Text style={{ color: '##4b5563' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '#4b5563' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold'
@@ -1960,8 +1960,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                     borderRadius: '8px',
                     backgroundColor: 'white',
                     padding: '16px',
-                    height: '350px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                    height: '400px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)',
+                    marginBottom: '20px'
                   }}>
                     <Heading size="4" mb="3" style={{ 
                       color: '#1f2937',
@@ -1971,14 +1972,16 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       Supplier Comparison
                     </Heading>
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
+                      <ComposedChart
                         data={suppliers.map(s => ({
                           name: s.name,
                           price: s.pricePerKg,
                           rating: s.rating,
+                          compliance: s.complianceScore,
+                          totalScore: s.score,
                           selected: s.selected
                         }))}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
@@ -1987,27 +1990,32 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                           axisLine={{ stroke: '#e5e7eb' }}
                         />
                         <YAxis 
-                          yAxisId="left" 
-                          orientation="left" 
-                          stroke="#3b82f6" 
+                          yAxisId="left"
+                          orientation="left"
+                          stroke="#3b82f6"
                           tick={{ fill: '#4b5563', fontSize: 12 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                           tickFormatter={(value) => `${value} ${currency}`}
+                          label={{ value: 'Price', angle: -90, position: 'insideLeft', offset: -10, style: { fill: '#3b82f6', fontWeight: 'bold' } }}
                         />
                         <YAxis 
-                          yAxisId="right" 
-                          orientation="right" 
-                          stroke="#f59e0b" 
+                          yAxisId="right"
+                          orientation="right"
+                          stroke="#f59e0b"
                           tick={{ fill: '#4b5563', fontSize: 12 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                           domain={[0, 5]}
                           tickFormatter={(value) => `${value}/5`}
+                          label={{ value: 'Rating', angle: 90, position: 'insideRight', offset: -10, style: { fill: '#f59e0b', fontWeight: 'bold' } }}
                         />
                         <Tooltip 
-                          formatter={(value: number, name: string) => [
-                            name === 'price' ? `${formatCurrency(Number(value), currency)}` : `${value}/5`,
-                            name === 'price' ? 'Price/kg' : 'Rating'
-                          ]}
+                          formatter={(value: number, name: string) => {
+                            if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
+                            if (name === 'rating') return [`${value}/5`, 'Rating'];
+                            if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
+                            if (name === 'totalScore') return [`${value}/200`, 'Total Score'];
+                            return [value, name];
+                          }}
                           contentStyle={{
                             backgroundColor: 'white',
                             border: '1px solid #e5e7eb',
@@ -2017,36 +2025,58 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                         />
                         <Legend 
                           verticalAlign="top" 
-                          height={36}
-                          payload={[
-                            { value: 'Price/kg', type: 'square', color: '#3b82f6' },
-                            { value: 'Rating', type: 'square', color: '#f59e0b' }
-                          ]}
+                          height={60}
+                          wrapperStyle={{ paddingBottom: '10px' }}
                         />
                         <Bar 
-                          yAxisId="left" 
+                          yAxisId="left"
                           dataKey="price" 
-                          name="price" 
+                          name="Price/kg" 
                           fill="#3b82f6"
-                          animationBegin={0}
-                          animationDuration={1000}
+                          barSize={20}
+                          radius={[4, 4, 0, 0]}
                         >
                           {suppliers.map((_, index) => (
                             <Cell 
-                              key={`cell-${index}`} 
+                              key={`price-cell-${index}`} 
                               fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
+                              stroke={suppliers[index].selected ? '#059669' : '#3b82f6'}
+                              strokeWidth={suppliers[index].selected ? 2 : 0}
                             />
                           ))}
                         </Bar>
-                        <Bar 
-                          yAxisId="right" 
+                        <Line 
+                          yAxisId="right"
+                          type="monotone" 
                           dataKey="rating" 
-                          name="rating" 
-                          fill="#f59e0b"
-                          animationBegin={0}
-                          animationDuration={1000}
+                          name="Rating" 
+                          stroke="#f59e0b" 
+                          strokeWidth={3}
+                          dot={{ fill: '#f59e0b', strokeWidth: 2, r: 6 }}
+                          activeDot={{ r: 8, fill: '#d97706' }}
                         />
-                      </BarChart>
+                        <Line 
+                          yAxisId="left"
+                          type="monotone" 
+                          dataKey="compliance" 
+                          name="Compliance Score" 
+                          stroke="#8b5cf6" 
+                          strokeWidth={2}
+                          strokeDasharray="5 5"
+                          dot={{ fill: '#8b5cf6', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, fill: '#7c3aed' }}
+                        />
+                        <Line 
+                          yAxisId="left"
+                          type="monotone" 
+                          dataKey="totalScore" 
+                          name="Total Score" 
+                          stroke="#ec4899" 
+                          strokeWidth={2}
+                          dot={{ fill: '#ec4899', strokeWidth: 2, r: 4 }}
+                          activeDot={{ r: 6, fill: '#db2777' }}
+                        />
+                      </ComposedChart>
                     </ResponsiveContainer>
                   </Card>
 
@@ -2306,11 +2336,14 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
         <Dialog.Root open onOpenChange={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}>
           <Dialog.Content style={{ 
             maxWidth: '800px',
+            width: '90vw',
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
             border: '1px solid #e5e7eb',
-            backgroundColor: 'white'
+            backgroundColor: 'white',
+            maxHeight: '85vh',
+            overflowY: 'auto'
           }}>
             <Dialog.Title style={{ 
               fontSize: '1.25rem',
@@ -2347,7 +2380,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '400px'
+          height: '350px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2388,7 +2421,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '400px'
+          height: '350px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2441,13 +2474,14 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          gridColumn: '1 / -1'
+          gridColumn: '1 / -1',
+          height: '350px'
         }}>
-          <Flex direction="column">
+          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
-            <Text align="center" mb="4" size="2">
+            <Text align="center" mb="2" size="2">
               Total Cost Gap: {formatCurrency(
                 categories.reduce((sum, category) => 
                   sum + getDetailsByCategory(category).reduce(
@@ -2456,7 +2490,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 currency
               )}
             </Text>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={categories.map(category => ({
                   name: category,
@@ -2476,7 +2510,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
-                <Legend />                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Legend />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
                 <Bar dataKey="target" fill="#10b981" name="Target Cost" />
               </BarChart>
             </ResponsiveContainer>
