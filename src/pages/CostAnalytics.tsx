@@ -514,7 +514,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       <Card style={{ 
         backgroundColor: '#fffbeb', 
         padding: '16px',
-        border: '1px solid '#fde68a'
+        border: '1px solid #fde68a'
       }}>
         <Heading size="3" mb="2" style={{ color: '#92400e' }}>
           Assessment
@@ -1726,9 +1726,10 @@ function CostAnalytics() {
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: 'f3f4f6' }}>
                       <Table.Row>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
                       </Table.Row>
@@ -1743,7 +1744,7 @@ function CostAnalytics() {
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
@@ -1992,8 +1993,7 @@ function CostAnalytics() {
                         yAxisId="right" 
                         dataKey="rating" 
                         name="rating" 
-                        fill="#f59e0b"
-                        animationBegin={0}
+                        fill="#f59e0b"                        animationBegin={0}
                         animationDuration={1000}
                       />
                     </BarChart>
