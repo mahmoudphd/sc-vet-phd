@@ -1575,8 +1575,7 @@ function CostAnalytics() {
                                   ) : (
                                     <input
                                       type="number"
-                                      value={unitPrice || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                      value={unitPrice || 0}onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
                                         if (item.unitPrice !== undefined) item.unitPrice = value;
                                         updateCategoryTotals(dialogCategory, {...data});
@@ -1613,7 +1612,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid ',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1638,8 +1637,7 @@ function CostAnalytics() {
                                         borderRadius: '6px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
-                                      }}
+                                        fontSize: '14 }}
                                     />
                                   )}
                                 </Table.Cell>
@@ -1851,14 +1849,14 @@ function CostAnalytics() {
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '1400px',
-            width: '95vw',
+            maxWidth: '1200px',
+            width: '90vw',
             padding: '20px',
             borderRadius: '12px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
             border: '1px solid #e5e7eb',
             backgroundColor: 'white',
-            maxHeight: '90vh',
+            maxHeight: '85vh',
             overflowY: 'auto'
           }}>
             <Dialog.Title style={{ 
@@ -1942,286 +1940,253 @@ function CostAnalytics() {
                 </Button>
               </Flex>
 
-              {/* Main Content Grid */}
-              <Grid columns="2" gap="5" width="100%">
-                {/* Left Column - Charts */}
-                <Flex direction="column" gap="4">
-                  {/* Price Comparison Chart */}
-                  <Card style={{
-                    borderRadius: '8px',
-                    backgroundColor: 'white',
-                    padding: '16px',
-                    height: '300px'
+              {/* Main Content Grid - Combined chart first, then table */}
+              <Flex direction="column" gap="5" width="100%">
+                {/* Combined Supplier Comparison Chart */}
+                <Card style={{
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  padding: '16px',
+                  height: '400px'
+                }}>
+                  <Heading size="4" mb="3" style={{ 
+                    color: '#1f2937',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
                   }}>
-                    <Heading size="4" mb="3" style={{ 
-                      color: '#1f2937',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}>
-                      Price Comparison
-                    </Heading>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={suppliers.map(s => ({
-                          name: s.name,
-                          price: s.pricePerKg,
-                          rating: s.rating,
-                          selected: s.selected
-                        }))}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    Supplier Comparison
+                  </Heading>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={suppliers.map(s => ({
+                        name: s.name,
+                        price: s.pricePerKg,
+                        rating: s.rating * 20, // Convert rating from 5 to 100 for comparison
+                        totalScore: s.score,
+                        complianceScore: s.complianceScore,
+                        selected: s.selected
+                      }))}
+                      margin={{ top: 20, right: 30, left: 20, bottom: 30 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                      />
+                      <YAxis 
+                        yAxisId="left"
+                        orientation="left"
+                        stroke="#3b82f6"
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        tickFormatter={(value) => `${value} ${currency}`}
+                        label={{ 
+                          value: 'Price', 
+                          angle: -90, 
+                          position: 'insideLeft', 
+                          style: { textAnchor: 'middle', fill: '#3b82f6' } 
+                        }}
+                      />
+                      <YAxis 
+                        yAxisId="right"
+                        orientation="right"
+                        stroke="#8b5cf6"
+                        tick={{ fill: '#4b5563', fontSize: 12 }}
+                        axisLine={{ stroke: '#e5e7eb' }}
+                        domain={[0, 200]}
+                        label={{ 
+                          value: 'Score (out of 200)', 
+                          angle: 90, 
+                          position: 'insideRight', 
+                          style: { textAnchor: 'middle', fill: '#8b5cf6' } 
+                        }}
+                      />
+                      <Tooltip 
+                        formatter={(value: number, name: string) => {
+                          if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
+                          if (name === 'rating') return [`${Number(value)/20}/5`, 'Rating'];
+                          return [`${value}`, name === 'totalScore' ? 'Total Score' : 'Compliance Score'];
+                        }}
+                        contentStyle={{
+                          backgroundColor: 'white',
+                          border: '1px solid #e5e7eb',
+                          borderRadius: '6px',
+                          boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                        }}
+                      />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={36}
+                        wrapperStyle={{ paddingBottom: '10px' }}
+                      />
+                      <Bar 
+                        yAxisId="left"
+                        dataKey="price" 
+                        name="Price/kg"
+                        fill="#3b82f6"
+                        animationBegin={0}
+                        animationDuration={1000}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <YAxis 
-                          yAxisId="left" 
-                          orientation="left" 
-                          stroke="#3b82f6" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          tickFormatter={(value) => `${value} ${currency}`}
-                        />
-                        <YAxis 
-                          yAxisId="right" 
-                          orientation="right" 
-                          stroke="#f59e0b" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          domain={[0, 5]}
-                          tickFormatter={(value) => `${value}/5`}
-                        />
-                        <Tooltip 
-                          formatter={(value: number, name: string) => [
-                            name === 'price' ? `${formatCurrency(Number(value), currency)}` : `${value}/5`,
-                            name === 'price' ? 'Price/kg' : 'Rating'
-                          ]}
-                          contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '6px',
-                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                        <Legend 
-                          verticalAlign="top" 
-                          height={36}
-                          payload={[
-                            { value: 'Price/kg', type: 'square', color: '#3b82f6' },
-                            { value: 'Rating', type: 'square', color: '#f59e0b' }
-                          ]}
-                        />
-                        <Bar 
-                          yAxisId="left" 
-                          dataKey="price" 
-                          name="price" 
-                          fill="#3b82f6"
-                          animationBegin={0}
-                          animationDuration={1000}
-                        >
-                          {suppliers.map((_, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          yAxisId="right" 
-                          dataKey="rating" 
-                          name="rating" 
-                          fill="#f59e0b"
-                          animationBegin={0}
-                          animationDuration={1000}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-
-                  {/* Score Comparison Chart */}
-                  <Card style={{
-                    borderRadius: '8px',
-                    backgroundColor: 'white',
-                    padding: '16px',
-                    height: '250px'
-                  }}>
-                    <Heading size="4" mb="3" style={{ 
-                      color: '#1f2937',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}>
-                      Supplier Scores
-                    </Heading>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={suppliers.map(s => ({
-                          name: s.name,
-                          totalScore: s.score,
-                          complianceScore: s.complianceScore,
-                          selected: s.selected
-                        }))}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                        {suppliers.map((_, index) => (
+                          <Cell 
+                            key={`cell-price-${index}`} 
+                            fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
+                          />
+                        ))}
+                      </Bar>
+                      <Bar 
+                        yAxisId="right"
+                        dataKey="totalScore" 
+                        name="Total Score"
+                        fill="#8b5cf6"
+                        animationBegin={0}
+                        animationDuration={1000}
                       >
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <YAxis 
-                          stroke="#8b5cf6" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <Tooltip formatter={(value: number, name: string) => [
-                            `${value}`,
-                            name === 'totalScore' ? 'Total Score' : 'Compliance Score'
-                          ]}
-                          contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '6px',
-                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                          }}
-                        />
-                        <Legend 
-                          verticalAlign="top" 
-                          height={36}
-                          payload={[
-                            { value: 'Total Score', type: 'square', color: '#8b5cf6' },
-                            { value: 'Compliance Score', type: 'square', color: '#ec4899' }
-                          ]}
-                        />
-                        <Bar 
-                          dataKey="totalScore" 
-                          name="totalScore" 
-                          fill="#8b5cf6"
-                          animationBegin={0}
-                          animationDuration={1000}
-                        >
-                          {suppliers.map((_, index) => (
-                            <Cell 
-                              key={`cell-${index}`} 
-                              fill={suppliers[index].selected ? '#10b981' : '#8b5cf6'}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          dataKey="complianceScore" 
-                          name="complianceScore" 
-                          fill="#ec4899"
-                          animationBegin={0}
-                          animationDuration={1000}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-                </Flex>
+                        {suppliers.map((_, index) => (
+                          <Cell 
+                            key={`cell-score-${index}`} 
+                            fill={suppliers[index].selected ? '#10b981' : '#8b5cf6'}
+                            opacity={0.7}
+                          />
+                        ))}
+                      </Bar>
+                      <Bar 
+                        yAxisId="right"
+                        dataKey="complianceScore" 
+                        name="Compliance Score"
+                        fill="#ec4899"
+                        animationBegin={0}
+                        animationDuration={1000}
+                      >
+                        {suppliers.map((_, index) => (
+                          <Cell 
+                            key={`cell-compliance-${index}`} 
+                            fill={suppliers[index].selected ? '#10b981' : '#ec4899'}
+                            opacity={0.7}
+                          />
+                        ))}
+                      </Bar>
+                      <Bar 
+                        yAxisId="right"
+                        dataKey="rating" 
+                        name="Rating (out of 5)"
+                        fill="#f59e0b"
+                        animationBegin={0}
+                        animationDuration={1000}
+                      >
+                        {suppliers.map((_, index) => (
+                          <Cell 
+                            key={`cell-rating-${index}`} 
+                            fill={suppliers[index].selected ? '#10b981' : '#f59e0b'}
+                            opacity={0.7}
+                          />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </Card>
 
-                {/* Right Column - Supplier Table */}
-                <Flex direction="column" gap="4">
-                  <Card style={{
-                    borderRadius: '8px',
-                    backgroundColor: 'white',
-                    padding: '16px'
+                {/* Supplier Table - Now below the combined chart */}
+                <Card style={{
+                  borderRadius: '8px',
+                  backgroundColor: 'white',
+                  padding: '16px'
+                }}>
+                  <Heading size="4" mb="3" style={{ 
+                    color: '#1f2937',
+                    fontWeight: 'bold',
+                    textAlign: 'center'
                   }}>
-                    <Heading size="4" mb="3" style={{ 
-                      color: '#1f2937',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}>
-                      Supplier Details
-                    </Heading>
-                    <Table.Root>
-                      <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
-                        <Table.Row>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Supplier</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Price/kg</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Rating</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Delivery</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Reliability</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Compliance</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Total Score</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={tableHeaderStyle}>Select</Table.ColumnHeaderCell>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {suppliers.map((supplier) => (
-                          <Table.Row key={supplier.id} style={{
-                            backgroundColor: supplier.selected ? '#f0fdf4' : 'transparent'
-                          }}>
-                            <Table.Cell style={tableCellStyle}>
-                              <Text weight="medium">{supplier.name}</Text>
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              {formatCurrency(supplier.pricePerKg, currency)}
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              <Flex align="center" gap="1">
-                                <Text>{supplier.rating}/5</Text>
-                                <span style={{ color: '#f59e0b' }}>⭐</span>
-                              </Flex>
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>{supplier.delivery}</Table.Cell>
-                            <Table.Cell style={tableCellStyle}>{supplier.reliability}</Table.Cell>
-                            <Table.Cell 
-                              style={{
-                                ...tableCellStyle,
-                                fontWeight: 'bold',
-                                color: supplier.complianceScore > 80 ? '#10b981' : 
-                                      supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
-                                cursor: 'pointer'
-                              }}
-                              onClick={() => {
-                                setComplianceTooltip({
-                                  visible: true,
-                                  x: 0,
-                                  y: 0,
-                                  supplier: supplier
-                                });
-                              }}
-                            >
-                              <Flex align="center" gap="1">
-                                {supplier.complianceScore}/100
-                                <span style={{ fontSize: '12px' }}>🔍</span>
-                              </Flex>
-                            </Table.Cell>
-                            <Table.Cell style={{
+                    Supplier Details
+                  </Heading>
+                  <Table.Root>
+                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                      <Table.Row>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Supplier</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Price/kg</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Rating</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Delivery</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Reliability</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Compliance</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Total Score</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={{...tableHeaderStyle, borderBottom: 'none'}}>Select</Table.ColumnHeaderCell>
+                      </Table.Row>
+                    </Table.Header>
+                    <Table.Body>
+                      {suppliers.map((supplier) => (
+                        <Table.Row key={supplier.id} style={{
+                          backgroundColor: supplier.selected ? '#f0fdf4' : 'transparent'
+                        }}>
+                          <Table.Cell style={tableCellStyle}>
+                            <Text weight="medium">{supplier.name}</Text>
+                          </Table.Cell>
+                          <Table.Cell style={tableCellStyle}>
+                            {formatCurrency(supplier.pricePerKg, currency)}
+                          </Table.Cell>
+                          <Table.Cell style={tableCellStyle}>
+                            <Flex align="center" gap="1">
+                              <Text>{supplier.rating}/5</Text>
+                              <span style={{ color: '#f59e0b' }}>⭐</span>
+                            </Flex>
+                          </Table.Cell>
+                          <Table.Cell style={tableCellStyle}>{supplier.delivery}</Table.Cell>
+                          <Table.Cell style={tableCellStyle}>{supplier.reliability}</Table.Cell>
+                          <Table.Cell 
+                            style={{
                               ...tableCellStyle,
                               fontWeight: 'bold',
-                              color: supplier.score > 200 ? '#10b981' : 
-                                    supplier.score > 150 ? '#f59e0b' : '#ef4444'
-                            }}>
-                              {supplier.score}/200
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              <Button
-                                size="1"
-                                variant={supplier.selected ? 'solid' : 'outline'}
-                                onClick={() => handleSupplierSelect(supplier.id)}
-                                style={{
-                                  borderRadius: '6px',
-                                  padding: '6px 12px',
-                                  fontSize: '0.875rem',
-                                  backgroundColor: supplier.selected ? '#10b981' : 'white',
-                                  color: supplier.selected ? 'white' : '#1f2937',
-                                  borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
-                                  fontWeight: 'bold',
-                                  width: '100%'
-                                }}
-                              >
-                                {supplier.selected ? '✅ Selected' : 'Select'}
-                              </Button>
-                            </Table.Cell>
-                          </Table.Row>
-                        ))}
-                      </Table.Body>
-                    </Table.Root>
-                  </Card>
-                </Flex>
-              </Grid>
+                              color: supplier.complianceScore > 80 ? '#10b981' : 
+                                    supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
+                              cursor: 'pointer'
+                            }}
+                            onClick={() => {
+                              setComplianceTooltip({
+                                visible: true,
+                                x: 0,
+                                y: 0,
+                                supplier: supplier
+                              });
+                            }}
+                          >
+                            <Flex align="center" gap="1">
+                              {supplier.complianceScore}/100
+                              <span style={{ fontSize: '12px' }}>🔍</span>
+                            </Flex>
+                          </Table.Cell>
+                          <Table.Cell style={{
+                            ...tableCellStyle,
+                            fontWeight: 'bold',
+                            color: supplier.score > 200 ? '#10b981' : 
+                                  supplier.score > 150 ? '#f59e0b' : '#ef4444'
+                          }}>
+                            {supplier.score}/200
+                          </Table.Cell>
+                          <Table.Cell style={tableCellStyle}>
+                            <Button
+                              size="1"
+                              variant={supplier.selected ? 'solid' : 'outline'}
+                              onClick={() => handleSupplierSelect(supplier.id)}
+                              style={{
+                                borderRadius: '6px',
+                                padding: '6px 12px',
+                                fontSize: '0.875rem',
+                                backgroundColor: supplier.selected ? '#10b981' : 'white',
+                                color: supplier.selected ? 'white' : '#1f2937',
+                                borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
+                                fontWeight: 'bold',
+                                width: '100%'
+                              }}
+                            >
+                              {supplier.selected ? '✅ Selected' : 'Select'}
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table.Body>
+                  </Table.Root>
+                </Card>
+              </Flex>
 
               {/* Action Buttons */}
               <Flex justify="end" gap="3" mt="4">
@@ -2292,7 +2257,7 @@ function CostAnalytics() {
               Compliance Details for {complianceTooltip.supplier.name}
             </Dialog.Title>
             
-            {/* استخدام نفس مكون EnhancedComplianceDisplay بالضبط */}
+            {/* Use the same EnhancedComplianceDisplay component */}
             <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
             
             <Flex justify="end" mt="4">
@@ -2415,8 +2380,7 @@ function CostAnalytics() {
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1'
-        }}>
-          <Flex direction="column">
+        }}>          <Flex direction="column">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
