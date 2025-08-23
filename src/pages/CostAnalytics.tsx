@@ -2097,8 +2097,9 @@ function CostAnalytics() {
   stroke="#ef4444" 
   strokeWidth={2}
   name="Cost Gap"
-/>
-                  type="monotone" 
+</LineChart> 
+                 
+              type="monotone" 
                   dataKey="gap" 
                   stroke="#ef4444" 
                   strokeWidth={2}
