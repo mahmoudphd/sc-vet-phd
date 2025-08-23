@@ -651,9 +651,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 (sum: number, item: Item) => sum + calculateCostAfter(item), 0
               );
               const totalSavingsPercentage = totalBefore === 0 ? 0 : ((totalBefore - totalAfter) / totalBefore) * 100;
-              const hasTotalSavings = totalSavingsPercentage > 0;
-              
-              return (
+              const hasTotalSavings = totalSavingsPercentage > 0;return (
                 <span style={{ 
                   color: hasTotalSavings ? '#10b981' : '#6b7280',
                 }}>
@@ -1318,9 +1316,10 @@ function CostAnalytics() {
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Category</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
+<Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell> <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
               </Table.Row>
             </Table.Header>
             
@@ -1726,7 +1725,7 @@ function CostAnalytics() {
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: 'f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1993,7 +1992,8 @@ function CostAnalytics() {
                         yAxisId="right" 
                         dataKey="rating" 
                         name="rating" 
-                        fill="#f59e0b"                        animationBegin={0}
+                        fill="#f59e0b"
+                        animationBegin={0}
                         animationDuration={1000}
                       />
                     </BarChart>
@@ -2166,7 +2166,7 @@ function CostAnalytics() {
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
                 <Legend />
-              </PieChart>
+                </PieChart>
             </ResponsiveContainer>
           </Flex>
         </Card>
@@ -2177,8 +2177,7 @@ function CostAnalytics() {
           backgroundColor: 'white',
           padding: '16px',
           height: '400px'
-        }}>
-          <Flex direction="column" height="100%">
+        }}>          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Calculation
             </Heading>
