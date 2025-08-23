@@ -426,7 +426,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
         padding: '12px', 
         backgroundColor: '#fffbeb',
         borderRadius: '6px',
-        border: '1px solid '#fde68a'
+        border: '1px solid #fde68a'
       }}>
         <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Assessment:</h4>
         <p style={{ 
@@ -1157,7 +1157,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' : 'red' : 'gray'
+                      item.trend === 'down' ? 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1361,7 +1361,8 @@ function CostAnalytics() {
                 color: '#1f2937'
               }}>
                 {dialogCategory} Breakdown
-              </Dialog.Title>              <Flex align="center" gap="2">
+              </Dialog.Title>
+              <Flex align="center" gap="2">
                 <Text size="2" style={{ color: '#4b5563' }}>Auto IoT Mode</Text>
                 <Switch 
                   checked={autoMode} 
@@ -1637,7 +1638,7 @@ function CostAnalytics() {
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
@@ -1677,7 +1678,7 @@ function CostAnalytics() {
                                   padding: '6px 10px',
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
-                                  backgroundColor: 'f9fafb',
+                                  backgroundColor: '#f9fafb',
                                   fontSize: '14px'
                                 }}
                               />
@@ -1834,7 +1835,7 @@ function CostAnalytics() {
                       />
                       <YAxis 
                         yAxisId="right" 
-                        orientation="right" 
+                        orientation='right' 
                         stroke="#f59e0b" 
                         tick={{ fill: '#4b5563', fontSize: 12 }}
                         axisLine={{ stroke: '#e5e7eb' }}
