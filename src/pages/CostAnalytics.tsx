@@ -529,7 +529,9 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       </Card>
     </Card>
   );
-};interface CostAfterViewProps {
+};
+
+interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
   updateCostAfterValue: (category: CostCategory, index: number, value: number) => void;
@@ -1704,8 +1706,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   borderRadius: '6px',
                                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                                 }}>
-                                  {solutionsOptions.map((sol) => (
-                                    <RadixSelect.Item 
+                                  {solutionsOptions.map((sol) => (                                    <RadixSelect.Item 
                                       key={sol} 
                                       value={sol}
                                       style={{
@@ -1889,7 +1890,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       <Text style={{ color: '#1f2937', fontWeight: 'bold' }}>{formatCurrency(currentPrice, currency)}</Text>
                     </Flex>
                     <Flex justify="between">
-                      <Text style={{ color: '#4b5563' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '##4b5563' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold'
@@ -1954,184 +1955,102 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 </Flex>
               ) : (
                 <>
-                  {/* Charts Section - Top of the page */}
-                  <Grid columns="2" gap="5" width="100%">
-                    {/* Price Comparison Chart */}
-                    <Card style={{
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      padding: '16px',
-                      height: '300px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  {/* Combined Chart Section */}
+                  <Card style={{
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    padding: '16px',
+                    height: '350px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
+                  }}>
+                    <Heading size="4" mb="3" style={{ 
+                      color: '#1f2937',
+                      fontWeight: 'bold',
+                      textAlign: 'center'
                     }}>
-                      <Heading size="4" mb="3" style={{ 
-                        color: '#1f2937',
-                        fontWeight: 'bold',
-                        textAlign: 'center'
-                      }}>
-                        Price Comparison
-                      </Heading>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={suppliers.map(s => ({
-                            name: s.name,
-                            price: s.pricePerKg,
-                            rating: s.rating,
-                            selected: s.selected
-                          }))}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      Supplier Comparison
+                    </Heading>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={suppliers.map(s => ({
+                          name: s.name,
+                          price: s.pricePerKg,
+                          rating: s.rating,
+                          selected: s.selected
+                        }))}
+                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          axisLine={{ stroke: '#e5e7eb' }}
+                        />
+                        <YAxis 
+                          yAxisId="left" 
+                          orientation="left" 
+                          stroke="#3b82f6" 
+                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          axisLine={{ stroke: '#e5e7eb' }}
+                          tickFormatter={(value) => `${value} ${currency}`}
+                        />
+                        <YAxis 
+                          yAxisId="right" 
+                          orientation="right" 
+                          stroke="#f59e0b" 
+                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          axisLine={{ stroke: '#e5e7eb' }}
+                          domain={[0, 5]}
+                          tickFormatter={(value) => `${value}/5`}
+                        />
+                        <Tooltip 
+                          formatter={(value: number, name: string) => [
+                            name === 'price' ? `${formatCurrency(Number(value), currency)}` : `${value}/5`,
+                            name === 'price' ? 'Price/kg' : 'Rating'
+                          ]}
+                          contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '6px',
+                            boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                          }}
+                        />
+                        <Legend 
+                          verticalAlign="top" 
+                          height={36}
+                          payload={[
+                            { value: 'Price/kg', type: 'square', color: '#3b82f6' },
+                            { value: 'Rating', type: 'square', color: '#f59e0b' }
+                          ]}
+                        />
+                        <Bar 
+                          yAxisId="left" 
+                          dataKey="price" 
+                          name="price" 
+                          fill="#3b82f6"
+                          animationBegin={0}
+                          animationDuration={1000}
                         >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fill: '#4b5563', fontSize: 12 }}
-                            axisLine={{ stroke: '#e5e7eb' }}
-                          />
-                          <YAxis 
-                            yAxisId="left" 
-                            orientation="left" 
-                            stroke="#3b82f6" 
-                            tick={{ fill: '#4b5563', fontSize: 12 }}
-                            axisLine={{ stroke: '#e5e7eb' }}
-                            tickFormatter={(value) => `${value} ${currency}`}
-                          />
-                          <YAxis 
-                            yAxisId="right" 
-                            orientation="right" 
-                            stroke="#f59e0b" 
-                            tick={{ fill: '#4b5563', fontSize: 12 }}
-                            axisLine={{ stroke: '#e5e7eb' }}
-                            domain={[0, 5]}
-                            tickFormatter={(value) => `${value}/5`}
-                          />
-                          <Tooltip 
-                            formatter={(value: number, name: string) => [
-                              name === 'price' ? `${formatCurrency(Number(value), currency)}` : `${value}/5`,
-                              name === 'price' ? 'Price/kg' : 'Rating'
-                            ]}
-                            contentStyle={{
-                              backgroundColor: 'white',
-                              border: '1px solid #e5e7eb',
-                              borderRadius: '6px',
-                              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                            }}
-                          />
-                          <Legend 
-                            verticalAlign="top" 
-                            height={36}
-                            payload={[
-                              { value: 'Price/kg', type: 'square', color: '#3b82f6' },
-                              { value: 'Rating', type: 'square', color: '#f59e0b' }
-                            ]}
-                          />
-                          <Bar 
-                            yAxisId="left" 
-                            dataKey="price" 
-                            name="price" 
-                            fill="#3b82f6"
-                            animationBegin={0}
-                            animationDuration={1000}
-                          >
-                            {suppliers.map((_, index) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
-                              />
-                            ))}
-                          </Bar>
-                          <Bar 
-                            yAxisId="right" 
-                            dataKey="rating" 
-                            name="rating" 
-                            fill="#f59e0b"
-                            animationBegin={0}
-                            animationDuration={1000}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </Card>
+                          {suppliers.map((_, index) => (
+                            <Cell 
+                              key={`cell-${index}`} 
+                              fill={suppliers[index].selected ? '#10b981' : '#3b82f6'}
+                            />
+                          ))}
+                        </Bar>
+                        <Bar 
+                          yAxisId="right" 
+                          dataKey="rating" 
+                          name="rating" 
+                          fill="#f59e0b"
+                          animationBegin={0}
+                          animationDuration={1000}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </Card>
 
-                    {/* Score Comparison Chart */}
-                    <Card style={{
-                      borderRadius: '8px',
-                      backgroundColor: 'white',
-                      padding: '16px',
-                      height: '250px',
-                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.05)'
-                    }}>
-                      <Heading size="4" mb="3" style={{ 
-                        color: '#1f2937',
-                        fontWeight: 'bold',
-                        textAlign: 'center'
-                      }}>
-                        Supplier Scores
-                      </Heading>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                          data={suppliers.map(s => ({
-                            name: s.name,
-                            totalScore: s.score,
-                            complianceScore: s.complianceScore,
-                            selected: s.selected
-                          }))}
-                          margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                          <XAxis 
-                            dataKey="name" 
-                            tick={{ fill: '#4b5563', fontSize: 12 }}
-                            axisLine={{ stroke: '#e5e7eb' }}
-                          />
-                          <YAxis 
-                            stroke="#8b5cf6" 
-                            tick={{ fill: '#4b5563', fontSize: 12 }}
-                            axisLine={{ stroke: '#e5e7eb' }}
-                          />
-                          <Tooltip formatter={(value: number, name: string) => [
-                              `${value}`,
-                              name === 'totalScore' ? 'Total Score' : 'Compliance Score'
-                            ]}
-                            contentStyle={{
-                              backgroundColor: 'white',
-                             border: '1px solid #e5e7eb',
-                              borderRadius: '6px',
-                              boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                            }}
-                          />
-                          <Legend 
-                            verticalAlign="top" 
-                            height={36}
-                            payload={[
-                              { value: 'Total Score', type: 'square', color: '#8b5cf6' },
-                              { value: 'Compliance Score', type: 'square', color: '#ec4899' }
-                            ]}
-                          />
-                          <Bar 
-                            dataKey="totalScore" 
-                            name="totalScore" 
-                            fill="#8b5cf6"                            animationBegin={0}
-                            animationDuration={1000}
-                          >
-                            {suppliers.map((_, index) => (
-                              <Cell 
-                                key={`cell-${index}`} 
-                                fill={suppliers[index].selected ? '#10b981' : '#8b5cf6'}
-                              />
-                            ))}
-                          </Bar>
-                          <Bar 
-                            dataKey="complianceScore" 
-                            name="complianceScore" 
-                            fill="#ec4899"
-                            animationBegin={0}
-                            animationDuration={1000}
-                          />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    </Card>
-                  </Grid>
-
-                  {/* Supplier Table - Below the charts */}
+                  {/* Supplier Table */}
                   <Card style={{
                     borderRadius: '8px',
                     backgroundColor: 'white',
@@ -2153,52 +2072,52 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       }}>
                         <Table.Row>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Supplier</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Price/kg</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Rating</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Delivery</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Reliability</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Compliance</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Total Score</Table.ColumnHeaderCell>
                           <Table.ColumnHeaderCell style={{
-                            fontWeight: '600',
+                            fontWeight: 'bold',
                             padding: '16px',
-                            fontSize: '0.9rem',
-                            color: '#475569'
+                            fontSize: '1rem',
+                            color: '#1e293b'
                           }}>Select</Table.ColumnHeaderCell>
                         </Table.Row>
                       </Table.Header>
@@ -2325,7 +2244,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                 {supplier.selected ? '✅ Selected' : 'Select'}
                               </Button>
                             </Table.Cell>
-                            </Table.Row>
+                          </Table.Row>
                         ))}
                       </Table.Body>
                     </Table.Root>
@@ -2422,9 +2341,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
+      )}      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
