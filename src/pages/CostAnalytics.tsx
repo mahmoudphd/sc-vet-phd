@@ -1749,7 +1749,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+
                             <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
