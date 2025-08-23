@@ -1266,17 +1266,17 @@ function CostAnalytics() {
                 </Text>
                 {item.trend && (
                   <Badge 
-                    color={
-                      item.trend === 'up' ? 'green' :   item.trend === 'down' ? 'red' : 'gray'
-                    }
-                    style={{
-                      borderRadius: '9999px',
-                      padding: '2px 8px',
-                      fontWeight: '500'
-                    }}
-                  >
-                    {item.trend === 'up' ? '↓' : item.trend === 'down' : '↑' : '→'}
-                  </Badge>
+  color={
+    item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+  }
+  style={{
+    borderRadius: '9999px',
+    padding: '2px 8px',
+    fontWeight: '500'
+  }}
+>
+  {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
+</Badge>
                 )}
               </Flex>
               
