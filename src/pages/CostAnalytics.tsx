@@ -460,7 +460,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   borderRadius: '4px',
   overflow: 'hidden'
 }}>
-  <Box style={{
+ <Box style={{
   height: '100%',
   width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
   backgroundColor: (item.value || 0) > 0 
@@ -469,10 +469,8 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   borderRadius: '4px',
   transition: 'width 0.3s ease'
 }} />
-</Box
-          </Box>
-        ))}
-      </Box>
+</Box>  // تم تصحيح هذه السطر - كانت </Box بدلاً من </Box>
+</Box>
 
       <Card mb="4" style={{ backgroundColor: 'white', padding: '16px' }}>
         <Heading size="3" mb="3" style={{ color: '#1e293b' }}>
