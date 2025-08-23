@@ -276,6 +276,24 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
     return testNames[testKey] || testKey;
   };
 
+  const getStatusText = (status: string): string => {
+    const statusMap: Record<string, string> = {
+      'Passed': 'Passed',
+      'Failed': 'Failed',
+      'Not Tested': 'Not Tested'
+    };
+    return statusMap[status] || status;
+  };
+
+  const getStatusColor = (status: string): string => {
+    const statusColors: Record<string, string> = {
+      'Passed': '#10b981',
+      'Failed': '#ef4444',
+      'Not Tested': '#94a3b8'
+    };
+    return statusColors[status] || '#94a3b8';
+  };
+
   const getSupplierStatusText = (status: string): string => {
     const statusMap: Record<string, string> = {
       'Approved': 'Approved',
@@ -306,139 +324,341 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
     }
   };
 
-  return (
-    <div style={{ padding: '16px', backgroundColor: '#f8fafc', borderRadius: '8px' }}>
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        marginBottom: '16px' 
-      }}>
-        <h3 style={{ margin: 0, color: '#1e293b' }}>Compliance Details</h3>
-        <div style={{ 
-          padding: '4px 12px', 
-          borderRadius: '20px', 
-          backgroundColor: complianceScore >= 80 ? '#dcfce7' : 
-                          complianceScore >= 60 ? '#fef3c7' : '#fee2e2',
-          color: complianceScore >= 80 ? '#166534' : 
-                 complianceScore >= 60 ? '#92400e' : '#991b1b',
-          fontWeight: 'bold'
-        }}>
-          {complianceScore}/100
-        </div>
-      </div>
+  const getScoreColor = (score: number): string => {
+    if (score >= 80) return '#10b981';
+    if (score >= 60) return '#f59e0b';
+    return '#ef4444';
+  };
 
-      <div style={{ marginBottom: '20px' }}>
+  const getScoreLabel = (score: number): string => {
+    if (score >= 90) return 'Excellent';
+    if (score >= 80) return 'Very Good';
+    if (score >= 70) return 'Good';
+    if (score >= 60) return 'Acceptable';
+    return 'Poor';
+  };
+
+  return (
+    <Card style={{ 
+      padding: '20px', 
+      backgroundColor: '#f8fafc', 
+      borderRadius: '12px',
+      border: '1px solid #e2e8f0'
+    }}>
+      <Flex justify="between" align="center" mb="4">
+        <Heading size="4" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+          Compliance Details
+        </Heading>
+        <Badge 
+          style={{ 
+            padding: '6px 12px', 
+            borderRadius: '20px', 
+            backgroundColor: getScoreColor(complianceScore),
+            color: 'white',
+            fontWeight: 'bold',
+            fontSize: '14px'
+          }}
+        >
+          {complianceScore}/100 - {getScoreLabel(complianceScore)}
+        </Badge>
+      </Flex>
+
+      <Flex justify="center" mb="5">
+        <Box style={{ position: 'relative', width: '120px', height: '120px' }}>
+          <svg width="120" height="120" viewBox="0 0 120 120">
+            <circle
+              cx="60"
+              cy="60"
+              r="54"
+              fill="none"
+              stroke="#e2e8f0"
+              strokeWidth="8"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r="54"
+              fill="none"
+              stroke={getScoreColor(complianceScore)}
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={`${complianceScore * 3.39} 339`}
+              transform="rotate(-90 60 60)"
+            />
+          </svg>
+          <Box style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            textAlign: 'center'
+          }}>
+            <Text size="6" weight="bold" style={{ color: '#1e293b' }}>
+              {complianceScore}
+            </Text>
+            <Text size="2" style={{ color: '#64748b' }}>
+              of 100
+            </Text>
+          </Box>
+        </Box>
+      </Flex>
+
+      <Box mb="5">
+        <Heading size="3" mb="3" style={{ color: '#1e293b' }}>
+          Score Details
+        </Heading>
+        
         {[
           { 
             name: 'Quality Tests', 
             value: calculateTestScore(supplier.material.tests), 
             max: 40,
-            details: `(${Object.values(supplier.material.tests).filter(t => t.status === 'Passed').length} of 4 passed)`
+            details: `(${Object.values(supplier.material.tests).filter(t => t.status === 'Passed').length} of 4 passed)`,
+            icon: '🧪'
           },
           { 
             name: 'Quality Certificate', 
             value: supplier.material.certificate ? 20 : 0, 
             max: 20,
-            details: supplier.material.certificate ? 'Available' : 'Not available'
+            details: supplier.material.certificate ? 'Available' : 'Not available',
+            icon: '📄'
           },
           { 
             name: 'Supplier Status', 
             value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
             max: 15,
-            details: getSupplierStatusText(supplier.material.supplier.status)
+            details: getSupplierStatusText(supplier.material.supplier.status),
+            icon: '🏢'
           },
           { 
             name: 'Expiry Date', 
             value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
             max: 15,
-            details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired'
+            details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
+            icon: '📅'
           },
           { 
             name: 'Blockchain Registration', 
             value: supplier.material.blockchainRegistered ? 10 : 0, 
             max: 10,
-            details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered'
+            details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
+            icon: '🔗'
           }
         ].map((item, index) => (
-          <div key={index} style={{ marginBottom: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-              <span style={{ fontSize: '14px', fontWeight: '500' }}>{item.name}</span>
-              <span style={{ fontSize: '14px', color: '#64748b' }}>
+          <Box key={index} mb="3">
+            <Flex justify="between" align="center" mb="1">
+              <Flex align="center" gap="2">
+                <Text size="4">{item.icon}</Text>
+                <Text size="2" weight="medium" style={{ color: '#475569' }}>
+                  {item.name}
+                </Text>
+              </Flex>
+              <Text size="2" style={{ color: '#64748b' }}>
                 {item.value}/{item.max} - {item.details}
-              </span>
-            </div>
-            <div style={{
+              </Text>
+            </Flex>
+            <Box style={{
               height: '8px',
               backgroundColor: '#e2e8f0',
               borderRadius: '4px',
               overflow: 'hidden'
             }}>
-              <div style={{
+              <Box style={{
                 height: '100%',
                 width: `${(item.value / item.max) * 100}%`,
-                backgroundColor: item.value > 0 ? '#10b981' : '#ef4444',
+                backgroundColor: item.value > 0 ? getScoreColor((item.value / item.max) * 100) : '#ef4444',
                 borderRadius: '4px',
                 transition: 'width 0.3s ease'
               }} />
-            </div>
-          </div>
+            </Box>
+          </Box>
         ))}
-      </div>
+      </Box>
 
-      <div style={{ 
-        backgroundColor: 'white', 
-        padding: '12px', 
-        borderRadius: '6px',
-        border: '1px solid #e2e8f0'
-      }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Quality Tests Details:</h4>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px' }}>
-          {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
-            <div key={index} style={{ 
-              display: 'flex', 
-              alignItems: 'center',
-              fontSize: '13px'
-            }}>
-              <div style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '50%',
-                backgroundColor: status === 'Passed' ? '#10b981' : 
-                                status === 'Failed' ? '#ef4444' : '#94a3b8',
-                marginRight: '8px'
-              }} />
-              <span style={{ marginRight: '4px' }}>{getTestName(test)}:</span>
-              <span style={{ 
-                fontWeight: '500',
-                color: status === 'Passed' ? '#10b981' : 
-                       status === 'Failed' ? '#ef4444' : '#64748b'
-              }}>
-                {status === 'Passed' ? 'Passed' : status === 'Failed' ? 'Failed' : 'Not Tested'}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
+      <Card mb="4" style={{ backgroundColor: 'white', padding: '16px' }}>
+        <Heading size="3" mb="3" style={{ color: '#1e293b' }}>
+          Quality Tests Details
+        </Heading>
+        <Table.Root>
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Test</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
+              <Table.Row key={index}>
+                <Table.Cell>
+                  <Flex align="center" gap="2">
+                    <Text>🔍</Text>
+                    <Text>{getTestName(test)}</Text>
+                  </Flex>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge 
+                    style={{ 
+                      backgroundColor: getStatusColor(status),
+                      color: 'white'
+                    }}
+                  >
+                    {getStatusText(status)}
+                  </Badge>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Card>
 
-      <div style={{ 
-        marginTop: '16px', 
-        padding: '12px', 
-        backgroundColor: '#fffbeb',
-        borderRadius: '6px',
+      <Card style={{ 
+        backgroundColor: '#fffbeb', 
+        padding: '16px',
         border: '1px solid #fde68a'
       }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Assessment:</h4>
-        <p style={{ 
-          margin: 0, 
-          fontSize: '13px', 
+        <Heading size="3" mb="2" style={{ color: '#92400e' }}>
+          Assessment
+        </Heading>
+        <Text style={{ 
           color: '#92400e',
-          lineHeight: '1.5'
+          lineHeight: '1.6'
         }}>
           {getComplianceAssessment(complianceScore, supplier.material)}
-        </p>
-      </div>
-    </div>
+        </Text>
+      </Card>
+    </Card>
+  );
+};
+
+const CostAfterView = ({ category, data, updateCostAfterValue }: { category: CostCategory, data: CostData, updateCostAfterValue: (category: CostCategory, index: number, value: number) => void }) => {
+  return (
+    <Table.Root variant="surface">
+      <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+        <Table.Row>
+          <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Before</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
+          <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        {getDetailsByCategory(category, data).map((item, index) => {
+          const costBefore = calculateActualCost(item);
+          const costAfter = calculateCostAfter(item);
+          const savings = costBefore - costAfter;
+          const savingsPercentage = ((savings / costBefore) * 100).toFixed(1);
+          const hasSavings = savings > 0;
+          
+          return (
+            <Table.Row key={index}>
+              <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+              <Table.Cell style={tableCellStyle}>
+                {formatCurrency(costBefore, currency)}
+              </Table.Cell>
+              <Table.Cell style={tableCellStyle}>
+                <input
+                  type="number"
+                  value={costAfter}
+                  onChange={(e) => updateCostAfterValue(
+                    category, 
+                    index, 
+                    parseFloat(e.target.value) || 0
+                  )}
+                  step="0.01"
+                  min={costBefore * 0.95}
+                  max={costBefore}
+                  style={{ 
+                    width: '80px',
+                    padding: '6px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #e2e8f0',
+                    backgroundColor: '#f9fafb',
+                    fontSize: '14px'
+                  }}
+                />
+              </Table.Cell>
+              <Table.Cell style={{ 
+                ...tableCellStyle,
+                color: hasSavings ? '#10b981' : '#6b7280',
+                fontWeight: 'bold'
+              }}>
+                {formatCurrency(savings, currency)}
+              </Table.Cell>
+              <Table.Cell style={{ 
+                ...tableCellStyle,
+                color: hasSavings ? '#10b981' : '#6b7280',
+                fontWeight: 'bold'
+              }}>
+                {savingsPercentage}%
+              </Table.Cell>
+            </Table.Row>
+          );
+        })}
+        
+        <Table.Row style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}}>
+          <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
+          <Table.Cell style={tableCellStyle}>
+            {formatCurrency(
+              getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateActualCost(item), 0
+              ), 
+              currency
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {formatCurrency(
+              getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateCostAfter(item), 0
+              ), 
+              currency
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {formatCurrency(
+              getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
+              ), 
+              currency
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {(() => {
+              const totalBefore = getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateActualCost(item), 0
+              );
+              const totalAfter = getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateCostAfter(item), 0
+              );
+              const totalSavingsPercentage = totalBefore === 0 ? 0 : ((totalBefore - totalAfter) / totalBefore) * 100;
+              const hasTotalSavings = totalSavingsPercentage > 0;
+              
+              return (
+                <span style={{ 
+                  color: hasTotalSavings ? '#10b981' : '#6b7280',
+                }}>
+                  {totalBefore === 0 ? '0.0' : totalSavingsPercentage.toFixed(1)}%
+                </span>
+              );
+            })()}
+          </Table.Cell>
+        </Table.Row>
+        
+        <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
+          <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
+          <Table.Cell style={tableCellStyle} colSpan={4}>
+            {formatCurrency(
+              getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateActualCost(item), 0
+              ) - getDetailsByCategory(category, data).reduce(
+                (sum, item) => sum + calculateCostAfter(item), 0
+              ), 
+              currency
+            )}
+          </Table.Cell>
+        </Table.Row>
+      </Table.Body>
+    </Table.Root>
   );
 };
 
@@ -906,138 +1126,6 @@ function CostAnalytics() {
       );
     }
     return null;
-  };
-
-  const CostAfterView = ({ category, data, updateCostAfterValue }: { category: CostCategory, data: CostData, updateCostAfterValue: (category: CostCategory, index: number, value: number) => void }) => {
-    return (
-      <Table.Root variant="surface">
-        <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
-          <Table.Row>
-            <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Before</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings Achieved</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell style={tableHeaderStyle}>Savings %</Table.ColumnHeaderCell>
-          </Table.Row>
-        </Table.Header>
-        <Table.Body>
-          {getDetailsByCategory(category, data).map((item, index) => {
-            const costBefore = calculateActualCost(item);
-            const costAfter = calculateCostAfter(item);
-            const savings = costBefore - costAfter;
-            const savingsPercentage = ((savings / costBefore) * 100).toFixed(1);
-            const exceedsLimit = parseFloat(savingsPercentage) > 5;
-            
-            return (
-              <Table.Row key={index}>
-                <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
-                <Table.Cell style={tableCellStyle}>
-                  {formatCurrency(costBefore, currency)}
-                </Table.Cell>
-                <Table.Cell style={tableCellStyle}>
-                  <input
-                    type="number"
-                    value={costAfter}
-                    onChange={(e) => updateCostAfterValue(
-                      category, 
-                      index, 
-                      parseFloat(e.target.value) || 0
-                    )}
-                    step="0.01"
-                    min={costBefore * 0.95}
-                    max={costBefore}
-                    style={{ 
-                      width: '80px',
-                      padding: '6px 10px',
-                      borderRadius: '6px',
-                      border: '1px solid #e2e8f0',
-                      backgroundColor: '#f9fafb',
-                      fontSize: '14px'
-                    }}
-                  />
-                </Table.Cell>
-                <Table.Cell style={{ 
-                  ...tableCellStyle,
-                  color: savings > 0 ? (exceedsLimit ? '#ef4444' : '#10b981') : '#ef4444',
-                  fontWeight: 'bold'
-                }}>
-                  {formatCurrency(savings, currency)}
-                </Table.Cell>
-                <Table.Cell style={{ 
-                  ...tableCellStyle,
-                  color: savings > 0 ? (exceedsLimit ? '#ef4444' : '#10b981') : '#ef4444',
-                  fontWeight: 'bold'
-                }}>
-                  {savingsPercentage}%
-                </Table.Cell>
-              </Table.Row>
-            );
-          })}
-          
-          <Table.Row style={{backgroundColor: '#f8fafc', fontWeight: 'bold'}}>
-            <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
-            <Table.Cell style={tableCellStyle}>
-              {formatCurrency(
-                getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateActualCost(item), 0
-                ), 
-                currency
-              )}
-            </Table.Cell>
-            <Table.Cell style={tableCellStyle}>
-              {formatCurrency(
-                getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateCostAfter(item), 0
-                ), 
-                currency
-              )}
-            </Table.Cell>
-            <Table.Cell style={tableCellStyle}>
-              {formatCurrency(
-                getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
-                ), 
-                currency
-              )}
-            </Table.Cell>
-            <Table.Cell style={tableCellStyle}>
-              {(() => {
-                const totalBefore = getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateActualCost(item), 0
-                );
-                const totalAfter = getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateCostAfter(item), 0
-                );
-                const totalSavingsPercentage = totalBefore === 0 ? 0 : ((totalBefore - totalAfter) / totalBefore) * 100;
-                const exceedsTotalLimit = totalSavingsPercentage > 5;
-                
-                return (
-                  <span style={{ 
-                    color: exceedsTotalLimit ? '#ef4444' : '#10b981',
-                  }}>
-                    {totalBefore === 0 ? '0.0' : totalSavingsPercentage.toFixed(1)}%
-                  </span>
-                );
-              })()}
-            </Table.Cell>
-          </Table.Row>
-          
-          <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
-            <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
-            <Table.Cell style={tableCellStyle} colSpan={4}>
-              {formatCurrency(
-                getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateActualCost(item), 0
-                ) - getDetailsByCategory(category, data).reduce(
-                  (sum, item) => sum + calculateCostAfter(item), 0
-                ), 
-                currency
-              )}
-            </Table.Cell>
-          </Table.Row>
-        </Table.Body>
-      </Table.Root>
-    );
   };
 
   return (
@@ -1685,7 +1773,7 @@ function CostAnalytics() {
                             </Table.Cell>
                             <Table.Cell style={{ 
                               ...tableCellStyle,
-                              color: calculateActualCost(item) - calculateCostAfter(item) > 0 ? '#10b981' : '#ef4444',
+                              color: calculateActualCost(item) - calculateCostAfter(item) > 0 ? '#10b981' : '#6b7280',
                               fontWeight: 'bold'
                             }}>
                               {formatCurrency(calculateActualCost(item) - calculateCostAfter(item), currency)}
@@ -1771,7 +1859,7 @@ function CostAnalytics() {
                   <Text weight="bold" style={{ color: '#1f2937' }}>Potential Savings/kg:</Text>
                   <Text 
                     style={{ 
-                      color: potentialSavings > 0 ? '#10b981' : '#ef4444',
+                      color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                       fontWeight: 'bold'
                     }}
                   >
@@ -1832,17 +1920,20 @@ function CostAnalytics() {
                         stroke="#3b82f6" 
                         tick={{ fill: '#4b5563', fontSize: 12 }}
                         axisLine={{ stroke: '#e5e7eb' }}
+                        tickFormatter={(value) => `${value} ${currency}`}
                       />
                       <YAxis 
                         yAxisId="right" 
-                        orientation='right' 
+                        orientation="right" 
                         stroke="#f59e0b" 
                         tick={{ fill: '#4b5563', fontSize: 12 }}
                         axisLine={{ stroke: '#e5e7eb' }}
+                        domain={[0, 5]}
+                        tickFormatter={(value) => `${value}/5`}
                       />
                       <Tooltip 
                         formatter={(value: number, name: string) => [
-                          name === 'price' ? formatCurrency(Number(value), currency) : value,
+                          name === 'price' ? `${formatCurrency(Number(value), currency)}` : `${value}/5`,
                           name === 'price' ? 'Price/kg' : 'Rating'
                         ]}
                         contentStyle={{
@@ -1852,11 +1943,18 @@ function CostAnalytics() {
                           boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                         }}
                       />
-                      <Legend />
+                      <Legend 
+                        verticalAlign="top" 
+                        height={36}
+                        payload={[
+                          { value: 'Price/kg', type: 'square', color: '#3b82f6' },
+                          { value: 'Rating', type: 'square', color: '#f59e0b' }
+                        ]}
+                      />
                       <Bar 
                         yAxisId="left" 
                         dataKey="price" 
-                        name="Price/kg" 
+                        name="price" 
                         fill="#3b82f6"
                         animationBegin={0}
                         animationDuration={1000}
@@ -1871,7 +1969,7 @@ function CostAnalytics() {
                       <Bar 
                         yAxisId="right" 
                         dataKey="rating" 
-                        name="Rating" 
+                        name="rating" 
                         fill="#f59e0b"
                         animationBegin={0}
                         animationDuration={1000}
