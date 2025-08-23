@@ -2093,7 +2093,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                             ]}
                             contentStyle={{
                               backgroundColor: 'white',
-                              border: '1px solid '#e5e7eb',
+                             border: '1px solid #e5e7eb',
                               borderRadius: '6px',
                               boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                             }}
