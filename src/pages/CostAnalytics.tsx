@@ -231,9 +231,7 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};
-
-const calculateComplianceScore = (material: Material): number => {
+};const calculateComplianceScore = (material: Material): number => {
   const weights = {
     tests: 40,
     certificate: 20,
@@ -426,7 +424,11 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
           },
           { 
             name: 'Supplier Status', 
-            value: supplier.material.supplier.status === 'Approved' },
+            value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
+            max: 15,
+            details: getSupplierStatusText(supplier.material.supplier.status),
+            icon: '🏢'
+          },
           { 
             name: 'Expiry Date', 
             value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
@@ -454,23 +456,25 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
                 {item.value}/{item.max} - {item.details}
               </Text>
             </Flex>
-           <Box style={{
-  height: '8px',
-  backgroundColor: '#e2e8f0',
-  borderRadius: '4px',
-  overflow: 'hidden'
-}}>
- <Box style={{
-  height: '100%',
-  width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
-  backgroundColor: (item.value || 0) > 0 
-    ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
-    : '#ef4444',
-  borderRadius: '4px',
-  transition: 'width 0.3s ease'
-}} />
-</Box>  // تم تصحيح هذه السطر - كانت </Box بدلاً من </Box>
-</Box>
+            <Box style={{
+              height: '8px',
+              backgroundColor: '#e2e8f0',
+              borderRadius: '4px',
+              overflow: 'hidden'
+            }}>
+              <Box style={{
+                height: '100%',
+                width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
+                backgroundColor: (item.value || 0) > 0 
+                  ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
+                  : '#ef4444',
+                borderRadius: '4px',
+                transition: 'width 0.3s ease'
+              }} />
+            </Box>
+          </Box>
+        ))}
+      </Box>
 
       <Card mb="4" style={{ backgroundColor: 'white', padding: '16px' }}>
         <Heading size="3" mb="3" style={{ color: '#1e293b' }}>
@@ -490,7 +494,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
                   <Flex align="center" gap="2">
                     <Text>🔍</Text>
                     <Text>{getTestName(test)}</Text>
-                </Flex>
+                  </Flex>
                 </Table.Cell>
                 <Table.Cell>
                   <Badge 
@@ -525,9 +529,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       </Card>
     </Card>
   );
-};
-
-interface CostAfterViewProps {
+};interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
   updateCostAfterValue: (category: CostCategory, index: number, value: number) => void;
@@ -677,9 +679,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};
-
-function CostAnalytics() {
+};function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -828,7 +828,8 @@ function CostAnalytics() {
         rating: 4.2,
         delivery: '2 weeks',
         reliability: '90%',
-        selected: false,  material: generateRandomMaterial('Supplier B')
+        selected: false,
+        material: generateRandomMaterial('Supplier B')
       },
       {
         id: 3,
@@ -1150,9 +1151,7 @@ function CostAnalytics() {
       );
     }
     return null;
-  };
-
-  return (
+  }; return (
     <Box p="6" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
@@ -1193,7 +1192,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid ',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1266,17 +1265,17 @@ function CostAnalytics() {
                 </Text>
                 {item.trend && (
                   <Badge 
-  color={
-    item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
-  }
-  style={{
-    borderRadius: '9999px',
-    padding: '2px 8px',
-    fontWeight: '500'
-  }}
->
-  {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
-</Badge>
+                    color={
+                      item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+                    }
+                    style={{
+                      borderRadius: '9999px',
+                      padding: '2px 8px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
+                  </Badge>
                 )}
               </Flex>
               
@@ -1362,7 +1361,7 @@ function CostAnalytics() {
                           padding: '6px 10px',
                           borderRadius: '6px',
                           border: '1px solid #e2e8f0',
-                          backgroundColor: 'f9fafb',
+                          backgroundColor: '#f9fafb',
                           fontSize: '14px'
                         }}
                       />
@@ -2094,7 +2093,7 @@ function CostAnalytics() {
                             ]}
                             contentStyle={{
                               backgroundColor: 'white',
-                              border: '1px solid #e5e7eb',
+                              border: '1px solid '#e5e7eb',
                               borderRadius: '6px',
                               boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                             }}
@@ -2326,7 +2325,7 @@ function CostAnalytics() {
                                 {supplier.selected ? '✅ Selected' : 'Select'}
                               </Button>
                             </Table.Cell>
-                          </Table.Row>
+                            </Table.Row>
                         ))}
                       </Table.Body>
                     </Table.Root>
@@ -2560,8 +2559,7 @@ function CostAnalytics() {
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
-                <Legend />
-                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Legend />                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
                 <Bar dataKey="target" fill="#10b981" name="Target Cost" />
               </BarChart>
             </ResponsiveContainer>
