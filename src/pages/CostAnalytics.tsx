@@ -426,7 +426,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
         padding: '12px', 
         backgroundColor: '#fffbeb',
         borderRadius: '6px',
-        border: '1px solid #fde68a'
+        border: '1px solid '#fde68a'
       }}>
         <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>Assessment:</h4>
         <p style={{ 
@@ -679,11 +679,11 @@ function CostAnalytics() {
       categoryItems[index][field] = value;
       
       switch (category) {
-        case 'Direct Materials': newData.rawMaterials = categoryItems; break;
-        case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
-        case 'Direct Labor': newData.directLabor = categoryItems; break;
-        case 'Overhead': newData.overheadItems = categoryItems; break;
-        case 'Other Costs': newData.otherCosts = categoryItems; break;
+          case 'Direct Materials': newData.rawMaterials = categoryItems; break;
+          case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
+          case 'Direct Labor': newData.directLabor = categoryItems; break;
+          case 'Overhead': newData.overheadItems = categoryItems; break;
+          case 'Other Costs': newData.otherCosts = categoryItems; break;
       }
       
       updateCategoryTotals(category, newData);
@@ -1157,7 +1157,7 @@ function CostAnalytics() {
                   <Badge 
                     color={
                       item.trend === 'up' ? 'green' : 
-                      item.trend === 'down' ? 'red' : 'gray'
+                      item.trend === 'down' : 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1637,7 +1637,7 @@ function CostAnalytics() {
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
                             <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
@@ -2083,23 +2083,16 @@ function CostAnalytics() {
                   strokeDasharray="5 5"
                   name="Benchmark Price"
                 />
-               <Line 
-  type="monotone" 
-  dataKey="targetCost" 
-  stroke="#10b981" 
-  strokeWidth={2}
-  strokeDasharray="3 4 5 2"
-  name="Target Cost"
-/>
-<Line 
-  type="monotone" 
-  dataKey="gap" 
-  stroke="#ef4444" 
-  strokeWidth={2}
-  name="Cost Gap"
-</LineChart> 
-                 
-              type="monotone" 
+                <Line 
+                  type="monotone" 
+                  dataKey="targetCost" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  strokeDasharray="3 4 5 2"
+                  name="Target Cost"
+                />
+                <Line 
+                  type="monotone" 
                   dataKey="gap" 
                   stroke="#ef4444" 
                   strokeWidth={2}
