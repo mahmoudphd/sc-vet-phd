@@ -461,14 +461,14 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   overflow: 'hidden'
 }}>
   <Box style={{
-    height: '100%',
-    width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
-    backgroundColor: (item.value || 0) > 0 ? 
-      getScoreColor(((item.value || 0) / (item.max || 100)) * 100) : 
-      '#ef4444',
-    borderRadius: '4px',
-    transition: 'width 0.3s ease'
-  }} />
+  height: '100%',
+  width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
+  backgroundColor: (item.value || 0) > 0 
+    ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
+    : '#ef4444',
+  borderRadius: '4px',
+  transition: 'width 0.3s ease'
+}} />
 </Box
           </Box>
         ))}
