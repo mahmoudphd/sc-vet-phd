@@ -634,7 +634,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           
           return (
             <Table.Row key={index}>
-              <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
+              <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
               <Table.Cell style={tableCellStyle}>
                 {formatCurrency(costBefore, currency)}
               </Table.Cell>
@@ -2067,18 +2067,18 @@ function CostAnalytics() {
                           }}
                         />
                         <YAxis 
-                          yAxisId="right"
-                          orientation="right',
-                          domain={[0, 200]},
-                          tick={{ fill: '#4b5563', fontSize: 12 }},
-                          axisLine={{ stroke: '#e5e7eb' }},
-                          label={{ 
-                            value: 'Scores', 
-                            angle: 90, 
-                            position: 'insideRight',
-                            style: { textAnchor: 'middle', fill: '#f59e0b' } 
-                          }}
-                        />
+  yAxisId="right"
+  orientation="right"
+  domain={[0, 200]}
+  tick={{ fill: '#4b5563', fontSize: 12 }}
+  axisLine={{ stroke: '#e5e7eb' }}
+  label={{ 
+    value: 'Scores', 
+    angle: 90, 
+    position: 'insideRight',
+    style: { textAnchor: 'middle', fill: '#f59e0b' } 
+  }}
+/>
                         <Tooltip 
                           formatter={(value, name) => {
                             if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
