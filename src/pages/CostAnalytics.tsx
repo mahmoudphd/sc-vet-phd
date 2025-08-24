@@ -168,6 +168,7 @@ const initialData: CostData = {
   ],
 };
 
+// Initialize original values
 initialData.rawMaterials = initialData.rawMaterials.map(item => ({
   ...item,
   originalPricePerKg: item.pricePerKg,
@@ -232,7 +233,9 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};const calculateComplianceScore = (material: Material): number => {
+};
+
+const calculateComplianceScore = (material: Material): number => {
   const weights = {
     tests: 40,
     certificate: 20,
@@ -422,8 +425,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
             max: 20,
             details: supplier.material.certificate ? 'Available' : 'Not available',
             icon: '📄'
-          },
-          { 
+            }, { 
             name: 'Supplier Status', 
             value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
             max: 15,
@@ -516,7 +518,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       <Card style={{ 
         backgroundColor: '#fffbeb', 
         padding: '16px',
-        border: '1px solid '#fde68a'
+        border: '1px solid #fde68a'
       }}>
         <Heading size="3" mb="2" style={{ color: '#92400e' }}>
           Assessment
@@ -530,7 +532,9 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       </Card>
     </Card>
   );
-};interface CostAfterViewProps {
+};
+
+interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
   updateCostAfterValue: (category: CostCategory, index: number, value: number) => void;
@@ -593,7 +597,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                     padding: '6px 10px',
                     borderRadius: '6px',
                     border: '1px solid #e2e8f0',
-                    backgroundColor: '#f9fafb',
+                    backgroundColor: 'white',
                     fontSize: '14px'
                   }}
                 />
@@ -680,7 +684,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};function CostAnalytics() {
+};
+
+function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -1152,7 +1158,308 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       );
     }
     return null;
-  }; {dialogCategory && (
+  };
+
+  return (
+    <Box p="4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
+      <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
+        <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
+        <Flex gap="3" align="center" wrap="wrap">
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold" style={{ color: '#4b5563' }}>Product:</Text>
+            <RadixSelect.Root
+              value={selectedProduct}
+              onValueChange={(value) => setSelectedProduct(value)}
+            >
+              <RadixSelect.Trigger style={{ 
+                minWidth: '120px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px'
+              }} />
+              <RadixSelect.Content style={{
+                backgroundColor: 'white',
+                borderRadius: '6px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                {products.map((p) => (
+                  <RadixSelect.Item key={p} value={p} style={{
+                    padding: '8px 12px'
+                  }}>
+                    {p}
+                  </RadixSelect.Item>
+                ))}
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+          
+          <Flex align="center" gap="2">
+            <Text size="2" weight="bold" style={{ color: '#4b5563' }}>Currency:</Text>
+            <RadixSelect.Root
+              value={currency}
+              onValueChange={(value) => setCurrency(value as 'EGP' | 'USD')}
+            >
+              <RadixSelect.Trigger style={{ 
+                minWidth: '80px',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '6px'
+              }} />
+              <RadixSelect.Content style={{
+                backgroundColor: 'white',
+                borderRadius: '6px',
+                boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+              }}>
+                <RadixSelect.Item value="EGP" style={{
+                  padding: '8px 12px'
+                }}>EGP</RadixSelect.Item>
+                <RadixSelect.Item value="USD" style={{
+                  padding: '8px 12px'
+                }}>USD</RadixSelect.Item>
+              </RadixSelect.Content>
+            </RadixSelect.Root>
+          </Flex>
+
+          <Button 
+            variant="soft" 
+            onClick={handleExportReport}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontWeight: '500'
+            }}
+          >
+            <DownloadIcon />
+            Export Report
+          </Button>
+        </Flex>
+      </Flex>
+
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+        {[
+          { label: 'Actual Cost', value: totalActual, trend: 'down' },
+          { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
+          { label: 'Cost After Optimization', value: totalCostAfter, trend: 'up' },
+          { label: 'Post-Optimization Estimate', value: postOptimizationEstimate, trend: 'up' },
+          {
+            label: 'Benchmark Price',
+            value: benchmarkPrice,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              handleBenchmarkChange(parseFloat(e.target.value) || 0)
+          },
+          {
+            label: 'Profit Margin (%)',
+            value: profitMargin,
+            editable: true,
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => 
+              setProfitMargin(parseFloat(e.target.value) || 0)
+          },
+        ].map((item, index) => (
+          <Card 
+            key={index} 
+            style={{ 
+              position: 'relative',
+              borderRadius: '12px',
+              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              transition: 'all 0.2s ease',
+              backgroundColor: 'white'
+            }}
+          >
+            <Flex direction="column" gap="2" p="4">
+              <Flex justify="between" align="center">
+                <Text size="2" color="gray" weight="bold">
+                  {item.label}
+                </Text>
+                {item.trend && (
+                  <Badge color={
+                      item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+                    }
+                    style={{
+                      borderRadius: '9999px',
+                      padding: '2px 8px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
+                  </Badge>
+                )}
+              </Flex>
+              
+              {item.editable ? (
+                <Flex align="center" gap="2">
+                  <input
+                    type="number"
+                    value={item.value}
+                    onChange={item.onChange}
+                    style={{
+                      width: '80px',
+                      padding: '6px 10px',
+                      borderRadius: '6px',
+                      border: '1px solid #e2e8f0',
+                      backgroundColor: '#f9fafb',
+                      fontSize: '14px'
+                    }}
+                  />
+                  <Text size="4" weight="bold" style={{ color: '#1f2937' }}>
+                    {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                  </Text>
+                </Flex> ) : (
+                <Heading size="5" style={{ fontWeight: 'bold', color: '#1f2937' }}>
+                  {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                </Heading>
+              )}
+            </Flex>
+          </Card>
+        ))}
+      </Grid>
+
+      <Card mb="6" style={{ 
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        backgroundColor: 'white'
+      }}>
+        <Inset clip="padding-box" side="top" pb="current">
+          <Table.Root variant="surface">
+            <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+              <Table.Row>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Category</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Details</Table.ColumnHeaderCell>
+              </Table.Row>
+            </Table.Header>
+            
+            <Table.Body>
+              {categories.map((category) => {
+                const actualTotal = Math.round(
+                  getDetailsByCategory(category)
+                    .reduce((sum, item) => sum + calculateActualCost(item), 0) * 100
+                ) / 100;
+                
+                const costAfterTotal = Math.round(
+                  getDetailsByCategory(category)
+                    .reduce((sum, item) => sum + calculateCostAfter(item), 0) * 100
+                ) / 100;
+                
+                const variance = actualTotal - totals[category].budget;
+                const varianceColor = variance <= 0 ? 'green' : 'red';
+                
+                return (
+                  <Table.Row key={category}>
+                    <Table.RowHeaderCell style={tableRowHeaderStyle}>{category}</Table.RowHeaderCell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      {formatCurrency(actualTotal, currency)}
+                    </Table.Cell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      <input
+                        type="number"
+                        value={totals[category].budget}
+                        onChange={(e) => handleTargetChange(category, parseFloat(e.target.value) || 0)}
+                        step="0.01"
+                        min="0"
+                        style={{
+                          width: '80px',
+                          padding: '6px 10px',
+                          borderRadius: '6px',
+                          border: '1px solid #e2e8f0',
+                          backgroundColor: '#f9fafb',
+                          fontSize: '14px'
+                        }}
+                      />
+                    </Table.Cell>
+                    
+                    <Table.Cell style={{ 
+                      ...tableCellStyle,
+                      color: varianceColor
+                    }}>
+                      {formatCurrency(variance, currency)}
+                    </Table.Cell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      {totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2)}%
+                    </Table.Cell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      {formatCurrency(costAfterTotal, currency)}
+                    </Table.Cell>
+                    
+                    <Table.Cell style={tableCellStyle}>
+                      <Button 
+                        size="1" 
+                        variant="solid"
+                        onClick={() => setDialogCategory(category)}
+                        style={{
+                          borderRadius: '6px',
+                          padding: '4px 12px',
+                          fontSize: '0.875rem',
+                          backgroundColor: '#3b82f6',
+                          color: 'white',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        View Details
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                );
+              })}
+              
+              <Table.Row style={{ 
+                backgroundColor: '#f8fafc',
+                fontWeight: 'bold'
+              }}>
+                <Table.RowHeaderCell style={tableRowHeaderStyle}>Total</Table.RowHeaderCell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    Math.round(
+                      categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateActualCost(item), 0
+                        ), 0) * 100
+                    ) / 100, 
+                    currency
+                  )}
+                </Table.Cell>
+                <Table.Cell style={tableCellStyle}>{formatCurrency(totalTarget, currency)}</Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    Math.round(
+                      (categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateActualCost(item), 0
+                        ), 0) - totalTarget) * 100
+                    ) / 100, 
+                    currency
+                  )}
+                </Table.Cell>
+                <Table.Cell style={tableCellStyle}>100%</Table.Cell>
+                <Table.Cell style={tableCellStyle}>
+                  {formatCurrency(
+                    Math.round(
+                      categories.reduce((sum, category) => 
+                        sum + getDetailsByCategory(category).reduce(
+                          (catSum, item) => catSum + calculateCostAfter(item), 0
+                        ), 0) * 100
+                    ) / 100, 
+                    currency
+                  )}
+                </Table.Cell>
+                <Table.Cell style={tableCellStyle}></Table.Cell>
+              </Table.Row>
+            </Table.Body>
+          </Table.Root>
+        </Inset>
+      </Card>
+
+      {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
             maxWidth: '800px',
@@ -1161,7 +1468,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             borderRadius: '12px',
             padding: '24px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid ',
+            border: '1px solid #e5e7eb',
             backgroundColor: 'white'
           }}>
             <Flex justify="between" align="center" mb="4">
@@ -1336,8 +1643,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         const value = parseFloat(e.target.value) || 0;
                                         if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
                                         updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
+                                      }} style={{ 
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
@@ -1406,7 +1712,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   borderRadius: '6px',
                                   boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
                                 }}>
-                                  {solutionsOptions.map((sol) => ( <RadixSelect.Item 
+                                  {solutionsOptions.map((sol) => (
+                                    <RadixSelect.Item 
                                       key={sol} 
                                       value={sol}
                                       style={{
@@ -1429,7 +1736,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '##f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1589,7 +1896,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                   padding: '12px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
+                  <Text weight="bold" size="2" style={{ color: '##1f2937', marginBottom: '8px' }}>
                     📊 Current Situation
                   </Text>
                   <Flex direction="column" gap="1">
@@ -1937,8 +2244,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Button
-                                  size="1"
-                                  variant={supplier.selected ? 'solid' : 'outline'}
+                                  size="1variant={supplier.selected ? 'solid' : 'outline'}
                                   onClick={() => handleSupplierSelect(supplier.id)}
                                   style={{
                                     borderRadius: '4px',
@@ -2145,7 +2451,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 lineHeight: '1.4'
               }}>
                 {getComplianceAssessment(complianceTooltip.supplier.complianceScore, complianceTooltip.supplier.material)}
-              </Text>
+                </Text>
             </Card>
 
             <Flex justify="end">
@@ -2160,7 +2466,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                   fontWeight: 'bold',
                   fontSize: '0.875rem'
                 }}
-                >
+              >
                 Close
               </Button>
             </Flex>
@@ -2270,8 +2576,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           padding: '16px',
           gridColumn: '1 / -1',
           height: '350px'
-        }}>
-          <Flex direction="column" height="100%">
+        }}>          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
@@ -2304,7 +2609,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
-                <Legend />                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Legend />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
                 <Bar dataKey="target" fill="#10b981" name="Target Cost" />
               </BarChart>
             </ResponsiveContainer>
