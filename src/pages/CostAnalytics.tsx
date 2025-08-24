@@ -232,28 +232,28 @@ const initialData: CostData = {
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.19, targetQty: 0.0009, targetPrice: 2185 },
     { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.38, targetQty: 0.009, targetPrice: 380 },
     { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.62, targetQty: 0.0036, targetPrice: 1615 },
-    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Vitamin B6', concentrationKg: 极.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
     { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.19, targetQty: 0.027, targetPrice: 190 },
     { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.90, targetQty: 0.009, targetPrice: 902.5 },
     { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.85, targetQty: 0.00225, targetPrice: 2850 },
     { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.99, targetQty: 0.00225, targetPrice: 3990 },
     { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.75, targetQty: 0.00225, targetPrice: 4750 },
     { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.71, targetQty: 0.00225, targetPrice: 3705 },
-    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.67, targetQty: 极 0.0225, targetPrice: 665 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.67, targetQty: 0.0225, targetPrice: 665 },
     { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.34, targetQty: 0.009, targetPrice: 342 },
     { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.02, targetQty: 0.0045, targetPrice: 1016.5 },
     { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.19, targetQty: 0.018, targetPrice: 1187.5 },
-    { name: 'Tween-80', concentrationKg: 极 0.075, pricePerKg: 90, costAfter: 0.09, targetQty: 0.0675, targetPrice: 85.5 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 0.09, targetQty: 0.0675, targetPrice: 85.5 },
     { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, costAfter: 0.95, targetQty: 0.5139, targetPrice: 0.95 },
   ],
   packagingMaterials: [
     { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10, costAfter: 9.5, targetQty: 0.9, targetPrice: 9.5 },
     { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3, costAfter: 2.85, targetQty: 0.9, targetPrice: 2.85 },
-    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice: 4.75 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice极 4.75 },
   ],
   directLabor: [
     { name: 'Operator', hours: 0.5, hourlyRate: 3.5, cost: 1.75, costAfter: 1.66, targetQty: 0.45, targetPrice: 3.33 },
-    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75, cost: 0.88, costAfter: 0.83, targetQty: 0.45,极 targetPrice: 1.66 },
+    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75, cost: 0.88, costAfter: 0.83, targetQty: 0.45, targetPrice: 1.66 },
     { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74, cost: 0.37, costAfter: 0.35, targetQty: 0.45, targetPrice: 0.70 },
   ],
   overheadItems: [
@@ -262,7 +262,7 @@ const initialData: CostData = {
     { name: 'Maintenance', totalCost: 1500, basis: 1000, cost: 1.5, costAfter: 1.43, targetQty: 1, targetPrice: 1.43 },
   ],
   otherCosts: [
-    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 极 6.67, costAfter: 6.34, targetQty: 0.9, targetPrice: 6.34 },
+    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67, costAfter: 6.34, targetQty: 0.9, targetPrice: 6.34 },
     { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33, costAfter: 3.16, targetQty: 0.9, targetPrice: 3.16 },
     { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5, costAfter: 4.5, targetQty: 0.8, targetPrice: 4.5 },
   ],
@@ -352,7 +352,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
         width: '90vw',
         padding: '30px',
         borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
+        boxShadow: '0 10极 40px rgba(0,0,0,0.2)',
         border: '1px solid #e5e7eb',
         backgroundColor: 'white',
         maxHeight: '90vh',
@@ -430,7 +430,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
 
           <Card style={{ 
             padding: '20px', 
-            backgroundColor: '#f8fafc', 
+            backgroundColor: '#f8极fc', 
             borderRadius: '12px',
             border: '1px solid #e2e8f0'
           }}>
@@ -462,7 +462,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
               },
               { 
                 name: 'Expiry Date', 
-                value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
+                value: new Date(s极pplier.material.expiryDate) > new Date() ? 15 : 0, 
                 max: 15,
                 details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
                 icon: '📅'
@@ -470,7 +470,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
               { 
                 name: 'Blockchain Registration', 
                 value: supplier.material.blockchainRegistered ? 10 : 0, 
-               极 max: 10,
+                max: 10,
                 details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
                 icon: '🔗'
               }
@@ -534,7 +534,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
                         <Text>{getTestName(test)}</Text>
                       </Flex>
                     </Table.Cell>
-                    <Table.Cell style={{ padding: '极 12px' }}>
+                    <Table.Cell style={{ padding: '12px' }}>
                       <Badge 
                         style={{ 
                           backgroundColor: getStatusColor(status),
@@ -699,7 +699,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           <Table.Cell style={tableCellStyle}>
             {formatCurrency(
               getDetailsByCategory(category, data).reduce(
-                (sum: number, item: Item)极 => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
+                (sum: number, item: Item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
               ), 
               currency
             )}
@@ -843,7 +843,7 @@ function CostAnalytics() {
         tests: {
           identity: { status: testStatuses[Math.floor(Math.random() * 3)] },
           purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          microbial: { status: testStatuses[极 floor(Math.random() * 3)] },
+          microbial: { status: testStatuses[Math.floor(Math.random() * 3)] },
           endotoxins: { status: testStatuses[Math.floor(Math.random() * 3)] }
         },
         certificate: Math.random() > 0.3,
@@ -880,7 +880,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: Math.round(intBasePrice * (极 - discounts[2])),
+        pricePerKg: Math.round(intBasePrice * (1 - discounts[2])),
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
@@ -947,7 +947,7 @@ function CostAnalytics() {
           case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
           case 'Direct Labor': newData.directLabor = categoryItems; break;
           case 'Overhead': newData.overheadItems = categoryItems; break;
-          case 'Other Costs': newData.otherCosts = categoryItems; break;
+          case 'Other Costs': newData.other极osts = categoryItems; break;
         }
         
         updateCategoryTotals(selectedSolution.category, newData);
@@ -985,7 +985,7 @@ function CostAnalytics() {
       const actualCost = calculateActualCost(item);
       
       const maxAllowedSavings = actualCost * 0.05;
-      const minAllowedCostAfter = actualCost - maxAllowedSavings;
+      const minAllowedCostAfter = actual极 - maxAllowedSavings;
       
       item.costAfter = Math.max(value, minAllowedCostAfter);
       
@@ -1007,9 +1007,9 @@ function CostAnalytics() {
     const items = getDetailsByCategory(category, dataToUpdate);
     const actualTotal = items.reduce((sum, item) => sum + calculateActualCost(item), 0);
     const targetTotal = items.reduce((sum, item) => sum + ((item.targetQty || 0) * (item.targetPrice || 0)), 0);
-    const costAfterTotal = items.reduce((sum, item)极 => sum + calculateCostAfter(item), 0);
+    const costAfterTotal = items.reduce((sum, item) => sum + calculateCostAfter(item), 0);
     
-    dataToUpdate.totals[极] = {
+    dataToUpdate.totals[category] = {
       ...dataToUpdate.totals[category],
       actual: Math.round(actualTotal),
       budget: Math.round(targetTotal),
@@ -1081,7 +1081,7 @@ function CostAnalytics() {
       totals: {
         ...prev.totals,
         [category]: {
-          ...prev极.totals[category],
+          ...prev.totals[category],
           actual: Math.round(newActual),
           costAfter: Math.round(newCostAfter)
         }
@@ -1115,7 +1115,7 @@ function CostAnalytics() {
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice, targetCost: targetCost, costAfter: totalCostAfter },
   ];
 
-  const costGapDataWithGap = cost极apData.map((d) => ({
+  const costGapDataWithGap = costGapData.map((d) => ({
     ...d,
     gap: Math.round((d.actual - targetCost)),
   }));
@@ -1191,7 +1191,7 @@ function CostAnalytics() {
                 minWidth: '80px',
                 backgroundColor: 'white',
                 border: '1px solid #e5e7eb',
-                borderRadius: '6px'
+                borderRadius: '极px'
               }} />
               <RadixSelect.Content style={{
                 backgroundColor: 'white',
@@ -1226,7 +1226,7 @@ function CostAnalytics() {
       </Flex>
 
       {/* Key metrics cards */}
-      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
+      <Grid columns={{ initial: '1', md: '3' }} gap="4极 mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
           { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
@@ -1257,7 +1257,7 @@ function CostAnalytics() {
               backgroundColor: 'white'
             }}
           >
-            <Flex direction="column" gap="2" p极="4">
+            <Flex direction="column" gap="2" p="4">
               <Flex justify="between" align="center">
                 <Text size="2" color="gray" weight="bold">
                   {item.label}
@@ -1288,7 +1288,7 @@ function CostAnalytics() {
                       padding: '6px 10px',
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0',
-                      backgroundColor: '#极9fafb',
+                      backgroundColor: '#f9fafb',
                       fontSize: '14px'
                     }}
                   />
@@ -1297,7 +1297,7 @@ function CostAnalytics() {
                   </Text>
                 </Flex> ) : (
                 <Heading size="5" style={{ fontWeight: 'bold', color: '#1f2937' }}>
-                  {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                  {item.label.includes('%') ? `${item.value}极` : formatCurrency(item.value as number, currency)}
                 </Heading>
               )}
             </Flex>
@@ -1317,7 +1317,7 @@ function CostAnalytics() {
               <Table.Row>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Category</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost极Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
@@ -1375,7 +1375,7 @@ function CostAnalytics() {
                     
                     <Table.Cell style={tableCellStyle}>
                       {totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2)}%
-                    </Table极ell>
+                    </Table.Cell>
                     
                     <Table.Cell style={tableCellStyle}>
                       {formatCurrency(costAfterTotal, currency)}
@@ -1424,7 +1424,7 @@ function CostAnalytics() {
                     Math.round(
                       (categories.reduce((sum, category) => 
                         sum + getDetailsByCategory(category).reduce(
-                          (catSum, item) => catSum + calculateActualCost(item), 极
+                          (catSum, item) => catSum + calculateActualCost(item), 0
                         ), 0) - totalTarget) * 100
                     ) / 100, 
                     currency
@@ -1436,7 +1436,7 @@ function CostAnalytics() {
                     Math.round(
                       categories.reduce((sum, category) => 
                         sum + getDetailsByCategory(category).reduce(
-                          (catSum, item) => cat极m + calculateCostAfter(item), 0
+                          (catSum, item) => catSum + calculateCostAfter(item), 0
                         ), 0) * 100
                     ) / 100, 
                     currency
@@ -1483,7 +1483,7 @@ function CostAnalytics() {
               <Tabs.List>
                 <Tabs.Trigger value="actual" style={{ fontWeight: 'bold' }}>Actual View</Tabs.Trigger>
                 <Tabs.Trigger value="target" style={{ fontWeight: 'bold' }}>Target View</Tabs.Trigger>
-                <Tabs.Trigger value="costAfter" style={{ fontWeight: 'bold' }}>Cost After View</极abs.Trigger>
+                <Tabs.Trigger value="costAfter" style={{ fontWeight: 'bold' }}>Cost After View</Tabs.Trigger>
               </Tabs.List>
 
               <Box pt="3">
@@ -1509,7 +1509,7 @@ function CostAnalytics() {
                                 { header: 'Quantity', key: 'qty' },
                                 { header: 'Unit Price', key: 'unitPrice' },
                                 { header: 'Total Cost', key: 'totalCost' },
-                                { header: 'Solution', key: '极olution' }
+                                { header: 'Solution', key: 'solution' }
                               );
                               break;
                             case 'Direct Labor':
@@ -1523,8 +1523,8 @@ function CostAnalytics() {
                               break;
                             case 'Overhead':
                               columns.push(
-                                { header: 'Item', key极 'name' },
-                                { header: 'Total Cost', key: 'total极ost' },
+                                { header: 'Item', key: 'name' },
+                                { header: 'Total Cost', key: 'totalCost' },
                                 { header: 'Basis', key: 'basis' },
                                 { header: 'Cost per Unit', key: 'cost' },
                                 { header: 'Solution', key: 'solution' }
@@ -1621,7 +1621,7 @@ function CostAnalytics() {
                                       }}
                                     />
                                   )}
-                                </Table.Cell>
+                                </Table极ell>
                                 <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
                                     unitPrice ? formatCurrency(unitPrice, currency) : '-'
@@ -1650,13 +1650,13 @@ function CostAnalytics() {
                             
                             {dialogCategory === 'Direct Labor' && (
                               <>
-                                <Table.Cell style={tableCellStyle}>
+                                <Table.Cell style={tableCell极yle}>
                                   {autoMode ? (
                                     formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
                                   ) : (
                                     <input
                                       type="number"
-                                      value={item.hours || 0}
+                                      value极item.hours || 0}
                                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
                                         item.hours = value;
@@ -1666,7 +1666,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f极',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1686,7 +1686,7 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }} style={{ 
                                         width: '80px',
-                                        padding: '6px 10px',
+                                        padding: '6px 极0px',
                                         borderRadius: '6px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
@@ -1715,7 +1715,7 @@ function CostAnalytics() {
                                       value={item.cost || 0}
                                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
-                                        item.cost = value;
+                                        item.c极st = value;
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
@@ -1797,7 +1797,7 @@ function CostAnalytics() {
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
 
-                            <Table.Cell style极{tableCellStyle}>
+                            <Table.Cell style={tableCellStyle}>
                               <input
                                 type="number"
                                 value={item.targetQty || ''}
@@ -1815,7 +1815,7 @@ function CostAnalytics() {
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
                                   backgroundColor: '#f9fafb',
-                                  fontSize: '14极'
+                                  fontSize: '14px'
                                 }}
                               />
                             </Table.Cell>
@@ -1823,7 +1823,7 @@ function CostAnalytics() {
                               <input
                                 type="number"
                                 value={item.targetPrice || ''}
-                                onChange={(极) => updateTargetValues(
+                                onChange={(e) => updateTargetValues(
                                   dialogCategory, 
                                   index, 
                                   'targetPrice', 
@@ -1862,7 +1862,7 @@ function CostAnalytics() {
                     updateCostAfterValue={updateCostAfterValue}
                     formatCurrency={formatCurrency}
                     currency={currency}
-                    getDetailsByCategory={getDetailsByCategory}
+                    getDetailsByCategory={getDetails极Category}
                     calculateActualCost={calculateActualCost}
                     calculateCostAfter={calculateCostAfter}
                   />
@@ -1935,18 +1935,18 @@ function CostAnalytics() {
                   padding: '20px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="4" style={{ color: '#1f2937', marginBottom: '12px' }}>
+                  <Text weight="bold" size="4极 style={{ color: '#1f2937', marginBottom: '12px' }}>
                     📊 Current Situation
                   </Text>
                   <Flex direction="column" gap="3">
                     <Flex justify="between" align="center">
                       <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Current Price/kg:</Text>
-                      <Text style={{ color: '#1极f2937', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                      <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '1.1rem' }}>
                         {formatCurrency(currentPrice, currency)}
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '1极' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Selected Supplier Price:</极ext>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
@@ -1970,7 +1970,7 @@ function CostAnalytics() {
                   <Text weight="bold" size="4" style={{ color: '#166534', marginBottom: '12px' }}>
                     💰 Potential Savings
                   </Text>
-                  <Flex direction="column" gap="3">
+                  <Flex direction="column" gap极3">
                     <Flex justify="between" align="center">
                       <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Savings per kg:</Text>
                       <Text style={{ 
@@ -2015,7 +2015,7 @@ function CostAnalytics() {
 
               {isLoading ? (
                 <Flex justify="center" align="center" style={{ height: '300px' }}>
-                  <Flex direction="column" align极enter" gap="3">
+                  <Flex direction="column" align="center" gap="3">
                     <Text size="4" weight="bold">Loading supplier data...</Text>
                     <Spinner size="3" />
                   </Flex>
@@ -2058,7 +2058,7 @@ function CostAnalytics() {
                           yAxisId="left"
                           orientation="left"
                           tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5极7eb' }}
+                          axisLine={{ stroke: '#e5e7eb' }}
                           label={{ 
                             value: 'Price (Currency)', 
                             angle: -90, 
@@ -2076,7 +2076,7 @@ function CostAnalytics() {
                             value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
-                            style: { textAnchor: 'middle', fill: '#f59e0b' } 
+                            style极 { textAnchor: 'middle', fill: '#f59e0b' } 
                           }}
                         />
                         <Tooltip 
@@ -2090,7 +2090,7 @@ function CostAnalytics() {
                             backgroundColor: 'white',
                             border: '1px solid #e5e7eb',
                             borderRadius: '8px',
-                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                            boxShadow: '0 4px 10px rgba极0,0,0,0.15)',
                             fontSize: '1rem'
                           }}
                         />
@@ -2141,7 +2141,7 @@ function CostAnalytics() {
                             <Cell 
                               key={`totalScore-cell-${index}`} 
                               fill={supplier.selected ? '#10b981' : '#ec4899'}
-                              stroke极{supplier.selected ? '#059669' : '#ec4899'}
+                              stroke={supplier.selected ? '#059669' : '#ec4899'}
                               strokeWidth={supplier.selected ? 2 : 0}
                             />
                           ))}
@@ -2156,16 +2156,16 @@ function CostAnalytics() {
                         <Text size="2">Price/kg</Text>
                       </Flex>
                       <Flex align="center" gap="2">
-                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#8b5cf6', borderRadius: '3px极 }}></Box>
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#8b5cf6', borderRadius: '3px' }}></Box>
                         <Text size="2">Compliance Score</Text>
                       </Flex>
                       <Flex align="center" gap="2">
-                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#ec4899', borderRadius: '3px' }}></Box>
+                        <极ox style={{ width: '14px', height: '14px', backgroundColor: '#ec4899', borderRadius: '3px' }}></Box>
                         <Text size="2">Total Score</Text>
                       </Flex>
                       <Flex align="center" gap="2">
                         <Box style={{ width: '14px', height: '14px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '3px' }}></Box>
-                        <Text size="2">Selected Supplier</极ext>
+                        <Text size="2">Selected Supplier</Text>
                       </Flex>
                     </Flex>
                   </Card>
@@ -2227,7 +2227,7 @@ function CostAnalytics() {
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '12px',
-                              fontSize: '1极m',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Total Score</Table.ColumnHeaderCell>
@@ -2328,7 +2328,7 @@ function CostAnalytics() {
                                 {supplier.complianceScore}/100
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '极2px',
+                                padding: '12px',
                                 fontWeight: 'bold',
                                 color: supplier.score > 200 ? '#10b981' : 
                                       supplier.score > 150 ? '#f59e0b' : '#ef4444',
@@ -2402,7 +2402,7 @@ function CostAnalytics() {
                   style={{
                     backgroundColor: '#f3f4f6',
                     color: '#1f2937',
-                    padding: '10极 20px',
+                    padding: '10px 20px',
                     borderRadius: '8px',
                     fontWeight: 'bold',
                     fontSize: '1rem'
@@ -2435,7 +2435,7 @@ function CostAnalytics() {
               Cost Breakdown
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
+              <极ieChart>
                 <Pie
                   data={categories.map((category) => ({
                     name: category,
@@ -2472,7 +2472,7 @@ function CostAnalytics() {
           height: '350px'
         }}>
           <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitle极yle}>
+            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Calculation
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
@@ -2501,7 +2501,7 @@ function CostAnalytics() {
                   type="monotone" 
                   dataKey="targetCost" 
                   stroke="#10b981" 
-                  strokeWidth={2}
+                  strokeWidth极2}
                   strokeDasharray="3 4 5 2"
                   name="Target Cost"
                 />
@@ -2525,8 +2525,8 @@ function CostAnalytics() {
           gridColumn: '1 / -1',
           height: '350px'
         }}>
-          <Flex direction="column" height="极0%">
-            <Heading size="4极 mb="3" align="center" style={cardTitleStyle}>
+          <Flex direction="column" height="100%">
+            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
             <Text align="center" mb="2" size="2">
@@ -2538,7 +2538,7 @@ function CostAnalytics() {
                 currency
               )}
             </Text>
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="极0%" height="100%">
               <BarChart
                 data={categories.map(category => ({
                   name: category,
@@ -2553,13 +2553,13 @@ function CostAnalytics() {
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis data极="name" />
+                <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
                 <Legend />
-                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost极 />
                 <Bar dataKey="target" fill="#10b981" name="Target Cost" />
               </BarChart>
             </ResponsiveContainer>
