@@ -322,14 +322,14 @@ const tableHeaderStyle = {
 const tableCellStyle = {
   fontWeight: 'normal',
   padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid '#e5e7eb',
   fontSize: '0.9rem'
 };
 
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid '#e5e7eb',
   fontSize: '0.9rem'
 };
 
@@ -337,7 +337,9 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
+};
+
+const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   const complianceScore = calculateComplianceScore(supplier.material);
 
   return (
@@ -345,7 +347,7 @@ const cardTitleStyle = {
       padding: '20px', 
       backgroundColor: '#f8fafc', 
       borderRadius: '12px',
-      border: '1px solid #e2e8f0'
+      border: '1px solid '#e2e8f0'
     }}>
       <Flex justify="between" align="center" mb="4">
         <Heading size="4" style={{ color: '#1e293b', fontWeight: 'bold' }}>
@@ -518,7 +520,7 @@ const cardTitleStyle = {
       <Card style={{ 
         backgroundColor: '#fffbeb', 
         padding: '16px',
-        border: '1px solid #fde68a'
+        border: '1px solid '#fde68a'
       }}>
         <Heading size="3" mb="2" style={{ color: '#92400e' }}>
           Assessment
@@ -596,7 +598,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                     width: '80px',
                     padding: '6px 10px',
                     borderRadius: '6px',
-                    border: '1px solid #e2e8f0',
+                    border: '1px solid '#e2e8f0',
                     backgroundColor: 'white',
                     fontSize: '14px'
                   }}
@@ -661,7 +663,18 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 <span style={{ 
                   color: hasTotalSavings ? '#10b981' : '#6b7280',
                 }}>
-                  {totalBefore === 0 ? '0.0' : totalSavingsfunction CostAnalytics() {
+                  {totalBefore === 0 ? '0.0' : totalSavingsPercentage.toFixed(1)}%
+                </span>
+              );
+            })()}
+          </Table.Cell>
+        </Table.Row>
+      </Table.Body>
+    </Table.Root>
+  );
+};
+
+function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -1117,7 +1130,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
         <div style={{ 
           backgroundColor: 'white', 
           padding: '10px', 
-          border: '1px solid #ccc',
+          border: '1px solid '#ccc',
           borderRadius: '5px'
         }}>
           <p>{`Month: ${label}`}</p>
@@ -1133,7 +1146,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       );
     }
     return null;
-  };  return (
+  };
+
+  return (
     <Box p="4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
@@ -1147,7 +1162,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
               <RadixSelect.Trigger style={{ 
                 minWidth: '120px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid '#e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1175,7 +1190,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid '#e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1248,7 +1263,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 </Text>
                 {item.trend && (
                   <Badge color={
-                      item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+                      item.trend === 'up' ? 'green' : item.trend === 'down' : 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1271,7 +1286,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       width: '80px',
                       padding: '6px 10px',
                       borderRadius: '6px',
-                      border: '1px solid #e2e8f0',
+                      border: '1px solid '#e2e8f0',
                       backgroundColor: '#f9fafb',
                       fontSize: '14px'
                     }}
@@ -1342,7 +1357,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                           width: '80px',
                           padding: '6px 10px',
                           borderRadius: '6px',
-                          border: '1px solid #e2e8f0',
+                          border: '1px solid '#e2e8f0',
                           backgroundColor: '#f9fafb',
                           fontSize: '14px'
                         }}
@@ -1441,7 +1456,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             borderRadius: '12px',
             padding: '24px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb',
+            border: '1px solid '#e5e7eb',
             backgroundColor: 'white'
           }}>
             <Flex justify="between" align="center" mb="4">
@@ -1519,7 +1534,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1547,7 +1562,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1570,7 +1585,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1598,7 +1613,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1620,7 +1635,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1654,796 +1669,797 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              <RadixSelect.Root
-                                value={solutions[dialogCategory]?.[index] || ''}
-                                onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
-                              >
-                                <RadixSelect.Trigger 
-                                  aria-label="Select solution" 
-                                  style={{
-                                    backgroundColor: 'white',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '6px',
-                                    padding: '6px 12px',
-                                    fontSize: '0.875rem'
-                                  }}
-                                />
-                                <RadixSelect.Content style={{
-                                  backgroundColor: 'white',
-                                  borderRadius: '6px',
-                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
-                                }}>
-                                  {solutionsOptions.map((sol) => (
-                                    <RadixSelect.Item 
-                                      key={sol} 
-                                      value={sol}
-                                      style={{
-                                        padding: '8px 12px',
-                                        fontSize: '0.875rem'
-                                      }}
-                                    >
-                                      {sol}
-                                    </RadixSelect.Item>
-                                  ))}
-                                </RadixSelect.Content>
-                              </RadixSelect.Root>
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table.Root>
-                </Tabs.Content>
+                        fontSize: '14px'
+                      }}
+                    />
+                  )}
+                </Table.Cell>
+              </>
+            )}
+            
+            <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
+            <Table.Cell style={tableCellStyle}>
+              <RadixSelect.Root
+                value={solutions[dialogCategory]?.[index] || ''}
+                onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
+              >
+                <RadixSelect.Trigger 
+                  aria-label="Select solution" 
+                  style={{
+                    backgroundColor: 'white',
+                    border: '1px solid '#e5e7eb',
+                    borderRadius: '6px',
+                    padding: '6px 12px',
+                    fontSize: '0.875rem'
+                  }}
+                />
+                <RadixSelect.Content style={{
+                  backgroundColor: 'white',
+                  borderRadius: '6px',
+                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                }}>
+                  {solutionsOptions.map((sol) => (
+                    <RadixSelect.Item 
+                      key={sol} 
+                      value={sol}
+                      style={{
+                        padding: '8px 12px',
+                        fontSize: '0.875rem'
+                      }}
+                    >
+                      {sol}
+                    </RadixSelect.Item>
+                  ))}
+                </RadixSelect.Content>
+              </RadixSelect.Root>
+            </Table.Cell>
+          </Table.Row>
+        );
+      })}
+    </Table.Body>
+  </Table.Root>
+</Tabs.Content>
 
-                <Tabs.Content value="target">
-                  <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '##f3f4f6' }}>
-                      <Table.Row>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
-                      </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                      {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const currentQty = dialogCategory === 'Direct Materials' ? item.concentrationKg || 0 :
-                                        dialogCategory === 'Direct Labor' ? item.hours || 0 : item.qty || 0;
-                        
-                        const currentPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg || 0 :
-                                          dialogCategory === 'Direct Labor' ? item.hourlyRate || 0 : item.unitPrice || 0;
+<Tabs.Content value="target">
+  <Table.Root variant="surface">
+    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+      <Table.Row>
+        <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
+        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
+        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
+        <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
+      </Table.Row>
+    </Table.Header>
+    <Table.Body>
+      {getDetailsByCategory(dialogCategory).map((item, index) => {
+        const currentQty = dialogCategory === 'Direct Materials' ? item.concentrationKg || 0 :
+                        dialogCategory === 'Direct Labor' ? item.hours || 0 : item.qty || 0;
+        
+        const currentPrice = dialogCategory === 'Direct Materials' ? item.pricePerKg || 0 :
+                          dialogCategory === 'Direct Labor' ? item.hourlyRate || 0 : item.unitPrice || 0;
 
-                        return (
-                          <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+        return (
+          <Table.Row key={index}>
+            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
 
-                            <Table.Cell style={tableCellStyle}>
-                              <input
-                                type="number"
-                                value={item.targetQty || ''}
-                                onChange={(e) => updateTargetValues(
-                                  dialogCategory, 
-                                  index, 
-                                  'targetQty', 
-                                  parseFloat(e.target.value) || 0
-                                )}
-                                step="0.0001"
-                                min="0"
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              <input
-                                type="number"
-                                value={item.targetPrice || ''}
-                                onChange={(e) => updateTargetValues(
-                                  dialogCategory, 
-                                  index, 
-                                  'targetPrice', 
-                                  parseFloat(e.target.value) || 0
-                                )}
-                                step="0.01"
-                                min="0"
-                                style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
-                                  border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
-                                }}
-                              />
-                            </Table.Cell>
-                            <Table.Cell style={{ 
-                              ...tableCellStyle,
-                              color: calculateActualCost(item) - calculateCostAfter(item) > 0 ? '#10b981' : '#6b7280',
-                              fontWeight: 'bold'
-                            }}>
-                              {formatCurrency(calculateActualCost(item) - calculateCostAfter(item), currency)}
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
-                    </Table.Body>
-                  </Table.Root>
-                </Tabs.Content>
+            <Table.Cell style={tableCellStyle}>
+              <input
+                type="number"
+                value={item.targetQty || ''}
+                onChange={(e) => updateTargetValues(
+                  dialogCategory, 
+                  index, 
+                  'targetQty', 
+                  parseFloat(e.target.value) || 0
+                )}
+                step="0.0001"
+                min="0"
+                style={{ 
+                  width: '80px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid '#e2e8f0',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '14px'
+                }}
+              />
+            </Table.Cell>
+            <Table.Cell style={tableCellStyle}>
+              <input
+                type="number"
+                value={item.targetPrice || ''}
+                onChange={(e) => updateTargetValues(
+                  dialogCategory, 
+                  index, 
+                  'targetPrice', 
+                  parseFloat(e.target.value) || 0
+                )}
+                step="0.01"
+                min="0"
+                style={{ 
+                  width: '80px',
+                  padding: '6px 10px',
+                  borderRadius: '6px',
+                  border: '1px solid '#e2e8f0',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '14px'
+                }}
+              />
+            </Table.Cell>
+            <Table.Cell style={{ 
+              ...tableCellStyle,
+              color: calculateActualCost(item) - calculateCostAfter(item) > 0 ? '#10b981' : '#6b7280',
+              fontWeight: 'bold'
+            }}>
+              {formatCurrency(calculateActualCost(item) - calculateCostAfter(item), currency)}
+            </Table.Cell>
+          </Table.Row>
+        );
+      })}
+    </Table.Body>
+  </Table.Root>
+</Tabs.Content>
 
-                <Tabs.Content value="costAfter">
-                  <CostAfterView 
-                    category={dialogCategory} 
-                    data={data} 
-                    updateCostAfterValue={updateCostAfterValue}
-                    formatCurrency={formatCurrency}
-                    currency={currency}
-                    getDetailsByCategory={getDetailsByCategory}
-                    calculateActualCost={calculateActualCost}
-                    calculateCostAfter={calculateCostAfter}
+<Tabs.Content value="costAfter">
+  <CostAfterView 
+    category={dialogCategory} 
+    data={data} 
+    updateCostAfterValue={updateCostAfterValue}
+    formatCurrency={formatCurrency}
+    currency={currency}
+    getDetailsByCategory={getDetailsByCategory}
+    calculateActualCost={calculateActualCost}
+    calculateCostAfter={calculateCostAfter}
+  />
+</Tabs.Content>
+</Box>
+</Tabs.Root>
+
+<Flex justify="end" gap="3" mt="4">
+  <Button 
+    style={{ 
+      backgroundColor: '#10b981', 
+      color: '#fff',
+      padding: '8px 16px',
+      borderRadius: '6px',
+      fontWeight: 'bold'
+    }}
+    onClick={() => handleSubmitDialog(dialogCategory)}
+  >
+    Submit
+  </Button>
+  <Button
+    variant="ghost"
+    style={{ 
+      backgroundColor: '#3b82f6', 
+      color: '#fff',
+      padding: '8px 16px',
+      borderRadius: '6px',
+      fontWeight: 'bold'
+    }}
+    onClick={() => setDialogCategory(null)}
+  >
+    Close
+  </Button>
+</Flex>
+</Dialog.Content>
+</Dialog.Root>
+)} {/* Supplier Selection Dialog */}
+{selectedSolution && (
+<Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
+<Dialog.Content style={{ 
+  maxWidth: '1000px',
+  width: '95vw',
+  padding: '16px',
+  borderRadius: '10px',
+  boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+  border: '1px solid '#e5e7eb',
+  backgroundColor: 'white',
+  maxHeight: '85vh',
+  overflowY: 'auto'
+}}>
+  <Dialog.Title style={{ 
+    fontSize: '1.2rem',
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: '15px',
+    textAlign: 'center',
+    paddingBottom: '10px',
+    borderBottom: '1px solid '#f1f5f9'
+  }}>
+    Supplier Selection for {getDetailsByCategory(selectedSolution.category)[selectedSolution.index]?.name}
+  </Dialog.Title>
+  
+  <Flex direction="column" gap="4">
+    {/* Summary Cards - Compact Layout */}
+    <Grid columns="2" gap="3">
+      {/* Current Situation Card */}
+      <Card style={{
+        borderRadius: '6px',
+        backgroundColor: '#f8fafc',
+        padding: '12px',
+        border: '1px solid '#e2e8f0'
+      }}>
+        <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
+          📊 Current Situation
+        </Text>
+        <Flex direction="column" gap="1">
+          <Flex justify="between" align="center">
+            <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Current Price/kg:</Text>
+            <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '0.9rem' }}>
+              {formatCurrency(currentPrice, currency)}
+            </Text>
+          </Flex>
+          <Flex justify="between" align="center">
+            <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Selected Supplier Price:</Text>
+            <Text style={{ 
+              color: potentialSavings > 0 ? '#10b981' : '#6b7280',
+              fontWeight: 'bold',
+              fontSize: '0.9rem'
+            }}>
+              {suppliers.find(s => s.selected) ? 
+                formatCurrency(suppliers.find(s => s.selected)!.pricePerKg, currency) : 
+                'Not selected'
+              }
+            </Text>
+          </Flex>
+        </Flex>
+      </Card>
+      
+      {/* Potential Savings Card */}
+      <Card style={{
+        borderRadius: '6px',
+        backgroundColor: '#f0fdf4',
+        padding: '12px',
+        border: '1px solid '#bbf7d0'
+      }}>
+        <Text weight="bold" size="2" style={{ color: '#166534', marginBottom: '8px' }}>
+          💰 Potential Savings
+        </Text>
+        <Flex direction="column" gap="1">
+          <Flex justify="between" align="center">
+            <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings per kg:</Text>
+            <Text style={{ 
+              color: potentialSavings > 0 ? '#10b981' : '#6b7280',
+              fontWeight: 'bold',
+              fontSize: '0.9rem'
+            }}>
+              {formatCurrency(potentialSavings, currency)}
+            </Text>
+          </Flex>
+          <Flex justify="between" align="center">
+            <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings percentage:</Text>
+            <Text style={{ 
+              color: potentialSavings > 0 ? '#10b981' : '#6b7280',
+              fontWeight: 'bold',
+              fontSize: '0.9rem'
+            }}>
+              {currentPrice > 0 ? `${((potentialSavings / currentPrice) * 100).toFixed(1)}%` : '0%'}
+            </Text>
+          </Flex>
+        </Flex>
+      </Card>
+    </Grid>
+
+    {/* Auto Select Button */}
+    <Flex justify="center">
+      <Button 
+        onClick={autoSelectBestSupplier}
+        size="1"
+        variant="solid"
+        style={{
+          backgroundColor: '#10b981',
+          color: 'white',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          fontSize: '0.8rem'
+        }}
+      >
+        🚀 Auto Select Best Supplier
+      </Button>
+    </Flex>
+
+    {isLoading ? (
+      <Flex justify="center" align="center" style={{ height: '200px' }}>
+        <Flex direction="column" align="center" gap="2">
+          <Text size="2" weight="bold">Loading supplier data...</Text>
+          <Spinner size="2" />
+        </Flex>
+      </Flex>
+    ) : (
+      <>
+        {/* Compact Supplier Comparison Chart */}
+        <Card style={{
+          borderRadius: '6px',
+          backgroundColor: 'white',
+          padding: '12px',
+          height: '250px',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+          marginBottom: '15px'
+        }}>
+          <Heading size="2" mb="2" style={{ 
+            color: '#1f2937',
+            fontWeight: 'bold',
+            textAlign: 'center'
+          }}>
+            Supplier Comparison
+          </Heading>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={suppliers.map(s => ({
+                name: s.name,
+                price: s.pricePerKg,
+                compliance: s.complianceScore,
+                selected: s.selected
+              }))}
+              margin={{ top: 15, right: 15, left: 15, bottom: 15 }}
+            >
+              <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
+              <XAxis 
+                dataKey="name" 
+                tick={{ fill: '#4b5563', fontSize: 10 }}
+                axisLine={{ stroke: '#e5e7eb' }}
+              />
+              <YAxis 
+                tick={{ fill: '#4b5563', fontSize: 10 }}
+                axisLine={{ stroke: '#e5e7eb' }}
+              />
+              <Tooltip 
+                formatter={(value: number, name: string) => {
+                  if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
+                  if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
+                  return [value, name];
+                }}
+                contentStyle={{
+                  backgroundColor: 'white',
+                  border: '1px solid '#e5e7eb',
+                  borderRadius: '4px',
+                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                  fontSize: '0.8rem'
+                }}
+              />
+              <Bar 
+                dataKey="price" 
+                name="Price/kg" 
+                fill="#3b82f6"
+                barSize={20}
+                radius={[3, 3, 0, 0]}
+              >
+                {suppliers.map((supplier, index) => (
+                  <Cell 
+                    key={`price-cell-${index}`} 
+                    fill={supplier.selected ? '#10b981' : '#3b82f6'}
+                    stroke={supplier.selected ? '#059669' : '#3b82f6'}
+                    strokeWidth={supplier.selected ? 1 : 0}
                   />
-                </Tabs.Content>
-              </Box>
-            </Tabs.Root>
-
-            <Flex justify="end" gap="3" mt="4">
-              <Button 
-                style={{ 
-                  backgroundColor: '#10b981', 
-                  color: '#fff',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold'
-                }}
-                onClick={() => handleSubmitDialog(dialogCategory)}
-              >
-                Submit
-              </Button>
-              <Button
-                variant="ghost"
-                style={{ 
-                  backgroundColor: '#3b82f6', 
-                  color: '#fff',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold'
-                }}
-                onClick={() => setDialogCategory(null)}
-              >
-                Close
-              </Button>
-            </Flex>
-          </Dialog.Content>
-        </Dialog.Root>
-      )} {/* Supplier Selection Dialog */}
-      {selectedSolution && (
-        <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
-          <Dialog.Content style={{ 
-            maxWidth: '1000px',
-            width: '95vw',
-            padding: '16px',
-            borderRadius: '10px',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb',
-            backgroundColor: 'white',
-            maxHeight: '85vh',
-            overflowY: 'auto'
-          }}>
-            <Dialog.Title style={{ 
-              fontSize: '1.2rem',
-              fontWeight: 'bold',
-              color: '#1f2937',
-              marginBottom: '15px',
-              textAlign: 'center',
-              paddingBottom: '10px',
-              borderBottom: '1px solid #f1f5f9'
-            }}>
-              Supplier Selection for {getDetailsByCategory(selectedSolution.category)[selectedSolution.index]?.name}
-            </Dialog.Title>
-            
-            <Flex direction="column" gap="4">
-              {/* Summary Cards - Compact Layout */}
-              <Grid columns="2" gap="3">
-                {/* Current Situation Card */}
-                <Card style={{
-                  borderRadius: '6px',
-                  backgroundColor: '#f8fafc',
-                  padding: '12px',
-                  border: '1px solid #e2e8f0'
-                }}>
-                  <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
-                    📊 Current Situation
-                  </Text>
-                  <Flex direction="column" gap="1">
-                    <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Current Price/kg:</Text>
-                      <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                        {formatCurrency(currentPrice, currency)}
-                      </Text>
-                    </Flex>
-                    <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Selected Supplier Price:</Text>
-                      <Text style={{ 
-                        color: potentialSavings > 0 ? '#10b981' : '#6b7280',
-                        fontWeight: 'bold',
-                        fontSize: '0.9rem'
-                      }}>
-                        {suppliers.find(s => s.selected) ? 
-                          formatCurrency(suppliers.find(s => s.selected)!.pricePerKg, currency) : 
-                          'Not selected'
-                        }
-                      </Text>
-                    </Flex>
-                  </Flex>
-                </Card>
-                
-                {/* Potential Savings Card */}
-                <Card style={{
-                  borderRadius: '6px',
-                  backgroundColor: '#f0fdf4',
-                  padding: '12px',
-                  border: '1px solid #bbf7d0'
-                }}>
-                  <Text weight="bold" size="2" style={{ color: '#166534', marginBottom: '8px' }}>
-                    💰 Potential Savings
-                  </Text>
-                  <Flex direction="column" gap="1">
-                    <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings per kg:</Text>
-                      <Text style={{ 
-                        color: potentialSavings > 0 ? '#10b981' : '#6b7280',
-                        fontWeight: 'bold',
-                        fontSize: '0.9rem'
-                      }}>
-                        {formatCurrency(potentialSavings, currency)}
-                      </Text>
-                    </Flex>
-                    <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings percentage:</Text>
-                      <Text style={{ 
-                        color: potentialSavings > 0 ? '#10b981' : '#6b7280',
-                        fontWeight: 'bold',
-                        fontSize: '0.9rem'
-                      }}>
-                        {currentPrice > 0 ? `${((potentialSavings / currentPrice) * 100).toFixed(1)}%` : '0%'}
-                      </Text>
-                    </Flex>
-                  </Flex>
-                </Card>
-              </Grid>
-
-              {/* Auto Select Button */}
-              <Flex justify="center">
-                <Button 
-                  onClick={autoSelectBestSupplier}
-                  size="1"
-                  variant="solid"
-                  style={{
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    fontSize: '0.8rem'
-                  }}
-                >
-                  🚀 Auto Select Best Supplier
-                </Button>
-              </Flex>
-
-              {isLoading ? (
-                <Flex justify="center" align="center" style={{ height: '200px' }}>
-                  <Flex direction="column" align="center" gap="2">
-                    <Text size="2" weight="bold">Loading supplier data...</Text>
-                    <Spinner size="2" />
-                  </Flex>
-                </Flex>
-              ) : (
-                <>
-                  {/* Compact Supplier Comparison Chart */}
-                  <Card style={{
-                    borderRadius: '6px',
-                    backgroundColor: 'white',
-                    padding: '12px',
-                    height: '250px',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                    marginBottom: '15px'
-                  }}>
-                    <Heading size="2" mb="2" style={{ 
-                      color: '#1f2937',
-                      fontWeight: 'bold',
-                      textAlign: 'center'
-                    }}>
-                      Supplier Comparison
-                    </Heading>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={suppliers.map(s => ({
-                          name: s.name,
-                          price: s.pricePerKg,
-                          compliance: s.complianceScore,
-                          selected: s.selected
-                        }))}
-                        margin={{ top: 15, right: 15, left: 15, bottom: 15 }}
-                      >
-                        <CartesianGrid strokeDasharray="2 2" stroke="#e5e7eb" />
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <YAxis 
-                          tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <Tooltip 
-                          formatter={(value: number, name: string) => {
-                            if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
-                            if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
-                            return [value, name];
-                          }}
-                          contentStyle={{
-                            backgroundColor: 'white',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '4px',
-                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                            fontSize: '0.8rem'
-                          }}
-                        />
-                        <Bar 
-                          dataKey="price" 
-                          name="Price/kg" 
-                          fill="#3b82f6"
-                          barSize={20}
-                          radius={[3, 3, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`price-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#3b82f6'}
-                              stroke={supplier.selected ? '#059669' : '#3b82f6'}
-                              strokeWidth={supplier.selected ? 1 : 0}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          dataKey="compliance" 
-                          name="Compliance Score" 
-                          fill="#8b5cf6"
-                          barSize={20}
-                          radius={[3, 3, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`compliance-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#8b5cf6'}
-                              stroke={supplier.selected ? '#059669' : '#8b5cf6'}
-                              strokeWidth={supplier.selected ? 1 : 0}
-                            />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Card>
-
-                  {/* Compact Supplier Table with all data but more efficient layout */}
-                  <Card style={{
-                    borderRadius: '6px',
-                    backgroundColor: 'white',
-                    padding: '12px',
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
-                  }}>
-                    <div style={{ overflowX: 'auto' }}>
-                      <Table.Root size="1">
-                        <Table.Header style={{ 
-                          backgroundColor: '#f1f5f9',
-                        }}>
-                          <Table.Row>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Supplier</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Price/kg</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Rating</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Delivery</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Reliability</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Compliance</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '##1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Total Score</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
-                              fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
-                              whiteSpace: 'nowrap'
-                            }}>Select</Table.ColumnHeaderCell>
-                          </Table.Row>
-                        </Table.Header>
-                        <Table.Body>
-                          {suppliers.map((supplier, index) => (
-                            <Table.Row 
-                              key={supplier.id} 
-                              style={{
-                                backgroundColor: hoveredRow === index ? '#f8fafc' : 
-                                                (supplier.selected ? '#f0fdf4' : 
-                                                (index % 2 === 0 ? '#fafafa' : 'white')),
-                              }}
-                              onMouseEnter={() => setHoveredRow(index)}
-                              onMouseLeave={() => setHoveredRow(null)}
-                            >
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontWeight: supplier.selected ? '600' : '400',
-                                color: supplier.selected ? '#059669' : '#334155',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                <Flex align="center" gap="1">
-                                  {supplier.selected && (
-                                    <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
-                                      ✓
-                                    </Badge>
-                                  )}
-                                  {supplier.name}
-                                </Flex>
-                              </Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontWeight: '500',
-                                color: '#334155',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {formatCurrency(supplier.pricePerKg, currency)}
-                              </Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                <Flex align="center" gap="1">
-                                  <span style={{ 
-                                    color: '#f59e0b',
-                                    fontSize: '12px'
-                                  }}>
-                                    ★
-                                  </span>
-                                  <Text style={{ color: '#64748b' }}>
-                                    {supplier.rating}
-                                  </Text>
-                                </Flex>
-                              </Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                color: '#475569',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>{supplier.delivery}</Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                color: '#475569',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>{supplier.reliability}</Table.Cell>
-                              <Table.Cell 
-                                style={{
-                                  padding: '6px 8px',
-                                  fontWeight: 'bold',
-                                  color: supplier.complianceScore > 80 ? '#10b981' : 
-                                        supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
-                                  cursor: 'pointer',
-                                  fontSize: '0.8rem',
-                                  whiteSpace: 'nowrap'
-                                }}
-                                onClick={() => {
-                                  setComplianceTooltip({
-                                    visible: true,
-                                    x: 0,
-                                    y: 0,
-                                    supplier: supplier
-                                  });
-                                }}
-                              >
-                                {supplier.complianceScore}/100
-                              </Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontWeight: 'bold',
-                                color: supplier.score > 200 ? '#10b981' : 
-                                      supplier.score > 150 ? '#f59e0b' : '#ef4444',
-                                fontSize: '0.8rem',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                {supplier.score}/200
-                              </Table.Cell>
-                              <Table.Cell style={{
-                                padding: '6px 8px',
-                                whiteSpace: 'nowrap'
-                              }}>
-                                <Button
-                                  size="1"
-                                  variant={supplier.selected ? 'solid' : 'outline'}
-                                  onClick={() => handleSupplierSelect(supplier.id)}
-                                  style={{
-                                    borderRadius: '4px',
-                                    padding: '2px 6px',
-                                    fontSize: '0.7rem',
-                                    backgroundColor: supplier.selected ? '#10b981' : 'white',
-                                    color: supplier.selected ? 'white' : '#1f2937',
-                                    borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
-                                    fontWeight: 'bold',
-                                    width: '100%',
-                                  }}
-                                >
-                                  {supplier.selected ? 'Selected' : 'Select'}
-                                </Button>
-                              </Table.Cell>
-                            </Table.Row>
-                          ))}
-                        </Table.Body>
-                      </Table.Root>
-                    </div>
-                  </Card>
-                </>
-              )}
-
-              {/* Compact Action Buttons */}
-              <Flex justify="end" gap="2" mt="3">
-                <Button 
-                  variant="solid"
-                  onClick={() => {
-                    const selectedSupplier = suppliers.find(s => s.selected);
-                    if (selectedSupplier && selectedSolution) {
-                      const items = [...getDetailsByCategory(selectedSolution.category)];
-                      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-                      setData(prev => ({
-                        ...prev,
-                        rawMaterials: [...prev.rawMaterials]
-                      }));
-                      updateCategoryTotals(selectedSolution.category, {...data});
-                    }
-                    setSelectedSolution(null);
-                  }}
-                  style={{
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    fontSize: '0.8rem'
-                  }}
-                  disabled={!suppliers.find(s => s.selected)}
-                >
-                  💾 Apply Changes
-                </Button>
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedSolution(null)}
-                  style={{
-                    backgroundColor: '#f3f4f6',
-                    color: '#1f2937',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
-                    fontWeight: 'bold',
-                    fontSize: '0.8rem'
-                  }}
-                >
-                  ❌ Cancel
-                </Button>
-              </Flex>
-            </Flex>
-          </Dialog.Content>
-        </Dialog.Root>
-      )}
-
-      {/* Compliance Dialog - Separate from supplier selection */}
-      {complianceTooltip.visible && complianceTooltip.supplier && (
-        <Dialog.Root open onOpenChange={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}>
-          <Dialog.Content style={{ 
-            maxWidth: '600px',
-            width: '90vw',
-            padding: '16px',
-            borderRadius: '12px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid #e5e7eb',
-            backgroundColor: 'white',
-            maxHeight: '80vh',
-            overflowY: 'auto'
-          }}>
-            <Dialog.Title style={{ 
-              fontSize: '1.1rem',
-              fontWeight: 'bold',
-              color: '#1f2937',
-              marginBottom: '12px'
-            }}>
-              Compliance Details for {complianceTooltip.supplier.name}
-            </Dialog.Title>
-            
-            {/* Compact Compliance Display */}
-            <Card style={{ 
-              padding: '12px', 
-              backgroundColor: '#f8fafc', 
-              borderRadius: '8px',
-              border: '1px solid #e2e8f0',
-              marginBottom: '12px'
-            }}>
-              <Flex justify="between" align="center" mb="3">
-                <Heading size="3" style={{ color: '#1e293b', fontWeight: 'bold' }}>
-                  Compliance Score
-                </Heading>
-                <Badge 
-                  style={{ 
-                    padding: '4px 8px', 
-                    borderRadius: '16px', 
-                    backgroundColor: getScoreColor(complianceTooltip.supplier.complianceScore),
-                    color: 'white',
-                    fontWeight: 'bold',
-                    fontSize: '12px'
-                  }}
-                >
-                  {complianceTooltip.supplier.complianceScore}/100
-                </Badge>
-              </Flex>
-
-              <Grid columns="2" gap="2">
-                {[
-                  { 
-                    name: 'Quality Tests', 
-                    value: calculateTestScore(complianceTooltip.supplier.material.tests), 
-                    max: 40,
-                    details: `${Object.values(complianceTooltip.supplier.material.tests).filter(t => t.status === 'Passed').length}/4 passed`,
-                    icon: '🧪'
-                  },
-                  { 
-                    name: 'Certificate', 
-                    value: complianceTooltip.supplier.material.certificate ? 20 : 0, 
-                    max: 20,
-                    details: complianceTooltip.supplier.material.certificate ? 'Available' : 'Not available',
-                    icon: '📄'
-                  },
-                  { 
-                    name: 'Supplier Status', 
-                    value: complianceTooltip.supplier.material.supplier.status === 'Approved' ? 15 : 0, 
-                    max: 15,
-                    details: getSupplierStatusText(complianceTooltip.supplier.material.supplier.status),
-                    icon: '🏢'
-                  },
-                  { 
-                    name: 'Expiry Date', 
-                    value: new Date(complianceTooltip.supplier.material.expiryDate) > new Date() ? 15 : 0, 
-                    max: 15,
-                    details: new Date(complianceTooltip.supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
-                    icon: '📅'
-                  },
-                  { 
-                    name: 'Blockchain', 
-                    value: complianceTooltip.supplier.material.blockchainRegistered ? 10 : 0, 
-                    max: 10,
-                    details: complianceTooltip.supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
-                    icon: '🔗'
-                  }
-                ].map((item, index) => (
-                  <Box key={index} mb="2">
-                    <Flex justify="between" align="center" mb="1">
-                      <Flex align="center" gap="1">
-                        <Text size="2">{item.icon}</Text>
-                        <Text size="1" weight="medium" style={{ color: '#475569' }}>
-                          {item.name}
-                        </Text>
-                      </Flex>
-                      <Text size="1" style={{ color: '#64748b' }}>
-                        {item.value}/{item.max}
-                      </Text>
-                    </Flex>
-                    <Box style={{
-                      height: '6px',
-                      backgroundColor: '#e2e8f0',
-                      borderRadius: '3px',
-                      overflow: 'hidden'
-                    }}>
-                      <Box style={{
-                        height: '100%',
-                        width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
-                        backgroundColor: (item.value || 0) > 0 
-                          ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
-                          : '#ef4444',
-                        borderRadius: '3px',
-                      }} />
-                    </Box>
-                  </Box>
                 ))}
-              </Grid>
-            </Card>
-
-            <Card style={{ 
-              backgroundColor: '#fffbeb', 
-              padding: '12px',
-              border: '1px solid #fde68a',
-              marginBottom: '12px'
-            }}>
-              <Heading size="2" mb="1" style={{ color: '#92400e' }}>
-                Assessment
-              </Heading>
-              <Text size="1" style={{ 
-                color: '#92400e',
-                lineHeight: '1.4'
-              }}>
-                {getComplianceAssessment(complianceTooltip.supplier.complianceScore, complianceTooltip.supplier.material)}
-              </Text>
-            </Card>
-
-            <Flex justify="end">
-              <Button
-                variant="ghost"
-                onClick={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}
-                style={{
-                  backgroundColor: '#f3f4f6',
-                  color: '#1f2937',
-                  padding: '6px 12px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  fontSize: '0.875rem'
-                }}
+              </Bar>
+              <Bar 
+                dataKey="compliance" 
+                name="Compliance Score" 
+                fill="#8b5cf6"
+                barSize={20}
+                radius={[3, 3, 0, 0]}
               >
-                Close
-              </Button>
+                {suppliers.map((supplier, index) => (
+                  <Cell 
+                    key={`compliance-cell-${index}`} 
+                    fill={supplier.selected ? '#10b981' : '#8b5cf6'}
+                    stroke={supplier.selected ? '#059669' : '#8b5cf6'}
+                    strokeWidth={supplier.selected ? 1 : 0}
+                  />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Card>
+
+        {/* Compact Supplier Table with all data but more efficient layout */}
+        <Card style={{
+          borderRadius: '6px',
+          backgroundColor: 'white',
+          padding: '12px',
+          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+        }}>
+          <div style={{ overflowX: 'auto' }}>
+            <Table.Root size="1">
+              <Table.Header style={{ 
+                backgroundColor: '#f1f5f9',
+              }}>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Supplier</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Price/kg</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Rating</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Delivery</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Reliability</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Compliance</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Total Score</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{
+                    fontWeight: 'bold',
+                    padding: '8px',
+                    fontSize: '0.8rem',
+                    color: '#1e293b',
+                    whiteSpace: 'nowrap'
+                  }}>Select</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {suppliers.map((supplier, index) => (
+                  <Table.Row 
+                    key={supplier.id} 
+                    style={{
+                      backgroundColor: hoveredRow === index ? '#f8fafc' : 
+                                      (supplier.selected ? '#f0fdf4' : 
+                                      (index % 2 === 0 ? '#fafafa' : 'white')),
+                    }}
+                    onMouseEnter={() => setHoveredRow(index)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                  >
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      fontWeight: supplier.selected ? '600' : '400',
+                      color: supplier.selected ? '#059669' : '#334155',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      <Flex align="center" gap="1">
+                        {supplier.selected && (
+                          <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
+                            ✓
+                          </Badge>
+                        )}
+                        {supplier.name}
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      fontWeight: '500',
+                      color: '#334155',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {formatCurrency(supplier.pricePerKg, currency)}
+                    </Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      <Flex align="center" gap="1">
+                        <span style={{ 
+                          color: '#f59e0b',
+                          fontSize: '12px'
+                        }}>
+                          ★
+                        </span>
+                        <Text style={{ color: '#64748b' }}>
+                          {supplier.rating}
+                        </Text>
+                        </Flex>
+                    </Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      color: '#475569',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>{supplier.delivery}</Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      color: '#475569',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>{supplier.reliability}</Table.Cell>
+                    <Table.Cell 
+                      style={{
+                        padding: '6px 8px',
+                        fontWeight: 'bold',
+                        color: supplier.complianceScore > 80 ? '#10b981' : 
+                              supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onClick={() => {
+                        setComplianceTooltip({
+                          visible: true,
+                          x: 0,
+                          y: 0,
+                          supplier: supplier
+                        });
+                      }}
+                    >
+                      {supplier.complianceScore}/100
+                    </Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      fontWeight: 'bold',
+                      color: supplier.score > 200 ? '#10b981' : 
+                            supplier.score > 150 ? '#f59e0b' : '#ef4444',
+                      fontSize: '0.8rem',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      {supplier.score}/200
+                    </Table.Cell>
+                    <Table.Cell style={{
+                      padding: '6px 8px',
+                      whiteSpace: 'nowrap'
+                    }}>
+                      <Button
+                        size="1"
+                        variant={supplier.selected ? 'solid' : 'outline'}
+                        onClick={() => handleSupplierSelect(supplier.id)}
+                        style={{
+                          borderRadius: '4px',
+                          padding: '2px 6px',
+                          fontSize: '0.7rem',
+                          backgroundColor: supplier.selected ? '#10b981' : 'white',
+                          color: supplier.selected ? 'white' : '#1f2937',
+                          borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
+                          fontWeight: 'bold',
+                          width: '100%',
+                        }}
+                      >
+                        {supplier.selected ? 'Selected' : 'Select'}
+                      </Button>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </div>
+        </Card>
+      </>
+    )}
+
+    {/* Compact Action Buttons */}
+    <Flex justify="end" gap="2" mt="3">
+      <Button 
+        variant="solid"
+        onClick={() => {
+          const selectedSupplier = suppliers.find(s => s.selected);
+          if (selectedSupplier && selectedSolution) {
+            const items = [...getDetailsByCategory(selectedSolution.category)];
+            items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
+            setData(prev => ({
+              ...prev,
+              rawMaterials: [...prev.rawMaterials]
+            }));
+            updateCategoryTotals(selectedSolution.category, {...data});
+          }
+          setSelectedSolution(null);
+        }}
+        style={{
+          backgroundColor: '#2563eb',
+          color: 'white',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          fontSize: '0.8rem'
+        }}
+        disabled={!suppliers.find(s => s.selected)}
+      >
+        💾 Apply Changes
+      </Button>
+      <Button
+        variant="ghost"
+        onClick={() => setSelectedSolution(null)}
+        style={{
+          backgroundColor: '#f3f4f6',
+          color: '#1f2937',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          fontSize: '0.8rem'
+        }}
+      >
+        ❌ Cancel
+      </Button>
+    </Flex>
+  </Flex>
+</Dialog.Content>
+</Dialog.Root>
+)}
+
+{/* Compliance Dialog - Separate from supplier selection */}
+{complianceTooltip.visible && complianceTooltip.supplier && (
+<Dialog.Root open onOpenChange={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}>
+<Dialog.Content style={{ 
+  maxWidth: '600px',
+  width: '90vw',
+  padding: '16px',
+  borderRadius: '12px',
+  boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+  border: '1px solid '#e5e7eb',
+  backgroundColor: 'white',
+  maxHeight: '80vh',
+  overflowY: 'auto'
+}}>
+  <Dialog.Title style={{ 
+    fontSize: '1.1rem',
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: '12px'
+  }}>
+    Compliance Details for {complianceTooltip.supplier.name}
+  </Dialog.Title>
+  
+  {/* Compact Compliance Display */}
+  <Card style={{ 
+    padding: '12px', 
+    backgroundColor: '#f8fafc', 
+    borderRadius: '8px',
+    border: '1px solid '#e2e8f0',
+    marginBottom: '12px'
+  }}>
+    <Flex justify="between" align="center" mb="3">
+      <Heading size="3" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+        Compliance Score
+      </Heading>
+      <Badge 
+        style={{ 
+          padding: '4px 8px', 
+          borderRadius: '16px', 
+          backgroundColor: getScoreColor(complianceTooltip.supplier.complianceScore),
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '12px'
+        }}
+      >
+        {complianceTooltip.supplier.complianceScore}/100
+      </Badge>
+    </Flex>
+
+    <Grid columns="2" gap="2">
+      {[
+        { 
+          name: 'Quality Tests', 
+          value: calculateTestScore(complianceTooltip.supplier.material.tests), 
+          max: 40,
+          details: `${Object.values(complianceTooltip.supplier.material.tests).filter(t => t.status === 'Passed').length}/4 passed`,
+          icon: '🧪'
+        },
+        { 
+          name: 'Certificate', 
+          value: complianceTooltip.supplier.material.certificate ? 20 : 0, 
+          max: 20,
+          details: complianceTooltip.supplier.material.certificate ? 'Available' : 'Not available',
+          icon: '📄'
+        },
+        { 
+          name: 'Supplier Status', 
+          value: complianceTooltip.supplier.material.supplier.status === 'Approved' ? 15 : 0, 
+          max: 15,
+          details: getSupplierStatusText(complianceTooltip.supplier.material.supplier.status),
+          icon: '🏢'
+        },
+        { 
+          name: 'Expiry Date', 
+          value: new Date(complianceTooltip.supplier.material.expiryDate) > new Date() ? 15 : 0, 
+          max: 15,
+          details: new Date(complianceTooltip.supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
+          icon: '📅'
+        },
+        { 
+          name: 'Blockchain', 
+          value: complianceTooltip.supplier.material.blockchainRegistered ? 10 : 0, 
+          max: 10,
+          details: complianceTooltip.supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
+          icon: '🔗'
+        }
+      ].map((item, index) => (
+        <Box key={index} mb="2">
+          <Flex justify="between" align="center" mb="1">
+            <Flex align="center" gap="1">
+              <Text size="2">{item.icon}</Text>
+              <Text size="1" weight="medium" style={{ color: '#475569' }}>
+                {item.name}
+              </Text>
             </Flex>
-          </Dialog.Content>
-        </Dialog.Root>
-      )}      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
+            <Text size="1" style={{ color: '#64748b' }}>
+              {item.value}/{item.max}
+            </Text>
+          </Flex>
+          <Box style={{
+            height: '6px',
+            backgroundColor: '#e2e8f0',
+            borderRadius: '3px',
+            overflow: 'hidden'
+          }}>
+            <Box style={{
+              height: '100%',
+              width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
+              backgroundColor: (item.value || 0) > 0 
+                ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
+                : '#ef4444',
+              borderRadius: '3px',
+            }} />
+          </Box>
+        </Box>
+      ))}
+    </Grid>
+  </Card>
+
+  <Card style={{ 
+    backgroundColor: '#fffbeb', 
+    padding: '12px',
+    border: '1px solid '#fde68a',
+    marginBottom: '12px'
+  }}>
+    <Heading size="2" mb="1" style={{ color: '#92400e' }}>
+      Assessment
+    </Heading>
+    <Text size="1" style={{ 
+      color: '#92400e',
+      lineHeight: '1.4'
+    }}>
+      {getComplianceAssessment(complianceTooltip.supplier.complianceScore, complianceTooltip.supplier.material)}
+    </Text>
+  </Card>
+
+  <Flex justify="end">
+    <Button
+      variant="ghost"
+      onClick={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}
+      style={{
+        backgroundColor: '#f3f4f6',
+        color: '#1f2937',
+        padding: '6px 12px',
+        borderRadius: '6px',
+        fontWeight: 'bold',
+        fontSize: '0.875rem'
+      }}
+    >
+      Close
+    </Button>
+  </Flex>
+</Dialog.Content>
+</Dialog.Root>
+)}      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -2492,8 +2508,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           padding: '16px',
           height: '350px'
         }}>
-          <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+          <Flex direction="column" height="            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Calculation
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
@@ -2606,4 +2621,6 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Flex>
     </Box>
   );
-}export default CostAnalytics;
+}
+
+export default CostAnalytics;
