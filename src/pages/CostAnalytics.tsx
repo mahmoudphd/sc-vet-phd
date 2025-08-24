@@ -118,6 +118,110 @@ interface SelectedSolution {
   solution: string;
 }
 
+// Helper functions moved to top level
+const calculateComplianceScore = (material: Material): number => {
+  const weights = {
+    tests: 40,
+    certificate: 20,
+    supplier: 15,
+    expiry: 15,
+    blockchain: 10
+  };
+
+  const testCount = Object.keys(material.tests).length;
+  const passedTests = Object.values(material.tests)
+    .filter(test => test.status === 'Passed').length;
+  const testScore = (passedTests / testCount) * weights.tests;
+
+  const certScore = material.certificate ? weights.certificate : 0;
+  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
+  
+  const isExpiryValid = new Date(material.expiryDate) > new Date();
+  const expiryScore = isExpiryValid ? weights.expiry : 0;
+  
+  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
+
+  const totalScore = testScore + certScore + supplierScore + expiryScore + blockchainScore;
+  return Math.min(Math.round(totalScore), 100);
+};
+
+const calculateTestScore = (tests: MaterialTests): number => {
+  const passedTests = Object.values(tests).filter(test => test.status === 'Passed').length;
+  return (passedTests / Object.keys(tests).length) * 40;
+};
+
+const getTestName = (testKey: string): string => {
+  const testNames: Record<string, string> = {
+    identity: 'Identity Test',
+    purity: 'Purity Test',
+    microbial: 'Microbial Test',
+    endotoxins: 'Endotoxins Test'
+  };
+  return testNames[testKey] || testKey;
+};
+
+const getStatusText = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'Passed': 'Passed',
+    'Failed': 'Failed',
+    'Not Tested': 'Not Tested'
+  };
+  return statusMap[status] || status;
+};
+
+const getStatusColor = (status: string): string => {
+  const statusColors: Record<string, string> = {
+    'Passed': '#10b981',
+    'Failed': '#ef4444',
+    'Not Tested': '#94a3b8'
+  };
+  return statusColors[status] || '#94a3b8';
+};
+
+const getSupplierStatusText = (status: string): string => {
+  const statusMap: Record<string, string> = {
+    'Approved': 'Approved',
+    'Pending': 'Pending Review',
+    'Rejected': 'Rejected'
+  };
+  return statusMap[status] || status;
+};
+
+const getScoreColor = (score: number): string => {
+  if (score >= 80) return '#10b981';
+  if (score >= 60) return '#f59e0b';
+  return '#ef4444';
+};
+
+const getScoreLabel = (score: number): string => {
+  if (score >= 90) return 'Excellent';
+  if (score >= 80) return 'Very Good';
+  if (score >= 70) return 'Good';
+  if (score >= 60) return 'Acceptable';
+  return 'Poor';
+};
+
+const getComplianceAssessment = (score: number, material: Material): string => {
+  if (score >= 90) {
+    return "This supplier has excellent compliance. All requirements are fully met.";
+  } else if (score >= 80) {
+    return "This supplier has very good compliance. There are a few minor areas for improvement.";
+  } else if (score >= 70) {
+    return "This supplier has acceptable compliance but needs improvement in some areas to ensure full compliance.";
+  } else {
+    const issues = [];
+    if (Object.values(material.tests).some(t => t.status !== 'Passed')) {
+      issues.push("some quality tests did not pass");
+    }
+    if (!material.certificate) issues.push("no quality certificate");
+    if (material.supplier.status !== 'Approved') issues.push("supplier status not approved");
+    if (new Date(material.expiryDate) <= new Date()) issues.push("product expired");
+    if (!material.blockchainRegistered) issues.push("not registered on blockchain");
+    
+    return `This supplier has poor compliance. Needs improvement in: ${issues.join(', ')}.`;
+  }
+};
+
 const initialData: CostData = {
   totals: {
     'Direct Materials': { actual: 133, budget: 129, costAfter: 130 },
@@ -233,111 +337,8 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};
-
-const calculateComplianceScore = (material: Material): number => {
-  const weights = {
-    tests: 40,
-    certificate: 20,
-    supplier: 15,
-    expiry: 15,
-    blockchain: 10
-  };
-
-  const testCount = Object.keys(material.tests).length;
-  const passedTests = Object.values(material.tests)
-    .filter(test => test.status === 'Passed').length;
-  const testScore = (passedTests / testCount) * weights.tests;
-
-  const certScore = material.certificate ? weights.certificate : 0;
-  const supplierScore = material.supplier.status === 'Approved' ? weights.supplier : 0;
-  
-  const isExpiryValid = new Date(material.expiryDate) > new Date();
-  const expiryScore = isExpiryValid ? weights.expiry : 0;
-  
-  const blockchainScore = material.blockchainRegistered ? weights.blockchain : 0;
-
-  const totalScore = testScore + certScore + supplierScore + expiryScore + blockchainScore;
-  return Math.min(Math.round(totalScore), 100);
 };const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   const complianceScore = calculateComplianceScore(supplier.material);
-  
-  const calculateTestScore = (tests: MaterialTests): number => {
-    const passedTests = Object.values(tests).filter(test => test.status === 'Passed').length;
-    return (passedTests / Object.keys(tests).length) * 40;
-  };
-
-  const getTestName = (testKey: string): string => {
-    const testNames: Record<string, string> = {
-      identity: 'Identity Test',
-      purity: 'Purity Test',
-      microbial: 'Microbial Test',
-      endotoxins: 'Endotoxins Test'
-    };
-    return testNames[testKey] || testKey;
-  };
-
-  const getStatusText = (status: string): string => {
-    const statusMap: Record<string, string> = {
-      'Passed': 'Passed',
-      'Failed': 'Failed',
-      'Not Tested': 'Not Tested'
-    };
-    return statusMap[status] || status;
-  };
-
-  const getStatusColor = (status: string): string => {
-    const statusColors: Record<string, string> = {
-      'Passed': '#10b981',
-      'Failed': '#ef4444',
-      'Not Tested': '#94a3b8'
-    };
-    return statusColors[status] || '#94a3b8';
-  };
-
-  const getSupplierStatusText = (status: string): string => {
-    const statusMap: Record<string, string> = {
-      'Approved': 'Approved',
-      'Pending': 'Pending Review',
-      'Rejected': 'Rejected'
-    };
-    return statusMap[status] || status;
-  };
-
-  const getComplianceAssessment = (score: number, material: Material): string => {
-    if (score >= 90) {
-      return "This supplier has excellent compliance. All requirements are fully met.";
-    } else if (score >= 80) {
-      return "This supplier has very good compliance. There are a few minor areas for improvement.";
-    } else if (score >= 70) {
-      return "This supplier has acceptable compliance but needs improvement in some areas to ensure full compliance.";
-    } else {
-      const issues = [];
-      if (Object.values(material.tests).some(t => t.status !== 'Passed')) {
-        issues.push("some quality tests did not pass");
-      }
-      if (!material.certificate) issues.push("no quality certificate");
-      if (material.supplier.status !== 'Approved') issues.push("supplier status not approved");
-      if (new Date(material.expiryDate) <= new Date()) issues.push("product expired");
-      if (!material.blockchainRegistered) issues.push("not registered on blockchain");
-      
-      return `This supplier has poor compliance. Needs improvement in: ${issues.join(', ')}.`;
-    }
-  };
-
-  const getScoreColor = (score: number): string => {
-    if (score >= 80) return '#10b981';
-    if (score >= 60) return '#f59e0b';
-    return '#ef4444';
-  };
-
-  const getScoreLabel = (score: number): string => {
-    if (score >= 90) return 'Excellent';
-    if (score >= 80) return 'Very Good';
-    if (score >= 70) return 'Good';
-    if (score >= 60) return 'Acceptable';
-    return 'Poor';
-  };
 
   return (
     <Card style={{ 
@@ -660,30 +661,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 <span style={{ 
                   color: hasTotalSavings ? '#10b981' : '#6b7280',
                 }}>
-                  {totalBefore === 0 ? '0.0' : totalSavingsPercentage.toFixed(1)}%
-                </span>
-              );
-            })()}
-          </Table.Cell>
-        </Table.Row>
-        
-        <Table.Row style={{backgroundColor: '#f1f5f9', fontWeight: 'bold'}}>
-          <Table.RowHeaderCell style={tableRowHeaderStyle}>Cost Gap</Table.RowHeaderCell>
-          <Table.Cell style={tableCellStyle} colSpan={4}>
-            {formatCurrency(
-              getDetailsByCategory(category, data).reduce(
-                (sum: number, item: Item) => sum + calculateActualCost(item), 0
-              ) - getDetailsByCategory(category, data).reduce(
-                (sum: number, item: Item) => sum + calculateCostAfter(item), 0
-              ), 
-              currency
-            )}
-          </Table.Cell>
-        </Table.Row>
-      </Table.Body>
-    </Table.Root>
-  );
-};function CostAnalytics() {
+                  {totalBefore === 0 ? '0.0' : totalSavingsfunction CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -1197,7 +1175,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid ',
+                border: '1px solid #e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1569,7 +1547,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid ',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1731,7 +1709,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface">
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: '##f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
@@ -1853,7 +1831,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}      {/* Supplier Selection Dialog */}
+      )} {/* Supplier Selection Dialog */}
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
@@ -2012,7 +1990,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                         />
                         <YAxis 
                           tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '##e5e7eb' }}
+                          axisLine={{ stroke: '#e5e7eb' }}
                         />
                         <Tooltip 
                           formatter={(value: number, name: string) => {
@@ -2083,8 +2061,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontSize: '0.8rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Supplier</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
+                            }}>Supplier</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '8px',
                               fontSize: '0.8rem',
@@ -2123,7 +2100,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontWeight: 'bold',
                               padding: '8px',
                               fontSize: '0.8rem',
-                              color: '#1e293b',
+                              color: '##1e293b',
                               whiteSpace: 'nowrap'
                             }}>Total Score</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
@@ -2310,7 +2287,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}      {/* Compliance Dialog - Separate from supplier selection */}
+      )}
+
+      {/* Compliance Dialog - Separate from supplier selection */}
       {complianceTooltip.visible && complianceTooltip.supplier && (
         <Dialog.Root open onOpenChange={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}>
           <Dialog.Content style={{ 
@@ -2464,9 +2443,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
+      )}      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -2559,7 +2536,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
               </LineChart>
             </ResponsiveContainer>
           </Flex>
-        </Card>        <Card style={{
+        </Card>
+
+        <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
@@ -2627,6 +2606,4 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Flex>
     </Box>
   );
-}
-
-export default CostAnalytics;
+}export default CostAnalytics;
