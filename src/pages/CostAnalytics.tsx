@@ -319,7 +319,7 @@ const tableHeaderStyle = {
 const tableCellStyle = {
   fontWeight: 'normal',
   padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid ',
   fontSize: '0.9rem'
 };
 
@@ -352,7 +352,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
         width: '90vw',
         padding: '30px',
         borderRadius: '12px',
-        boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
+        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
         border: '1px solid #e5e7eb',
         backgroundColor: 'white',
         maxHeight: '90vh',
@@ -430,7 +430,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
 
           <Card style={{ 
             padding: '20px', 
-            backgroundColor: '#f8fafc'
+            backgroundColor: '#f8fafc',
             borderRadius: '12px',
             border: '1px solid #e2e8f0'
           }}>
@@ -634,7 +634,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           
           return (
             <Table.Row key={index}>
-              <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+              <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
               <Table.Cell style={tableCellStyle}>
                 {formatCurrency(costBefore, currency)}
               </Table.Cell>
@@ -1226,7 +1226,7 @@ function CostAnalytics() {
       </Flex>
 
       {/* Key metrics cards */}
-      <Grid columns={{ initial: '1', md: '3' }}gap="4" mb="6">
+      <Grid columns={{ initial: '1', md: '3' }} gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
           { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
@@ -1360,7 +1360,7 @@ function CostAnalytics() {
                           padding: '6px 10px',
                           borderRadius: '6px',
                           border: '1px solid #e2e8f0',
-                          backgroundColor: '#f9fafb',
+                          backgroundColor: 'f9fafb',
                           fontSize: '14px'
                         }}
                       />
@@ -1946,7 +1946,7 @@ function CostAnalytics() {
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '4b5563', fontSize: '1rem' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
@@ -2068,10 +2068,10 @@ function CostAnalytics() {
                         />
                         <YAxis 
                           yAxisId="right"
-                          orientation="right"
-                          domain={[0, 200]}
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
+                          orientation="right',
+                          domain={[0, 200]},
+                          tick={{ fill: '#4b5563', fontSize: 12 }},
+                          axisLine={{ stroke: '#e5e7eb' }},
                           label={{ 
                             value: 'Scores', 
                             angle: 90, 
@@ -2435,7 +2435,7 @@ function CostAnalytics() {
               Cost Breakdown
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
-              </PieChart>
+              <PieChart>
                 <Pie
                   data={categories.map((category) => ({
                     name: category,
@@ -2579,6 +2579,7 @@ function CostAnalytics() {
             borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
+          disabled={true}
         >
           <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
