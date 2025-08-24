@@ -322,14 +322,14 @@ const tableHeaderStyle = {
 const tableCellStyle = {
   fontWeight: 'normal',
   padding: '12px 16px',
-  borderBottom: '1px solid '#e5e7eb',
+borderBottom: '1px solid #e5e7eb',
   fontSize: '0.9rem'
 };
 
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
   padding: '12px 16px',
-  borderBottom: '1px solid '#e5e7eb',
+borderBottom: '1px solid #e5e7eb',
   fontSize: '0.9rem'
 };
 
@@ -347,7 +347,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       padding: '20px', 
       backgroundColor: '#f8fafc', 
       borderRadius: '12px',
-      border: '1px solid '#e2e8f0'
+     borderBottom: '1px solid #e5e7eb',
     }}>
       <Flex justify="between" align="center" mb="4">
         <Heading size="4" style={{ color: '#1e293b', fontWeight: 'bold' }}>
@@ -520,7 +520,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       <Card style={{ 
         backgroundColor: '#fffbeb', 
         padding: '16px',
-        border: '1px solid '#fde68a'
+        border: '1px solid #e2e8f0'
       }}>
         <Heading size="3" mb="2" style={{ color: '#92400e' }}>
           Assessment
@@ -598,7 +598,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                     width: '80px',
                     padding: '6px 10px',
                     borderRadius: '6px',
-                    border: '1px solid '#e2e8f0',
+                    border: '1px solid #fde68a'
                     backgroundColor: 'white',
                     fontSize: '14px'
                   }}
@@ -1130,7 +1130,7 @@ function CostAnalytics() {
         <div style={{ 
           backgroundColor: 'white', 
           padding: '10px', 
-          border: '1px solid '#ccc',
+          border: '1px solid #ccc',
           borderRadius: '5px'
         }}>
           <p>{`Month: ${label}`}</p>
@@ -1162,7 +1162,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '120px',
                 backgroundColor: 'white',
-                border: '1px solid '#e5e7eb',
+                border: '1px solid #e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1190,7 +1190,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid '#e5e7eb',
+                border: '1px solid #e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1286,7 +1286,7 @@ function CostAnalytics() {
                       width: '80px',
                       padding: '6px 10px',
                       borderRadius: '6px',
-                      border: '1px solid '#e2e8f0',
+                      border: '1px solid #e5e7eb',
                       backgroundColor: '#f9fafb',
                       fontSize: '14px'
                     }}
@@ -1357,7 +1357,7 @@ function CostAnalytics() {
                           width: '80px',
                           padding: '6px 10px',
                           borderRadius: '6px',
-                          border: '1px solid '#e2e8f0',
+                         border: '1px solid #e2e8f0',
                           backgroundColor: '#f9fafb',
                           fontSize: '14px'
                         }}
@@ -1456,7 +1456,7 @@ function CostAnalytics() {
             borderRadius: '12px',
             padding: '24px',
             boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-            border: '1px solid '#e5e7eb',
+            border: '1px solid #e2e8f0',
             backgroundColor: 'white'
           }}>
             <Flex justify="between" align="center" mb="4">
@@ -1534,7 +1534,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1562,7 +1562,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1585,7 +1585,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1613,7 +1613,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1635,7 +1635,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '14px'
                                       }}
@@ -1669,7 +1669,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                         fontSize: '14px'
                       }}
@@ -1689,7 +1689,7 @@ function CostAnalytics() {
                   aria-label="Select solution" 
                   style={{
                     backgroundColor: 'white',
-                    border: '1px solid '#e5e7eb',
+                    border: '1px solid #e5e7eb',
                     borderRadius: '6px',
                     padding: '6px 12px',
                     fontSize: '0.875rem'
@@ -1760,7 +1760,7 @@ function CostAnalytics() {
                   width: '80px',
                   padding: '6px 10px',
                   borderRadius: '6px',
-                  border: '1px solid '#e2e8f0',
+                  border: '1px solid #e5e7eb',
                   backgroundColor: '#f9fafb',
                   fontSize: '14px'
                 }}
@@ -1782,7 +1782,7 @@ function CostAnalytics() {
                   width: '80px',
                   padding: '6px 10px',
                   borderRadius: '6px',
-                  border: '1px solid '#e2e8f0',
+                  border: '1px solid #e5e7eb',
                   backgroundColor: '#f9fafb',
                   fontSize: '14px'
                 }}
@@ -1855,7 +1855,7 @@ function CostAnalytics() {
   padding: '16px',
   borderRadius: '10px',
   boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
-  border: '1px solid '#e5e7eb',
+  border: '1px solid #e5e7eb',
   backgroundColor: 'white',
   maxHeight: '85vh',
   overflowY: 'auto'
@@ -1867,7 +1867,7 @@ function CostAnalytics() {
     marginBottom: '15px',
     textAlign: 'center',
     paddingBottom: '10px',
-    borderBottom: '1px solid '#f1f5f9'
+    border: '1px solid #e5e7eb'
   }}>
     Supplier Selection for {getDetailsByCategory(selectedSolution.category)[selectedSolution.index]?.name}
   </Dialog.Title>
@@ -1880,7 +1880,7 @@ function CostAnalytics() {
         borderRadius: '6px',
         backgroundColor: '#f8fafc',
         padding: '12px',
-        border: '1px solid '#e2e8f0'
+        border: '1px solid #e5e7eb'
       }}>
         <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
           📊 Current Situation
@@ -1913,7 +1913,7 @@ function CostAnalytics() {
         borderRadius: '6px',
         backgroundColor: '#f0fdf4',
         padding: '12px',
-        border: '1px solid '#bbf7d0'
+        border: '1px solid #e5e7eb'
       }}>
         <Text weight="bold" size="2" style={{ color: '#166534', marginBottom: '8px' }}>
           💰 Potential Savings
@@ -2015,7 +2015,7 @@ function CostAnalytics() {
                 }}
                 contentStyle={{
                   backgroundColor: 'white',
-                  border: '1px solid '#e5e7eb',
+                  border: '1px solid #e5e7eb',
                   borderRadius: '4px',
                   boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
                   fontSize: '0.8rem'
@@ -2314,7 +2314,7 @@ function CostAnalytics() {
   padding: '16px',
   borderRadius: '12px',
   boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
-  border: '1px solid '#e5e7eb',
+  border: '1px solid #e5e7eb',
   backgroundColor: 'white',
   maxHeight: '80vh',
   overflowY: 'auto'
@@ -2333,7 +2333,7 @@ function CostAnalytics() {
     padding: '12px', 
     backgroundColor: '#f8fafc', 
     borderRadius: '8px',
-    border: '1px solid '#e2e8f0',
+    border: '1px solid #e5e7eb',
     marginBottom: '12px'
   }}>
     <Flex justify="between" align="center" mb="3">
@@ -2427,7 +2427,7 @@ function CostAnalytics() {
   <Card style={{ 
     backgroundColor: '#fffbeb', 
     padding: '12px',
-    border: '1px solid '#fde68a',
+    border: '1px solid #e5e7eb',
     marginBottom: '12px'
   }}>
     <Heading size="2" mb="1" style={{ color: '#92400e' }}>
