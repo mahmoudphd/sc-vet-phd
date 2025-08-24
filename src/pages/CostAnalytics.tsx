@@ -232,7 +232,7 @@ const initialData: CostData = {
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.19, targetQty: 0.0009, targetPrice: 2185 },
     { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.38, targetQty: 0.009, targetPrice: 380 },
     { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.62, targetQty: 0.0036, targetPrice: 1615 },
-    { name: 'Vitamin B6', concentrationKg: 极.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
     { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.19, targetQty: 0.027, targetPrice: 190 },
     { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.90, targetQty: 0.009, targetPrice: 902.5 },
     { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.85, targetQty: 0.00225, targetPrice: 2850 },
@@ -249,7 +249,7 @@ const initialData: CostData = {
   packagingMaterials: [
     { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10, costAfter: 9.5, targetQty: 0.9, targetPrice: 9.5 },
     { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3, costAfter: 2.85, targetQty: 0.9, targetPrice: 2.85 },
-    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice极 4.75 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice: 4.75 },
   ],
   directLabor: [
     { name: 'Operator', hours: 0.5, hourlyRate: 3.5, cost: 1.75, costAfter: 1.66, targetQty: 0.45, targetPrice: 3.33 },
@@ -352,7 +352,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
         width: '90vw',
         padding: '30px',
         borderRadius: '12px',
-        boxShadow: '0 10极 40px rgba(0,0,0,0.2)',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.2)'
         border: '1px solid #e5e7eb',
         backgroundColor: 'white',
         maxHeight: '90vh',
@@ -430,7 +430,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
 
           <Card style={{ 
             padding: '20px', 
-            backgroundColor: '#f8极fc', 
+            backgroundColor: '#f8fafc'
             borderRadius: '12px',
             border: '1px solid #e2e8f0'
           }}>
@@ -462,7 +462,7 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
               },
               { 
                 name: 'Expiry Date', 
-                value: new Date(s极pplier.material.expiryDate) > new Date() ? 15 : 0, 
+                value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
                 max: 15,
                 details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
                 icon: '📅'
@@ -947,7 +947,7 @@ function CostAnalytics() {
           case 'Packaging Materials': newData.packagingMaterials = categoryItems; break;
           case 'Direct Labor': newData.directLabor = categoryItems; break;
           case 'Overhead': newData.overheadItems = categoryItems; break;
-          case 'Other Costs': newData.other极osts = categoryItems; break;
+          case 'Other Costs': newData.otherCosts = categoryItems; break;
         }
         
         updateCategoryTotals(selectedSolution.category, newData);
@@ -985,7 +985,7 @@ function CostAnalytics() {
       const actualCost = calculateActualCost(item);
       
       const maxAllowedSavings = actualCost * 0.05;
-      const minAllowedCostAfter = actual极 - maxAllowedSavings;
+      const minAllowedCostAfter = actualCost - maxAllowedSavings;
       
       item.costAfter = Math.max(value, minAllowedCostAfter);
       
@@ -1191,7 +1191,7 @@ function CostAnalytics() {
                 minWidth: '80px',
                 backgroundColor: 'white',
                 border: '1px solid #e5e7eb',
-                borderRadius: '极px'
+                borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
                 backgroundColor: 'white',
@@ -1226,7 +1226,7 @@ function CostAnalytics() {
       </Flex>
 
       {/* Key metrics cards */}
-      <Grid columns={{ initial: '1', md: '3' }} gap="4极 mb="6">
+      <Grid columns={{ initial: '1', md: '3' }}gap="4" mb="6">
         {[
           { label: 'Actual Cost', value: totalActual, trend: 'down' },
           { label: 'Target Cost', value: totalTarget, trend: 'neutral' },
@@ -1297,7 +1297,7 @@ function CostAnalytics() {
                   </Text>
                 </Flex> ) : (
                 <Heading size="5" style={{ fontWeight: 'bold', color: '#1f2937' }}>
-                  {item.label.includes('%') ? `${item.value}极` : formatCurrency(item.value as number, currency)}
+                  {item.label.includes('%') ? `${item.value}` : formatCurrency(item.value as number, currency)}
                 </Heading>
               )}
             </Flex>
@@ -1317,7 +1317,7 @@ function CostAnalytics() {
               <Table.Row>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Category</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Actual Cost</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost极Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Cost</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Variance</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>% of Total</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost After Optimization</Table.ColumnHeaderCell>
@@ -1621,7 +1621,7 @@ function CostAnalytics() {
                                       }}
                                     />
                                   )}
-                                </Table极ell>
+                               </Table.Cell>
                                 <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
                                     unitPrice ? formatCurrency(unitPrice, currency) : '-'
@@ -1650,13 +1650,13 @@ function CostAnalytics() {
                             
                             {dialogCategory === 'Direct Labor' && (
                               <>
-                                <Table.Cell style={tableCell极yle}>
+                                <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
                                     formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
                                   ) : (
                                     <input
                                       type="number"
-                                      value极item.hours || 0}
+                                      value={item.hours || 0}
                                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
                                         item.hours = value;
@@ -1686,7 +1686,7 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }} style={{ 
                                         width: '80px',
-                                        padding: '6px 极0px',
+                                        padding: '6px 10px',
                                         borderRadius: '6px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
@@ -1715,7 +1715,7 @@ function CostAnalytics() {
                                       value={item.cost || 0}
                                       onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
                                         const value = parseFloat(e.target.value) || 0;
-                                        item.c极st = value;
+                                        item.cost = value;
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
@@ -1862,7 +1862,7 @@ function CostAnalytics() {
                     updateCostAfterValue={updateCostAfterValue}
                     formatCurrency={formatCurrency}
                     currency={currency}
-                    getDetailsByCategory={getDetails极Category}
+                    getDetailsByCategory={getDetailsByCategory}
                     calculateActualCost={calculateActualCost}
                     calculateCostAfter={calculateCostAfter}
                   />
@@ -1935,7 +1935,7 @@ function CostAnalytics() {
                   padding: '20px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="4极 style={{ color: '#1f2937', marginBottom: '12px' }}>
+                  <Text weight="bold" size="4" style={{ color: '#1f2937', marginBottom: '12px' }}>
                     📊 Current Situation
                   </Text>
                   <Flex direction="column" gap="3">
@@ -1946,7 +1946,7 @@ function CostAnalytics() {
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Selected Supplier Price:</极ext>
+                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
@@ -1970,7 +1970,7 @@ function CostAnalytics() {
                   <Text weight="bold" size="4" style={{ color: '#166534', marginBottom: '12px' }}>
                     💰 Potential Savings
                   </Text>
-                  <Flex direction="column" gap极3">
+                  <Flex direction="column" gap="3">
                     <Flex justify="between" align="center">
                       <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Savings per kg:</Text>
                       <Text style={{ 
@@ -2076,7 +2076,7 @@ function CostAnalytics() {
                             value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
-                            style极 { textAnchor: 'middle', fill: '#f59e0b' } 
+                            style: { textAnchor: 'middle', fill: '#f59e0b' } 
                           }}
                         />
                         <Tooltip 
@@ -2090,7 +2090,7 @@ function CostAnalytics() {
                             backgroundColor: 'white',
                             border: '1px solid #e5e7eb',
                             borderRadius: '8px',
-                            boxShadow: '0 4px 10px rgba极0,0,0,0.15)',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
                             fontSize: '1rem'
                           }}
                         />
@@ -2160,7 +2160,7 @@ function CostAnalytics() {
                         <Text size="2">Compliance Score</Text>
                       </Flex>
                       <Flex align="center" gap="2">
-                        <极ox style={{ width: '14px', height: '14px', backgroundColor: '#ec4899', borderRadius: '3px' }}></Box>
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#ec4899', borderRadius: '3px' }}></Box>
                         <Text size="2">Total Score</Text>
                       </Flex>
                       <Flex align="center" gap="2">
@@ -2435,7 +2435,7 @@ function CostAnalytics() {
               Cost Breakdown
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
-              <极ieChart>
+              </PieChart>
                 <Pie
                   data={categories.map((category) => ({
                     name: category,
@@ -2501,7 +2501,7 @@ function CostAnalytics() {
                   type="monotone" 
                   dataKey="targetCost" 
                   stroke="#10b981" 
-                  strokeWidth极2}
+                  strokeWidth={2}
                   strokeDasharray="3 4 5 2"
                   name="Target Cost"
                 />
@@ -2538,7 +2538,7 @@ function CostAnalytics() {
                 currency
               )}
             </Text>
-            <ResponsiveContainer width="极0%" height="100%">
+            <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={categories.map(category => ({
                   name: category,
@@ -2559,7 +2559,7 @@ function CostAnalytics() {
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
                 <Legend />
-                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost极 />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
                 <Bar dataKey="target" fill="#10b981" name="Target Cost" />
               </BarChart>
             </ResponsiveContainer>
