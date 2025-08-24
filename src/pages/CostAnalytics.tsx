@@ -1299,11 +1299,9 @@ function CostAnalytics() {
                   {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
                 </Heading>
               )}
-            </Flex>
-          </Card>
-        ))}
-      </Grid>
-
+           </Card>
+</Grid>
+</Box>
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
