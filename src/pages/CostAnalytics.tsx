@@ -29,12 +29,7 @@ import {
   Legend,
   BarChart,
   Bar,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  CartesianGrid
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
@@ -235,23 +230,41 @@ const initialData: CostData = {
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 0.51, targetQty: 0.0009, targetPrice: 513 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 0.57, targetQty: 0.0054, targetPrice: 570 },
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.19, targetQty: 0.0009, targetPrice: 2185 },
-    // ... more raw materials
+    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.38, targetQty: 0.009, targetPrice: 380 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.62, targetQty: 0.0036, targetPrice: 1615 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.19, targetQty: 0.027, targetPrice: 190 },
+    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.90, targetQty: 0.009, targetPrice: 902.5 },
+    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.85, targetQty: 0.00225, targetPrice: 2850 },
+    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.99, targetQty: 0.00225, targetPrice: 3990 },
+    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.75, targetQty: 0.00225, targetPrice: 4750 },
+    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.71, targetQty: 0.00225, targetPrice: 3705 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.67, targetQty: 极 0.0225, targetPrice: 665 },
+    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.34, targetQty: 0.009, targetPrice: 342 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.02, targetQty: 0.0045, targetPrice: 1016.5 },
+    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.19, targetQty: 0.018, targetPrice: 1187.5 },
+    { name: 'Tween-80', concentrationKg: 极 0.075, pricePerKg: 90, costAfter: 0.09, targetQty: 0.0675, targetPrice: 85.5 },
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, costAfter: 0.95, targetQty: 0.5139, targetPrice: 0.95 },
   ],
   packagingMaterials: [
     { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10, costAfter: 9.5, targetQty: 0.9, targetPrice: 9.5 },
-    // ... more packaging materials
+    { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3, costAfter: 2.85, targetQty: 0.9, targetPrice: 2.85 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice: 4.75 },
   ],
   directLabor: [
     { name: 'Operator', hours: 0.5, hourlyRate: 3.5, cost: 1.75, costAfter: 1.66, targetQty: 0.45, targetPrice: 3.33 },
-    // ... more labor items
+    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75, cost: 0.88, costAfter: 0.83, targetQty: 0.45,极 targetPrice: 1.66 },
+    { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74, cost: 0.37, costAfter: 0.35, targetQty: 0.45, targetPrice: 0.70 },
   ],
   overheadItems: [
     { name: 'Rent', totalCost: 1000, basis: 1000, cost: 1, costAfter: 0.95, targetQty: 1, targetPrice: 0.95 },
-    // ... more overhead items
+    { name: 'Electricity', totalCost: 500, basis: 1000, cost: 0.5, costAfter: 0.48, targetQty: 1, targetPrice: 0.48 },
+    { name: 'Maintenance', totalCost: 1500, basis: 1000, cost: 1.5, costAfter: 1.43, targetQty: 1, targetPrice: 1.43 },
   ],
   otherCosts: [
-    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67, costAfter: 6.34, targetQty: 0.9, targetPrice: 6.34 },
-    // ... more other costs
+    { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 极 6.67, costAfter: 6.34, targetQty: 0.9, targetPrice: 6.34 },
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33, costAfter: 3.16, targetQty: 0.9, targetPrice: 3.16 },
+    { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5, costAfter: 4.5, targetQty: 0.8, targetPrice: 4.5 },
   ],
 };
 
@@ -335,217 +348,240 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   return (
     <Dialog.Root open onOpenChange={() => {}}>
       <Dialog.Content style={{ 
-        maxWidth: '600px',
-        width: '85vw',
-        padding: '20px',
-        borderRadius: '10px',
-        boxShadow: '0 5px 20px rgba(0,0,0,0.15)',
+        maxWidth: '800px',
+        width: '90vw',
+        padding: '30px',
+        borderRadius: '12px',
+        boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
         border: '1px solid #e5e7eb',
         backgroundColor: 'white',
-        maxHeight: '85vh',
+        maxHeight: '90vh',
         overflowY: 'auto'
       }}>
-        <Flex justify="between" align="center" mb="4">
+        <Flex justify="between" align="center" mb="6">
           <Dialog.Title style={{ 
-            fontSize: '1.4rem',
+            fontSize: '1.8rem',
             fontWeight: 'bold',
             color: '#1f2937'
           }}>
-            Compliance for {supplier.name}
+            Compliance Details for {supplier.name}
           </Dialog.Title>
           <Badge 
             style={{ 
-              padding: '6px 12px', 
-              borderRadius: '16px', 
+              padding: '10px 16px', 
+              borderRadius: '20px', 
               backgroundColor: getScoreColor(complianceScore),
               color: 'white',
               fontWeight: 'bold',
-              fontSize: '12px'
+              fontSize: '16px'
             }}
           >
             {complianceScore}/100 - {getScoreLabel(complianceScore)}
           </Badge>
         </Flex>
 
-        <Flex direction="column" gap="4" mb="4">
-          <Flex gap="4">
-            <Box style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
-              <svg width="100" height="100" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="#e2e8f0"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke={getScoreColor(complianceScore)}
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${complianceScore * 2.83} 283`}
-                  transform="rotate(-90 50 50)"
-                />
-              </svg>
-              <Box style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-              }}>
-                <Text size="6" weight="bold" style={{ color: '#1e293b' }}>
-                  {complianceScore}
-                </Text>
-                <Text size="1" style={{ color: '#64748b' }}>
-                  of 100
-                </Text>
+        <Grid columns="2" gap="6" mb="6">
+          <Card style={{ 
+            padding: '20px', 
+            backgroundColor: '#f8fafc', 
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Flex justify="center" mb="5">
+              <Box style={{ position: 'relative', width: '150px', height: '150px' }}>
+                <svg width="150" height="150" viewBox="0 0 150 150">
+                  <circle
+                    cx="75"
+                    cy="75"
+                    r="68"
+                    fill="none"
+                    stroke="#e2e8f0"
+                    strokeWidth="10"
+                  />
+                  <circle
+                    cx="75"
+                    cy="75"
+                    r="68"
+                    fill="none"
+                    stroke={getScoreColor(complianceScore)}
+                    strokeWidth="10"
+                    strokeLinecap='round'
+                    strokeDasharray={`${complianceScore * 4.27} 427`}
+                    transform="rotate(-90 75 75)"
+                  />
+                </svg>
+                <Box style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center'
+                }}>
+                  <Text size="8" weight="bold" style={{ color: '#1e293b' }}>
+                    {complianceScore}
+                  </Text>
+                  <Text size="3" style={{ color: '#64748b' }}>
+                    of 100
+                  </Text>
+                </Box>
               </Box>
-            </Box>
+            </Flex>
+          </Card>
 
-            <Box style={{ flex: 1 }}>
-              <Heading size="3" mb="2" style={{ color: '#1e293b', fontWeight: 'bold' }}>
-                Score Breakdown
-              </Heading>
-              
-              {[
-                { 
-                  name: 'Tests', 
-                  value: calculateTestScore(supplier.material.tests), 
-                  max: 40,
-                  icon: '🧪'
-                },
-                { 
-                  name: 'Certificate', 
-                  value: supplier.material.certificate ? 20 : 0, 
-                  max: 20,
-                  icon: '📄'
-                },
-                { 
-                  name: 'Status', 
-                  value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
-                  max: 15,
-                  icon: '🏢'
-                }
-              ].map((item, index) => (
-                <Box key={index} mb="2">
-                  <Flex justify="between" align="center" mb="1">
-                    <Flex align="center" gap="1">
-                      <Text size="2">{item.icon}</Text>
-                      <Text size="1" weight="medium" style={{ color: '#475569' }}>
-                        {item.name}
-                      </Text>
-                    </Flex>
-                    <Text size="1" style={{ color: '#64748b' }}>
-                      {item.value}/{item.max}
+          <Card style={{ 
+            padding: '20px', 
+            backgroundColor: '#f8fafc', 
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Heading size="4" mb="4" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+              Score Breakdown
+            </Heading>
+            
+            {[
+              { 
+                name: 'Quality Tests', 
+                value: calculateTestScore(supplier.material.tests), 
+                max: 40,
+                details: `(${Object.values(supplier.material.tests).filter(t => t.status === 'Passed').length} of 4 passed)`,
+                icon: '🧪'
+              },
+              { 
+                name: 'Quality Certificate', 
+                value: supplier.material.certificate ? 20 : 0, 
+                max: 20,
+                details: supplier.material.certificate ? 'Available' : 'Not available',
+                icon: '📄'
+              },
+              { 
+                name: 'Supplier Status', 
+                value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
+                max: 15,
+                details: getSupplierStatusText(supplier.material.supplier.status),
+                icon: '🏢'
+              },
+              { 
+                name: 'Expiry Date', 
+                value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
+                max: 15,
+                details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
+                icon: '📅'
+              },
+              { 
+                name: 'Blockchain Registration', 
+                value: supplier.material.blockchainRegistered ? 10 : 0, 
+               极 max: 10,
+                details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
+                icon: '🔗'
+              }
+            ].map((item, index) => (
+              <Box key={index} mb="4">
+                <Flex justify="between" align="center" mb="2">
+                  <Flex align="center" gap="3">
+                    <Text size="5">{item.icon}</Text>
+                    <Text size="3" weight="medium" style={{ color: '#475569' }}>
+                      {item.name}
                     </Text>
                   </Flex>
+                  <Text size="3" style={{ color: '#64748b' }}>
+                    {item.value}/{item.max} - {item.details}
+                  </Text>
+                </Flex>
+                <Box style={{
+                  height: '10px',
+                  backgroundColor: '#e2e8f0',
+                  borderRadius: '5px',
+                  overflow: 'hidden'
+                }}>
                   <Box style={{
-                    height: '6px',
-                    backgroundColor: '#e2e8f0',
-                    borderRadius: '3px',
-                    overflow: 'hidden'
-                  }}>
-                    <Box style={{
-                      height: '100%',
-                      width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
-                      backgroundColor: (item.value || 0) > 0 
-                        ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
-                        : '#ef4444',
-                      borderRadius: '3px',
-                    }} />
-                  </Box>
+                    height: '100%',
+                    width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
+                    backgroundColor: (item.value || 0) > 0 
+                      ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
+                      : '#ef4444',
+                    borderRadius: '5px',
+                    transition: 'width 0.3s ease'
+                  }} />
                 </Box>
-              ))}
-            </Box>
-          </Flex>
+              </Box>
+            ))}
+          </Card>
+        </Grid>
 
-          <Grid columns="2" gap="2">
-            <Flex align="center" gap="1">
-              <Box style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '2px',
-                backgroundColor: new Date(supplier.material.expiryDate) > new Date() ? '#10b981' : '#ef4444'
-              }}></Box>
-              <Text size="1">
-                {new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired'}
-              </Text>
-            </Flex>
-            <Flex align="center" gap="1">
-              <Box style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '2px',
-                backgroundColor: supplier.material.blockchainRegistered ? '#10b981' : '#ef4444'
-              }}></Box>
-              <Text size="1">
-                {supplier.material.blockchainRegistered ? 'Registered' : 'Not Registered'}
-              </Text>
-            </Flex>
-          </Grid>
-        </Flex>
-
-        <Card mb="4" style={{ backgroundColor: 'white', padding: '12px', border: '1px solid #e2e8f0' }}>
-          <Heading size="2" mb="2" style={{ color: '#1e293b', fontWeight: 'bold' }}>
-            Test Results
-          </Heading>
-          <Table.Root size="1">
-            <Table.Body>
-              {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
-                <Table.Row key={index}>
-                  <Table.Cell style={{ padding: '6px' }}>
-                    <Text size="1">{getTestName(test)}</Text>
-                  </Table.Cell>
-                  <Table.Cell style={{ padding: '6px' }}>
-                    <Badge 
-                      style={{ 
-                        backgroundColor: getStatusColor(status),
-                        color: 'white',
-                        padding: '2px 6px',
-                        fontSize: '10px'
-                      }}
-                    >
-                      {getStatusText(status)}
-                    </Badge>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Card>
-
-        <Card style={{ 
-          backgroundColor: '#fffbeb', 
-          padding: '12px',
-          border: '1px solid #fde68a'
-        }}>
-          <Heading size="2" mb="1" style={{ color: '#92400e', fontWeight: 'bold' }}>
-            Assessment
-          </Heading>
-          <Text size="1" style={{ 
-            color: '#92400e',
-            lineHeight: '1.4'
+        <Grid columns="2" gap="6" mb="6">
+          <Card style={{ 
+            padding: '20px', 
+            backgroundColor: 'white', 
+            borderRadius: '12px',
+            border: '1px solid #e2e8f0'
           }}>
-            {getComplianceAssessment(complianceScore, supplier.material)}
-          </Text>
-        </Card>
+            <Heading size="4" mb="4" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+              Quality Tests Details
+            </Heading>
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '1rem' }}>Test</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '1rem' }}>Status</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell style={{ padding: '12px', fontSize: '1rem' }}>
+                      <Flex align="center" gap="3">
+                        <Text>🔍</Text>
+                        <Text>{getTestName(test)}</Text>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell style={{ padding: '极 12px' }}>
+                      <Badge 
+                        style={{ 
+                          backgroundColor: getStatusColor(status),
+                          color: 'white',
+                          padding: '6px 12px',
+                          fontSize: '0.9rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {getStatusText(status)}
+                      </Badge>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Card>
 
-        <Flex justify="end" mt="4">
+          <Card style={{ 
+            backgroundColor: '#fffbeb', 
+            padding: '20px',
+            border: '1px solid #fde68a',
+            borderRadius: '12px'
+          }}>
+            <Heading size="4" mb="3" style={{ color: '#92400e', fontWeight: 'bold' }}>
+              Compliance Assessment
+            </Heading>
+            <Text size="3" style={{ 
+              color: '#92400e',
+              lineHeight: '1.6'
+            }}>
+              {getComplianceAssessment(complianceScore, supplier.material)}
+            </Text>
+          </Card>
+        </Grid>
+
+        <Flex justify="end" mt="6">
           <Button
             variant="soft"
             onClick={() => window.history.back()}
             style={{
               backgroundColor: '#3b82f6',
               color: 'white',
-              padding: '6px 12px',
-              borderRadius: '6px',
+              padding: '10px 20px',
+              borderRadius: '8px',
               fontWeight: 'bold',
-              fontSize: '12px'
+              fontSize: '1rem'
             }}
           >
             Close
@@ -663,7 +699,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
           <Table.Cell style={tableCellStyle}>
             {formatCurrency(
               getDetailsByCategory(category, data).reduce(
-                (sum: number, item: Item) => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
+                (sum: number, item: Item)极 => sum + (calculateActualCost(item) - calculateCostAfter(item)), 0
               ), 
               currency
             )}
@@ -807,7 +843,7 @@ function CostAnalytics() {
         tests: {
           identity: { status: testStatuses[Math.floor(Math.random() * 3)] },
           purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          microbial: { status: testStatuses[Math.floor(Math.random() * 3)] },
+          microbial: { status: testStatuses[极 floor(Math.random() * 3)] },
           endotoxins: { status: testStatuses[Math.floor(Math.random() * 3)] }
         },
         certificate: Math.random() > 0.3,
@@ -844,7 +880,7 @@ function CostAnalytics() {
       {
         id: 3,
         name: 'Supplier C',
-        pricePerKg: Math.round(intBasePrice * (1 - discounts[2])),
+        pricePerKg: Math.round(intBasePrice * (极 - discounts[2])),
         rating: 3.8,
         delivery: '3 weeks',
         reliability: '85%',
@@ -971,9 +1007,9 @@ function CostAnalytics() {
     const items = getDetailsByCategory(category, dataToUpdate);
     const actualTotal = items.reduce((sum, item) => sum + calculateActualCost(item), 0);
     const targetTotal = items.reduce((sum, item) => sum + ((item.targetQty || 0) * (item.targetPrice || 0)), 0);
-    const costAfterTotal = items.reduce((sum, item) => sum + calculateCostAfter(item), 0);
+    const costAfterTotal = items.reduce((sum, item)极 => sum + calculateCostAfter(item), 0);
     
-    dataToUpdate.totals[category] = {
+    dataToUpdate.totals[极] = {
       ...dataToUpdate.totals[category],
       actual: Math.round(actualTotal),
       budget: Math.round(targetTotal),
@@ -1045,7 +1081,7 @@ function CostAnalytics() {
       totals: {
         ...prev.totals,
         [category]: {
-          ...prev.totals[category],
+          ...prev极.totals[category],
           actual: Math.round(newActual),
           costAfter: Math.round(newCostAfter)
         }
@@ -1079,7 +1115,7 @@ function CostAnalytics() {
     { month: 'May', actual: totalActual, benchmark: benchmarkPrice, targetCost: targetCost, costAfter: totalCostAfter },
   ];
 
-  const costGapDataWithGap = costGapData.map((d) => ({
+  const costGapDataWithGap = cost极apData.map((d) => ({
     ...d,
     gap: Math.round((d.actual - targetCost)),
   }));
@@ -1221,7 +1257,7 @@ function CostAnalytics() {
               backgroundColor: 'white'
             }}
           >
-            <Flex direction="column" gap="2" p="4">
+            <Flex direction="column" gap="2" p极="4">
               <Flex justify="between" align="center">
                 <Text size="2" color="gray" weight="bold">
                   {item.label}
@@ -1252,7 +1288,7 @@ function CostAnalytics() {
                       padding: '6px 10px',
                       borderRadius: '6px',
                       border: '1px solid #e2e8f0',
-                      backgroundColor: '#f9fafb',
+                      backgroundColor: '#极9fafb',
                       fontSize: '14px'
                     }}
                   />
@@ -1339,7 +1375,7 @@ function CostAnalytics() {
                     
                     <Table.Cell style={tableCellStyle}>
                       {totalActual === 0 ? '0.00' : ((actualTotal / totalActual) * 100).toFixed(2)}%
-                    </Table.Cell>
+                    </Table极ell>
                     
                     <Table.Cell style={tableCellStyle}>
                       {formatCurrency(costAfterTotal, currency)}
@@ -1388,7 +1424,7 @@ function CostAnalytics() {
                     Math.round(
                       (categories.reduce((sum, category) => 
                         sum + getDetailsByCategory(category).reduce(
-                          (catSum, item) => catSum + calculateActualCost(item), 0
+                          (catSum, item) => catSum + calculateActualCost(item), 极
                         ), 0) - totalTarget) * 100
                     ) / 100, 
                     currency
@@ -1400,7 +1436,7 @@ function CostAnalytics() {
                     Math.round(
                       categories.reduce((sum, category) => 
                         sum + getDetailsByCategory(category).reduce(
-                          (catSum, item) => catSum + calculateCostAfter(item), 0
+                          (catSum, item) => cat极m + calculateCostAfter(item), 0
                         ), 0) * 100
                     ) / 100, 
                     currency
@@ -1447,7 +1483,7 @@ function CostAnalytics() {
               <Tabs.List>
                 <Tabs.Trigger value="actual" style={{ fontWeight: 'bold' }}>Actual View</Tabs.Trigger>
                 <Tabs.Trigger value="target" style={{ fontWeight: 'bold' }}>Target View</Tabs.Trigger>
-                <Tabs.Trigger value="costAfter" style={{ fontWeight: 'bold' }}>Cost After View</Tabs.Trigger>
+                <Tabs.Trigger value="costAfter" style={{ fontWeight: 'bold' }}>Cost After View</极abs.Trigger>
               </Tabs.List>
 
               <Box pt="3">
@@ -1473,7 +1509,7 @@ function CostAnalytics() {
                                 { header: 'Quantity', key: 'qty' },
                                 { header: 'Unit Price', key: 'unitPrice' },
                                 { header: 'Total Cost', key: 'totalCost' },
-                                { header: 'Solution', key: 'solution' }
+                                { header: 'Solution', key: '极olution' }
                               );
                               break;
                             case 'Direct Labor':
@@ -1487,8 +1523,8 @@ function CostAnalytics() {
                               break;
                             case 'Overhead':
                               columns.push(
-                                { header: 'Item', key: 'name' },
-                                { header: 'Total Cost', key: 'totalCost' },
+                                { header: 'Item', key极 'name' },
+                                { header: 'Total Cost', key: 'total极ost' },
                                 { header: 'Basis', key: 'basis' },
                                 { header: 'Cost per Unit', key: 'cost' },
                                 { header: 'Solution', key: 'solution' }
@@ -1630,7 +1666,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid #e2e8f极',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1761,7 +1797,7 @@ function CostAnalytics() {
                           <Table.Row key={index}>
                             <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
 
-                            <Table.Cell style={tableCellStyle}>
+                            <Table.Cell style极{tableCellStyle}>
                               <input
                                 type="number"
                                 value={item.targetQty || ''}
@@ -1779,7 +1815,7 @@ function CostAnalytics() {
                                   borderRadius: '6px',
                                   border: '1px solid #e2e8f0',
                                   backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
+                                  fontSize: '14极'
                                 }}
                               />
                             </Table.Cell>
@@ -1787,7 +1823,7 @@ function CostAnalytics() {
                               <input
                                 type="number"
                                 value={item.targetPrice || ''}
-                                onChange={(e) => updateTargetValues(
+                                onChange={(极) => updateTargetValues(
                                   dialogCategory, 
                                   index, 
                                   'targetPrice', 
@@ -1869,52 +1905,52 @@ function CostAnalytics() {
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '1000px',
-            width: '95vw',
-            padding: '16px',
-            borderRadius: '10px',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+            maxWidth: '1200px',
+            width: '95vw', 
+            padding: '25px',
+            borderRadius: '12px',
+            boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
             border: '1px solid #e5e7eb',
             backgroundColor: 'white',
-            maxHeight: '85vh',
+            maxHeight: '90vh',
             overflowY: 'auto'
           }}>
             <Dialog.Title style={{ 
-              fontSize: '1.2rem',
+              fontSize: '1.8rem',
               fontWeight: 'bold',
               color: '#1f2937',
-              marginBottom: '15px',
+              marginBottom: '20px',
               textAlign: 'center',
-              paddingBottom: '10px',
-              borderBottom: '1px solid #f1f5f9'
+              paddingBottom: '15px',
+              borderBottom: '2px solid #f1f5f9'
             }}>
               Supplier Selection for {getDetailsByCategory(selectedSolution.category)[selectedSolution.index]?.name}
             </Dialog.Title>
             
-            <Flex direction="column" gap="4">
-              <Grid columns="2" gap="3">
+            <Flex direction="column" gap="6">
+              <Grid columns="2" gap="5">
                 <Card style={{
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   backgroundColor: '#f8fafc',
-                  padding: '12px',
+                  padding: '20px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
+                  <Text weight="bold" size="4" style={{ color: '#1f2937', marginBottom: '12px' }}>
                     📊 Current Situation
                   </Text>
-                  <Flex direction="column" gap="1">
+                  <Flex direction="column" gap="3">
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Current Price/kg:</Text>
-                      <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Current Price/kg:</Text>
+                      <Text style={{ color: '#1极f2937', fontWeight: 'bold', fontSize: '1.1rem' }}>
                         {formatCurrency(currentPrice, currency)}
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '1极' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1.1rem'
                       }}>
                         {suppliers.find(s => s.selected) ? 
                           formatCurrency(suppliers.find(s => s.selected)!.pricePerKg, currency) : 
@@ -1926,31 +1962,31 @@ function CostAnalytics() {
                 </Card>
                 
                 <Card style={{
-                  borderRadius: '6px',
+                  borderRadius: '10px',
                   backgroundColor: '#f0fdf4',
-                  padding: '12px',
+                  padding: '20px',
                   border: '1px solid #bbf7d0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '#166534', marginBottom: '8px' }}>
+                  <Text weight="bold" size="4" style={{ color: '#166534', marginBottom: '12px' }}>
                     💰 Potential Savings
                   </Text>
-                  <Flex direction="column" gap="1">
+                  <Flex direction="column" gap="3">
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings per kg:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Savings per kg:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1.1rem'
                       }}>
                         {formatCurrency(potentialSavings, currency)}
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings percentage:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '1rem' }}>Savings percentage:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1.1rem'
                       }}>
                         {currentPrice > 0 ? `${((potentialSavings / currentPrice) * 100).toFixed(1)}%` : '0%'}
                       </Text>
@@ -1962,15 +1998,15 @@ function CostAnalytics() {
               <Flex justify="center">
                 <Button 
                   onClick={autoSelectBestSupplier}
-                  size="1"
+                  size="3"
                   variant="solid"
                   style={{
                     backgroundColor: '#10b981',
                     color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '1rem'
                   }}
                 >
                   🚀 Auto Select Best Supplier
@@ -1978,41 +2014,39 @@ function CostAnalytics() {
               </Flex>
 
               {isLoading ? (
-                <Flex justify="center" align="center" style={{ height: '200px' }}>
-                  <Flex direction="column" align="center" gap="2">
-                    <Text size="2" weight="bold">Loading supplier data...</Text>
-                    <Spinner size="2" />
+                <Flex justify="center" align="center" style={{ height: '300px' }}>
+                  <Flex direction="column" align极enter" gap="3">
+                    <Text size="4" weight="bold">Loading supplier data...</Text>
+                    <Spinner size="3" />
                   </Flex>
                 </Flex>
               ) : (
                 <>
                   <Card style={{
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     backgroundColor: 'white',
-                    padding: '16px',
-                    height: '300px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
-                    marginBottom: '20px'
+                    padding: '20px',
+                    height: '400px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
+                    marginBottom: '25px'
                   }}>
-                    <Heading size="2" mb="2" style={{ 
+                    <Heading size="4" mb="4" style={{ 
                       color: '#1f2937',
                       fontWeight: 'bold',
                       textAlign: 'center'
                     }}>
-                      Supplier Comparison - All Metrics
+                      Supplier Comparison - Key Metrics
                     </Heading>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={suppliers.map(s => ({
                           name: s.name,
                           price: s.pricePerKg,
-                          rating: s.rating * 20,
-                          delivery: (1 - (parseInt(s.delivery.split(' ')[0]) / 3)) * 100,
-                          reliability: parseInt(s.reliability),
                           compliance: s.complianceScore,
+                          totalScore: s.score,
                           selected: s.selected
                         }))}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        margin={{ top: 25, right: 30, left: 20, bottom: 20 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
@@ -2024,7 +2058,7 @@ function CostAnalytics() {
                           yAxisId="left"
                           orientation="left"
                           tick={{ fill: '#4b5563', fontSize: 12 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
+                          axisLine={{ stroke: '#e5极7eb' }}
                           label={{ 
                             value: 'Price (Currency)', 
                             angle: -90, 
@@ -2035,11 +2069,11 @@ function CostAnalytics() {
                         <YAxis 
                           yAxisId="right"
                           orientation="right"
-                          domain={[0, 100]}
+                          domain={[0, 200]}
                           tick={{ fill: '#4b5563', fontSize: 12 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                           label={{ 
-                            value: 'Other Metrics (%)', 
+                            value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
                             style: { textAnchor: 'middle', fill: '#f59e0b' } 
@@ -2048,21 +2082,16 @@ function CostAnalytics() {
                         <Tooltip 
                           formatter={(value, name) => {
                             if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
-                            if (name === 'rating') return [`${(Number(value) / 20).toFixed(1)}/5`, 'Rating'];
-                            if (name === 'delivery') {
-                              const weeks = 3 * (1 - (Number(value) / 100));
-                              return [`${weeks.toFixed(1)} weeks`, 'Delivery Time'];
-                            }
-                            if (name === 'reliability') return [`${value}%`, 'Reliability'];
                             if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
+                            if (name === 'totalScore') return [`${value}/200`, 'Total Score'];
                             return [value, name];
                           }}
                           contentStyle={{
                             backgroundColor: 'white',
                             border: '1px solid #e5e7eb',
-                            borderRadius: '6px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.12)',
-                            fontSize: '0.9rem'
+                            borderRadius: '8px',
+                            boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                            fontSize: '1rem'
                           }}
                         />
                         <Legend />
@@ -2071,8 +2100,8 @@ function CostAnalytics() {
                           dataKey="price" 
                           name="Price/kg" 
                           fill="#3b82f6"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
+                          barSize={30}
+                          radius={[5, 5, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
                             <Cell 
@@ -2085,49 +2114,15 @@ function CostAnalytics() {
                         </Bar>
                         <Bar 
                           yAxisId="right"
-                          dataKey="rating" 
-                          name="Rating (/5)" 
-                          fill="#f59e0b"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`rating-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#f59e0b'}
-                              stroke={supplier.selected ? '#059669' : '#f59e0b'}
-                              strokeWidth={supplier.selected ? 2 : 0}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          yAxisId="right"
-                          dataKey="delivery" 
-                          name="Delivery (shorter is better)" 
-                          fill="#10b981"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`delivery-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#10b981'}
-                              stroke={supplier.selected ? '#059669' : '#10b981'}
-                              strokeWidth={supplier.selected ? 2 : 0}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          yAxisId="right"
-                          dataKey="reliability" 
-                          name="Reliability (%)" 
+                          dataKey="compliance" 
+                          name="Compliance Score" 
                           fill="#8b5cf6"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
+                          barSize={30}
+                          radius={[5, 5, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
                             <Cell 
-                              key={`reliability-cell-${index}`} 
+                              key={`compliance-cell-${index}`} 
                               fill={supplier.selected ? '#10b981' : '#8b5cf6'}
                               stroke={supplier.selected ? '#059669' : '#8b5cf6'}
                               strokeWidth={supplier.selected ? 2 : 0}
@@ -2136,17 +2131,17 @@ function CostAnalytics() {
                         </Bar>
                         <Bar 
                           yAxisId="right"
-                          dataKey="compliance" 
-                          name="Compliance Score" 
+                          dataKey="totalScore" 
+                          name="Total Score" 
                           fill="#ec4899"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
+                          barSize={30}
+                          radius={[5, 5, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
                             <Cell 
-                              key={`compliance-cell-${index}`} 
+                              key={`totalScore-cell-${index}`} 
                               fill={supplier.selected ? '#10b981' : '#ec4899'}
-                              stroke={supplier.selected ? '#059669' : '#ec4899'}
+                              stroke极{supplier.selected ? '#059669' : '#ec4899'}
                               strokeWidth={supplier.selected ? 2 : 0}
                             />
                           ))}
@@ -2154,99 +2149,92 @@ function CostAnalytics() {
                       </BarChart>
                     </ResponsiveContainer>
                     
-                    <Flex justify="center" gap="4" mt="3" wrap="wrap">
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#3b82f6', borderRadius: '2px' }}></Box>
-                        <Text size="1">Price/kg</Text>
+                    {/* Chart color key */}
+                    <Flex justify="center" gap="4" mt="4" wrap="wrap">
+                      <Flex align="center" gap="2">
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#3b82f6', borderRadius: '3px' }}></Box>
+                        <Text size="2">Price/kg</Text>
                       </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#f59e0b', borderRadius: '2px' }}></Box>
-                        <Text size="1">Rating (/5)</Text>
+                      <Flex align="center" gap="2">
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#8b5cf6', borderRadius: '3px极 }}></Box>
+                        <Text size="2">Compliance Score</Text>
                       </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', borderRadius: '2px' }}></Box>
-                        <Text size="1">Delivery Time</Text>
+                      <Flex align="center" gap="2">
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#ec4899', borderRadius: '3px' }}></Box>
+                        <Text size="2">Total Score</Text>
                       </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#8b5cf6', borderRadius: '2px' }}></Box>
-                        <Text size="1">Reliability (%)</Text>
-                      </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#ec4899', borderRadius: '2px' }}></Box>
-                        <Text size="1">Compliance Score</Text>
-                      </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '2px' }}></Box>
-                        <Text size="1">Selected Supplier</Text>
+                      <Flex align="center" gap="2">
+                        <Box style={{ width: '14px', height: '14px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '3px' }}></Box>
+                        <Text size="2">Selected Supplier</极ext>
                       </Flex>
                     </Flex>
                   </Card>
 
                   <Card style={{
-                    borderRadius: '8px',
+                    borderRadius: '10px',
                     backgroundColor: 'white',
-                    padding: '16px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                    padding: '20px',
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.08)',
                   }}>
                     <div style={{ overflowX: 'auto' }}>
-                      <Table.Root size="1">
+                      <Table.Root size="2">
                         <Table.Header style={{ 
                           backgroundColor: '#f1f5f9',
                         }}>
                           <Table.Row>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Supplier</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Price/kg</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
+                              padding: '12px',
+                              fontSize: '1rem',
+                              color: '1e293b',
                               whiteSpace: 'nowrap'
                             }}>Rating</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Delivery</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Reliability</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Compliance</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1极m',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Total Score</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '12px',
+                              fontSize: '1rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Select</Table.ColumnHeaderCell>
@@ -2265,15 +2253,15 @@ function CostAnalytics() {
                               onMouseLeave={() => setHoveredRow(null)}
                             >
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '12px',
                                 fontWeight: supplier.selected ? '600' : '400',
                                 color: supplier.selected ? '#059669' : '#334155',
-                                fontSize: '0.8rem',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>
-                                <Flex align="center" gap="1">
+                                <Flex align="center" gap="2">
                                   {supplier.selected && (
-                                    <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
+                                    <Badge color="green" variant="solid" style={{ padding: '2px 6px', fontSize: '0.8rem' }}>
                                       ✓
                                     </Badge>
                                   )}
@@ -2281,23 +2269,23 @@ function CostAnalytics() {
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '12px',
                                 fontWeight: '500',
                                 color: '#334155',
-                                fontSize: '0.8rem',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 {formatCurrency(supplier.pricePerKg, currency)}
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontSize: '0.8rem',
+                                padding: '12px',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>
-                                <Flex align="center" gap="1">
+                                <Flex align="center" gap="2">
                                   <span style={{ 
                                     color: '#f59e0b',
-                                    fontSize: '12px'
+                                    fontSize: '16px'
                                   }}>
                                     ★
                                   </span>
@@ -2307,25 +2295,25 @@ function CostAnalytics() {
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '12px',
                                 color: '#475569',
-                                fontSize: '0.8rem',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>{supplier.delivery}</Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '12px',
                                 color: '#475569',
-                                fontSize: '0.8rem',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>{supplier.reliability}</Table.Cell>
                               <Table.Cell 
                                 style={{
-                                  padding: '6px 8px',
+                                  padding: '12px',
                                   fontWeight: 'bold',
                                   color: supplier.complianceScore > 80 ? '#10b981' : 
                                         supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
                                   cursor: 'pointer',
-                                  fontSize: '0.8rem',
+                                  fontSize: '1rem',
                                   whiteSpace: 'nowrap'
                                 }}
                                 onClick={() => {
@@ -2340,27 +2328,27 @@ function CostAnalytics() {
                                 {supplier.complianceScore}/100
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '极2px',
                                 fontWeight: 'bold',
                                 color: supplier.score > 200 ? '#10b981' : 
                                       supplier.score > 150 ? '#f59e0b' : '#ef4444',
-                                fontSize: '0.8rem',
+                                fontSize: '1rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 {supplier.score}/200
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '12px',
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Button
-                                  size="1"
+                                  size="2"
                                   variant={supplier.selected ? 'solid' : 'outline'}
                                   onClick={() => handleSupplierSelect(supplier.id)}
                                   style={{
-                                    borderRadius: '4px',
-                                    padding: '2px 6px',
-                                    fontSize: '0.7rem',
+                                    borderRadius: '6px',
+                                    padding: '6px 12px',
+                                    fontSize: '0.9rem',
                                     backgroundColor: supplier.selected ? '#10b981' : 'white',
                                     color: supplier.selected ? 'white' : '#1f2937',
                                     borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
@@ -2380,7 +2368,7 @@ function CostAnalytics() {
                 </>
               )}
 
-              <Flex justify="end" gap="2" mt="3">
+              <Flex justify="end" gap="3" mt="4">
                 <Button 
                   variant="solid"
                   onClick={() => {
@@ -2399,10 +2387,10 @@ function CostAnalytics() {
                   style={{
                     backgroundColor: '#2563eb',
                     color: 'white',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
+                    padding: '10px 20px',
+                    borderRadius: '8px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '1rem'
                   }}
                   disabled={!suppliers.find(s => s.selected)}
                 >
@@ -2414,10 +2402,10 @@ function CostAnalytics() {
                   style={{
                     backgroundColor: '#f3f4f6',
                     color: '#1f2937',
-                    padding: '6px 12px',
-                    borderRadius: '6px',
+                    padding: '10极 20px',
+                    borderRadius: '8px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '1rem'
                   }}
                 >
                   ❌ Cancel
@@ -2484,7 +2472,7 @@ function CostAnalytics() {
           height: '350px'
         }}>
           <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+            <Heading size="4" mb="3" align="center" style={cardTitle极yle}>
               Cost Gap Calculation
             </Heading>
             <ResponsiveContainer width="100%" height="100%">
@@ -2537,8 +2525,8 @@ function CostAnalytics() {
           gridColumn: '1 / -1',
           height: '350px'
         }}>
-          <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+          <Flex direction="column" height="极0%">
+            <Heading size="4极 mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
             <Text align="center" mb="2" size="2">
@@ -2565,7 +2553,7 @@ function CostAnalytics() {
                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
+                <XAxis data极="name" />
                 <YAxis />
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
