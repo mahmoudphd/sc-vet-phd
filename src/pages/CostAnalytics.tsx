@@ -259,9 +259,7 @@ const calculateComplianceScore = (material: Material): number => {
 
   const totalScore = testScore + certScore + supplierScore + expiryScore + blockchainScore;
   return Math.min(Math.round(totalScore), 100);
-};
-
-const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
+};const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   const complianceScore = calculateComplianceScore(supplier.material);
   
   const calculateTestScore = (tests: MaterialTests): number => {
@@ -425,7 +423,8 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
             max: 20,
             details: supplier.material.certificate ? 'Available' : 'Not available',
             icon: '📄'
-            }, { 
+          },
+          { 
             name: 'Supplier Status', 
             value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
             max: 15,
@@ -684,9 +683,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};
-
-function CostAnalytics() {
+};function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -1158,9 +1155,7 @@ function CostAnalytics() {
       );
     }
     return null;
-  };
-
-  return (
+  };  return (
     <Box p="4" style={{ backgroundColor: '#f9fafb', minHeight: '100vh' }}>
       <Flex justify="between" align="center" mb="6" wrap="wrap" gap="3">
         <Heading size="6" weight="bold" style={{ color: '#1f2937' }}>Inter-Organizational Cost Management</Heading>
@@ -1202,7 +1197,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid ',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1574,7 +1569,7 @@ function CostAnalytics() {
                                         width: '80px',
                                         padding: '6px 10px',
                                         borderRadius: '6px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid ',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '14px'
                                       }}
@@ -1858,9 +1853,7 @@ function CostAnalytics() {
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      {/* Supplier Selection Dialog */}
+      )}      {/* Supplier Selection Dialog */}
       {selectedSolution && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
@@ -1896,7 +1889,7 @@ function CostAnalytics() {
                   padding: '12px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '##1f2937', marginBottom: '8px' }}>
+                  <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
                     📊 Current Situation
                   </Text>
                   <Flex direction="column" gap="1">
@@ -2019,7 +2012,7 @@ function CostAnalytics() {
                         />
                         <YAxis 
                           tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
+                          axisLine={{ stroke: '##e5e7eb' }}
                         />
                         <Tooltip 
                           formatter={(value: number, name: string) => {
@@ -2244,7 +2237,8 @@ function CostAnalytics() {
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Button
-                                  size="1variant={supplier.selected ? 'solid' : 'outline'}
+                                  size="1"
+                                  variant={supplier.selected ? 'solid' : 'outline'}
                                   onClick={() => handleSupplierSelect(supplier.id)}
                                   style={{
                                     borderRadius: '4px',
@@ -2316,9 +2310,7 @@ function CostAnalytics() {
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      {/* Compliance Dialog - Separate from supplier selection */}
+      )}      {/* Compliance Dialog - Separate from supplier selection */}
       {complianceTooltip.visible && complianceTooltip.supplier && (
         <Dialog.Root open onOpenChange={() => setComplianceTooltip({visible: false, x: 0, y: 0, supplier: null})}>
           <Dialog.Content style={{ 
@@ -2451,7 +2443,7 @@ function CostAnalytics() {
                 lineHeight: '1.4'
               }}>
                 {getComplianceAssessment(complianceTooltip.supplier.complianceScore, complianceTooltip.supplier.material)}
-                </Text>
+              </Text>
             </Card>
 
             <Flex justify="end">
@@ -2567,16 +2559,15 @@ function CostAnalytics() {
               </LineChart>
             </ResponsiveContainer>
           </Flex>
-        </Card>
-
-        <Card style={{
+        </Card>        <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1',
           height: '350px'
-        }}>          <Flex direction="column" height="100%">
+        }}>
+          <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
               Cost Gap Analysis
             </Heading>
