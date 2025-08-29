@@ -1163,7 +1163,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '120px',
                 backgroundColor: 'white',
-                border: '1px solid '#e5e7eb',
+               border: '1px solid #e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1191,7 +1191,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid '#e5e7eb',
+                border: '1px solid #e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1640,7 +1640,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid '#e2e8f0',
+                                       border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
@@ -1668,7 +1668,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '12px'
                                       }}
@@ -1690,7 +1690,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
@@ -1724,7 +1724,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid '#e2e8f0',
+                                        border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
