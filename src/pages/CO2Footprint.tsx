@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sustainability Dashboard - Carbon Footprint Analysis</title>
-    <link rel="stylesheet" href="https://unpkg.com/@radix-ui/themes@latest/styles.css" />
+    <title>Carbon Footprint Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/recharts@2.8.0/umd/Recharts.min.js"></script>
     <style>
         :root {
@@ -634,17 +633,17 @@
         // Initialize charts
         function initCharts() {
             // Pie chart for emissions by category
-            const pieChart = Recharts.PieChart;
-            const pie = Recharts.Pie;
-            const cell = Recharts.Cell;
-            const tooltip = Recharts.Tooltip;
-            const legend = Recharts.Legend;
-            const responsiveContainer = Recharts.ResponsiveContainer;
+            const PieChart = Recharts.PieChart;
+            const Pie = Recharts.Pie;
+            const Cell = Recharts.Cell;
+            const Tooltip = Recharts.Tooltip;
+            const Legend = Recharts.Legend;
+            const ResponsiveContainer = Recharts.ResponsiveContainer;
 
             ReactDOM.render(
-                React.createElement(responsiveContainer, { width: "100%", height: 300 },
-                    React.createElement(pieChart, null,
-                        React.createElement(pie, {
+                React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+                    React.createElement(PieChart, null,
+                        React.createElement(Pie, {
                             data: pieChartData,
                             cx: "50%",
                             cy: "50%",
@@ -652,39 +651,39 @@
                             fill: "#8884d8",
                             dataKey: "value",
                             label: ({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`
-                        }, pieChartData.map((entry, index) => React.createElement(cell, { key: `cell-${index}`, fill: COLORS[index % COLORS.length] }))),
-                        React.createElement(tooltip, {
+                        }, pieChartData.map((entry, index) => React.createElement(Cell, { key: `cell-${index}`, fill: COLORS[index % COLORS.length] }))),
+                        React.createElement(Tooltip, {
                             formatter: (value, name, props) => [
                                 `${value.toFixed(3)} kg CO₂e`,
                                 name,
                                 `EGP ${props.payload.cost.toFixed(2)}`
                             ]
                         }),
-                        React.createElement(legend, null)
+                        React.createElement(Legend, null)
                     )
                 ),
                 document.getElementById('pie-chart')
             );
 
             // Bar chart for emission reduction initiatives
-            const barChart = Recharts.BarChart;
-            const bar = Recharts.Bar;
-            const xAxis = Recharts.XAxis;
-            const yAxis = Recharts.YAxis;
-            const cartesianGrid = Recharts.CartesianGrid;
+            const BarChart = Recharts.BarChart;
+            const Bar = Recharts.Bar;
+            const XAxis = Recharts.XAxis;
+            const YAxis = Recharts.YAxis;
+            const CartesianGrid = Recharts.CartesianGrid;
 
             ReactDOM.render(
-                React.createElement(responsiveContainer, { width: "100%", height: 300 },
-                    React.createElement(barChart, { data: barChartData },
-                        React.createElement(cartesianGrid, { strokeDasharray: "3 3" }),
-                        React.createElement(xAxis, { dataKey: "initiative" }),
-                        React.createElement(yAxis, null),
-                        React.createElement(tooltip, {
+                React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
+                    React.createElement(BarChart, { data: barChartData },
+                        React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
+                        React.createElement(XAxis, { dataKey: "initiative" }),
+                        React.createElement(YAxis, null),
+                        React.createElement(Tooltip, {
                             formatter: (value) => [`${value} kg CO₂e`, 'Reduction'],
                             labelFormatter: (label) => label
                         }),
-                        React.createElement(legend, null),
-                        React.createElement(bar, { dataKey: "reduction", name: "Reduction (kg CO₂e)", fill: "#8884d8" })
+                        React.createElement(Legend, null),
+                        React.createElement(Bar, { dataKey: "reduction", name: "Reduction (kg CO₂e)", fill: "#8884d8" })
                     )
                 ),
                 document.getElementById('bar-chart')
