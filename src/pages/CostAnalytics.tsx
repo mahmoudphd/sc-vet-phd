@@ -1163,7 +1163,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '120px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid '#e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1191,7 +1191,7 @@ function CostAnalytics() {
               <RadixSelect.Trigger style={{ 
                 minWidth: '80px',
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid '#e5e7eb',
                 borderRadius: '6px'
               }} />
               <RadixSelect.Content style={{
@@ -1265,8 +1265,8 @@ function CostAnalytics() {
                 </Text>
                 {item.trend && (
                   <Badge color={
-                      item.trend === 'up' => 'green' : item.trend === 'down' ? 'red' : 'gray'
-                    }
+                    item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+                  }
                     style={{
                       borderRadius: '9999px',
                       padding: '2px 8px',
@@ -1296,7 +1296,8 @@ function CostAnalytics() {
                   <Text size="4" weight="bold" style={{ color: '#1f2937' }}>
                     {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
                   </Text>
-                </Flex> ) : (
+                </Flex>
+              ) : (
                 <Heading size="5" style={{ fontWeight: 'bold', color: '#1f2937' }}>
                   {item.label.includes('%') ? `${item.value}` : formatCurrency(item.value as number, currency)}
                 </Heading>
@@ -1639,7 +1640,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
@@ -1667,7 +1668,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: '#f9fafb',
                                         fontSize: '12px'
                                       }}
@@ -1689,7 +1690,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
@@ -1723,7 +1724,7 @@ function CostAnalytics() {
                                         width: '70px',
                                         padding: '4px 8px',
                                         borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
+                                        border: '1px solid '#e2e8f0',
                                         backgroundColor: 'white',
                                         fontSize: '12px'
                                       }}
@@ -1750,10 +1751,10 @@ function CostAnalytics() {
                                   }}
                                 />
                                 <RadixSelect.Content style={{
-                                  backgroundColor: 'white',
-                                  borderRadius: '4px',
-                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                }}>
+                                    backgroundColor: 'white',
+                                    borderRadius: '4px',
+                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                  }}>
                                   {solutionsOptions.map((sol) => (
                                     <RadixSelect.Item 
                                       key={sol} 
@@ -1782,8 +1783,7 @@ function CostAnalytics() {
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell><Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1949,7 +1949,7 @@ function CostAnalytics() {
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '4b5563', fontSize: '0.9rem' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '0.9rem' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
@@ -2203,10 +2203,9 @@ function CostAnalytics() {
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
-                              color: '1e293b',
+                              color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Rating</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
+                            }}>Rating</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
