@@ -29,12 +29,7 @@ import {
   Legend,
   BarChart,
   Bar,
-  CartesianGrid,
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar
+  CartesianGrid
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
@@ -235,23 +230,41 @@ const initialData: CostData = {
     { name: 'Vitamin B1', concentrationKg: 0.001, pricePerKg: 540, costAfter: 0.51, targetQty: 0.0009, targetPrice: 513 },
     { name: 'Vitamin B2', concentrationKg: 0.006, pricePerKg: 600, costAfter: 0.57, targetQty: 0.0054, targetPrice: 570 },
     { name: 'Vitamin B12', concentrationKg: 0.001, pricePerKg: 2300, costAfter: 2.19, targetQty: 0.0009, targetPrice: 2185 },
-    // ... more raw materials
+    { name: 'Nicotinamide B3', concentrationKg: 0.01, pricePerKg: 400, costAfter: 0.38, targetQty: 0.009, targetPrice: 380 },
+    { name: 'Pantothenic Acid', concentrationKg: 0.004, pricePerKg: 1700, costAfter: 1.62, targetQty: 0.0036, targetPrice: 1615 },
+    { name: 'Vitamin B6', concentrationKg: 0.0015, pricePerKg: 900, costAfter: 0.86, targetQty: 0.00135, targetPrice: 855 },
+    { name: 'Leucine', concentrationKg: 0.03, pricePerKg: 200, costAfter: 0.19, targetQty: 0.027, targetPrice: 190 },
+    { name: 'Threonine', concentrationKg: 0.01, pricePerKg: 950, costAfter: 0.90, targetQty: 0.009, targetPrice: 902.5 },
+    { name: 'Taurine', concentrationKg: 0.0025, pricePerKg: 3000, costAfter: 2.85, targetQty: 0.00225, targetPrice: 2850 },
+    { name: 'Glycine', concentrationKg: 0.0025, pricePerKg: 4200, costAfter: 3.99, targetQty: 0.00225, targetPrice: 3990 },
+    { name: 'Arginine', concentrationKg: 0.0025, pricePerKg: 5000, costAfter: 4.75, targetQty: 0.00225, targetPrice: 4750 },
+    { name: 'Cynarin', concentrationKg: 0.0025, pricePerKg: 3900, costAfter: 3.71, targetQty: 0.00225, targetPrice: 3705 },
+    { name: 'Silymarin', concentrationKg: 0.025, pricePerKg: 700, costAfter: 0.67, targetQty: 0.0225, targetPrice: 665 },
+    { name: 'Sorbitol', concentrationKg: 0.01, pricePerKg: 360, costAfter: 0.34, targetQty: 0.009, targetPrice: 342 },
+    { name: 'Carnitine', concentrationKg: 0.005, pricePerKg: 1070, costAfter: 1.02, targetQty: 0.0045, targetPrice: 1016.5 },
+    { name: 'Betaine', concentrationKg: 0.02, pricePerKg: 1250, costAfter: 1.19, targetQty: 0.018, targetPrice: 1187.5 },
+    { name: 'Tween-80', concentrationKg: 0.075, pricePerKg: 90, costAfter: 0.09, targetQty: 0.0675, targetPrice: 85.5 },
+    { name: 'Water', concentrationKg: 0.571, pricePerKg: 1, costAfter: 0.95, targetQty: 0.5139, targetPrice: 0.95 },
   ],
   packagingMaterials: [
     { name: 'Plastic Bottle (1 L)', qty: 1, unitPrice: 10, cost: 10, costAfter: 9.5, targetQty: 0.9, targetPrice: 9.5 },
-    // ... more packaging materials
+    { name: 'Safety Seal', qty: 1, unitPrice: 3, cost: 3, costAfter: 2.85, targetQty: 0.9, targetPrice: 2.85 },
+    { name: 'Cap', qty: 1, unitPrice: 5, cost: 5, costAfter: 4.75, targetQty: 0.9, targetPrice: 4.75 },
   ],
   directLabor: [
     { name: 'Operator', hours: 0.5, hourlyRate: 3.5, cost: 1.75, costAfter: 1.66, targetQty: 0.45, targetPrice: 3.33 },
-    // ... more labor items
+    { name: 'Supervisor', hours: 0.5, hourlyRate: 1.75, cost: 0.88, costAfter: 0.83, targetQty: 0.45, targetPrice: 1.66 },
+    { name: 'Quality Control', hours: 0.5, hourlyRate: 0.74, cost: 0.37, costAfter: 0.35, targetQty: 0.45, targetPrice: 0.70 },
   ],
   overheadItems: [
     { name: 'Rent', totalCost: 1000, basis: 1000, cost: 1, costAfter: 0.95, targetQty: 1, targetPrice: 0.95 },
-    // ... more overhead items
+    { name: 'Electricity', totalCost: 500, basis: 1000, cost: 0.5, costAfter: 0.48, targetQty: 1, targetPrice: 0.48 },
+    { name: 'Maintenance', totalCost: 1500, basis: 1000, cost: 1.5, costAfter: 1.43, targetQty: 1, targetPrice: 1.43 },
   ],
   otherCosts: [
     { name: 'Transportation', qty: 1, unitPrice: 6.67, cost: 6.67, costAfter: 6.34, targetQty: 0.9, targetPrice: 6.34 },
-    // ... more other costs
+    { name: 'Packaging Waste Disposal', qty: 1, unitPrice: 3.33, cost: 3.33, costAfter: 3.16, targetQty: 0.9, targetPrice: 3.16 },
+    { name: 'Rework', qty: 1, unitPrice: 5.0, cost: 5, costAfter: 4.5, targetQty: 0.8, targetPrice: 4.5 },
   ],
 };
 
@@ -298,22 +311,23 @@ const solutionsOptions = [
 // ========== STYLES ==========
 const tableHeaderStyle = {
   fontWeight: 'bold',
-  padding: '12px 16px',
+  padding: '10px 12px',
   backgroundColor: '#f3f4f6',
-  fontSize: '0.9rem'
+  fontSize: '0.9rem',
+  borderBottom: 'none'
 };
 
 const tableCellStyle = {
   fontWeight: 'normal',
-  padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  padding: '10px 12px',
+  borderBottom: 'none',
   fontSize: '0.9rem'
 };
 
 const tableRowHeaderStyle = {
   fontWeight: 'bold',
-  padding: '12px 16px',
-  borderBottom: '1px solid #e5e7eb',
+  padding: '10px 12px',
+  borderBottom: 'none',
   fontSize: '0.9rem'
 };
 
@@ -335,11 +349,11 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   return (
     <Dialog.Root open onOpenChange={() => {}}>
       <Dialog.Content style={{ 
-        maxWidth: '600px',
+        maxWidth: '700px',
         width: '85vw',
         padding: '20px',
         borderRadius: '10px',
-        boxShadow: '0 5px 20px rgba(0,0,0,0.15)',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
         border: '1px solid #e5e7eb',
         backgroundColor: 'white',
         maxHeight: '85vh',
@@ -347,193 +361,216 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       }}>
         <Flex justify="between" align="center" mb="4">
           <Dialog.Title style={{ 
-            fontSize: '1.4rem',
+            fontSize: '1.5rem',
             fontWeight: 'bold',
             color: '#1f2937'
           }}>
-            Compliance for {supplier.name}
+            Compliance Details for {supplier.name}
           </Dialog.Title>
           <Badge 
             style={{ 
-              padding: '6px 12px', 
-              borderRadius: '16px', 
+              padding: '8px 12px', 
+              borderRadius: '20px', 
               backgroundColor: getScoreColor(complianceScore),
               color: 'white',
               fontWeight: 'bold',
-              fontSize: '12px'
+              fontSize: '14px'
             }}
           >
             {complianceScore}/100 - {getScoreLabel(complianceScore)}
           </Badge>
         </Flex>
 
-        <Flex direction="column" gap="4" mb="4">
-          <Flex gap="4">
-            <Box style={{ position: 'relative', width: '100px', height: '100px', flexShrink: 0 }}>
-              <svg width="100" height="100" viewBox="0 0 100 100">
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke="#e2e8f0"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="50"
-                  cy="50"
-                  r="45"
-                  fill="none"
-                  stroke={getScoreColor(complianceScore)}
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeDasharray={`${complianceScore * 2.83} 283`}
-                  transform="rotate(-90 50 50)"
-                />
-              </svg>
-              <Box style={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                textAlign: 'center'
-              }}>
-                <Text size="6" weight="bold" style={{ color: '#1e293b' }}>
-                  {complianceScore}
-                </Text>
-                <Text size="1" style={{ color: '#64748b' }}>
-                  of 100
-                </Text>
+        <Grid columns="2" gap="4" mb="4">
+          <Card style={{ 
+            padding: '16px', 
+            backgroundColor: '#f8fafc', 
+            borderRadius: '10px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Flex justify="center" mb="4">
+              <Box style={{ position: 'relative', width: '120px', height: '120px' }}>
+                <svg width="120" height="120" viewBox="0 0 120 120">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="54"
+                    fill="none"
+                    stroke="#e2e8f0"
+                    strokeWidth="8"
+                  />
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="54"
+                    fill="none"
+                    stroke={getScoreColor(complianceScore)}
+                    strokeWidth="8"
+                    strokeLinecap='round'
+                    strokeDasharray={`${complianceScore * 3.39} 339`}
+                    transform="rotate(-90 60 60)"
+                  />
+                </svg>
+                <Box style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  textAlign: 'center'
+                }}>
+                  <Text size="6" weight="bold" style={{ color: '#1e293b' }}>
+                    {complianceScore}
+                  </Text>
+                  <Text size="2" style={{ color: '#64748b' }}>
+                    of 100
+                  </Text>
+                </Box>
               </Box>
-            </Box>
+            </Flex>
+          </Card>
 
-            <Box style={{ flex: 1 }}>
-              <Heading size="3" mb="2" style={{ color: '#1e293b', fontWeight: 'bold' }}>
-                Score Breakdown
-              </Heading>
-              
-              {[
-                { 
-                  name: 'Tests', 
-                  value: calculateTestScore(supplier.material.tests), 
-                  max: 40,
-                  icon: '🧪'
-                },
-                { 
-                  name: 'Certificate', 
-                  value: supplier.material.certificate ? 20 : 0, 
-                  max: 20,
-                  icon: '📄'
-                },
-                { 
-                  name: 'Status', 
-                  value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
-                  max: 15,
-                  icon: '🏢'
-                }
-              ].map((item, index) => (
-                <Box key={index} mb="2">
-                  <Flex justify="between" align="center" mb="1">
-                    <Flex align="center" gap="1">
-                      <Text size="2">{item.icon}</Text>
-                      <Text size="1" weight="medium" style={{ color: '#475569' }}>
-                        {item.name}
-                      </Text>
-                    </Flex>
-                    <Text size="1" style={{ color: '#64748b' }}>
-                      {item.value}/{item.max}
+          <Card style={{ 
+            padding: '16px', 
+            backgroundColor: '#f8fafc',
+            borderRadius: '10px',
+            border: '1px solid #e2e8f0'
+          }}>
+            <Heading size="4" mb="3" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+              Score Breakdown
+            </Heading>
+            
+            {[
+              { 
+                name: 'Quality Tests', 
+                value: calculateTestScore(supplier.material.tests), 
+                max: 40,
+                details: `(${Object.values(supplier.material.tests).filter(t => t.status === 'Passed').length} of 4 passed)`,
+                icon: '🧪'
+              },
+              { 
+                name: 'Quality Certificate', 
+                value: supplier.material.certificate ? 20 : 0, 
+                max: 20,
+                details: supplier.material.certificate ? 'Available' : 'Not available',
+                icon: '📄'
+              },
+              { 
+                name: 'Supplier Status', 
+                value: supplier.material.supplier.status === 'Approved' ? 15 : 0, 
+                max: 15,
+                details: getSupplierStatusText(supplier.material.supplier.status),
+                icon: '🏢'
+              },
+              { 
+                name: 'Expiry Date', 
+                value: new Date(supplier.material.expiryDate) > new Date() ? 15 : 0, 
+                max: 15,
+                details: new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired',
+                icon: '📅'
+              },
+              { 
+                name: 'Blockchain Registration', 
+                value: supplier.material.blockchainRegistered ? 10 : 0, 
+                max: 10,
+                details: supplier.material.blockchainRegistered ? 'Registered' : 'Not registered',
+                icon: '🔗'
+              }
+            ].map((item, index) => (
+              <Box key={index} mb="3">
+                <Flex justify="between" align="center" mb="1">
+                  <Flex align="center" gap="2">
+                    <Text size="4">{item.icon}</Text>
+                    <Text size="2" weight="medium" style={{ color: '#475569' }}>
+                      {item.name}
                     </Text>
                   </Flex>
+                  <Text size="2" style={{ color: '#64748b' }}>
+                    {item.value}/{item.max} - {item.details}
+                  </Text>
+                </Flex>
+                <Box style={{
+                  height: '8px',
+                  backgroundColor: '#e2e8f0',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
                   <Box style={{
-                    height: '6px',
-                    backgroundColor: '#e2e8f0',
-                    borderRadius: '3px',
-                    overflow: 'hidden'
-                  }}>
-                    <Box style={{
-                      height: '100%',
-                      width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
-                      backgroundColor: (item.value || 0) > 0 
-                        ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
-                        : '#ef4444',
-                      borderRadius: '3px',
-                    }} />
-                  </Box>
+                    height: '100%',
+                    width: `${((item.value || 0) / (item.max || 100)) * 100}%`,
+                    backgroundColor: (item.value || 0) > 0 
+                      ? getScoreColor(((item.value || 0) / (item.max || 100)) * 100) 
+                      : '#ef4444',
+                    borderRadius: '4px',
+                    transition: 'width 0.3s ease'
+                  }} />
                 </Box>
-              ))}
-            </Box>
-          </Flex>
+              </Box>
+            ))}
+          </Card>
+        </Grid>
 
-          <Grid columns="2" gap="2">
-            <Flex align="center" gap="1">
-              <Box style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '2px',
-                backgroundColor: new Date(supplier.material.expiryDate) > new Date() ? '#10b981' : '#ef4444'
-              }}></Box>
-              <Text size="1">
-                {new Date(supplier.material.expiryDate) > new Date() ? 'Valid' : 'Expired'}
-              </Text>
-            </Flex>
-            <Flex align="center" gap="1">
-              <Box style={{
-                width: '12px',
-                height: '12px',
-                borderRadius: '2px',
-                backgroundColor: supplier.material.blockchainRegistered ? '#10b981' : '#ef4444'
-              }}></Box>
-              <Text size="1">
-                {supplier.material.blockchainRegistered ? 'Registered' : 'Not Registered'}
-              </Text>
-            </Flex>
-          </Grid>
-        </Flex>
-
-        <Card mb="4" style={{ backgroundColor: 'white', padding: '12px', border: '1px solid #e2e8f0' }}>
-          <Heading size="2" mb="2" style={{ color: '#1e293b', fontWeight: 'bold' }}>
-            Test Results
-          </Heading>
-          <Table.Root size="1">
-            <Table.Body>
-              {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
-                <Table.Row key={index}>
-                  <Table.Cell style={{ padding: '6px' }}>
-                    <Text size="1">{getTestName(test)}</Text>
-                  </Table.Cell>
-                  <Table.Cell style={{ padding: '6px' }}>
-                    <Badge 
-                      style={{ 
-                        backgroundColor: getStatusColor(status),
-                        color: 'white',
-                        padding: '2px 6px',
-                        fontSize: '10px'
-                      }}
-                    >
-                      {getStatusText(status)}
-                    </Badge>
-                  </Table.Cell>
-                </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Card>
-
-        <Card style={{ 
-          backgroundColor: '#fffbeb', 
-          padding: '12px',
-          border: '1px solid #fde68a'
-        }}>
-          <Heading size="2" mb="1" style={{ color: '#92400e', fontWeight: 'bold' }}>
-            Assessment
-          </Heading>
-          <Text size="1" style={{ 
-            color: '#92400e',
-            lineHeight: '1.4'
+        <Grid columns="2" gap="4" mb="4">
+          <Card style={{ 
+            padding: '16px', 
+            backgroundColor: 'white', 
+            borderRadius: '10px',
+            border: '1px solid #e2e8f0'
           }}>
-            {getComplianceAssessment(complianceScore, supplier.material)}
-          </Text>
-        </Card>
+            <Heading size="4" mb="3" style={{ color: '#1e293b', fontWeight: 'bold' }}>
+              Quality Tests Details
+            </Heading>
+            <Table.Root>
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Test</Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Status</Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {Object.entries(supplier.material.tests).map(([test, { status }], index) => (
+                  <Table.Row key={index}>
+                    <Table.Cell style={{ padding: '10px', fontSize: '0.9rem' }}>
+                      <Flex align="center" gap="2">
+                        <Text>🔍</Text>
+                        <Text>{getTestName(test)}</Text>
+                      </Flex>
+                    </Table.Cell>
+                    <Table.Cell style={{ padding: '10px' }}>
+                      <Badge 
+                        style={{ 
+                          backgroundColor: getStatusColor(status),
+                          color: 'white',
+                          padding: '4px 8px',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {getStatusText(status)}
+                      </Badge>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+              </Table.Body>
+            </Table.Root>
+          </Card>
+
+          <Card style={{ 
+            backgroundColor: '#fffbeb', 
+            padding: '16px',
+            border: '1px solid #fde68a',
+            borderRadius: '10px'
+          }}>
+            <Heading size="4" mb="2" style={{ color: '#92400e', fontWeight: 'bold' }}>
+              Compliance Assessment
+            </Heading>
+            <Text size="2" style={{ 
+              color: '#92400e',
+              lineHeight: '1.5'
+            }}>
+              {getComplianceAssessment(complianceScore, supplier.material)}
+            </Text>
+          </Card>
+        </Grid>
 
         <Flex justify="end" mt="4">
           <Button
@@ -542,10 +579,10 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
             style={{
               backgroundColor: '#3b82f6',
               color: 'white',
-              padding: '6px 12px',
+              padding: '8px 16px',
               borderRadius: '6px',
               fontWeight: 'bold',
-              fontSize: '12px'
+              fontSize: '0.9rem'
             }}
           >
             Close
@@ -578,7 +615,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
   calculateCostAfter 
 }) => {
   return (
-    <Table.Root variant="surface">
+    <Table.Root variant="surface" style={{ border: 'none' }}>
       <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
         <Table.Row>
           <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
@@ -615,12 +652,12 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                   min={costBefore * 0.95}
                   max={costBefore}
                   style={{ 
-                    width: '80px',
-                    padding: '6px 10px',
-                    borderRadius: '6px',
+                    width: '70px',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
                     border: '1px solid #e2e8f0',
                     backgroundColor: 'white',
-                    fontSize: '14px'
+                    fontSize: '12px'
                   }}
                 />
               </Table.Cell>
@@ -1261,7 +1298,7 @@ function CostAnalytics() {
                   </Text>
                 </Flex> ) : (
                 <Heading size="5" style={{ fontWeight: 'bold', color: '#1f2937' }}>
-                  {item.label.includes('%') ? `${item.value}%` : formatCurrency(item.value as number, currency)}
+                  {item.label.includes('%') ? `${item.value}` : formatCurrency(item.value as number, currency)}
                 </Heading>
               )}
             </Flex>
@@ -1276,7 +1313,7 @@ function CostAnalytics() {
         backgroundColor: 'white'
       }}>
         <Inset clip="padding-box" side="top" pb="current">
-          <Table.Root variant="surface">
+          <Table.Root variant="surface" style={{ border: 'none' }}>
             <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
               <Table.Row>
                 <Table.ColumnHeaderCell style={tableHeaderStyle}>Cost Category</Table.ColumnHeaderCell>
@@ -1324,7 +1361,7 @@ function CostAnalytics() {
                           padding: '6px 10px',
                           borderRadius: '6px',
                           border: '1px solid #e2e8f0',
-                          backgroundColor: '#f9fafb',
+                          backgroundColor: 'f9fafb',
                           fontSize: '14px'
                         }}
                       />
@@ -1417,18 +1454,18 @@ function CostAnalytics() {
       {dialogCategory && (
         <Dialog.Root open onOpenChange={() => setDialogCategory(null)}>
           <Dialog.Content style={{ 
-            maxWidth: '800px',
-            maxHeight: '80vh',
+            maxWidth: '700px',
+            maxHeight: '70vh',
             overflowY: 'auto',
-            borderRadius: '12px',
-            padding: '24px',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.1)',
+            borderRadius: '10px',
+            padding: '20px',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.1)',
             border: '1px solid #e5e7eb',
             backgroundColor: 'white'
           }}>
             <Flex justify="between" align="center" mb="4">
               <Dialog.Title style={{ 
-                fontSize: '1.25rem',
+                fontSize: '1.1rem',
                 fontWeight: 'bold',
                 color: '#1f2937'
               }}>
@@ -1452,7 +1489,7 @@ function CostAnalytics() {
 
               <Box pt="3">
                 <Tabs.Content value="actual">
-                  <Table.Root variant="surface">
+                  <Table.Root variant="surface" style={{ border: 'none' }}>
                     <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         {(() => {
@@ -1548,12 +1585,12 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
@@ -1576,16 +1613,16 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
-                                </Table.Cell>
+                               </Table.Cell>
                                 <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
                                     unitPrice ? formatCurrency(unitPrice, currency) : '-'
@@ -1599,12 +1636,12 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
@@ -1627,12 +1664,12 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: '#f9fafb',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
@@ -1649,12 +1686,12 @@ function CostAnalytics() {
                                         if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }} style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
@@ -1683,12 +1720,12 @@ function CostAnalytics() {
                                         updateCategoryTotals(dialogCategory, {...data});
                                       }}
                                       style={{ 
-                                        width: '80px',
-                                        padding: '6px 10px',
-                                        borderRadius: '6px',
+                                        width: '70px',
+                                        padding: '4px 8px',
+                                        borderRadius: '4px',
                                         border: '1px solid #e2e8f0',
                                         backgroundColor: 'white',
-                                        fontSize: '14px'
+                                        fontSize: '12px'
                                       }}
                                     />
                                   )}
@@ -1707,23 +1744,23 @@ function CostAnalytics() {
                                   style={{
                                     backgroundColor: 'white',
                                     border: '1px solid #e5e7eb',
-                                    borderRadius: '6px',
-                                    padding: '6px 12px',
-                                    fontSize: '0.875rem'
+                                    borderRadius: '4px',
+                                    padding: '4px 8px',
+                                    fontSize: '0.8rem'
                                   }}
                                 />
                                 <RadixSelect.Content style={{
                                   backgroundColor: 'white',
-                                  borderRadius: '6px',
-                                  boxShadow: '0 4px 6px rgba(0,0,0,0.1)'
+                                  borderRadius: '4px',
+                                  boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                 }}>
                                   {solutionsOptions.map((sol) => (
                                     <RadixSelect.Item 
                                       key={sol} 
                                       value={sol}
                                       style={{
-                                        padding: '8px 12px',
-                                        fontSize: '0.875rem'
+                                        padding: '6px 10px',
+                                        fontSize: '0.8rem'
                                       }}
                                     >
                                       {sol}
@@ -1740,7 +1777,7 @@ function CostAnalytics() {
                 </Tabs.Content>
 
                 <Tabs.Content value="target">
-                  <Table.Root variant="surface">
+                  <Table.Root variant="surface" style={{ border: 'none' }}>
                     <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
@@ -1774,12 +1811,12 @@ function CostAnalytics() {
                                 step="0.0001"
                                 min="0"
                                 style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
+                                  width: '70px',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
                                   border: '1px solid #e2e8f0',
                                   backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
+                                  fontSize: '12px'
                                 }}
                               />
                             </Table.Cell>
@@ -1796,12 +1833,12 @@ function CostAnalytics() {
                                 step="0.01"
                                 min="0"
                                 style={{ 
-                                  width: '80px',
-                                  padding: '6px 10px',
-                                  borderRadius: '6px',
+                                  width: '70px',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
                                   border: '1px solid #e2e8f0',
                                   backgroundColor: '#f9fafb',
-                                  fontSize: '14px'
+                                  fontSize: '12px'
                                 }}
                               />
                             </Table.Cell>
@@ -1839,9 +1876,10 @@ function CostAnalytics() {
                 style={{ 
                   backgroundColor: '#10b981', 
                   color: '#fff',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold'
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem'
                 }}
                 onClick={() => handleSubmitDialog(dialogCategory)}
               >
@@ -1852,9 +1890,10 @@ function CostAnalytics() {
                 style={{ 
                   backgroundColor: '#3b82f6', 
                   color: '#fff',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold'
+                  padding: '6px 12px',
+                  borderRadius: '4px',
+                  fontWeight: 'bold',
+                  fontSize: '0.9rem'
                 }}
                 onClick={() => setDialogCategory(null)}
               >
@@ -1870,51 +1909,51 @@ function CostAnalytics() {
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
             maxWidth: '1000px',
-            width: '95vw',
-            padding: '16px',
+            width: '90vw', 
+            padding: '20px',
             borderRadius: '10px',
-            boxShadow: '0 6px 18px rgba(0,0,0,0.1)',
+            boxShadow: '0 8px 25px rgba(0,0,0,0.15)',
             border: '1px solid #e5e7eb',
             backgroundColor: 'white',
             maxHeight: '85vh',
             overflowY: 'auto'
           }}>
             <Dialog.Title style={{ 
-              fontSize: '1.2rem',
+              fontSize: '1.5rem',
               fontWeight: 'bold',
               color: '#1f2937',
               marginBottom: '15px',
               textAlign: 'center',
               paddingBottom: '10px',
-              borderBottom: '1px solid #f1f5f9'
+              borderBottom: '2px solid #f1f5f9'
             }}>
               Supplier Selection for {getDetailsByCategory(selectedSolution.category)[selectedSolution.index]?.name}
             </Dialog.Title>
             
             <Flex direction="column" gap="4">
-              <Grid columns="2" gap="3">
+              <Grid columns="2" gap="4">
                 <Card style={{
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   backgroundColor: '#f8fafc',
-                  padding: '12px',
+                  padding: '16px',
                   border: '1px solid #e2e8f0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '#1f2937', marginBottom: '8px' }}>
+                  <Text weight="bold" size="3" style={{ color: '#1f2937', marginBottom: '10px' }}>
                     📊 Current Situation
                   </Text>
-                  <Flex direction="column" gap="1">
+                  <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Current Price/kg:</Text>
-                      <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '0.9rem' }}>
+                      <Text style={{ color: '#4b5563', fontSize: '0.9rem' }}>Current Price/kg:</Text>
+                      <Text style={{ color: '#1f2937', fontWeight: 'bold', fontSize: '1rem' }}>
                         {formatCurrency(currentPrice, currency)}
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Selected Supplier Price:</Text>
+                      <Text style={{ color: '4b5563', fontSize: '0.9rem' }}>Selected Supplier Price:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1rem'
                       }}>
                         {suppliers.find(s => s.selected) ? 
                           formatCurrency(suppliers.find(s => s.selected)!.pricePerKg, currency) : 
@@ -1926,31 +1965,31 @@ function CostAnalytics() {
                 </Card>
                 
                 <Card style={{
-                  borderRadius: '6px',
+                  borderRadius: '8px',
                   backgroundColor: '#f0fdf4',
-                  padding: '12px',
+                  padding: '16px',
                   border: '1px solid #bbf7d0'
                 }}>
-                  <Text weight="bold" size="2" style={{ color: '#166534', marginBottom: '8px' }}>
+                  <Text weight="bold" size="3" style={{ color: '#166534', marginBottom: '10px' }}>
                     💰 Potential Savings
                   </Text>
-                  <Flex direction="column" gap="1">
+                  <Flex direction="column" gap="2">
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings per kg:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '0.9rem' }}>Savings per kg:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1rem'
                       }}>
                         {formatCurrency(potentialSavings, currency)}
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.8rem' }}>Savings percentage:</Text>
+                      <Text style={{ color: '#4b5563', fontSize: '0.9rem' }}>Savings percentage:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
-                        fontSize: '0.9rem'
+                        fontSize: '1rem'
                       }}>
                         {currentPrice > 0 ? `${((potentialSavings / currentPrice) * 100).toFixed(1)}%` : '0%'}
                       </Text>
@@ -1962,15 +2001,15 @@ function CostAnalytics() {
               <Flex justify="center">
                 <Button 
                   onClick={autoSelectBestSupplier}
-                  size="1"
+                  size="2"
                   variant="solid"
                   style={{
                     backgroundColor: '#10b981',
                     color: 'white',
-                    padding: '6px 12px',
+                    padding: '8px 16px',
                     borderRadius: '6px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '0.9rem'
                   }}
                 >
                   🚀 Auto Select Best Supplier
@@ -1978,9 +2017,9 @@ function CostAnalytics() {
               </Flex>
 
               {isLoading ? (
-                <Flex justify="center" align="center" style={{ height: '200px' }}>
+                <Flex justify="center" align="center" style={{ height: '250px' }}>
                   <Flex direction="column" align="center" gap="2">
-                    <Text size="2" weight="bold">Loading supplier data...</Text>
+                    <Text size="3" weight="bold">Loading supplier data...</Text>
                     <Spinner size="2" />
                   </Flex>
                 </Flex>
@@ -1991,77 +2030,70 @@ function CostAnalytics() {
                     backgroundColor: 'white',
                     padding: '16px',
                     height: '300px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
                     marginBottom: '20px'
                   }}>
-                    <Heading size="2" mb="2" style={{ 
+                    <Heading size="3" mb="3" style={{ 
                       color: '#1f2937',
                       fontWeight: 'bold',
                       textAlign: 'center'
                     }}>
-                      Supplier Comparison - All Metrics
+                      Supplier Comparison - Key Metrics
                     </Heading>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={suppliers.map(s => ({
                           name: s.name,
                           price: s.pricePerKg,
-                          rating: s.rating * 20,
-                          delivery: (1 - (parseInt(s.delivery.split(' ')[0]) / 3)) * 100,
-                          reliability: parseInt(s.reliability),
                           compliance: s.complianceScore,
+                          totalScore: s.score,
                           selected: s.selected
                         }))}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+                        margin={{ top: 20, right: 25, left: 15, bottom: 15 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                         <XAxis 
                           dataKey="name" 
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          tick={{ fill: '#4b5563', fontSize: 10 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                         />
                         <YAxis 
                           yAxisId="left"
                           orientation="left"
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          tick={{ fill: '#4b5563', fontSize: 10 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                           label={{ 
                             value: 'Price (Currency)', 
                             angle: -90, 
                             position: 'insideLeft',
-                            style: { textAnchor: 'middle', fill: '#3b82f6' } 
+                            style: { textAnchor: 'middle', fill: '#3b82f6', fontSize: '10px' } 
                           }}
                         />
                         <YAxis 
                           yAxisId="right"
                           orientation="right"
-                          domain={[0, 100]}
-                          tick={{ fill: '#4b5563', fontSize: 12 }}
+                          domain={[0, 200]}
+                          tick={{ fill: '#4b5563', fontSize: 10 }}
                           axisLine={{ stroke: '#e5e7eb' }}
                           label={{ 
-                            value: 'Other Metrics (%)', 
+                            value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
-                            style: { textAnchor: 'middle', fill: '#f59e0b' } 
+                            style: { textAnchor: 'middle', fill: '#f59e0b', fontSize: '10px' } 
                           }}
                         />
                         <Tooltip 
                           formatter={(value, name) => {
                             if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
-                            if (name === 'rating') return [`${(Number(value) / 20).toFixed(1)}/5`, 'Rating'];
-                            if (name === 'delivery') {
-                              const weeks = 3 * (1 - (Number(value) / 100));
-                              return [`${weeks.toFixed(1)} weeks`, 'Delivery Time'];
-                            }
-                            if (name === 'reliability') return [`${value}%`, 'Reliability'];
                             if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
+                            if (name === 'totalScore') return [`${value}/200`, 'Total Score'];
                             return [value, name];
                           }}
                           contentStyle={{
                             backgroundColor: 'white',
                             border: '1px solid #e5e7eb',
                             borderRadius: '6px',
-                            boxShadow: '0 4px 8px rgba(0,0,0,0.12)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
                             fontSize: '0.9rem'
                           }}
                         />
@@ -2071,7 +2103,7 @@ function CostAnalytics() {
                           dataKey="price" 
                           name="Price/kg" 
                           fill="#3b82f6"
-                          barSize={20}
+                          barSize={25}
                           radius={[4, 4, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
@@ -2085,49 +2117,15 @@ function CostAnalytics() {
                         </Bar>
                         <Bar 
                           yAxisId="right"
-                          dataKey="rating" 
-                          name="Rating (/5)" 
-                          fill="#f59e0b"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`rating-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#f59e0b'}
-                              stroke={supplier.selected ? '#059669' : '#f59e0b'}
-                              strokeWidth={supplier.selected ? 2 : 0}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          yAxisId="right"
-                          dataKey="delivery" 
-                          name="Delivery (shorter is better)" 
-                          fill="#10b981"
-                          barSize={20}
-                          radius={[4, 4, 0, 0]}
-                        >
-                          {suppliers.map((supplier, index) => (
-                            <Cell 
-                              key={`delivery-cell-${index}`} 
-                              fill={supplier.selected ? '#10b981' : '#10b981'}
-                              stroke={supplier.selected ? '#059669' : '#10b981'}
-                              strokeWidth={supplier.selected ? 2 : 0}
-                            />
-                          ))}
-                        </Bar>
-                        <Bar 
-                          yAxisId="right"
-                          dataKey="reliability" 
-                          name="Reliability (%)" 
+                          dataKey="compliance" 
+                          name="Compliance Score" 
                           fill="#8b5cf6"
-                          barSize={20}
+                          barSize={25}
                           radius={[4, 4, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
                             <Cell 
-                              key={`reliability-cell-${index}`} 
+                              key={`compliance-cell-${index}`} 
                               fill={supplier.selected ? '#10b981' : '#8b5cf6'}
                               stroke={supplier.selected ? '#059669' : '#8b5cf6'}
                               strokeWidth={supplier.selected ? 2 : 0}
@@ -2136,15 +2134,15 @@ function CostAnalytics() {
                         </Bar>
                         <Bar 
                           yAxisId="right"
-                          dataKey="compliance" 
-                          name="Compliance Score" 
+                          dataKey="totalScore" 
+                          name="Total Score" 
                           fill="#ec4899"
-                          barSize={20}
+                          barSize={25}
                           radius={[4, 4, 0, 0]}
                         >
                           {suppliers.map((supplier, index) => (
                             <Cell 
-                              key={`compliance-cell-${index}`} 
+                              key={`totalScore-cell-${index}`} 
                               fill={supplier.selected ? '#10b981' : '#ec4899'}
                               stroke={supplier.selected ? '#059669' : '#ec4899'}
                               strokeWidth={supplier.selected ? 2 : 0}
@@ -2154,26 +2152,19 @@ function CostAnalytics() {
                       </BarChart>
                     </ResponsiveContainer>
                     
-                    <Flex justify="center" gap="4" mt="3" wrap="wrap">
+                    {/* Chart color key */}
+                    <Flex justify="center" gap="3" mt="3" wrap="wrap">
                       <Flex align="center" gap="1">
                         <Box style={{ width: '12px', height: '12px', backgroundColor: '#3b82f6', borderRadius: '2px' }}></Box>
                         <Text size="1">Price/kg</Text>
                       </Flex>
                       <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#f59e0b', borderRadius: '2px' }}></Box>
-                        <Text size="1">Rating (/5)</Text>
-                      </Flex>
-                      <Flex align="center" gap="1">
-                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', borderRadius: '2px' }}></Box>
-                        <Text size="1">Delivery Time</Text>
-                      </Flex>
-                      <Flex align="center" gap="1">
                         <Box style={{ width: '12px', height: '12px', backgroundColor: '#8b5cf6', borderRadius: '2px' }}></Box>
-                        <Text size="1">Reliability (%)</Text>
+                        <Text size="1">Compliance Score</Text>
                       </Flex>
                       <Flex align="center" gap="1">
                         <Box style={{ width: '12px', height: '12px', backgroundColor: '#ec4899', borderRadius: '2px' }}></Box>
-                        <Text size="1">Compliance Score</Text>
+                        <Text size="1">Total Score</Text>
                       </Flex>
                       <Flex align="center" gap="1">
                         <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '2px' }}></Box>
@@ -2186,7 +2177,7 @@ function CostAnalytics() {
                     borderRadius: '8px',
                     backgroundColor: 'white',
                     padding: '16px',
-                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
                   }}>
                     <div style={{ overflowX: 'auto' }}>
                       <Table.Root size="1">
@@ -2196,57 +2187,57 @@ function CostAnalytics() {
                           <Table.Row>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Supplier</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Price/kg</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
-                              color: '#1e293b',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '1e293b',
                               whiteSpace: 'nowrap'
                             }}>Rating</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Delivery</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Reliability</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Compliance</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Total Score</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
-                              padding: '8px',
-                              fontSize: '0.8rem',
+                              padding: '10px',
+                              fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Select</Table.ColumnHeaderCell>
@@ -2265,15 +2256,15 @@ function CostAnalytics() {
                               onMouseLeave={() => setHoveredRow(null)}
                             >
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 fontWeight: supplier.selected ? '600' : '400',
                                 color: supplier.selected ? '#059669' : '#334155',
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Flex align="center" gap="1">
                                   {supplier.selected && (
-                                    <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.6rem' }}>
+                                    <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.7rem' }}>
                                       ✓
                                     </Badge>
                                   )}
@@ -2281,23 +2272,23 @@ function CostAnalytics() {
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 fontWeight: '500',
                                 color: '#334155',
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 {formatCurrency(supplier.pricePerKg, currency)}
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
-                                fontSize: '0.8rem',
+                                padding: '10px',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Flex align="center" gap="1">
                                   <span style={{ 
                                     color: '#f59e0b',
-                                    fontSize: '12px'
+                                    fontSize: '14px'
                                   }}>
                                     ★
                                   </span>
@@ -2307,25 +2298,25 @@ function CostAnalytics() {
                                 </Flex>
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 color: '#475569',
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>{supplier.delivery}</Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 color: '#475569',
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>{supplier.reliability}</Table.Cell>
                               <Table.Cell 
                                 style={{
-                                  padding: '6px 8px',
+                                  padding: '10px',
                                   fontWeight: 'bold',
                                   color: supplier.complianceScore > 80 ? '#10b981' : 
                                         supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
                                   cursor: 'pointer',
-                                  fontSize: '0.8rem',
+                                  fontSize: '0.9rem',
                                   whiteSpace: 'nowrap'
                                 }}
                                 onClick={() => {
@@ -2340,17 +2331,17 @@ function CostAnalytics() {
                                 {supplier.complianceScore}/100
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 fontWeight: 'bold',
                                 color: supplier.score > 200 ? '#10b981' : 
                                       supplier.score > 150 ? '#f59e0b' : '#ef4444',
-                                fontSize: '0.8rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
                               }}>
                                 {supplier.score}/200
                               </Table.Cell>
                               <Table.Cell style={{
-                                padding: '6px 8px',
+                                padding: '10px',
                                 whiteSpace: 'nowrap'
                               }}>
                                 <Button
@@ -2359,8 +2350,8 @@ function CostAnalytics() {
                                   onClick={() => handleSupplierSelect(supplier.id)}
                                   style={{
                                     borderRadius: '4px',
-                                    padding: '2px 6px',
-                                    fontSize: '0.7rem',
+                                    padding: '4px 8px',
+                                    fontSize: '0.8rem',
                                     backgroundColor: supplier.selected ? '#10b981' : 'white',
                                     color: supplier.selected ? 'white' : '#1f2937',
                                     borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
@@ -2399,10 +2390,10 @@ function CostAnalytics() {
                   style={{
                     backgroundColor: '#2563eb',
                     color: 'white',
-                    padding: '6px 12px',
+                    padding: '8px 16px',
                     borderRadius: '6px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '0.9rem'
                   }}
                   disabled={!suppliers.find(s => s.selected)}
                 >
@@ -2414,10 +2405,10 @@ function CostAnalytics() {
                   style={{
                     backgroundColor: '#f3f4f6',
                     color: '#1f2937',
-                    padding: '6px 12px',
+                    padding: '8px 16px',
                     borderRadius: '6px',
                     fontWeight: 'bold',
-                    fontSize: '0.8rem'
+                    fontSize: '0.9rem'
                   }}
                 >
                   ❌ Cancel
@@ -2440,7 +2431,7 @@ function CostAnalytics() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '350px'
+          height: '300px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2457,7 +2448,7 @@ function CostAnalytics() {
                   }))}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80}
+                  outerRadius={70}
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
@@ -2481,7 +2472,7 @@ function CostAnalytics() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '350px'
+          height: '300px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2535,7 +2526,7 @@ function CostAnalytics() {
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1',
-          height: '350px'
+          height: '300px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2562,7 +2553,7 @@ function CostAnalytics() {
                     (sum, item) => sum + calculateActualCost(item), 0
                   ) - totals[category].budget
                 }))}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                margin={{ top: 15, right: 25, left: 15, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -2587,10 +2578,11 @@ function CostAnalytics() {
             backgroundColor: '#10b981', 
             color: '#fff', 
             fontWeight: 'bold',
-            padding: '12px 24px',
+            padding: '10px 20px',
             borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
+          disabled={true}
         >
           <UploadIcon style={{ marginRight: '8px' }} />
           Submit to Blockchain
