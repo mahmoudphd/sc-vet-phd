@@ -158,14 +158,17 @@ const stageData: StageData = {
 
 // Carbon cost calculation function
 const calculateCarbonCost = (emissionsKg: number) => {
-  const emissionsTon = emissionsKg / KG_PER_TON;
+  // Ensure emissionsKg is a valid number
+  const validEmissions = isNaN(emissionsKg) || !isFinite(emissionsKg) ? 0 : emissionsKg;
+  
+  const emissionsTon = validEmissions / KG_PER_TON;
   const costUSD = emissionsTon * CARBON_PRICE_PER_TON;
   const costEGP = costUSD * EXCHANGE_RATE;
   
   return {
     costEGP: parseFloat(costEGP.toFixed(2)),
     costUSD: parseFloat(costUSD.toFixed(2)),
-    calculation: `${emissionsKg.toFixed(2)} kg = ${emissionsTon.toFixed(4)} t × $${CARBON_PRICE_PER_TON}/t = $${costUSD.toFixed(2)}`,
+    calculation: `${validEmissions.toFixed(2)} kg = ${emissionsTon.toFixed(4)} t × $${CARBON_PRICE_PER_TON}/t = $${costUSD.toFixed(2)}`,
     calculationEGP: `$${costUSD.toFixed(2)} × ${EXCHANGE_RATE} = EGP ${costEGP.toFixed(2)}`
   };
 };
@@ -200,41 +203,49 @@ const CO2Footprint = () => {
   const getEmissionData = (): EmissionDataItem[] => {
     const sourceData = mode === 'iot' ? iotData : stageData;
     
+    // Helper function to safely calculate emissions
+    const calculateEmissions = (items: any[]): number => {
+      return parseFloat(items.reduce((sum: number, item: any) => {
+        const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+        return sum + emissions;
+      }, 0).toFixed(3));
+    };
+    
     return [
       { 
         category: 'Raw Materials', 
-        emissions: parseFloat(sourceData['Raw Materials'].reduce((sum: number, item: RawMaterial) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Raw Materials'].reduce((sum: number, item: RawMaterial) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Raw Materials']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Raw Materials']))
       },
       { 
         category: 'Manufacturing', 
-        emissions: parseFloat(sourceData['Manufacturing'].reduce((sum: number, item: ManufacturingProcess) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Manufacturing'].reduce((sum: number, item: ManufacturingProcess) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Manufacturing']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Manufacturing']))
       },
       { 
         category: 'Packaging', 
-        emissions: parseFloat(sourceData['Packaging'].reduce((sum: number, item: PackagingComponent) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Packaging'].reduce((sum: number, item: PackagingComponent) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Packaging']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Packaging']))
       },
       { 
         category: 'Transport', 
-        emissions: parseFloat(sourceData['Transport'].reduce((sum: number, item: TransportActivity) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Transport'].reduce((sum: number, item: TransportActivity) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Transport']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Transport']))
       },
       { 
         category: 'Distribution', 
-        emissions: parseFloat(sourceData['Distribution'].reduce((sum: number, item: DistributionActivity) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Distribution'].reduce((sum: number, item: DistributionActivity) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Distribution']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Distribution']))
       },
       { 
         category: 'Use', 
-        emissions: parseFloat(sourceData['Use'].reduce((sum: number, item: UseAspect) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['Use'].reduce((sum: number, item: UseAspect) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['Use']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['Use']))
       },
       { 
         category: 'End of Life', 
-        emissions: parseFloat(sourceData['End of Life'].reduce((sum: number, item: EndOfLifeMethod) => sum + item.emissions, 0).toFixed(3)),
-        ...calculateCarbonCost(sourceData['End of Life'].reduce((sum: number, item: EndOfLifeMethod) => sum + item.emissions, 0))
+        emissions: calculateEmissions(sourceData['End of Life']),
+        ...calculateCarbonCost(calculateEmissions(sourceData['End of Life']))
       }
     ];
   };
@@ -247,12 +258,12 @@ const CO2Footprint = () => {
       const interval = setInterval(() => {
         const updatedData = {...iotData};
         
-        // Simulate IoT data changes
+        // Simulate IoT data changes with validation
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
             const randomFactor = 0.9 + Math.random() * 0.2; // Random factor between 0.9 and 1.1
-            const newQuantity = item.quantity * randomFactor;
-            const newEmissions = newQuantity * item.emissionFactor;
+            const newQuantity = (item.quantity || 0) * randomFactor;
+            const newEmissions = newQuantity * (item.emissionFactor || 0);
             
             return {
               ...item,
@@ -281,7 +292,7 @@ const CO2Footprint = () => {
   };
 
   const showCostDetails = (item: EmissionDataItem) => {
-    const emissionsKg = item.emissions;
+    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
     const costInEGP = emissionsKg * (CARBON_PRICE_PER_TON / 1000) * EXCHANGE_RATE;
     const costInUSD = emissionsKg * (CARBON_PRICE_PER_TON / 1000);
     
@@ -315,7 +326,7 @@ const CO2Footprint = () => {
     if (!isNaN(newValue)) {
       const updatedData = {...iotData};
       updatedData[stage][index].emissionFactor = newValue;
-      updatedData[stage][index].emissions = updatedData[stage][index].quantity * newValue;
+      updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue;
       setIotData(updatedData);
     }
   };
@@ -333,14 +344,19 @@ const CO2Footprint = () => {
     { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
   ];
 
-  const totalEmissions = useMemo(() => 
-    parseFloat(emissionData.reduce((sum, item) => sum + item.emissions, 0).toFixed(3)), 
-    [emissionData]
-  );
+  const totalEmissions = useMemo(() => {
+    const total = emissionData.reduce((sum, item) => {
+      const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+      return sum + emissions;
+    }, 0);
+    return parseFloat(total.toFixed(3));
+  }, [emissionData]);
 
   const totalCost = useMemo(() => {
-    const total = emissionData.reduce((sum, item) => 
-      sum + (currency === 'EGP' ? item.costEGP : item.costUSD), 0);
+    const total = emissionData.reduce((sum, item) => {
+      const cost = currency === 'EGP' ? item.costEGP : item.costUSD;
+      return sum + (isNaN(cost) || !isFinite(cost) ? 0 : cost);
+    }, 0);
     return parseFloat(total.toFixed(2));
   }, [emissionData, currency]);
 
@@ -356,8 +372,10 @@ const CO2Footprint = () => {
   // Data for charts
   const pieChartData = emissionData.map(item => ({
     name: item.category,
-    value: item.emissions,
-    cost: currency === 'EGP' ? item.costEGP : item.costUSD
+    value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
+    cost: currency === 'EGP' ? 
+      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
+      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
   }));
 
   const barChartData = reductionData;
@@ -434,7 +452,7 @@ const CO2Footprint = () => {
         <Card>
           <Flex direction="column" gap="1" p="4">
             <Text size="2"><strong>Carbon Intensity</strong></Text>
-            <Heading size="7"><strong>{carbonIntensity.toFixed(4)} kg/{currency === 'USD' ? '$' : 'EGP '}K</strong></Heading>
+            <Heading size="7"><strong>{isNaN(carbonIntensity) || !isFinite(carbonIntensity) ? '0.0000' : carbonIntensity.toFixed(4)} kg/{currency === 'USD' ? '$' : 'EGP '}K</strong></Heading>
           </Flex>
         </Card>
         <Card>
@@ -531,7 +549,7 @@ const CO2Footprint = () => {
                       style={{ maxWidth: 100 }}
                     />
                   ) : (
-                    <Text weight="bold">{item.emissions.toFixed(3)}</Text>
+                    <Text weight="bold">{isNaN(item.emissions) ? '0.000' : item.emissions.toFixed(3)}</Text>
                   )}
                 </Table.Cell>
                 <Table.Cell>
@@ -541,12 +559,12 @@ const CO2Footprint = () => {
                     style={{ padding: 0 }}
                   >
                     {currency === 'EGP' 
-                      ? `${item.costEGP} EGP` 
-                      : `${item.costUSD} USD`}
+                      ? `${isNaN(item.costEGP) ? '0.00' : item.costEGP} EGP` 
+                      : `${isNaN(item.costUSD) ? '0.00' : item.costUSD} USD`}
                   </Button>
                 </Table.Cell>
-                <Table.Cell><strong>{((item.emissions / totalEmissions) * 100).toFixed(1)}%</strong></Table.Cell>
-                <Table.Cell><strong>{(item.emissions * 0.8).toFixed(3)}</strong></Table.Cell>
+                <Table.Cell><strong>{isNaN(item.emissions) || totalEmissions === 0 ? '0.0' : ((item.emissions / totalEmissions) * 100).toFixed(1)}%</strong></Table.Cell>
+                <Table.Cell><strong>{(isNaN(item.emissions) ? 0 : item.emissions * 0.8).toFixed(3)}</strong></Table.Cell>
                 <Table.Cell>
                   <Select.Root
                     value={certifications[i]}
@@ -610,28 +628,31 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.material}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={item.quantity * 1000} max={100} style={{ width: 100 }} />
+                          <Progress value={(item.quantity || 0) * 1000} max={100} style={{ width: 100 }} />
                         ) : (
-                          item.quantity.toFixed(4)
+                          (item.quantity || 0).toFixed(4)
                         )}
                       </Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: RawMaterial) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: RawMaterial) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -657,29 +678,32 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.process}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={item.quantity * 10} max={100} style={{ width: 100 }} />
+                          <Progress value={(item.quantity || 0) * 10} max={100} style={{ width: 100 }} />
                         ) : (
-                          item.quantity
+                          item.quantity || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: ManufacturingProcess) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: ManufacturingProcess) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -706,9 +730,9 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.component}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={item.quantity} max={100} style={{ width: 100 }} />
+                          <Progress value={item.quantity || 0} max={100} style={{ width: 100 }} />
                         ) : (
-                          item.quantity
+                          item.quantity || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
@@ -716,20 +740,23 @@ const CO2Footprint = () => {
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={6}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: PackagingComponent) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: PackagingComponent) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -761,27 +788,30 @@ const CO2Footprint = () => {
                             style={{ width: 100 }} 
                           />
                         ) : (
-                          item.distance || item.duration
+                          item.distance || item.duration || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: TransportActivity) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: TransportActivity) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -813,27 +843,30 @@ const CO2Footprint = () => {
                             style={{ width: 100 }} 
                           />
                         ) : (
-                          item.distance || item.duration
+                          item.distance || item.duration || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: DistributionActivity) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: DistributionActivity) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -865,27 +898,30 @@ const CO2Footprint = () => {
                             style={{ width: 100 }} 
                           />
                         ) : (
-                          item.distance || item.duration || item.quantity
+                          item.distance || item.duration || item.quantity || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: UseAspect) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: UseAspect) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -912,32 +948,35 @@ const CO2Footprint = () => {
                       <Table.Cell>
                         {mode === 'iot' ? (
                           <Progress 
-                            value={item.quantity * 100} 
+                            value={(item.quantity || 0) * 100} 
                             max={100} 
                             style={{ width: 100 }} 
                           />
                         ) : (
-                          item.quantity
+                          item.quantity || 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
-                          value={item.emissionFactor.toString()}
+                          value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference}</Table.Cell>
-                      <Table.Cell>{item.emissions.toFixed(3)}</Table.Cell>
+                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                     <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: EndOfLifeMethod) => sum + item.emissions, 0).toFixed(3)}
+                        {currentStageData.reduce((sum: number, item: EndOfLifeMethod) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -965,7 +1004,7 @@ const CO2Footprint = () => {
               <Table.Body>
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
-                  <Table.Cell>{currentCostDetails?.emissions} kg CO₂e</Table.Cell>
+                  <Table.Cell>{isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions} kg CO₂e</Table.Cell>
                 </Table.Row>
                 <Table.Row>
                   <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
@@ -979,7 +1018,7 @@ const CO2Footprint = () => {
                   <Table.RowHeaderCell>Cost in USD</Table.RowHeaderCell>
                   <Table.Cell>
                     <Text weight="bold">
-                      {currentCostDetails?.costUSD} USD
+                      {isNaN(currentCostDetails?.costUSD) ? '0.00' : currentCostDetails?.costUSD} USD
                     </Text>
                   </Table.Cell>
                 </Table.Row>
@@ -987,7 +1026,7 @@ const CO2Footprint = () => {
                   <Table.RowHeaderCell>Cost in EGP</Table.RowHeaderCell>
                   <Table.Cell>
                     <Text weight="bold">
-                      {currentCostDetails?.costEGP} EGP
+                      {isNaN(currentCostDetails?.costEGP) ? '0.00' : currentCostDetails?.costEGP} EGP
                     </Text>
                   </Table.Cell>
                 </Table.Row>
