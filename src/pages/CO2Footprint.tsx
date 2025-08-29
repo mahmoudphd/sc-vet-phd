@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Footprint Dashboard</title>
-    <script src="https://cdn.jsdelivr.net/npm/recharts@2.8.0/umd/Recharts.min.js"></script>
     <style>
         :root {
             --primary-green: #2c974b;
@@ -315,10 +314,6 @@
             border-bottom: 2px solid var(--light-green);
         }
         
-        .recharts-wrapper {
-            margin: 0 auto;
-        }
-        
         .notification {
             position: fixed;
             top: 20px;
@@ -409,12 +404,20 @@
         <div class="charts-container">
             <div class="chart">
                 <h3>Emissions by Category</h3>
-                <div id="pie-chart"></div>
+                <div id="pie-chart">
+                    <p style="text-align: center; padding: 50px; color: #666;">
+                        Pie chart would be rendered here with Recharts
+                    </p>
+                </div>
             </div>
             
             <div class="chart">
                 <h3>Emission Reduction Initiatives</h3>
-                <div id="bar-chart"></div>
+                <div id="bar-chart">
+                    <p style="text-align: center; padding: 50px; color: #666;">
+                        Bar chart would be rendered here with Recharts
+                    </p>
+                </div>
             </div>
         </div>
         
@@ -608,90 +611,6 @@
         const CARBON_PRICE_PER_TON = 50; // USD per ton
         const EXCHANGE_RATE = 50; // EGP per USD
         const KG_PER_TON = 1000; // kg per ton
-
-        // Colors for charts
-        const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
-
-        // Data for charts
-        const pieChartData = [
-            { name: 'Raw Materials', value: 3.625, cost: 9062.50 },
-            { name: 'Manufacturing', value: 1.598, cost: 3995.00 },
-            { name: 'Packaging', value: 0.395, cost: 987.50 },
-            { name: 'Transport', value: 0.600, cost: 1500.00 },
-            { name: 'Distribution', value: 0.058, cost: 145.00 },
-            { name: 'Use', value: 0.130, cost: 325.00 },
-            { name: 'End of Life', value: 0.380, cost: 950.00 }
-        ];
-
-        const barChartData = [
-            { initiative: 'Solar Panel Installation', reduction: 2.5 },
-            { initiative: 'LED Lighting', reduction: 1.2 },
-            { initiative: 'Industrial Waste Recycling', reduction: 1.5 },
-            { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
-        ];
-
-        // Initialize charts
-        function initCharts() {
-            // Pie chart for emissions by category
-            const PieChart = Recharts.PieChart;
-            const Pie = Recharts.Pie;
-            const Cell = Recharts.Cell;
-            const Tooltip = Recharts.Tooltip;
-            const Legend = Recharts.Legend;
-            const ResponsiveContainer = Recharts.ResponsiveContainer;
-
-            ReactDOM.render(
-                React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
-                    React.createElement(PieChart, null,
-                        React.createElement(Pie, {
-                            data: pieChartData,
-                            cx: "50%",
-                            cy: "50%",
-                            outerRadius: 80,
-                            fill: "#8884d8",
-                            dataKey: "value",
-                            label: ({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`
-                        }, pieChartData.map((entry, index) => React.createElement(Cell, { key: `cell-${index}`, fill: COLORS[index % COLORS.length] }))),
-                        React.createElement(Tooltip, {
-                            formatter: (value, name, props) => [
-                                `${value.toFixed(3)} kg CO₂e`,
-                                name,
-                                `EGP ${props.payload.cost.toFixed(2)}`
-                            ]
-                        }),
-                        React.createElement(Legend, null)
-                    )
-                ),
-                document.getElementById('pie-chart')
-            );
-
-            // Bar chart for emission reduction initiatives
-            const BarChart = Recharts.BarChart;
-            const Bar = Recharts.Bar;
-            const XAxis = Recharts.XAxis;
-            const YAxis = Recharts.YAxis;
-            const CartesianGrid = Recharts.CartesianGrid;
-
-            ReactDOM.render(
-                React.createElement(ResponsiveContainer, { width: "100%", height: 300 },
-                    React.createElement(BarChart, { data: barChartData },
-                        React.createElement(CartesianGrid, { strokeDasharray: "3 3" }),
-                        React.createElement(XAxis, { dataKey: "initiative" }),
-                        React.createElement(YAxis, null),
-                        React.createElement(Tooltip, {
-                            formatter: (value) => [`${value} kg CO₂e`, 'Reduction'],
-                            labelFormatter: (label) => label
-                        }),
-                        React.createElement(Legend, null),
-                        React.createElement(Bar, { dataKey: "reduction", name: "Reduction (kg CO₂e)", fill: "#8884d8" })
-                    )
-                ),
-                document.getElementById('bar-chart')
-            );
-        }
-
-        // Initialize charts when page loads
-        window.addEventListener('load', initCharts);
 
         // Simulate IoT data updates
         function simulateIoTData() {
