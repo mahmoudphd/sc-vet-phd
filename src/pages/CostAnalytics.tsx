@@ -1265,7 +1265,7 @@ function CostAnalytics() {
                 </Text>
                 {item.trend && (
                   <Badge color={
-                      item.trend === 'up' ? 'green' : item.trend === 'down' ? 'red' : 'gray'
+                      item.trend === 'up' => 'green' : item.trend === 'down' ? 'red' : 'gray'
                     }
                     style={{
                       borderRadius: '9999px',
@@ -1743,7 +1743,7 @@ function CostAnalytics() {
                                   aria-label="Select solution" 
                                   style={{
                                     backgroundColor: 'white',
-                                    border: '1px solid #e5e7eb',
+                                    border: '1px solid ',
                                     borderRadius: '4px',
                                     padding: '4px 8px',
                                     fontSize: '0.8rem'
@@ -2424,14 +2424,14 @@ function CostAnalytics() {
         <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
       )}
 
-      {/* Charts section */}
+      {/* Charts section - Restored to original sizes */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '300px'
+          height: '350px' // Restored original height
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2448,7 +2448,7 @@ function CostAnalytics() {
                   }))}
                   cx="50%"
                   cy="50%"
-                  outerRadius={70}
+                  outerRadius={80} // Restored original size
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
@@ -2472,7 +2472,7 @@ function CostAnalytics() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '300px'
+          height: '350px' // Restored original height
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2526,7 +2526,7 @@ function CostAnalytics() {
           backgroundColor: 'white',
           padding: '16px',
           gridColumn: '1 / -1',
-          height: '300px'
+          height: '350px' // Restored original height
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2553,7 +2553,7 @@ function CostAnalytics() {
                     (sum, item) => sum + calculateActualCost(item), 0
                   ) - totals[category].budget
                 }))}
-                margin={{ top: 15, right: 25, left: 15, bottom: 5 }}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }} // Restored original margins
               >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="name" />
@@ -2578,7 +2578,7 @@ function CostAnalytics() {
             backgroundColor: '#10b981', 
             color: '#fff', 
             fontWeight: 'bold',
-            padding: '10px 20px',
+            padding: '12px 24px',
             borderRadius: '6px'
           }}
           onClick={handleSubmitToBlockchain}
