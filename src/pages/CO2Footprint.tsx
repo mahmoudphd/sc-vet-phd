@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
-  Box, Button, Card, Flex, Grid, Heading, Progress, Select, Table, Text, TextField,
-  Dialog, Badge
+  Box, Button, Card, Flex, Grid, Heading, Select, Table, Text, TextField,
+  Dialog
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
@@ -151,7 +151,6 @@ const stageData: StageData = {
 
 // Carbon cost calculation function
 const calculateCarbonCost = (emissionsKg: number) => {
-  // Ensure emissionsKg is a valid number
   const validEmissions = isNaN(emissionsKg) || !isFinite(emissionsKg) ? 0 : emissionsKg;
   
   const emissionsTon = validEmissions / KG_PER_TON;
@@ -196,7 +195,6 @@ const CO2Footprint = () => {
   const getEmissionData = (): EmissionDataItem[] => {
     const sourceData = mode === 'iot' ? iotData : stageData;
     
-    // Helper function to safely calculate emissions
     const calculateEmissions = (items: any[]): number => {
       return parseFloat(items.reduce((sum: number, item: any) => {
         const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -251,17 +249,22 @@ const CO2Footprint = () => {
       const interval = setInterval(() => {
         const updatedData = {...iotData};
         
-        // Simulate IoT data changes with very small variations (1-2%)
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
-            const randomFactor = 0.99 + Math.random() * 0.02; // Random factor between 0.99 and 1.01 (1% variation)
+            const randomFactor = 0.99 + Math.random() * 0.02;
             const newQuantity = (item.quantity || 0) * randomFactor;
             
-            // Calculate emissions correctly based on unit
             let newEmissions;
             if (stage === 'Packaging') {
-              // For packaging, we need to divide by 1000 to convert from grams to kg
               newEmissions = newQuantity * (item.emissionFactor || 0) / 1000;
+            } else if (stage === 'Transport' || stage === 'Distribution') {
+              if (item.distance !== undefined) {
+                newEmissions = item.distance * (item.emissionFactor || 0);
+              } else if (item.duration !== undefined) {
+                newEmissions = item.duration * (item.emissionFactor || 0);
+              } else {
+                newEmissions = newQuantity * (item.emissionFactor || 0);
+              }
             } else {
               newEmissions = newQuantity * (item.emissionFactor || 0);
             }
@@ -275,7 +278,7 @@ const CO2Footprint = () => {
         });
         
         setIotData(updatedData);
-      }, 3000); // Update every 3 seconds
+      }, 3000);
 
       return () => clearInterval(interval);
     }
@@ -328,11 +331,17 @@ const CO2Footprint = () => {
       const updatedData = {...iotData};
       updatedData[stage][index].emissionFactor = newValue;
       
-      // Recalculate emissions correctly based on unit
+      const item = updatedData[stage][index];
       if (stage === 'Packaging') {
-        updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue / 1000;
+        item.emissions = (item.quantity || 0) * newValue / 1000;
+      } else if (stage === 'Transport' || stage === 'Distribution') {
+        if (item.distance !== undefined) {
+          item.emissions = (item.distance || 0) * newValue;
+        } else if (item.duration !== undefined) {
+          item.emissions = (item.duration || 0) * newValue;
+        }
       } else {
-        updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue;
+        item.emissions = (item.quantity || 0) * newValue;
       }
       
       setIotData(updatedData);
@@ -382,8 +391,7 @@ const CO2Footprint = () => {
     name: item.category,
     value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
     cost: currency === 'EGP' ? 
-      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
-      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
+      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) :       (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
   }));
 
   const barChartData = reductionData;
@@ -776,14 +784,16 @@ const CO2Footprint = () => {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: TransportActivity, index: number) => (
+                  {currentStageData.map((item: any, index: number) => (
                     <Table.Row key={index}>
                       <Table.Cell>{item.type}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Text weight="bold">{(item.distance || item.duration || 0).toFixed(1)}</Text>
+                          <Text weight="bold">
+                            {item.distance !== undefined ? item.distance.toFixed(1) : item.duration.toFixed(1)}
+                          </Text>
                         ) : (
-                          item.distance || item.duration || 0
+                          item.distance !== undefined ? item.distance : item.duration
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
@@ -802,7 +812,7 @@ const CO2Footprint = () => {
                     <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: TransportActivity) => {
+                        {currentStageData.reduce((sum: number, item: any) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
                         }, 0).toFixed(3)}
@@ -825,14 +835,16 @@ const CO2Footprint = () => {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: DistributionActivity, index: number) => (
+                  {currentStageData.map((item: any, index: number) => (
                     <Table.Row key={index}>
                       <Table.Cell>{item.activity}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Text weight="bold">{(item.distance || item.duration || 0).toFixed(1)}</Text>
+                          <Text weight="bold">
+                            {item.distance !== undefined ? item.distance.toFixed(1) : item.duration.toFixed(1)}
+                          </Text>
                         ) : (
-                          item.distance || item.duration || 0
+                          item.distance !== undefined ? item.distance : item.duration
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
@@ -851,7 +863,7 @@ const CO2Footprint = () => {
                     <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: DistributionActivity) => {
+                        {currentStageData.reduce((sum: number, item: any) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
                         }, 0).toFixed(3)}
@@ -879,7 +891,9 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.aspect}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Text weight="bold">{(item.distance || item.duration || item.quantity || 0).toFixed(1)}</Text>
+                          <Text weight="bold">
+                            {(item.distance || item.duration || item.quantity || 0).toFixed(1)}
+                          </Text>
                         ) : (
                           item.distance || item.duration || item.quantity || 0
                         )}
