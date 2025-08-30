@@ -357,7 +357,7 @@ const CO2Footprint = () => {
       emissions: emissionsKg,
       costEGP: costInEGP.toFixed(2),
       costUSD: costInUSD.toFixed(2),
-      calculation: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} $/ton ÷ 1000) × ${EXCHANGE_RATE}`
+      calculation: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} $/ton ÷ 1000)`
     });
     setCostDetailsOpen(true);
   };
@@ -491,21 +491,24 @@ const CO2Footprint = () => {
 
       {mode === 'iot' && (
         <Card mb="4" style={{ 
-          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)', 
+          background: 'linear-gradient(135deg, #0d47a1 0%, #1976d2 100%)', 
           color: 'white',
-          border: '1px solid #5c6bc0',
-          boxShadow: '0 2px 6px rgba(92, 107, 192, 0.3)'
+          border: '1px solid #42a5f5',
+          boxShadow: '0 4px 12px rgba(13, 71, 161, 0.3)',
+          borderRadius: '12px',
+          overflow: 'hidden'
         }}>
-          <Flex p="3" align="center" gap="2">
+          <Flex p="4" align="center" gap="3">
             <Box style={{ 
               background: 'rgba(255, 255, 255, 0.2)', 
-              padding: '8px', 
-              borderRadius: '8px',
+              padding: '12px', 
+              borderRadius: '10px',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17 6H7C4.24 6 2 8.24 2 11C2 13.76 4.24 16 7 16H17C19.76 16 22 13.76 22 11C22 8.24 19.76 6 17 6Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M17 16V18C17 19.66 15.66 21 14 21H10C8.34 21 7 19.66 7 18V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M7 6V5C7 3.34 8.34 2 10 2H14C15.66 2 17 3.34 17 5V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -515,23 +518,28 @@ const CO2Footprint = () => {
               </svg>
             </Box>
             <Box style={{ flex: 1 }}>
-              <Flex align="center" gap="1" mb="1">
-                <Badge color="blue" variant="solid" highContrast size="1">
+              <Flex align="center" gap="2" mb="1">
+                <Badge color="blue" variant="solid" highContrast size="2" style={{ 
+                  background: '#4fc3f7', 
+                  color: '#01579b',
+                  fontWeight: 'bold'
+                }}>
                   LIVE
                 </Badge>
-                <Heading size="3" style={{ margin: 0 }}>IoT Mode Active</Heading>
+                <Heading size="5" style={{ margin: 0, fontWeight: '700' }}>IoT Mode Active</Heading>
               </Flex>
-              <Text size="1" style={{ opacity: 0.9 }}>
-                Real-time data collection from sensors. Quantities update every 3 seconds.
+              <Text size="2" style={{ opacity: 0.9, lineHeight: '1.4' }}>
+                Real-time data collection from sensors. Quantities update every 3 seconds with simulated variations.
               </Text>
             </Box>
             <Box style={{ 
-              background: 'rgba(255, 255, 255, 0.1)', 
-              padding: '6px', 
-              borderRadius: '6px',
-              animation: 'pulse 2s infinite'
+              background: 'rgba(255, 255, 255, 0.15)', 
+              padding: '8px', 
+              borderRadius: '8px',
+              animation: 'pulse 2s infinite',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
             }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 8V12L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="white" strokeWidth="2"/>
               </svg>
@@ -1130,7 +1138,10 @@ const CO2Footprint = () => {
                 </Table.Row>
                 <Table.Row>
                   <Table.RowHeaderCell>Calculation</Table.RowHeaderCell>
-                  <Table.Cell>{currentCostDetails?.calculation}</Table.Cell>
+                  <Table.Cell>
+                    {currentCostDetails?.emissions.toFixed(3)} kg CO₂e × ({CARBON_PRICE_PER_TON} $/ton ÷ 1000)
+                    {currency === 'EGP' && ` × ${EXCHANGE_RATE}`}
+                  </Table.Cell>
                 </Table.Row>
                 <Table.Row>
                   <Table.RowHeaderCell>Cost (US Dollars)</Table.RowHeaderCell>
