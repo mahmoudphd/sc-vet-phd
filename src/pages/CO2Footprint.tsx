@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Select, Table, Text, TextField,
-  Dialog
+  Dialog, Badge
 } from '@radix-ui/themes';
 import {
   PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
@@ -493,16 +493,50 @@ const CO2Footprint = () => {
       </Flex>
 
       {mode === 'iot' && (
-        <Card mb="5" style={{ background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)', color: 'white' }}>
+        <Card mb="5" style={{ 
+          background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)', 
+          color: 'white',
+          border: '1px solid #5c6bc0',
+          boxShadow: '0 4px 12px rgba(92, 107, 192, 0.3)'
+        }}>
           <Flex p="4" align="center" gap="3">
-            <Box style={{ flex: 1 }}>
-              <Heading size="5">IoT Mode Active</Heading>
-              <Text size="2">Real-time data collection from sensors. Quantities are automatically updated</Text>
+            <Box style={{ 
+              background: 'rgba(255, 255, 255, 0.2)', 
+              padding: '12px', 
+              borderRadius: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M17 6H7C4.24 6 2 8.24 2 11C2 13.76 4.24 16 7 16H17C19.76 16 22 13.76 22 11C22 8.24 19.76 6 17 6Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M17 16V18C17 19.66 15.66 21 14 21H10C8.34 21 7 19.66 7 18V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M7 6V5C7 3.34 8.34 2 10 2H14C15.66 2 17 3.34 17 5V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 11.5V11.51" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M8.5 11.5V11.51" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M15.5 11.5V11.51" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </Box>
-            <Box style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '8px', borderRadius: '50%' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M2 2H4V4H2V2ZM4 4H6V6H4V4ZM6 6H8V8H6V6ZM8 8H10V10H8V8ZM10 10H12V12H10V10ZM12 12H14V14H12V12ZM14 14H16V16H14V14ZM16 16H18V18H16V16ZM18 18H20V20H18V18ZM20 20H22V22H20V20Z" fill="currentColor"/>
-                <path d="M2 14H4V16H2V14ZM4 16H6V18H4V16ZM6 18H8V20H6V18ZM8 20H10V22H8V20Z" fill="currentColor"/>
+            <Box style={{ flex: 1 }}>
+              <Flex align="center" gap="2" mb="2">
+                <Badge color="blue" variant="solid" highContrast>
+                  LIVE
+                </Badge>
+                <Heading size="5" style={{ margin: 0 }}>IoT Mode Active</Heading>
+              </Flex>
+              <Text size="2" style={{ opacity: 0.9 }}>
+                Real-time data collection from sensors. Quantities are automatically updated every 3 seconds.
+              </Text>
+            </Box>
+            <Box style={{ 
+              background: 'rgba(255, 255, 255, 0.1)', 
+              padding: '8px', 
+              borderRadius: '8px',
+              animation: 'pulse 2s infinite'
+            }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 8V12L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="white" strokeWidth="2"/>
               </svg>
             </Box>
           </Flex>
@@ -682,6 +716,11 @@ const CO2Footprint = () => {
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
           <Dialog.Description mb="4">
             Detailed breakdown of emissions for {openStage} stage (per unit)
+            {mode === 'iot' && (
+              <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
+                Live Data
+              </Badge>
+            )}
           </Dialog.Description>
           
           <Box style={{ overflowY: 'auto', maxHeight: '70vh' }}>
@@ -834,47 +873,81 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Activity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance / Duration</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: any, index: number) => (
-                    <Table.Row key={index}>
-                      <Table.Cell>{item.type}</Table.Cell>
-                      <Table.Cell>
-                        {mode === 'iot' ? (
-                          <Text weight="bold">
-                            {item.distance !== undefined ? item.distance.toFixed(1) : item.duration.toFixed(1)}
-                          </Text>
-                        ) : (
-                          item.distance !== undefined ? item.distance : item.duration
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
-                      <Table.Cell>
-                        <TextField.Root
-                          size="1"
-                          value={(item.emissionFactor || 0).toString()}
-                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
-                    </Table.Row>
-                  ))}
-                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
+                  <Table.Row>
+                    <Table.Cell>Refrigerated Storage</Table.Cell>
                     <Table.Cell>
-                      <strong>
-                        {currentStageData.reduce((sum: number, item: any) => {
-                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-                          return sum + emissions;
-                        }, 0).toFixed(6)}
-                      </strong>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">7</Text>
+                      ) : (
+                        7
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>kg·day</Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Transport[0].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Transport', 0, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.0525</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Local Transport</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">50</Text>
+                      ) : (
+                        50
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>tonne·km</Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Transport[1].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Transport', 1, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.0031</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Long-Distance Transport</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">300</Text>
+                      ) : (
+                        300
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>tonne·km</Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Transport[2].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Transport', 2, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.0186</Table.Cell>
+                  </Table.Row>
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total (per unit)</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>0.0742</strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -886,46 +959,76 @@ const CO2Footprint = () => {
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Activity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance / Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: any, index: number) => (
-                    <Table.Row key={index}>
-                      <Table.Cell>{item.activity}</Table.Cell>
-                      <Table.Cell>
-                        {mode === 'iot' ? (
-                          <Text weight="bold">
-                            {item.distance !== undefined ? item.distance.toFixed(1) : item.duration.toFixed(1)}
-                          </Text>
-                        ) : (
-                          item.distance !== undefined ? item.distance : item.duration
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
-                      <Table.Cell>
-                        <TextField.Root
-                          size="1"
-                          value={(item.emissionFactor || 0).toString()}
-                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
-                    </Table.Row>
-                  ))}
-                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
+                  <Table.Row>
+                    <Table.Cell>Warehouse Storage</Table.Cell>
                     <Table.Cell>
-                      <strong>
-                        {currentStageData.reduce((sum: number, item: any) => {
-                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-                          return sum + emissions;
-                        }, 0).toFixed(6)}
-                      </strong>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">3 days</Text>
+                      ) : (
+                        "3 days"
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Distribution[0].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Distribution', 0, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.03</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Last-Mile Delivery</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">15 km</Text>
+                      ) : (
+                        "15 km"
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Distribution[1].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Distribution', 1, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.0027</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Retail Storage</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">2 days</Text>
+                      ) : (
+                        "2 days"
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Distribution[2].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Distribution', 2, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.01</Table.Cell>
+                  </Table.Row>
+                  <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                    <Table.RowHeaderCell colSpan={3}><strong>Total (per unit)</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>0.0427</strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -937,45 +1040,62 @@ const CO2Footprint = () => {
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Aspect</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance/Duration/Quantity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Distance / Duration / Qty</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: UseAspect, index: number) => (
-                    <Table.Row key={index}>
-                      <Table.Cell>{item.aspect}</Table.Cell>
-                      <Table.Cell>
-                        {mode === 'iot' ? (
-                          <Text weight="bold">
-                            {(item.distance || item.duration || item.quantity || 0).toFixed(1)}
-                          </Text>
-                        ) : (
-                          item.distance || item.duration || item.quantity || 0
-                        )}
-                      </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
-                      <Table.Cell>
-                        <TextField.Root
-                          size="1"
-                          value={(item.emissionFactor || 0).toString()}
-                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
-                        />
-                      </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
-                    </Table.Row>
-                  ))}
+                  <Table.Row>
+                    <Table.Cell>Consumer Transport</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">5 km (1 trip / 2 units)</Text>
+                      ) : (
+                        "5 km (1 trip / 2 units)"
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Use[0].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Use', 0, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.500</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Product Refrigeration</Table.Cell>
+                    <Table.Cell>
+                      {mode === 'iot' ? (
+                        <Text weight="bold">14 days</Text>
+                      ) : (
+                        "14 days"
+                      )}
+                    </Table.Cell>
+                    <Table.Cell>
+                      <TextField.Root
+                        size="1"
+                        value={iotData.Use[1].emissionFactor.toString()}
+                        onChange={(e) => handleEmissionFactorChange('Use', 1, e.target.value)}
+                        style={{ maxWidth: 120 }}
+                        placeholder="Emission Factor"
+                      />
+                    </Table.Cell>
+                    <Table.Cell>0.10528</Table.Cell>
+                  </Table.Row>
+                  <Table.Row>
+                    <Table.Cell>Product Preparation</Table.Cell>
+                    <Table.Cell>—</Table.Cell>
+                    <Table.Cell>Not Applicable</Table.Cell>
+                    <Table.Cell>0.000</Table.Cell>
+                  </Table.Row>
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>                    <Table.Cell>
-                      <strong>
-                        {currentStageData.reduce((sum: number, item: UseAspect) => {
-                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-                          return sum + emissions;
-                        }, 0).toFixed(6)}
-                      </strong>
+                    <Table.RowHeaderCell colSpan={3}><strong>Total (per unit)</strong></Table.RowHeaderCell>
+                    <Table.Cell>
+                      <strong>0.6053</strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
