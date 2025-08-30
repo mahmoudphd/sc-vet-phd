@@ -896,7 +896,7 @@ const CO2Footprint = () => {
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: any) => {
-                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions)                          return sum + emissions;
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                         }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
