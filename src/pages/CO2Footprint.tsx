@@ -129,19 +129,73 @@ const stageData: StageData = {
     { component: 'Adhesive', quantity: 3.0, unit: 'g', material: 'Chemical', emissionFactor: 2.5, emissions: 3.0 * 2.5 / 1000 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: (7 * 0.03) / BATCH_SIZE },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: (50 * 0.18) / BATCH_SIZE },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: (300 * 0.10) / BATCH_SIZE },
+    { 
+      type: 'Refrigerated Storage', 
+      duration: 7, 
+      unit: 'days', 
+      emissionFactor: 0.0075, 
+      emissions: (7 * 0.0075) / BATCH_SIZE 
+    },
+    { 
+      type: 'Local Transport', 
+      distance: 50, 
+      unit: 'km', 
+      emissionFactor: 0.062, 
+      emissions: (50 * 0.062) / BATCH_SIZE 
+    },
+    { 
+      type: 'Long-Distance Transport', 
+      distance: 300, 
+      unit: 'km', 
+      emissionFactor: 0.062, 
+      emissions: (300 * 0.062) / BATCH_SIZE 
+    },
   ],
   'Distribution': [
-    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: (3 * 0.01) / BATCH_SIZE },
-    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: (15 * 0.12) / BATCH_SIZE },
-    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: (2 * 0.005) / BATCH_SIZE },
+    { 
+      activity: 'Warehouse Storage', 
+      duration: 3, 
+      unit: 'days', 
+      emissionFactor: 0.01, 
+      emissions: (3 * 0.01) / BATCH_SIZE 
+    },
+    { 
+      activity: 'Last-Mile Delivery', 
+      distance: 15, 
+      unit: 'km', 
+      emissionFactor: 0.18, 
+      emissions: (15 * 0.18) / BATCH_SIZE 
+    },
+    { 
+      activity: 'Retail Storage', 
+      duration: 2, 
+      unit: 'days', 
+      emissionFactor: 0.005, 
+      emissions: (2 * 0.005) / BATCH_SIZE 
+    },
   ],
   'Use': [
-    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: (5 * 0.2) / BATCH_SIZE },
-    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: (14 * 0.05) / BATCH_SIZE },
-    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: (0.1 * 0.5) / BATCH_SIZE },
+    { 
+      aspect: 'Consumer Transportation', 
+      distance: 5, 
+      unit: 'km', 
+      emissionFactor: 0.2, 
+      emissions: (5 * 0.2) / BATCH_SIZE 
+    },
+    { 
+      aspect: 'Product Refrigeration', 
+      duration: 14, 
+      unit: 'days', 
+      emissionFactor: 0.00752, 
+      emissions: (14 * 0.00752) / BATCH_SIZE 
+    },
+    { 
+      aspect: 'Product Preparation', 
+      quantity: 0, 
+      unit: 'kWh', 
+      emissionFactor: 0, 
+      emissions: 0 
+    },
   ],
   'End of Life': [
     { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, emissions: 0.1 * 3.5 },
@@ -915,8 +969,7 @@ const CO2Footprint = () => {
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
-                    <Table.Cell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>                    <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: UseAspect) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
