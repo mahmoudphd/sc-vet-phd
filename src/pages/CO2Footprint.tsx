@@ -249,21 +249,48 @@ const CO2Footprint = () => {
       const interval = setInterval(() => {
         const updatedData = {...iotData};
         
+        // Simulate IoT data changes with very small variations (1-2%)
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
-            const randomFactor = 0.99 + Math.random() * 0.02;
-            const newQuantity = (item.quantity || 0) * randomFactor;
+            const randomFactor = 0.99 + Math.random() * 0.02; // Random factor between 0.99 and 1.01 (1% variation)
             
+            let newQuantity, newDistance, newDuration;
+            
+            if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
+              // For transport, distribution, and use stages, update distance/duration/quantity with minimal variation
+              if (item.distance !== undefined) {
+                newDistance = (item.distance || 0) * randomFactor;
+                newDuration = item.duration; // Keep duration unchanged
+                newQuantity = item.quantity; // Keep quantity unchanged
+              } else if (item.duration !== undefined) {
+                newDuration = (item.duration || 0) * randomFactor;
+                newDistance = item.distance; // Keep distance unchanged
+                newQuantity = item.quantity; // Keep quantity unchanged
+              } else if (item.quantity !== undefined) {
+                newQuantity = (item.quantity || 0) * randomFactor;
+                newDistance = item.distance; // Keep distance unchanged
+                newDuration = item.duration; // Keep duration unchanged
+              } else {
+                newQuantity = (item.quantity || 0) * randomFactor;
+              }
+            } else {
+              newQuantity = (item.quantity || 0) * randomFactor;
+            }
+            
+            // Calculate emissions correctly based on unit and type
             let newEmissions;
             if (stage === 'Packaging') {
+              // For packaging, we need to divide by 1000 to convert from grams to kg
               newEmissions = newQuantity * (item.emissionFactor || 0) / 1000;
-            } else if (stage === 'Transport' || stage === 'Distribution') {
-              if (item.distance !== undefined) {
-                newEmissions = item.distance * (item.emissionFactor || 0);
-              } else if (item.duration !== undefined) {
-                newEmissions = item.duration * (item.emissionFactor || 0);
-              } else {
+            } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
+              if (newDistance !== undefined) {
+                newEmissions = newDistance * (item.emissionFactor || 0);
+              } else if (newDuration !== undefined) {
+                newEmissions = newDuration * (item.emissionFactor || 0);
+              } else if (newQuantity !== undefined) {
                 newEmissions = newQuantity * (item.emissionFactor || 0);
+              } else {
+                newEmissions = item.emissions;
               }
             } else {
               newEmissions = newQuantity * (item.emissionFactor || 0);
@@ -271,14 +298,16 @@ const CO2Footprint = () => {
             
             return {
               ...item,
-              quantity: parseFloat(newQuantity.toFixed(4)),
+              quantity: newQuantity !== undefined ? parseFloat(newQuantity.toFixed(4)) : item.quantity,
+              distance: newDistance !== undefined ? parseFloat(newDistance.toFixed(4)) : item.distance,
+              duration: newDuration !== undefined ? parseFloat(newDuration.toFixed(4)) : item.duration,
               emissions: parseFloat(newEmissions.toFixed(3))
             };
           });
         });
         
         setIotData(updatedData);
-      }, 3000);
+      }, 3000); // Update every 3 seconds
 
       return () => clearInterval(interval);
     }
@@ -334,11 +363,13 @@ const CO2Footprint = () => {
       const item = updatedData[stage][index];
       if (stage === 'Packaging') {
         item.emissions = (item.quantity || 0) * newValue / 1000;
-      } else if (stage === 'Transport' || stage === 'Distribution') {
+      } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
         if (item.distance !== undefined) {
           item.emissions = (item.distance || 0) * newValue;
         } else if (item.duration !== undefined) {
           item.emissions = (item.duration || 0) * newValue;
+        } else if (item.quantity !== undefined) {
+          item.emissions = (item.quantity || 0) * newValue;
         }
       } else {
         item.emissions = (item.quantity || 0) * newValue;
@@ -391,7 +422,8 @@ const CO2Footprint = () => {
     name: item.category,
     value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
     cost: currency === 'EGP' ? 
-      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) :       (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
+      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
+      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
   }));
 
   const barChartData = reductionData;
@@ -864,8 +896,7 @@ const CO2Footprint = () => {
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: any) => {
-                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-                          return sum + emissions;
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions)                          return sum + emissions;
                         }, 0).toFixed(3)}
                       </strong>
                     </Table.Cell>
@@ -886,16 +917,20 @@ const CO2Footprint = () => {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {currentStageData.map((item: UseAspect, index: number) => (
+                  {currentStageData.map((item: any, index: number) => (
                     <Table.Row key={index}>
                       <Table.Cell>{item.aspect}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
                           <Text weight="bold">
-                            {(item.distance || item.duration || item.quantity || 0).toFixed(1)}
+                            {item.distance !== undefined ? item.distance.toFixed(1) : 
+                             item.duration !== undefined ? item.duration.toFixed(1) : 
+                             item.quantity !== undefined ? item.quantity.toFixed(3) : 0}
                           </Text>
                         ) : (
-                          item.distance || item.duration || item.quantity || 0
+                          item.distance !== undefined ? item.distance : 
+                          item.duration !== undefined ? item.duration : 
+                          item.quantity !== undefined ? item.quantity : 0
                         )}
                       </Table.Cell>
                       <Table.Cell>{item.unit}</Table.Cell>
@@ -914,7 +949,7 @@ const CO2Footprint = () => {
                     <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
-                        {currentStageData.reduce((sum: number, item: UseAspect) => {
+                        {currentStageData.reduce((sum: number, item: any) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
                         }, 0).toFixed(3)}
@@ -942,7 +977,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.method}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Text weight="bold">{(item.quantity || 0).toFixed(2)}</Text>
+                          <Text weight="bold">{(item.quantity || 0).toFixed(3)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
