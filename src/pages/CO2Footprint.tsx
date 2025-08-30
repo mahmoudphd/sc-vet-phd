@@ -21,7 +21,6 @@ interface RawMaterial {
   quantity: number;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface ManufacturingProcess {
@@ -30,7 +29,6 @@ interface ManufacturingProcess {
   unit: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface PackagingComponent {
@@ -40,7 +38,6 @@ interface PackagingComponent {
   material: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface TransportActivity {
@@ -50,7 +47,6 @@ interface TransportActivity {
   unit: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface DistributionActivity {
@@ -60,7 +56,6 @@ interface DistributionActivity {
   unit: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface UseAspect {
@@ -71,7 +66,6 @@ interface UseAspect {
   unit: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 interface EndOfLifeMethod {
@@ -80,7 +74,6 @@ interface EndOfLifeMethod {
   unit: string;
   emissionFactor: number;
   emissions: number;
-  reference?: string;
 }
 
 // Define the stage data with index signature
@@ -98,61 +91,61 @@ interface StageData {
 // Original data structure with grams where applicable
 const stageData: StageData = {
   'Raw Materials': [
-    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, reference: '[IPCC 2023]', emissions: 0.085 },
-    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, reference: '[Ecoinvent 3.8]', emissions: 0.552 },
-    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
-    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, reference: '[US LCI Database]', emissions: 0.780 },
-    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, reference: '[DEFRA 2022]', emissions: 0.260 },
-    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, reference: '[IPCC 2023]', emissions: 0.132 },
-    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, reference: '[FAO STAT 2023]', emissions: 1.260 },
-    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, reference: '[FAO STAT 2023]', emissions: 0.380 },
-    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, reference: '[LCA Food DK]', emissions: 0.138 },
-    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, reference: '[EPD International]', emissions: 0.080 },
-    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, reference: '[Agri-footprint 5.0]', emissions: 0.120 },
-    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, reference: '[USDA LCA Commons]', emissions: 0.288 },
-    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, reference: '[Egyptian LCA 2024]', emissions: 2.625 },
-    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, reference: '[EU PEF Guide]', emissions: 0.220 },
-    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, reference: '[World Food LCA]', emissions: 0.475 },
-    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, reference: '[USDA ARS]', emissions: 0.560 },
-    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, reference: '[Chinese LCA Database]', emissions: 1.350 },
-    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, reference: '[Water Footprint]', emissions: 0.029 },
+    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, emissions: 0.085 },
+    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, emissions: 0.552 },
+    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, emissions: 0.120 },
+    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, emissions: 0.780 },
+    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, emissions: 0.260 },
+    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, emissions: 0.132 },
+    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, emissions: 1.260 },
+    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, emissions: 0.380 },
+    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, emissions: 0.138 },
+    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, emissions: 0.080 },
+    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, emissions: 0.120 },
+    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, emissions: 0.288 },
+    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, emissions: 2.625 },
+    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, emissions: 0.220 },
+    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, emissions: 0.475 },
+    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, emissions: 0.560 },
+    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, emissions: 1.350 },
+    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, emissions: 0.029 },
   ],
   'Manufacturing': [
-    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, reference: '[Pharma LCA 2023]', emissions: 0.050 },
-    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, reference: '[WHO GMP 2022]', emissions: 0.009 },
-    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, reference: '[CAPMAS 2023]', emissions: 0.275 },
-    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[ISO 14044]', emissions: 0.165 },
-    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, reference: '[USP Sterilization]', emissions: 0.825 },
-    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, reference: '[EgyPack 2023]', emissions: 0.110 },
-    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, reference: '[FDA Guidelines]', emissions: 0.165 },
+    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, emissions: 0.050 },
+    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, emissions: 0.009 },
+    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.275 },
+    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.165 },
+    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.825 },
+    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, emissions: 0.110 },
+    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.165 },
   ],
   'Packaging': [
-    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, reference: '[EgyPack 2023]', emissions: 0.210 },
-    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, reference: '[WorldSteel 2023]', emissions: 0.105 },
-    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, reference: '[IPCC 2023]', emissions: 0.018 },
-    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, reference: '[EEAA 2023]', emissions: 0.0045 },
-    { component: 'Secondary Packaging', quantity: 50, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, reference: '[EgyPack 2023]', emissions: 0.050 },
-    { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, reference: '[CAPMAS 2023]', emissions: 0.0075 },
+    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, emissions: 0.210 },
+    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, emissions: 0.105 },
+    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, emissions: 0.018 },
+    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, emissions: 0.0045 },
+    { component: 'Secondary Packaging', quantity: 50, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, emissions: 0.050 },
+    { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, emissions: 0.0075 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, reference: '[Egyptian Cold Chain 2023]', emissions: 0.210 },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, reference: '[CAPMAS 2023]', emissions: 0.090 },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, reference: '[EgyLogistics 2023]', emissions: 0.300 },
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: 0.210 },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: 0.090 },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: 0.300 },
   ],
   'Distribution': [
-    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, reference: '[EgyLogistics 2023]', emissions: 0.030 },
-    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, reference: '[Cairo Air Quality]', emissions: 0.018 },
-    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, reference: '[Retail LCA 2023]', emissions: 0.010 },
+    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: 0.030 },
+    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: 0.018 },
+    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: 0.010 },
   ],
   'Use': [
-    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, reference: '[WB 2023]', emissions: 0.010 },
-    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, reference: '[UNEP 2023]', emissions: 0.070 },
-    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, reference: '[Household Energy]', emissions: 0.050 },
+    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: 0.010 },
+    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: 0.070 },
+    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: 0.050 },
   ],
   'End of Life': [
-    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, reference: '[Egyptian EPA 2023]', emissions: 0.350 },
-    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, reference: '[EgyWaste 2023]', emissions: -0.015 },
-    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, reference: '[Cairo Waste Authority]', emissions: 0.045 },
+    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, emissions: 0.350 },
+    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, emissions: -0.015 },
+    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, emissions: 0.045 },
   ],
 };
 
@@ -185,7 +178,7 @@ interface EmissionDataItem {
 const CO2Footprint = () => {
   // State management
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
-  const [selectedProduct, setSelectedProduct] = useState('Poultry Product 1');
+  const [selectedProduct, setSelectedProduct] = useState('Poultry Drug A');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto' | 'iot'>('iot');
   const [openStage, setOpenStage] = useState<string | null>(null);
@@ -252,16 +245,16 @@ const CO2Footprint = () => {
 
   const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(getEmissionData());
 
-  // Simulate IoT data updates
+  // Simulate IoT data updates with minimal variations
   useEffect(() => {
     if (mode === 'iot') {
       const interval = setInterval(() => {
         const updatedData = {...iotData};
         
-        // Simulate IoT data changes with validation
+        // Simulate IoT data changes with very small variations (1-2%)
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
-            const randomFactor = 0.9 + Math.random() * 0.2; // Random factor between 0.9 and 1.1
+            const randomFactor = 0.99 + Math.random() * 0.02; // Random factor between 0.99 and 1.01 (1% variation)
             const newQuantity = (item.quantity || 0) * randomFactor;
             const newEmissions = newQuantity * (item.emissionFactor || 0);
             
@@ -400,9 +393,9 @@ const CO2Footprint = () => {
             <Select.Root value={selectedProduct} onValueChange={val => setSelectedProduct(val)}>
               <Select.Trigger />
               <Select.Content>
-                <Select.Item value="Poultry Product 1">Poultry Product 1</Select.Item>
-                <Select.Item value="Poultry Product 2">Poultry Product 2</Select.Item>
-                <Select.Item value="Poultry Product 3">Poultry Product 3</Select.Item>
+                <Select.Item value="Poultry Drug A">Poultry Drug A</Select.Item>
+                <Select.Item value="Poultry Drug B">Poultry Drug B</Select.Item>
+                <Select.Item value="Poultry Drug C">Poultry Drug C</Select.Item>
               </Select.Content>
             </Select.Root>
           </Box>
@@ -423,7 +416,7 @@ const CO2Footprint = () => {
           <Flex p="4" align="center" gap="3">
             <Box style={{ flex: 1 }}>
               <Heading size="5">IoT Mode Active</Heading>
-              <Text size="2">Real-time data collection from sensors. Quantities are automatically updated.</Text>
+              <Text size="2">Real-time data collection from sensors. Quantities are automatically updated with minimal variations.</Text>
             </Box>
             <Box style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '8px', borderRadius: '50%' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -618,7 +611,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Quantity (kg)</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/kg)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -628,7 +620,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.material}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={(item.quantity || 0) * 1000} max={100} style={{ width: 100 }} />
+                          <Text weight="bold">{(item.quantity || 0).toFixed(4)}</Text>
                         ) : (
                           (item.quantity || 0).toFixed(4)
                         )}
@@ -641,12 +633,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={3}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: RawMaterial) => {
@@ -668,7 +659,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/unit)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -678,7 +668,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.process}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={(item.quantity || 0) * 10} max={100} style={{ width: 100 }} />
+                          <Text weight="bold">{(item.quantity || 0).toFixed(2)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
@@ -692,12 +682,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: ManufacturingProcess) => {
@@ -720,7 +709,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/g)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -730,7 +718,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.component}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress value={item.quantity || 0} max={100} style={{ width: 100 }} />
+                          <Text weight="bold">{(item.quantity || 0).toFixed(1)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
@@ -745,12 +733,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={6}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: PackagingComponent) => {
@@ -772,7 +759,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -782,11 +768,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.type}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress 
-                            value={item.distance || item.duration || 0} 
-                            max={item.type === 'Refrigerated Storage' ? 10 : (item.type === 'Local Transport' ? 100 : 500)} 
-                            style={{ width: 100 }} 
-                          />
+                          <Text weight="bold">{(item.distance || item.duration || 0).toFixed(1)}</Text>
                         ) : (
                           item.distance || item.duration || 0
                         )}
@@ -800,12 +782,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: TransportActivity) => {
@@ -827,7 +808,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Distance/Duration</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -837,11 +817,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.activity}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress 
-                            value={item.distance || item.duration || 0} 
-                            max={item.activity === 'Warehouse Storage' ? 5 : (item.activity === 'Last-Mile Delivery' ? 20 : 5)} 
-                            style={{ width: 100 }} 
-                          />
+                          <Text weight="bold">{(item.distance || item.duration || 0).toFixed(1)}</Text>
                         ) : (
                           item.distance || item.duration || 0
                         )}
@@ -855,12 +831,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: DistributionActivity) => {
@@ -882,7 +857,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Distance/Duration/Quantity</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -892,11 +866,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.aspect}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress 
-                            value={item.distance || item.duration || item.quantity || 0} 
-                            max={item.aspect === 'Consumer Transportation' ? 10 : (item.aspect === 'Product Refrigeration' ? 20 : 1)} 
-                            style={{ width: 100 }} 
-                          />
+                          <Text weight="bold">{(item.distance || item.duration || item.quantity || 0).toFixed(1)}</Text>
                         ) : (
                           item.distance || item.duration || item.quantity || 0
                         )}
@@ -910,12 +880,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: UseAspect) => {
@@ -937,7 +906,6 @@ const CO2Footprint = () => {
                     <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Reference</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
@@ -947,11 +915,7 @@ const CO2Footprint = () => {
                       <Table.Cell>{item.method}</Table.Cell>
                       <Table.Cell>
                         {mode === 'iot' ? (
-                          <Progress 
-                            value={(item.quantity || 0) * 100} 
-                            max={100} 
-                            style={{ width: 100 }} 
-                          />
+                          <Text weight="bold">{(item.quantity || 0).toFixed(2)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
@@ -965,12 +929,11 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{item.reference || 'N/A'}</Table.Cell>
                       <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: EndOfLifeMethod) => {
