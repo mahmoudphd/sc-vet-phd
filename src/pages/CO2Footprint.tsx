@@ -90,7 +90,7 @@ interface StageData {
 }
 
 // Original data structure with corrected calculations
-const stageData: StageData = {
+const initialStageData: StageData = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, emissions: 0.001 * 85 },
     { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, emissions: 0.006 * 92 },
@@ -239,7 +239,7 @@ const CO2Footprint = () => {
   const [currentStageData, setCurrentStageData] = useState<any[]>([]);
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
   const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
-  const [iotData, setIotData] = useState<StageData>(stageData);
+  const [stageData, setStageData] = useState<StageData>(initialStageData);
 
   // Set browser tab title
   useEffect(() => {
@@ -248,8 +248,6 @@ const CO2Footprint = () => {
 
   // Initialize data with calculated carbon costs
   const getEmissionData = (): EmissionDataItem[] => {
-    const sourceData = mode === 'iot' ? iotData : stageData;
-    
     const calculateEmissions = (items: any[]): number => {
       return parseFloat(items.reduce((sum: number, item: any) => {
         const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -260,38 +258,38 @@ const CO2Footprint = () => {
     return [
       { 
         category: 'Raw Materials', 
-        emissions: calculateEmissions(sourceData['Raw Materials']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Raw Materials']))
+        emissions: calculateEmissions(stageData['Raw Materials']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Raw Materials']))
       },
       { 
         category: 'Manufacturing', 
-        emissions: calculateEmissions(sourceData['Manufacturing']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Manufacturing']))
+        emissions: calculateEmissions(stageData['Manufacturing']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Manufacturing']))
       },
       { 
         category: 'Packaging', 
-        emissions: calculateEmissions(sourceData['Packaging']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Packaging']))
+        emissions: calculateEmissions(stageData['Packaging']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Packaging']))
       },
       { 
         category: 'Transport', 
-        emissions: calculateEmissions(sourceData['Transport']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Transport']))
+        emissions: calculateEmissions(stageData['Transport']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Transport']))
       },
       { 
         category: 'Distribution', 
-        emissions: calculateEmissions(sourceData['Distribution']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Distribution']))
+        emissions: calculateEmissions(stageData['Distribution']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Distribution']))
       },
       { 
         category: 'Use', 
-        emissions: calculateEmissions(sourceData['Use']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['Use']))
+        emissions: calculateEmissions(stageData['Use']),
+        ...calculateCarbonCost(calculateEmissions(stageData['Use']))
       },
       { 
         category: 'End of Life', 
-        emissions: calculateEmissions(sourceData['End of Life']),
-        ...calculateCarbonCost(calculateEmissions(sourceData['End of Life']))
+        emissions: calculateEmissions(stageData['End of Life']),
+        ...calculateCarbonCost(calculateEmissions(stageData['End of Life']))
       }
     ];
   };
@@ -302,7 +300,7 @@ const CO2Footprint = () => {
   useEffect(() => {
     if (mode === 'iot') {
       const interval = setInterval(() => {
-        const updatedData = {...iotData};
+        const updatedData = {...stageData};
         
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
@@ -332,21 +330,20 @@ const CO2Footprint = () => {
           });
         });
         
-        setIotData(updatedData);
+        setStageData(updatedData);
       }, 3000);
 
       return () => clearInterval(interval);
     }
-  }, [mode, iotData]);
+  }, [mode, stageData]);
 
-  // Update emission data when mode or iotData changes
+  // Update emission data when mode or stageData changes
   useEffect(() => {
     setEmissionData(getEmissionData());
-  }, [mode, iotData]);
+  }, [mode, stageData]);
 
   const handleStageClick = (stage: string) => {
-    const sourceData = mode === 'iot' ? iotData : stageData;
-    setCurrentStageData(sourceData[stage]);
+    setCurrentStageData(stageData[stage]);
     setOpenStage(stage);
   };
 
@@ -383,7 +380,7 @@ const CO2Footprint = () => {
   const handleEmissionFactorChange = (stage: string, index: number, value: string) => {
     const newValue = parseFloat(value);
     if (!isNaN(newValue)) {
-      const updatedData = {...iotData};
+      const updatedData = {...stageData};
       updatedData[stage][index].emissionFactor = newValue;
       
       const item = updatedData[stage][index];
@@ -401,7 +398,7 @@ const CO2Footprint = () => {
         item.emissions = (item.quantity || 0) * newValue;
       }
       
-      setIotData(updatedData);
+      setStageData(updatedData);
     }
   };
 
@@ -493,22 +490,22 @@ const CO2Footprint = () => {
       </Flex>
 
       {mode === 'iot' && (
-        <Card mb="5" style={{ 
+        <Card mb="4" style={{ 
           background: 'linear-gradient(135deg, #1a237e 0%, #3949ab 100%)', 
           color: 'white',
           border: '1px solid #5c6bc0',
-          boxShadow: '0 4px 12px rgba(92, 107, 192, 0.3)'
+          boxShadow: '0 2px 6px rgba(92, 107, 192, 0.3)'
         }}>
-          <Flex p="4" align="center" gap="3">
+          <Flex p="3" align="center" gap="2">
             <Box style={{ 
               background: 'rgba(255, 255, 255, 0.2)', 
-              padding: '12px', 
-              borderRadius: '12px',
+              padding: '8px', 
+              borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}>
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M17 6H7C4.24 6 2 8.24 2 11C2 13.76 4.24 16 7 16H17C19.76 16 22 13.76 22 11C22 8.24 19.76 6 17 6Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M17 16V18C17 19.66 15.66 21 14 21H10C8.34 21 7 19.66 7 18V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M7 6V5C7 3.34 8.34 2 10 2H14C15.66 2 17 3.34 17 5V6" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -518,23 +515,23 @@ const CO2Footprint = () => {
               </svg>
             </Box>
             <Box style={{ flex: 1 }}>
-              <Flex align="center" gap="2" mb="2">
-                <Badge color="blue" variant="solid" highContrast>
+              <Flex align="center" gap="1" mb="1">
+                <Badge color="blue" variant="solid" highContrast size="1">
                   LIVE
                 </Badge>
-                <Heading size="5" style={{ margin: 0 }}>IoT Mode Active</Heading>
+                <Heading size="3" style={{ margin: 0 }}>IoT Mode Active</Heading>
               </Flex>
-              <Text size="2" style={{ opacity: 0.9 }}>
-                Real-time data collection from sensors. Quantities are automatically updated every 3 seconds.
+              <Text size="1" style={{ opacity: 0.9 }}>
+                Real-time data collection from sensors. Quantities update every 3 seconds.
               </Text>
             </Box>
             <Box style={{ 
               background: 'rgba(255, 255, 255, 0.1)', 
-              padding: '8px', 
-              borderRadius: '8px',
+              padding: '6px', 
+              borderRadius: '6px',
               animation: 'pulse 2s infinite'
             }}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M12 8V12L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="white" strokeWidth="2"/>
               </svg>
@@ -728,17 +725,17 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Quantity (kg)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/kg)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Material</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Quantity (kg)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (kg CO₂e/kg)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {currentStageData.map((item: RawMaterial, index: number) => (
                     <Table.Row key={index}>
-                      <Table.Cell>{item.material}</Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.material}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
                         {mode === 'iot' ? (
                           <Text weight="bold">{(item.quantity || 0).toFixed(4)}</Text>
                         ) : (
@@ -750,15 +747,19 @@ const CO2Footprint = () => {
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={3}><strong>Total</strong></Table.RowHeaderCell>
-                    <Table.Cell>
+                    <Table.RowHeaderCell colSpan={3} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>
                         {currentStageData.reduce((sum: number, item: RawMaterial) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -775,39 +776,43 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Process</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/unit)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Process</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Quantity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (kg CO₂e/unit)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {currentStageData.map((item: ManufacturingProcess, index: number) => (
                     <Table.Row key={index}>
-                      <Table.Cell>{item.process}</Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.process}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
                         {mode === 'iot' ? (
                           <Text weight="bold">{(item.quantity || 0).toFixed(2)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
                       </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
-                    <Table.Cell>
+                    <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>
                         {currentStageData.reduce((sum: number, item: ManufacturingProcess) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -824,39 +829,43 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Quantity (g)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/g)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Component</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Quantity (g)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Material</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (kg CO₂e/g)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {currentStageData.map((item: PackagingComponent, index: number) => (
                     <Table.Row key={index}>
-                      <Table.Cell>{item.component}</Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.component}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
                         {mode === 'iot' ? (
                           <Text weight="bold">{(item.quantity || 0).toFixed(1)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
                       </Table.Cell>
-                      <Table.Cell>{item.material}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.material}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
-                    <Table.Cell>
+                    <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>
                         {currentStageData.reduce((sum: number, item: PackagingComponent) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -873,81 +882,51 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Activity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance / Duration</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Activity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Distance / Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  <Table.Row>
-                    <Table.Cell>Refrigerated Storage</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">7</Text>
-                      ) : (
-                        7
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>kg·day</Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Transport[0].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Transport', 0, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.0525</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Local Transport</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">50</Text>
-                      ) : (
-                        50
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>tonne·km</Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Transport[1].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Transport', 1, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.0031</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Long-Distance Transport</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">300</Text>
-                      ) : (
-                        300
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>tonne·km</Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Transport[2].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Transport', 2, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.0186</Table.Cell>
-                  </Table.Row>
+                  {currentStageData.map((item: TransportActivity, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.type}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
+                        {mode === 'iot' ? (
+                          <Text weight="bold">
+                            {item.distance !== undefined ? item.distance : item.duration}
+                          </Text>
+                        ) : (
+                          item.distance !== undefined ? item.distance : item.duration
+                        )}
+                      </Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.unit}</Table.Cell>
+                      <Table.Cell>
+                        <TextField.Root
+                          size="1"
+                          value={(item.emissionFactor || 0).toString()}
+                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
+                        />
+                      </Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total (per unit)</strong></Table.RowHeaderCell>
-                    <Table.Cell>
-                      <strong>0.0742</strong>
+                    <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total (per unit)</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>
+                        {currentStageData.reduce((sum: number, item: TransportActivity) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(6)}
+                      </strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -958,77 +937,51 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Activity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance / Duration</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Activity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Distance / Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  <Table.Row>
-                    <Table.Cell>Warehouse Storage</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">3 days</Text>
-                      ) : (
-                        "3 days"
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Distribution[0].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Distribution', 0, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.03</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Last-Mile Delivery</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">15 km</Text>
-                      ) : (
-                        "15 km"
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Distribution[1].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Distribution', 1, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.0027</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Retail Storage</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">2 days</Text>
-                      ) : (
-                        "2 days"
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Distribution[2].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Distribution', 2, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.01</Table.Cell>
-                  </Table.Row>
+                  {currentStageData.map((item: DistributionActivity, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.activity}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
+                        {mode === 'iot' ? (
+                          <Text weight="bold">
+                            {item.distance !== undefined ? `${item.distance} km` : `${item.duration} days`}
+                          </Text>
+                        ) : (
+                          item.distance !== undefined ? `${item.distance} km` : `${item.duration} days`
+                        )}
+                      </Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.unit}</Table.Cell>
+                      <Table.Cell>
+                        <TextField.Root
+                          size="1"
+                          value={(item.emissionFactor || 0).toString()}
+                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
+                        />
+                      </Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={3}><strong>Total (per unit)</strong></Table.RowHeaderCell>
-                    <Table.Cell>
-                      <strong>0.0427</strong>
+                    <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total (per unit)</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>
+                        {currentStageData.reduce((sum: number, item: DistributionActivity) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(6)}
+                      </strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -1039,63 +992,53 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Aspect</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Distance / Duration / Qty</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor (EF)</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Aspect</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Distance / Duration / Qty</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor (EF)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e per unit)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  <Table.Row>
-                    <Table.Cell>Consumer Transport</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">5 km (1 trip / 2 units)</Text>
-                      ) : (
-                        "5 km (1 trip / 2 units)"
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Use[0].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Use', 0, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.500</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Product Refrigeration</Table.Cell>
-                    <Table.Cell>
-                      {mode === 'iot' ? (
-                        <Text weight="bold">14 days</Text>
-                      ) : (
-                        "14 days"
-                      )}
-                    </Table.Cell>
-                    <Table.Cell>
-                      <TextField.Root
-                        size="1"
-                        value={iotData.Use[1].emissionFactor.toString()}
-                        onChange={(e) => handleEmissionFactorChange('Use', 1, e.target.value)}
-                        style={{ maxWidth: 120 }}
-                        placeholder="Emission Factor"
-                      />
-                    </Table.Cell>
-                    <Table.Cell>0.10528</Table.Cell>
-                  </Table.Row>
-                  <Table.Row>
-                    <Table.Cell>Product Preparation</Table.Cell>
-                    <Table.Cell>—</Table.Cell>
-                    <Table.Cell>Not Applicable</Table.Cell>
-                    <Table.Cell>0.000</Table.Cell>
-                  </Table.Row>
+                  {currentStageData.map((item: UseAspect, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.aspect}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
+                        {mode === 'iot' ? (
+                          <Text weight="bold">
+                            {item.distance !== undefined ? `${item.distance} km` : 
+                             item.duration !== undefined ? `${item.duration} days` : 
+                             item.quantity !== undefined ? item.quantity : 'N/A'}
+                          </Text>
+                        ) : (
+                          item.distance !== undefined ? `${item.distance} km` : 
+                          item.duration !== undefined ? `${item.duration} days` : 
+                          item.quantity !== undefined ? item.quantity : 'N/A'
+                        )}
+                      </Table.Cell>
+                      <Table.Cell>
+                        <TextField.Root
+                          size="1"
+                          value={(item.emissionFactor || 0).toString()}
+                          onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
+                        />
+                      </Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}
+                      </Table.Cell>
+                    </Table.Row>
+                  ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={3}><strong>Total (per unit)</strong></Table.RowHeaderCell>
-                    <Table.Cell>
-                      <strong>0.6053</strong>
+                    <Table.RowHeaderCell colSpan={3} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total (per unit)</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>
+                        {currentStageData.reduce((sum: number, item: UseAspect) => {
+                          const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+                          return sum + emissions;
+                        }, 0).toFixed(6)}
+                      </strong>
                     </Table.Cell>
                   </Table.Row>
                 </Table.Body>
@@ -1106,39 +1049,43 @@ const CO2Footprint = () => {
               <Table.Root variant="surface">
                 <Table.Header>
                   <Table.Row>
-                    <Table.ColumnHeaderCell>Method</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emission Factor</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Method</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Quantity</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emission Factor</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {currentStageData.map((item: EndOfLifeMethod, index: number) => (
                     <Table.Row key={index}>
-                      <Table.Cell>{item.method}</Table.Cell>
-                      <Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.method}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>
                         {mode === 'iot' ? (
                           <Text weight="bold">{(item.quantity || 0).toFixed(2)}</Text>
                         ) : (
                           item.quantity || 0
                         )}
                       </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px' }}>{item.unit}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(e) => handleEmissionFactorChange(openStage!, index, e.target.value)}
-                          style={{ maxWidth: 100 }}
+                          style={{ maxWidth: 120, fontSize: '14px' }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
-                    <Table.Cell>
+                    <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <strong>Total</strong>
+                    </Table.RowHeaderCell>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>
                         {currentStageData.reduce((sum: number, item: EndOfLifeMethod) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -1171,18 +1118,22 @@ const CO2Footprint = () => {
               <Table.Body>
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
-                  <Table.Cell>{isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions} kg CO₂e</Table.Cell>
+                  <Table.Cell>{isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions.toFixed(3)} kg CO₂e</Table.Cell>
                 </Table.Row>
                 <Table.Row>
                   <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
                   <Table.Cell>{CARBON_PRICE_PER_TON} USD/ton</Table.Cell>
                 </Table.Row>
                 <Table.Row>
+                  <Table.RowHeaderCell>Carbon Price (per kg)</Table.RowHeaderCell>
+                  <Table.Cell>{(CARBON_PRICE_PER_TON / 1000).toFixed(4)} USD/kg</Table.Cell>
+                </Table.Row>
+                <Table.Row>
                   <Table.RowHeaderCell>Calculation</Table.RowHeaderCell>
                   <Table.Cell>{currentCostDetails?.calculation}</Table.Cell>
                 </Table.Row>
                 <Table.Row>
-                  <Table.RowHeaderCell>Cost in USD</Table.RowHeaderCell>
+                  <Table.RowHeaderCell>Cost (US Dollars)</Table.RowHeaderCell>
                   <Table.Cell>
                     <Text weight="bold">
                       {isNaN(currentCostDetails?.costUSD) ? '0.00' : currentCostDetails?.costUSD} USD
@@ -1190,7 +1141,11 @@ const CO2Footprint = () => {
                   </Table.Cell>
                 </Table.Row>
                 <Table.Row>
-                  <Table.RowHeaderCell>Cost in EGP</Table.RowHeaderCell>
+                  <Table.RowHeaderCell>Exchange Rate</Table.RowHeaderCell>
+                  <Table.Cell>{EXCHANGE_RATE} EGP/USD</Table.Cell>
+                </Table.Row>
+                <Table.Row>
+                  <Table.RowHeaderCell>Cost (Egyptian Pounds)</Table.RowHeaderCell>
                   <Table.Cell>
                     <Text weight="bold">
                       {isNaN(currentCostDetails?.costEGP) ? '0.00' : currentCostDetails?.costEGP} EGP
