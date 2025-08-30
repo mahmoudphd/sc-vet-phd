@@ -88,64 +88,64 @@ interface StageData {
   'End of Life': EndOfLifeMethod[];
 }
 
-// Original data structure with grams where applicable
+// Original data structure with corrected calculations
 const stageData: StageData = {
   'Raw Materials': [
-    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, emissions: 0.085 },
-    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, emissions: 0.552 },
-    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, emissions: 0.120 },
-    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, emissions: 0.780 },
-    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, emissions: 0.260 },
-    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, emissions: 0.132 },
-    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, emissions: 1.260 },
-    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, emissions: 0.380 },
-    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, emissions: 0.138 },
-    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, emissions: 0.080 },
-    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, emissions: 0.120 },
-    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, emissions: 0.288 },
-    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, emissions: 2.625 },
-    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, emissions: 0.220 },
-    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, emissions: 0.475 },
-    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, emissions: 0.560 },
-    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, emissions: 1.350 },
-    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, emissions: 0.029 },
+    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, emissions: 0.001 * 85 },
+    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, emissions: 0.006 * 92 },
+    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, emissions: 0.001 * 120 },
+    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, emissions: 0.01 * 78 },
+    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, emissions: 0.004 * 65 },
+    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, emissions: 0.0015 * 88 },
+    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, emissions: 0.03 * 42 },
+    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, emissions: 0.01 * 38 },
+    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, emissions: 0.0025 * 55 },
+    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, emissions: 0.0025 * 32 },
+    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, emissions: 0.0025 * 48 },
+    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, emissions: 0.0025 * 115 },
+    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, emissions: 0.025 * 105 },
+    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, emissions: 0.01 * 22 },
+    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, emissions: 0.005 * 95 },
+    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, emissions: 0.02 * 28 },
+    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, emissions: 0.075 * 18 },
+    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, emissions: 0.571 * 0.05 },
   ],
   'Manufacturing': [
-    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, emissions: 0.050 },
-    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, emissions: 0.009 },
-    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.275 },
-    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.165 },
-    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.825 },
-    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, emissions: 0.110 },
-    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.165 },
+    { process: 'Water Mixing', quantity: 1, unit: 'kg', emissionFactor: 0.05, emissions: 1 * 0.05 },
+    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, emissions: 3 * 0.003 },
+    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.5 * 0.55 },
+    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.3 * 0.55 },
+    { process: 'Sterilization', quantity: 1.5, unit: 'kWh', emissionFactor: 0.55, emissions: 1.5 * 0.55 },
+    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, emissions: 0.2 * 0.55 },
+    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.3 * 0.55 },
   ],
   'Packaging': [
-    { component: 'Plastic Bottle', quantity: 60, unit: 'g', material: 'HDPE', emissionFactor: 3.5, emissions: 0.210 },
-    { component: 'Metal Cap', quantity: 15, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, emissions: 0.105 },
-    { component: 'Aluminum Seal', quantity: 2, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, emissions: 0.018 },
-    { component: 'Paper Label', quantity: 5, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, emissions: 0.0045 },
-    { component: 'Secondary Packaging', quantity: 50, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, emissions: 0.050 },
-    { component: 'Adhesive', quantity: 3, unit: 'g', material: 'Chemical', emissionFactor: 2.5, emissions: 0.0075 },
+    { component: 'Plastic Bottle', quantity: 60.6, unit: 'g', material: 'HDPE', emissionFactor: 3.5, emissions: 60.6 * 3.5 / 1000 },
+    { component: 'Metal Cap', quantity: 14.1, unit: 'g', material: 'Stainless Steel 304', emissionFactor: 7.0, emissions: 14.1 * 7.0 / 1000 },
+    { component: 'Aluminum Seal', quantity: 2.1, unit: 'g', material: 'Aluminum', emissionFactor: 9.0, emissions: 2.1 * 9.0 / 1000 },
+    { component: 'Paper Label', quantity: 4.9, unit: 'g', material: 'Recycled Paper', emissionFactor: 0.9, emissions: 4.9 * 0.9 / 1000 },
+    { component: 'Secondary Packaging', quantity: 53.3, unit: 'g', material: 'Corrugated Cardboard', emissionFactor: 1.0, emissions: 53.3 * 1.0 / 1000 },
+    { component: 'Adhesive', quantity: 3.0, unit: 'g', material: 'Chemical', emissionFactor: 2.5, emissions: 3.0 * 2.5 / 1000 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: 0.210 },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: 0.090 },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: 0.300 },
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: 7 * 0.03 },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: 50 * 0.18 },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: 300 * 0.10 },
   ],
   'Distribution': [
-    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: 0.030 },
-    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: 0.018 },
-    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: 0.010 },
+    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: 3 * 0.01 },
+    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: 15 * 0.12 },
+    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: 2 * 0.005 },
   ],
   'Use': [
-    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: 0.010 },
-    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: 0.070 },
-    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: 0.050 },
+    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: 5 * 0.2 },
+    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: 14 * 0.05 },
+    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: 0.1 * 0.5 },
   ],
   'End of Life': [
-    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, emissions: 0.350 },
-    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, emissions: -0.015 },
-    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, emissions: 0.045 },
+    { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, emissions: 0.1 * 3.5 },
+    { method: 'Recycling', quantity: 0.05, unit: 'kg', emissionFactor: -0.3, emissions: 0.05 * -0.3 },
+    { method: 'Landfill', quantity: 0.03, unit: 'kg', emissionFactor: 1.5, emissions: 0.03 * 1.5 },
   ],
 };
 
@@ -256,7 +256,15 @@ const CO2Footprint = () => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
             const randomFactor = 0.99 + Math.random() * 0.02; // Random factor between 0.99 and 1.01 (1% variation)
             const newQuantity = (item.quantity || 0) * randomFactor;
-            const newEmissions = newQuantity * (item.emissionFactor || 0);
+            
+            // Calculate emissions correctly based on unit
+            let newEmissions;
+            if (stage === 'Packaging') {
+              // For packaging, we need to divide by 1000 to convert from grams to kg
+              newEmissions = newQuantity * (item.emissionFactor || 0) / 1000;
+            } else {
+              newEmissions = newQuantity * (item.emissionFactor || 0);
+            }
             
             return {
               ...item,
@@ -319,7 +327,14 @@ const CO2Footprint = () => {
     if (!isNaN(newValue)) {
       const updatedData = {...iotData};
       updatedData[stage][index].emissionFactor = newValue;
-      updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue;
+      
+      // Recalculate emissions correctly based on unit
+      if (stage === 'Packaging') {
+        updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue / 1000;
+      } else {
+        updatedData[stage][index].emissions = (updatedData[stage][index].quantity || 0) * newValue;
+      }
+      
       setIotData(updatedData);
     }
   };
@@ -705,8 +720,7 @@ const CO2Footprint = () => {
                 <Table.Header>
                   <Table.Row>
                     <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Quantity</Table.ColumnHeaderCell>
-                    <Table.ColumnHeaderCell>Unit</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Quantity (g)</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Material</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emission Factor (kg CO₂e/g)</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Emissions (kg CO₂e)</Table.ColumnHeaderCell>
@@ -723,7 +737,6 @@ const CO2Footprint = () => {
                           item.quantity || 0
                         )}
                       </Table.Cell>
-                      <Table.Cell>{item.unit}</Table.Cell>
                       <Table.Cell>{item.material}</Table.Cell>
                       <Table.Cell>
                         <TextField.Root
@@ -737,7 +750,7 @@ const CO2Footprint = () => {
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-                    <Table.RowHeaderCell colSpan={5}><strong>Total</strong></Table.RowHeaderCell>
+                    <Table.RowHeaderCell colSpan={4}><strong>Total</strong></Table.RowHeaderCell>
                     <Table.Cell>
                       <strong>
                         {currentStageData.reduce((sum: number, item: PackagingComponent) => {
