@@ -11,6 +11,7 @@ import {
 const CARBON_PRICE_PER_TON = 50; // USD per ton
 const EXCHANGE_RATE = 50; // EGP per USD
 const KG_PER_TON = 1000; // kg per ton
+const BATCH_SIZE = 1000; // Number of units per production batch
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
@@ -128,19 +129,19 @@ const stageData: StageData = {
     { component: 'Adhesive', quantity: 3.0, unit: 'g', material: 'Chemical', emissionFactor: 2.5, emissions: 3.0 * 2.5 / 1000 },
   ],
   'Transport': [
-    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: 7 * 0.03 },
-    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: 50 * 0.18 },
-    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: 300 * 0.10 },
+    { type: 'Refrigerated Storage', duration: 7, unit: 'days', emissionFactor: 0.03, emissions: (7 * 0.03) / BATCH_SIZE },
+    { type: 'Local Transport', distance: 50, unit: 'km', emissionFactor: 0.18, emissions: (50 * 0.18) / BATCH_SIZE },
+    { type: 'Long-Distance Transport', distance: 300, unit: 'km', emissionFactor: 0.10, emissions: (300 * 0.10) / BATCH_SIZE },
   ],
   'Distribution': [
-    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: 3 * 0.01 },
-    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: 15 * 0.12 },
-    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: 2 * 0.005 },
+    { activity: 'Warehouse Storage', duration: 3, unit: 'days', emissionFactor: 0.01, emissions: (3 * 0.01) / BATCH_SIZE },
+    { activity: 'Last-Mile Delivery', distance: 15, unit: 'km', emissionFactor: 0.12, emissions: (15 * 0.12) / BATCH_SIZE },
+    { activity: 'Retail Storage', duration: 2, unit: 'days', emissionFactor: 0.005, emissions: (2 * 0.005) / BATCH_SIZE },
   ],
   'Use': [
-    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: 5 * 0.2 },
-    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: 14 * 0.05 },
-    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: 0.1 * 0.5 },
+    { aspect: 'Consumer Transportation', distance: 5, unit: 'km', emissionFactor: 0.2, emissions: (5 * 0.2) / BATCH_SIZE },
+    { aspect: 'Product Refrigeration', duration: 14, unit: 'days', emissionFactor: 0.05, emissions: (14 * 0.05) / BATCH_SIZE },
+    { aspect: 'Product Preparation', quantity: 0.1, unit: 'kWh', emissionFactor: 0.5, emissions: (0.1 * 0.5) / BATCH_SIZE },
   ],
   'End of Life': [
     { method: 'Medical Waste Incineration', quantity: 0.1, unit: 'kg', emissionFactor: 3.5, emissions: 0.1 * 3.5 },
@@ -257,13 +258,13 @@ const CO2Footprint = () => {
             let newEmissions;
             if (stage === 'Packaging') {
               newEmissions = newQuantity * (item.emissionFactor || 0) / 1000;
-            } else if (stage === 'Transport' || stage === 'Distribution') {
+            } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
               if (item.distance !== undefined) {
-                newEmissions = item.distance * (item.emissionFactor || 0);
+                newEmissions = (item.distance * (item.emissionFactor || 0)) / BATCH_SIZE;
               } else if (item.duration !== undefined) {
-                newEmissions = item.duration * (item.emissionFactor || 0);
+                newEmissions = (item.duration * (item.emissionFactor || 0)) / BATCH_SIZE;
               } else {
-                newEmissions = newQuantity * (item.emissionFactor || 0);
+                newEmissions = (newQuantity * (item.emissionFactor || 0)) / BATCH_SIZE;
               }
             } else {
               newEmissions = newQuantity * (item.emissionFactor || 0);
@@ -272,7 +273,7 @@ const CO2Footprint = () => {
             return {
               ...item,
               quantity: parseFloat(newQuantity.toFixed(4)),
-              emissions: parseFloat(newEmissions.toFixed(3))
+              emissions: parseFloat(newEmissions.toFixed(6))
             };
           });
         });
@@ -334,11 +335,13 @@ const CO2Footprint = () => {
       const item = updatedData[stage][index];
       if (stage === 'Packaging') {
         item.emissions = (item.quantity || 0) * newValue / 1000;
-      } else if (stage === 'Transport' || stage === 'Distribution') {
+      } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
         if (item.distance !== undefined) {
-          item.emissions = (item.distance || 0) * newValue;
+          item.emissions = (item.distance || 0) * newValue / BATCH_SIZE;
         } else if (item.duration !== undefined) {
-          item.emissions = (item.duration || 0) * newValue;
+          item.emissions = (item.duration || 0) * newValue / BATCH_SIZE;
+        } else {
+          item.emissions = (item.quantity || 0) * newValue / BATCH_SIZE;
         }
       } else {
         item.emissions = (item.quantity || 0) * newValue;
@@ -391,7 +394,8 @@ const CO2Footprint = () => {
     name: item.category,
     value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
     cost: currency === 'EGP' ? 
-      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) :       (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
+      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
+      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
   }));
 
   const barChartData = reductionData;
@@ -435,11 +439,11 @@ const CO2Footprint = () => {
       </Flex>
 
       {mode === 'iot' && (
-        <Card mb="5" style={{ background: 'linear-gradient(135deg, #2c974b 0%, #1e5128 100%)', color: 'white' }}>
+        <Card mb="5" style={{ background: 'linear-gradient(135deg, #1a237e 0%, #283593 100%)', color: 'white' }}>
           <Flex p="4" align="center" gap="3">
             <Box style={{ flex: 1 }}>
               <Heading size="5">IoT Mode Active</Heading>
-              <Text size="2">Real-time data collection from sensors. Quantities are automatically updated with minimal variations.</Text>
+              <Text size="2">Real-time data collection from sensors. Quantities are automatically updated</Text>
             </Box>
             <Box style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '8px', borderRadius: '50%' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -623,7 +627,7 @@ const CO2Footprint = () => {
         <Dialog.Content style={{ maxWidth: 800, maxHeight: '90vh' }}>
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
           <Dialog.Description mb="4">
-            Detailed breakdown of emissions for {openStage} stage
+            Detailed breakdown of emissions for {openStage} stage (per unit)
           </Dialog.Description>
           
           <Box style={{ overflowY: 'auto', maxHeight: '70vh' }}>
@@ -805,7 +809,7 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
@@ -815,7 +819,7 @@ const CO2Footprint = () => {
                         {currentStageData.reduce((sum: number, item: any) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
-                        }, 0).toFixed(3)}
+                        }, 0).toFixed(6)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -856,7 +860,7 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
@@ -866,7 +870,7 @@ const CO2Footprint = () => {
                         {currentStageData.reduce((sum: number, item: any) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
-                        }, 0).toFixed(3)}
+                        }, 0).toFixed(6)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
@@ -907,7 +911,7 @@ const CO2Footprint = () => {
                           style={{ maxWidth: 100 }}
                         />
                       </Table.Cell>
-                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(3)}</Table.Cell>
+                      <Table.Cell>{(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}</Table.Cell>
                     </Table.Row>
                   ))}
                   <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
@@ -917,7 +921,7 @@ const CO2Footprint = () => {
                         {currentStageData.reduce((sum: number, item: UseAspect) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
-                        }, 0).toFixed(3)}
+                        }, 0).toFixed(6)}
                       </strong>
                     </Table.Cell>
                   </Table.Row>
