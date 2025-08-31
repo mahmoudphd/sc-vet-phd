@@ -449,11 +449,6 @@ const CO2Footprint = () => {
     alert('Carbon report submitted successfully!');
   };
 
-  const handleBlockchainSubmit = () => {
-    console.log('Submitting to blockchain:', emissionData);
-    alert('Data submitted to blockchain successfully!');
-  };
-
   // Data for charts
   const pieChartData = emissionData.map(item => ({
     name: item.category,
@@ -743,22 +738,9 @@ const CO2Footprint = () => {
 
       <Flex mt="4" justify="between" align="center">
         <Text size="1" color="gray">Last updated: {new Date().toLocaleDateString()}</Text>
-        <Flex gap="3">
-          <Button variant="solid" color="green" onClick={handleSubmit}>
-            Submit Carbon Report
-          </Button>
-          <Button 
-            variant="solid" 
-            style={{ 
-              backgroundColor: '#006400', // Dark green
-              color: 'white',
-              fontWeight: 'bold'
-            }}
-            onClick={handleBlockchainSubmit}
-          >
-            Submit to Blockchain
-          </Button>
-        </Flex>
+        <Button variant="solid" color="green" onClick={handleSubmit}>
+          Submit Carbon Report
+        </Button>
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
