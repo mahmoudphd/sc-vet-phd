@@ -844,6 +844,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
     supplier: null
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [supplierDialogOpen, setSupplierDialogOpen] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
   const [ghgDialogOpen, setGhgDialogOpen] = useState(false);
   const [selectedGhgItem, setSelectedGhgItem] = useState<{category: CostCategory, itemName: string} | null>(null);
@@ -1097,40 +1098,42 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
   };
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
-    if (solution === 'GHG Protocol Scopes') {
-      const item = getDetailsByCategory(category)[index];
-      setSelectedGhgItem({ category, itemName: item.name });
-      setGhgDialogOpen(true);
-      return;
-    }
-    
+  if (solution === 'GHG Protocol Scopes') {
     const item = getDetailsByCategory(category)[index];
-    setCurrentPrice(item.pricePerKg || 0);
-    
-    if (!item.originalPricePerKg) {
-      item.originalPricePerKg = item.pricePerKg;
-    }
+    setSelectedGhgItem({ category, itemName: item.name });
+    setGhgDialogOpen(true);
+    return;
+  }
+  
+  const item = getDetailsByCategory(category)[index];
+  setCurrentPrice(item.pricePerKg || 0);
+  
+  if (!item.originalPricePerKg) {
+    item.originalPricePerKg = item.pricePerKg;
+  }
 
-    setIsLoading(true);
-    const newSelectedSolution = { category, index, solution };
-    setSelectedSolution(newSelectedSolution);
-    setSolutions((prev) => ({
-      ...prev,
-      [category]: {
-        ...prev[category],
-        [index]: solution,
-      },
-    }));
-    
-    if (category === 'Direct Materials') {
-      setTimeout(() => {
-        setSuppliers(generateSupplierPrices(item.pricePerKg || 0, item.name));
-        setIsLoading(false);
-      }, 800);
-    } else {
+  setIsLoading(true);
+  const newSelectedSolution = { category, index, solution };
+  setSelectedSolution(newSelectedSolution);
+  setSupplierDialogOpen(true); // افتح الدايلوج هنا
+  
+  setSolutions((prev) => ({
+    ...prev,
+    [category]: {
+      ...prev[category],
+      [index]: solution,
+    },
+  }));
+  
+  if (category === 'Direct Materials') {
+    setTimeout(() => {
+      setSuppliers(generateSupplierPrices(item.pricePerKg || 0, item.name));
       setIsLoading(false);
-    }
-  };
+    }, 800);
+  } else {
+    setIsLoading(false);
+  }
+};
 
   const handleBenchmarkChange = (value: number) => {
     setBenchmarkPrice(Math.round(value));
