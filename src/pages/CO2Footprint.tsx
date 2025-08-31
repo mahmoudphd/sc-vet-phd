@@ -1,4 +1,3 @@
-import { useState, useMemo, useEffect } from 'react';
 import {
   Box, Button, Card, Flex, Grid, Heading, Select, Table, Text, TextField,
   Dialog, Badge
@@ -148,7 +147,7 @@ const initialStageData: StageData = {
       type: 'Long-Distance Transport', 
       distance: 300, 
       unit: 'km', 
-      emissionFactor: 0.062, 
+      emissionPointor: 0.062, 
       emissions: (300 * 0.062) / BATCH_SIZE 
     },
   ],
@@ -633,7 +632,7 @@ const CO2Footprint = () => {
                   data={ghgScopeData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false>
+                  labelLine={false}
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -918,8 +917,7 @@ const CO2Footprint = () => {
                     <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>Total</strong>
                     </Table.RowHeaderCell>
-                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                      <strong>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>                      <strong>
                         {currentStageData.reduce((sum: number, item: PackagingComponent) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
@@ -1168,7 +1166,7 @@ const CO2Footprint = () => {
               {currentCostDetails?.category}
             </Text>
             <Table.Root>
-            <Table.Body>
+              <Table.Body>
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
                   <Table.Cell>{isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions.toFixed(3)} kg CO₂e</Table.Cell>
