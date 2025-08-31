@@ -1994,7 +1994,14 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
 
       {/* Supplier selection dialog */}
       {selectedSolution && selectedSolution.solution !== 'GHG Protocol Scopes' && (
-        <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
+        <Dialog.Root 
+  open={!!selectedSolution} 
+  onOpenChange={(open) => {
+    if (!open) {
+      setSelectedSolution(null);
+    }
+  }}
+>
           <Dialog.Content style={{ 
             maxWidth: '1000px',
             width: '90vw', 
