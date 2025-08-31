@@ -1785,9 +1785,9 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                 <Table.Cell style={tableCellStyle}>
                                   {item.basis}
                                 </Table.Cell>
-                                <Table.Cell style={tableCellStyle>
+                                <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
-                                    formatCurrency(item.cost || 0, currency)
+                                    {formatCurrency(costAfterTotal, currency)}
                                   ) : (
                                     <input
                                       type="number"
