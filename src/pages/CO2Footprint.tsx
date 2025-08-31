@@ -449,6 +449,11 @@ const CO2Footprint = () => {
     alert('Carbon report submitted successfully!');
   };
 
+  const handleBlockchainSubmit = () => {
+    console.log('Submitting to blockchain:', emissionData);
+    alert('Data submitted to blockchain successfully!');
+  };
+
   // Data for charts
   const pieChartData = emissionData.map(item => ({
     name: item.category,
@@ -628,7 +633,7 @@ const CO2Footprint = () => {
                   data={ghgScopeData}
                   cx="50%"
                   cy="50%"
-                  labelLine={false}
+                  labelLine={false>
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
@@ -738,9 +743,22 @@ const CO2Footprint = () => {
 
       <Flex mt="4" justify="between" align="center">
         <Text size="1" color="gray">Last updated: {new Date().toLocaleDateString()}</Text>
-        <Button variant="solid" color="green" onClick={handleSubmit}>
-          Submit Carbon Report
-        </Button>
+        <Flex gap="3">
+          <Button variant="solid" color="green" onClick={handleSubmit}>
+            Submit Carbon Report
+          </Button>
+          <Button 
+            variant="solid" 
+            style={{
+              backgroundColor: '#006400',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+            onClick={handleBlockchainSubmit}
+          >
+            Submit to Blockchain
+          </Button>
+        </Flex>
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
@@ -1150,7 +1168,7 @@ const CO2Footprint = () => {
               {currentCostDetails?.category}
             </Text>
             <Table.Root>
-              <Table.Body>
+            <Table.Body>
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
                   <Table.Cell>{isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions.toFixed(3)} kg CO₂e</Table.Cell>
