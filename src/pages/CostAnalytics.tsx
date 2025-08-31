@@ -326,7 +326,9 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
+};
+
+const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   const complianceScore = calculateComplianceScore(supplier.material);
   
   const calculateTestScore = (tests: MaterialTests): number => {
@@ -672,7 +674,9 @@ const cardTitleStyle = {
       </Dialog.Content>
     </Dialog.Root>
   );
-};interface CostAfterViewProps {
+};
+
+interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
   updateCostAfterValue: (category: CostCategory, index: number, value: number) => void;
@@ -1384,7 +1388,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Card>
         ))}
-      </Grid> {/* Main cost table */}
+      </Grid>      {/* Main cost table */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -1674,9 +1678,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   )}
                                 </Table.Cell>
                               </>
-                            )}
-                            
-                            {dialogCategory === 'Packaging Materials' && (
+                            )}                            {dialogCategory === 'Packaging Materials' && (
                               <>
                                 <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
@@ -1786,28 +1788,17 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   {item.basis}
                                 </Table.Cell>
                                 <Table.Cell style={tableCellStyle}>
-  {autoMode ? (
-    formatCurrency(costAfterTotal, currency) 
-  ) : (
-    <input
-      type="number"
-      value={item.cost || 0}
-      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = parseFloat(e.target.value) || 0;
-        item.cost = value;
-        updateCategoryTotals(dialogCategory, {...data});
-      }}
-      style={{ 
-        width: '70px',
-        padding: '4px 8px',
-        borderRadius: '4px',
-        border: '1px solid #e2e8f0',
-        backgroundColor: 'white',
-        fontSize: '12px'
-      }}
-    />
-  )}
-</Table.Cell>
+                                  {autoMode ? (
+                                    formatCurrency(totalCost, currency) 
+                                  ) : (
+                                    <input
+                                      type="number"
+                                      value={item.cost || 0}
+                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                        const value = parseFloat(e.target.value) || 0;
+                                        item.cost = value;
+                                        updateCategoryTotals(dialogCategory, {...data});
+                                      }}
                                       style={{ 
                                         width: '70px',
                                         padding: '4px 8px',
@@ -1871,7 +1862,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell><Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1925,7 +1917,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   padding: '4px 8px',
                                   borderRadius: '4px',
                                   border: '1px solid #e2e8f0',
-                                  backgroundColor: '#f9fafb',
+                                  backgroundColor: 'f9fafb',
                                   fontSize: '12px'
                                 }}
                               />
@@ -1990,9 +1982,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </Flex>
           </Dialog.Content>
         </Dialog.Root>
-      )}
-
-      {/* GHG Protocol Dialog */}
+      )}      {/* GHG Protocol Dialog */}
       {ghgDialogOpen && selectedGhgItem && (
         <GHGProtocolDialog 
           category={selectedGhgItem.category} 
@@ -2083,7 +2073,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                       </Text>
                     </Flex>
                     <Flex justify="between" align="center">
-                      <Text style={{ color: '#4b5563', fontSize: '0.9rem' }}>Savings percentage:</Text>
+                      <Text style={{ color: '4b5563', fontSize: '0.9rem' }}>Savings percentage:</Text>
                       <Text style={{ 
                         color: potentialSavings > 0 ? '#10b981' : '#6b7280',
                         fontWeight: 'bold',
@@ -2154,7 +2144,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                           dataKey="name" 
                           tick={{ fill: '#4b5563', fontSize: 10 }}
                           axisLine={{ stroke: '#e5e7eb' }}
-                        /><YAxis 
+                        />
+                        <YAxis 
                           yAxisId="right"
                           orientation="right"
                           domain={[0, 200]}
@@ -2256,9 +2247,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                         <Text size="1">Selected Supplier</Text>
                       </Flex>
                     </Flex>
-                  </Card>
-
-                  <Card style={{
+                  </Card>                  <Card style={{
                     borderRadius: '8px',
                     backgroundColor: 'white',
                     padding: '16px',
@@ -2281,7 +2270,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
-                              color: '#1e293b',
+                              color: '1e293b',
                               whiteSpace: 'nowrap'
                             }}>Price/kg</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
@@ -2290,7 +2279,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Rating</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
+                            }}>Rating</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
@@ -2303,7 +2293,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Reliability</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
+                            }}>Reliability</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
@@ -2505,9 +2496,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       {/* Compliance tooltip dialog */}
       {complianceTooltip.visible && complianceTooltip.supplier && (
         <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
-      )}
-
-      {/* Charts section - Restored to original sizes */}
+      )}      {/* Charts section - Restored to original sizes */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
@@ -2651,9 +2640,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </ResponsiveContainer>
           </Flex>
         </Card>
-      </Grid>
-
-      {/* Submit to blockchain button */}
+      </Grid      {/* Submit to blockchain button */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
