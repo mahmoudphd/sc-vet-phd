@@ -1786,17 +1786,28 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                                   {item.basis}
                                 </Table.Cell>
                                 <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    {formatCurrency(costAfterTotal, currency)}
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={item.cost || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        item.cost = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
+  {autoMode ? (
+    formatCurrency(costAfterTotal, currency) 
+  ) : (
+    <input
+      type="number"
+      value={item.cost || 0}
+      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = parseFloat(e.target.value) || 0;
+        item.cost = value;
+        updateCategoryTotals(dialogCategory, {...data});
+      }}
+      style={{ 
+        width: '70px',
+        padding: '4px 8px',
+        borderRadius: '4px',
+        border: '1px solid #e2e8f0',
+        backgroundColor: 'white',
+        fontSize: '12px'
+      }}
+    />
+  )}
+</Table.Cell>
                                       style={{ 
                                         width: '70px',
                                         padding: '4px 8px',
