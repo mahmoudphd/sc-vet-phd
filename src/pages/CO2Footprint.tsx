@@ -148,7 +148,7 @@ const initialStageData: StageData = {
       type: 'Long-Distance Transport', 
       distance: 300, 
       unit: 'km', 
-      emissionPointor: 0.062, 
+      emissionFactor: 0.062, 
       emissions: (300 * 0.062) / BATCH_SIZE 
     },
   ],
