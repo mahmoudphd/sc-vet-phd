@@ -426,20 +426,20 @@ const CO2Footprint = () => {
   };
 
   const totalEmissions = useMemo(() => {
-    const total = emissionData.reduce((sum, item) => {
-      const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-      return sum + emissions;
-    }, 0);
-    return parseFloat(total.toFixed(3));
-  }, [emissionData]);
+  const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
+    const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+    return sum + emissions;
+  }, 0);
+  return parseFloat(total.toFixed(3));
+}, [emissionData]);
 
   const totalCost = useMemo(() => {
-    const total = emissionData.reduce((sum, item) => {
-      const cost = currency === 'EGP' ? item.costEGP : item.costUSD;
-      return sum + (isNaN(cost) || !isFinite(cost) ? 0 : cost);
-    }, 0);
-    return parseFloat(total.toFixed(2));
-  }, [emissionData, currency]);
+  const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
+    const cost = currency === 'EGP' ? item.costEGP : item.costUSD;
+    return sum + (isNaN(cost) || !isFinite(cost) ? 0 : cost);
+  }, 0);
+  return parseFloat(total.toFixed(2));
+}, [emissionData, currency]);
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
@@ -449,14 +449,19 @@ const CO2Footprint = () => {
     alert('Carbon report submitted successfully!');
   };
 
+  const handleBlockchainSubmit = () => {
+    console.log('Submitting to blockchain:', emissionData);
+    alert('Data submitted to blockchain successfully!');
+  };
+
   // Data for charts
-  const pieChartData = emissionData.map(item => ({
-    name: item.category,
-    value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
-    cost: currency === 'EGP' ? 
-      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
-      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
-  }));
+  const pieChartData = emissionData.map((item: EmissionDataItem) => ({
+  name: item.category,
+  value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
+  cost: currency === 'EGP' ? 
+    (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
+    (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
+}));
 
   return (
     <Box p="6">
@@ -603,9 +608,9 @@ const CO2Footprint = () => {
                   nameKey="name"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {pieChartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
+                  {pieChartData.map((entry: any, index: number) => (
+  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+))}
                 </Pie>
                 <Tooltip 
                   formatter={(value: number, name: string, props: any) => [
@@ -635,9 +640,9 @@ const CO2Footprint = () => {
                   nameKey="name"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 >
-                  {ghgScopeData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
-                  ))}
+                 {ghgScopeData.map((entry: any, index: number) => (
+  <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
+))}
                 </Pie>
                 <Tooltip 
                   formatter={(value: number, name: string) => [
@@ -669,8 +674,8 @@ const CO2Footprint = () => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-            {emissionData.map((item, i) => (
-              <Table.Row key={i}>
+           {emissionData.map((item: EmissionDataItem, i: number) => (
+  <Table.Row key={i}>
                 <Table.Cell>
                   <Button 
                     variant="ghost" 
@@ -738,9 +743,22 @@ const CO2Footprint = () => {
 
       <Flex mt="4" justify="between" align="center">
         <Text size="1" color="gray">Last updated: {new Date().toLocaleDateString()}</Text>
-        <Button variant="solid" color="green" onClick={handleSubmit}>
-          Submit Carbon Report
-        </Button>
+        <Flex gap="3">
+          <Button variant="solid" color="green" onClick={handleSubmit}>
+            Submit Carbon Report
+          </Button>
+          <Button 
+            variant="solid" 
+            style={{
+              backgroundColor: '#006400',
+              color: 'white',
+              fontWeight: 'bold'
+            }}
+            onClick={handleBlockchainSubmit}
+          >
+            Submit to Blockchain
+          </Button>
+        </Flex>
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
@@ -900,8 +918,7 @@ const CO2Footprint = () => {
                     <Table.RowHeaderCell colSpan={4} style={{ fontWeight: 'bold', fontSize: '14px' }}>
                       <strong>Total</strong>
                     </Table.RowHeaderCell>
-                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                      <strong>
+                    <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>                      <strong>
                         {currentStageData.reduce((sum: number, item: PackagingComponent) => {
                           const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
                           return sum + emissions;
@@ -1203,3 +1220,5 @@ const CO2Footprint = () => {
 };
 
 export default CO2Footprint;
+
+
