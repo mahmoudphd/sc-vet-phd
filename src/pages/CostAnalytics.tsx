@@ -1,4 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+const [showSupplierDialog, setShowSupplierDialog] = useState(false);
+const shouldShowDialogRef = useRef(false);
+
 import {
   Box,
   Button,
@@ -1112,24 +1115,26 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
     item.originalPricePerKg = item.pricePerKg;
   }
 
-  setIsLoading(true);
-  const newSelectedSolution = { category, index, solution };
-  setSelectedSolution(newSelectedSolution);
-  setSupplierDialogOpen(true); // افتح الدايلوج هنا
-  
-  setSolutions((prev) => ({
-    ...prev,
-    [category]: {
-      ...prev[category],
-      [index]: solution,
-    },
-  }));
-  
+ setIsLoading(true);
+const newSelectedSolution = { category, index, solution };
+setSelectedSolution(newSelectedSolution);
+setSolutions((prev) => ({
+  ...prev,
+  [category]: {
+    ...prev[category],
+    [index]: solution,
+  },
+}));
   if (category === 'Direct Materials') {
     setTimeout(() => {
-      setSuppliers(generateSupplierPrices(item.pricePerKg || 0, item.name));
-      setIsLoading(false);
-    }, 800);
+  setSuppliers(generateSupplierPrices(item.pricePerKg || 0, item.name));
+  setIsLoading(false);
+  
+  // افتح الديالوج بعد تحميل البيانات
+  if (shouldShowDialogRef.current) {
+    setShowSupplierDialog(true);
+  }
+}, 800)
   } else {
     setIsLoading(false);
   }
@@ -1996,7 +2001,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       )}
 
       {/* Supplier selection dialog */}
-      {selectedSolution && selectedSolution.solution !== 'GHG Protocol Scopes' && (
+      {showSupplierDialog && selectedSolution && selectedSolution.solution !== 'GHG Protocol Scopes' && (
         <Dialog.Root 
   open={!!selectedSolution} 
   onOpenChange={(open) => {
