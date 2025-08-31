@@ -33,7 +33,6 @@ import {
 } from 'recharts';
 import { DownloadIcon, UploadIcon } from '@radix-ui/react-icons';
 
-// ========== INTERFACES ==========
 interface Item {
   name: string;
   qty?: number;
@@ -116,10 +115,7 @@ interface SelectedSolution {
   category: CostCategory;
   index: number;
   solution: string;
-}
-
-// ========== UTILITY FUNCTIONS ==========
-const calculateComplianceScore = (material: Material): number => {
+}const calculateComplianceScore = (material: Material): number => {
   const weights = {
     tests: 40,
     certificate: 20,
@@ -215,10 +211,7 @@ const getComplianceAssessment = (score: number, material: Material): string => {
     
     return `This supplier has poor compliance. Needs improvement in: ${issues.join(', ')}.`;
   }
-};
-
-// ========== INITIAL DATA ==========
-const initialData: CostData = {
+};const initialData: CostData = {
   totals: {
     'Direct Materials': { actual: 133, budget: 129, costAfter: 130 },
     'Packaging Materials': { actual: 18, budget: 16, costAfter: 16 },
@@ -305,11 +298,9 @@ const solutionsOptions = [
   'Improving inventory management',
   'Minimize transportation costs',
   'Reduce rework costs',
+  'GHG Protocol Scopes', // New option
   'Other',
-];
-
-// ========== STYLES ==========
-const tableHeaderStyle = {
+];const tableHeaderStyle = {
   fontWeight: 'bold',
   padding: '10px 12px',
   backgroundColor: '#f3f4f6',
@@ -335,10 +326,7 @@ const cardTitleStyle = {
   color: '#1f2937',
   fontWeight: 'bold',
   marginBottom: '16px'
-};
-
-// ========== COMPONENTS ==========
-const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
+};const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   const complianceScore = calculateComplianceScore(supplier.material);
   
   const calculateTestScore = (tests: MaterialTests): number => {
@@ -591,9 +579,100 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
       </Dialog.Content>
     </Dialog.Root>
   );
-};
+};const GHGProtocolDialog = ({ 
+  category, 
+  itemName, 
+  open, 
+  onOpenChange 
+}: { 
+  category: CostCategory; 
+  itemName: string; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const getScopeTitle = () => {
+    switch (category) {
+      case 'Direct Materials':
+        return `${itemName} - Scope 3 (Suppliers)`;
+      case 'Packaging Materials':
+        return `${itemName} - Scope 1 & 2 (Manufacturer)`;
+      case 'Direct Labor':
+        return `${itemName} - Scope 2 (Manufacturer)`;
+      case 'Overhead':
+        if (itemName === 'Electricity') return `${itemName} - Scope 2 (Manufacturer)`;
+        if (itemName === 'Maintenance') return `${itemName} - Scope 2 (Manufacturer)`;
+        if (itemName === 'Rent') return `${itemName} - Scope 1 (Manufacturer)`;
+        return `${itemName} - Scope 1 & 2 (Manufacturer)`;
+      case 'Other Costs':
+        if (itemName === 'Transportation') return `${itemName} - Scope 3 (Logistics)`;
+        if (itemName === 'Packaging Waste Disposal') return `${itemName} - Scope 3 (Waste Management)`;
+        if (itemName === 'Rework') return `${itemName} - Scope 3 (Manufacturing)`;
+        return `${itemName} - Scope 3`;
+      default:
+        return `${itemName} - GHG Protocol Scopes`;
+    }
+  };
 
-interface CostAfterViewProps {
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Content style={{ 
+        maxWidth: '600px',
+        padding: '20px',
+        borderRadius: '10px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+        border: '1px solid #e5e7eb',
+        backgroundColor: 'white'
+      }}>
+        <Dialog.Title style={{ 
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '#1f2937',
+          marginBottom: '20px'
+        }}>
+          {getScopeTitle()}
+        </Dialog.Title>
+
+        <Box mb="4">
+          <Heading size="4" mb="2">About GHG Protocol Scopes</Heading>
+          <Text>
+            The GHG Protocol classifies emissions into three scopes to help organizations measure and manage their carbon footprint.
+          </Text>
+        </Box>
+
+        <Grid columns="3" gap="3">
+          <Card style={{ padding: '15px', backgroundColor: '#f0fdf4' }}>
+            <Heading size="3" mb="2" style={{ color: '#166534' }}>Scope 1</Heading>
+            <Text size="2">Direct emissions from owned or controlled sources</Text>
+          </Card>
+          <Card style={{ padding: '15px', backgroundColor: '#f0f9ff' }}>
+            <Heading size="3" mb="2" style={{ color: '#0369a1' }}>Scope 2</Heading>
+            <Text size="2">Indirect emissions from purchased electricity, steam, heating, and cooling</Text>
+          </Card>
+          <Card style={{ padding: '15px', backgroundColor: '#fdf2f8' }}>
+            <Heading size="3" mb="2" style={{ color: '#9d174d' }}>Scope 3</Heading>
+            <Text size="2">All other indirect emissions in the value chain</Text>
+          </Card>
+        </Grid>
+
+        <Flex justify="end" gap="3" mt="4">
+          <Button
+            variant="soft"
+            onClick={() => onOpenChange(false)}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontWeight: 'bold'
+            }}
+          >
+            Close
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
   updateCostAfterValue: (category: CostCategory, index: number, value: number) => void;
@@ -729,10 +808,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
       </Table.Body>
     </Table.Root>
   );
-};
-
-// ========== MAIN COMPONENT ==========
-function CostAnalytics() {
+};function CostAnalytics() {
   const [data, setData] = useState<CostData>(initialData);
   const [dialogCategory, setDialogCategory] = useState<CostCategory | null>(null);
   const [viewMode, setViewMode] = useState<'actual' | 'target' | 'costAfter'>('actual');
@@ -765,6 +841,8 @@ function CostAnalytics() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [ghgDialogOpen, setGhgDialogOpen] = useState(false);
+  const [selectedGhgItem, setSelectedGhgItem] = useState<{category: CostCategory, itemName: string} | null>(null);
 
   // Utility functions
   const formatNumber = (value: number, decimalPlaces: number = 2, showExact: boolean = false) => {
@@ -824,9 +902,7 @@ function CostAnalytics() {
     }
     
     return calculateActualCost(item);
-  };
-
-  const generateSupplierPrices = (basePrice: number, materialName: string) => {
+  };  const generateSupplierPrices = (basePrice: number, materialName: string) => {
     const intBasePrice = Math.round(basePrice);
     
     const discounts = [
@@ -956,9 +1032,7 @@ function CostAnalytics() {
         return newData;
       });
     }
-  };
-
-  const updateTargetValues = (category: CostCategory, index: number, field: 'targetQty' | 'targetPrice', value: number) => {
+  };  const updateTargetValues = (category: CostCategory, index: number, field: 'targetQty' | 'targetPrice', value: number) => {
     setData(prev => {
       const newData = {...prev};
       const categoryItems = [...getDetailsByCategory(category, newData)];
@@ -1019,6 +1093,13 @@ function CostAnalytics() {
   };
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
+    if (solution === 'GHG Protocol Scopes') {
+      const item = getDetailsByCategory(category)[index];
+      setSelectedGhgItem({ category, itemName: item.name });
+      setGhgDialogOpen(true);
+      return;
+    }
+    
     const item = getDetailsByCategory(category)[index];
     setCurrentPrice(item.pricePerKg || 0);
     
@@ -1098,9 +1179,7 @@ function CostAnalytics() {
       updateCategoryTotals(category, newData);
     });
     setData(newData);
-  }, []);
-
-  // Data calculations
+  }, []);  // Data calculations
   const totals = data.totals;
   const totalActual = categories.reduce((sum, category) => sum + totals[category].actual, 0);
   const totalTarget = categories.reduce((sum, category) => sum + totals[category].budget, 0);
@@ -1305,9 +1384,7 @@ function CostAnalytics() {
             </Flex>
           </Card>
         ))}
-      </Grid>
-
-      {/* Main cost table */}
+      </Grid> {/* Main cost table */}
       <Card mb="6" style={{ 
         borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -1708,7 +1785,7 @@ function CostAnalytics() {
                                 <Table.Cell style={tableCellStyle}>
                                   {item.basis}
                                 </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
+                                <Table.Cell style={tableCellStyle>
                                   {autoMode ? (
                                     formatCurrency(item.cost || 0, currency)
                                   ) : (
@@ -1904,8 +1981,18 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* GHG Protocol Dialog */}
+      {ghgDialogOpen && selectedGhgItem && (
+        <GHGProtocolDialog 
+          category={selectedGhgItem.category} 
+          itemName={selectedGhgItem.itemName}
+          open={ghgDialogOpen}
+          onOpenChange={setGhgDialogOpen}
+        />
+      )}
+
       {/* Supplier selection dialog */}
-      {selectedSolution && (
+      {selectedSolution && selectedSolution.solution !== 'GHG Protocol Scopes' && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
             maxWidth: '1000px',
@@ -2056,20 +2143,7 @@ function CostAnalytics() {
                           dataKey="name" 
                           tick={{ fill: '#4b5563', fontSize: 10 }}
                           axisLine={{ stroke: '#e5e7eb' }}
-                        />
-                        <YAxis 
-                          yAxisId="left"
-                          orientation="left"
-                          tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          label={{ 
-                            value: 'Price (Currency)', 
-                            angle: -90, 
-                            position: 'insideLeft',
-                            style: { textAnchor: 'middle', fill: '#3b82f6', fontSize: '10px' } 
-                          }}
-                        />
-                        <YAxis 
+                        /><YAxis 
                           yAxisId="right"
                           orientation="right"
                           domain={[0, 200]}
@@ -2218,8 +2292,7 @@ function CostAnalytics() {
                               fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Reliability</Table.ColumnHeaderCell>
-                            <Table.ColumnHeaderCell style={{
+                            }}>Reliability</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
