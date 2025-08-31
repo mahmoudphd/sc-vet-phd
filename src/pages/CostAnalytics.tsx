@@ -2270,7 +2270,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
-                              color: '1e293b',
+                              color: '#1e293b',
                               whiteSpace: 'nowrap'
                             }}>Price/kg</Table.ColumnHeaderCell>
                             <Table.ColumnHeaderCell style={{
