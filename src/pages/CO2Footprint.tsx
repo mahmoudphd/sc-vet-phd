@@ -164,7 +164,7 @@ const initialStageData: StageData = {
       activity: 'Last-Mile Delivery', 
       distance: 15, 
       unit: 'km', 
-      emissionValue: 0.18, 
+      emissionFactor: 0.18, 
       emissions: (15 * 0.18) / BATCH_SIZE 
     },
     { 
