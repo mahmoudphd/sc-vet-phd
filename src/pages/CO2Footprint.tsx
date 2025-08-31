@@ -15,6 +15,7 @@ const BATCH_SIZE = 1000; // Number of units per production batch
 
 // Colors for charts
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
+const SCOPE_COLORS = ['#FF6B6B', '#0088FE']; // Scope 1+2, Scope 3
 
 // Define interfaces for our data structures
 interface RawMaterial {
@@ -163,7 +164,7 @@ const initialStageData: StageData = {
       activity: 'Last-Mile Delivery', 
       distance: 15, 
       unit: 'km', 
-      emissionFactor: 0.18, 
+      emissionValue: 0.18, 
       emissions: (15 * 0.18) / BATCH_SIZE 
     },
     { 
@@ -296,6 +297,22 @@ const CO2Footprint = () => {
 
   const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(getEmissionData());
 
+  // Calculate GHG Protocol Scopes data
+  const ghgScopeData = useMemo(() => {
+    const scope12Emissions = emissionData
+      .filter(item => ['Manufacturing', 'Packaging'].includes(item.category))
+      .reduce((sum, item) => sum + (isNaN(item.emissions) ? 0 : item.emissions), 0);
+    
+    const scope3Emissions = emissionData
+      .filter(item => ['Raw Materials', 'Transport', 'Distribution', 'Use'].includes(item.category))
+      .reduce((sum, item) => sum + (isNaN(item.emissions) ? 0 : item.emissions), 0);
+    
+    return [
+      { name: 'Scope 1+2', value: parseFloat(scope12Emissions.toFixed(3)) },
+      { name: 'Scope 3', value: parseFloat(scope3Emissions.toFixed(3)) }
+    ];
+  }, [emissionData]);
+
   // Simulate IoT data updates with minimal variations
   useEffect(() => {
     if (mode === 'iot') {
@@ -408,13 +425,6 @@ const CO2Footprint = () => {
     setCertifications(newCerts);
   };
 
-  const reductionData = [
-    { initiative: 'Solar Panel Installation', reduction: 2.5 },
-    { initiative: 'LED Lighting', reduction: 1.2 },
-    { initiative: 'Industrial Waste Recycling', reduction: 1.5 },
-    { initiative: 'Fuel Consumption Optimization', reduction: 1.3 }
-  ];
-
   const totalEmissions = useMemo(() => {
     const total = emissionData.reduce((sum, item) => {
       const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
@@ -433,7 +443,6 @@ const CO2Footprint = () => {
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
-  const totalReduction = reductionData.reduce((sum, item) => sum + item.reduction, 0);
 
   const handleSubmit = () => {
     console.log('Submitted emission data:', emissionData);
@@ -448,8 +457,6 @@ const CO2Footprint = () => {
       (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
       (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
   }));
-
-  const barChartData = reductionData;
 
   return (
     <Box p="6">
@@ -570,8 +577,10 @@ const CO2Footprint = () => {
         </Card>
         <Card>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2"><strong>Emission Reduction</strong></Text>
-            <Heading size="7"><strong>{totalReduction.toFixed(1)} kg CO₂e</strong></Heading>
+            <Text size="2"><strong>Scope 3 Share</strong></Text>
+            <Heading size="7"><strong>
+              {totalEmissions > 0 ? ((ghgScopeData[1].value / totalEmissions) * 100).toFixed(1) : '0.0'}%
+            </strong></Heading>
           </Flex>
         </Card>
       </Grid>
@@ -612,19 +621,37 @@ const CO2Footprint = () => {
         </Card>
         <Card>
           <Box p="3">
-            <Heading size="4" mb="2">Emission Reduction Initiatives</Heading>
+            <Heading size="4" mb="2">GHG Protocol Scopes</Heading>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={barChartData}>
-                <XAxis dataKey="initiative" />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={ghgScopeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {ghgScopeData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip 
-                  formatter={(value: number) => [`${value} kg CO₂e`, 'Reduction']}
-                  labelFormatter={(label) => label}
+                  formatter={(value: number, name: string) => [
+                    `${value.toFixed(3)} kg CO₂e`,
+                    name
+                  ]}
                 />
                 <Legend />
-                <Bar dataKey="reduction" name="Reduction (kg CO₂e)" fill="#8884d8" />
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
+            <Box mt="2" style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>
+              <div>Scope 1+2: Manufacturing + Packaging</div>
+              <div>Scope 3: Raw Materials + Transport + Distribution + Use</div>
+            </Box>
           </Box>
         </Card>
       </Grid>
