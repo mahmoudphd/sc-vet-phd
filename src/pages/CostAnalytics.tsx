@@ -2640,7 +2640,8 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
             </ResponsiveContainer>
           </Flex>
         </Card>
-      </Grid      {/* Submit to blockchain button */}
+            </Grid>
+      {/* Submit to blockchain button */}
       <Flex justify="end" mt="6">
         <Button 
           size="2" 
