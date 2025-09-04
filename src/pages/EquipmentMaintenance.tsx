@@ -13,8 +13,7 @@ import {
   TextField,
   Select,
   Tooltip,
-  Progress,
-  Switch
+  Progress
 } from '@radix-ui/themes';
 import { 
   MixerHorizontalIcon, 
@@ -25,7 +24,7 @@ import {
   BellIcon,
   CalendarIcon,
   ActivityLogIcon,
-  MagnifyingGlassIcon
+  Cross2Icon
 } from '@radix-ui/react-icons';
 
 // Type definitions
@@ -76,7 +75,7 @@ const generateSensorData = (): SensorData => {
   };
 };
 
-// Equipment data with Arabic part names only
+// Equipment data with Arabic part names and updated technician names
 const equipmentData: Equipment[] = [
   { 
     id: 'EQ00001', 
@@ -88,7 +87,8 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'John Smith', duration: '2 hours' }
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours' },
+      { date: '2025-03-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
     ]
   },
   { 
@@ -101,7 +101,7 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-05', type: 'Calibration', technician: 'Mike Chen', duration: '45 minutes' }
+      { date: '2025-04-05', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes' }
     ]
   },
   { 
@@ -114,7 +114,7 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Lubrication', technician: 'Emily Davis', duration: '30 minutes' }
+      { date: '2025-04-07', type: 'Lubrication', technician: 'Mohamed Ahmed', duration: '30 minutes' }
     ]
   },
   { 
@@ -127,302 +127,508 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Cleaning', technician: 'Robert Wilson', duration: '1 hour' }
+      { date: '2025-04-07', type: 'Cleaning', technician: 'Mohamed Ahmed', duration: '1 hour' }
+    ]
+  },
+  { 
+    id: 'EQ00005', 
+    name: 'بوابة مسار الخامة', 
+    criticality: 'Critical', 
+    lastService: '2025-04-07', 
+    status: 'Operational', 
+    nextDue: 'Weekly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '45 minutes' }
+    ]
+  },
+  { 
+    id: 'EQ00006', 
+    name: 'بستم التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00007', 
+    name: 'أسطوانة التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-03-15', 
+    status: 'Operational', 
+    nextDue: 'Semi-Annual', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-03-15', type: 'Overhaul', technician: 'Mohamed Ahmed', duration: '4 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00008', 
+    name: 'هوبر الماكينة', 
+    criticality: 'Critical', 
+    lastService: '2025-03-15', 
+    status: 'Operational', 
+    nextDue: 'Semi-Annual', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-03-15', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '2 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00009', 
+    name: 'حساس العبوات', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: true,
+    sensorData: generateSensorData(),
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '1 hour' }
+    ]
+  },
+  { 
+    id: 'EQ00010', 
+    name: 'حساس الموضع', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: true,
+    sensorData: generateSensorData(),
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes' }
+    ]
+  },
+  { 
+    id: 'EQ00011', 
+    name: 'سيرفو موتور التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00012', 
+    name: 'سيرفو موتور النوزل', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
     ]
   }
 ];
 
 const EquipmentMaintenance = () => {
   const [selectedDevice, setSelectedDevice] = useState<Equipment | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showOnlyConnected, setShowOnlyConnected] = useState(false);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
-
-  const filteredEquipment = equipmentData.filter(equipment => {
-    const matchesSearch = equipment.name.includes(searchTerm) || equipment.id.includes(searchTerm);
-    const matchesFilter = showOnlyConnected ? equipment.iot : true;
-    return matchesSearch && matchesFilter;
+  const [iotStats, setIotStats] = useState<IotStats>({
+    connectedDevices: 0,
+    totalDevices: 0,
+    uptime: 0,
+    alerts: 0
   });
 
-  const sortedEquipment = [...filteredEquipment].sort((a, b) => {
-    if (!sortConfig) return 0;
+  // Calculate IoT statistics
+  useEffect(() => {
+    const connected = equipmentData.filter(item => item.iot).length;
+    const total = equipmentData.length;
+    const uptime = Math.floor((connected / total) * 100);
     
-    const aValue = a[sortConfig.key as keyof Equipment];
-    const bValue = b[sortConfig.key as keyof Equipment];
-    
-    if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
-    return 0;
-  });
+    const alerts = equipmentData.filter(item => 
+      item.iot && item.sensorData && parseFloat(item.sensorData.vibration) > 2.5
+    ).length;
 
-  const handleSort = (key: string) => {
-    let direction: 'asc' | 'desc' = 'asc';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-      direction = 'desc';
+    setIotStats({
+      connectedDevices: connected,
+      totalDevices: total,
+      uptime: uptime,
+      alerts: alerts
+    });
+  }, []);
+
+  const IotStatusBadge = ({ connected, sensorData }: { connected: boolean; sensorData: SensorData | null }) => {
+    if (connected && sensorData) {
+      const isAlert = parseFloat(sensorData.vibration) > 2.5;
+      
+      return (
+        <Tooltip content={
+          <Box p="2" style={{ maxWidth: '300px' }}>
+            <Text size="1" weight="bold">Live IoT Sensor Data:</Text>
+            <Text size="1">Temperature: {sensorData.temperature}</Text>
+            <Text size="1">Vibration: {sensorData.vibration}</Text>
+            <Text size="1">Pressure: {sensorData.pressure}</Text>
+            <Text size="1">Power: {sensorData.powerConsumption}</Text>
+            <Text size="1" color="gray">Last update: {sensorData.lastUpdate}</Text>
+            {isAlert && (
+              <Text size="1" color="red" weight="bold">
+                <ExclamationTriangleIcon /> High vibration detected!
+              </Text>
+            )}
+          </Box>
+        }>
+          <Badge color={isAlert ? "red" : "green"} variant="soft">
+            <Link2Icon width="12" height="12" /> 
+            {isAlert ? "Needs Attention" : "Connected"}
+          </Badge>
+        </Tooltip>
+      );
+    } else {
+      return (
+        <Tooltip content="This device requires manual inspection and data collection">
+          <Badge color="gray" variant="soft">
+            ❌ Manual Monitoring
+          </Badge>
+        </Tooltip>
+      );
     }
-    setSortConfig({ key, direction });
   };
 
-  const IotStatusBadge = ({ connected }: { connected: boolean }) => {
-    return connected ? (
-      <Badge color="green" variant="soft" style={{ padding: '4px 8px', fontSize: '12px' }}>
-        <Link2Icon width="12" height="12" /> Connected
-      </Badge>
-    ) : (
-      <Badge color="gray" variant="soft" style={{ padding: '4px 8px', fontSize: '12px' }}>
-        ❌ Manual
-      </Badge>
-    );
+  const calculateHealthScore = (sensorData: SensorData | null): number => {
+    if (!sensorData) return 0;
+    
+    let score = 100;
+    
+    // Deduct points for high temperature
+    const temp = parseInt(sensorData.temperature);
+    if (temp > 30) score -= (temp - 30) * 2;
+    
+    // Deduct points for high vibration
+    const vibration = parseFloat(sensorData.vibration);
+    if (vibration > 2.0) score -= (vibration - 2.0) * 10;
+    
+    return Math.max(0, Math.floor(score));
   };
 
   return (
-    <Box p="6" style={{ maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Header */}
-      <Flex justify="between" align="center" mb="6">
-        <Flex direction="column" gap="1">
-          <Heading size="7" weight="bold" style={{ color: '#1f2937' }}>
-            Equipment Maintenance
-          </Heading>
-          <Text size="2" color="gray">
-            Monitor and manage production line equipment
-          </Text>
+    <Box p="6">
+      <Flex justify="between" align="center" mb="5">
+        <Flex align="center" gap="3">
+          <Heading size="6">Equipment Maintenance Register</Heading>
+          <Button color="green" variant="solid">
+            <ActivityLogIcon /> IoT Dashboard
+          </Button>
         </Flex>
-        <Button color="blue" size="3">
-          <ActivityLogIcon /> Dashboard
-        </Button>
+        <Flex gap="3">
+          <Dialog.Root>
+            <Dialog.Trigger>
+              <Button variant="soft">
+                <MixerHorizontalIcon /> New Work Order
+              </Button>
+            </Dialog.Trigger>
+            <Dialog.Content style={{ maxWidth: '500px' }}>
+              <Flex justify="between" align="center" mb="3">
+                <Dialog.Title>Create New Work Order</Dialog.Title>
+                <Dialog.Close>
+                  <Button variant="ghost" color="gray">
+                    <Cross2Icon />
+                  </Button>
+                </Dialog.Close>
+              </Flex>
+              <Flex direction="column" gap="3">
+                <label>
+                  <Text as="div" size="2" weight="bold" mb="1">Work Order Title</Text>
+                  <TextField.Root placeholder="Enter work order title" />
+                </label>
+                
+                <label>
+                  <Text as="div" size="2" weight="bold" mb="1">Select Equipment</Text>
+                  <Select.Root>
+                    <Select.Trigger />
+                    <Select.Content>
+                      {equipmentData.map((item) => (
+                        <Select.Item key={item.id} value={item.id}>
+                          {item.name} ({item.id})
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+                </label>
+                
+                <label>
+                  <Text as="div" size="2" weight="bold" mb="1">Priority Level</Text>
+                  <Select.Root>
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="high">High Priority</Select.Item>
+                      <Select.Item value="medium">Medium Priority</Select.Item>
+                      <Select.Item value="low">Low Priority</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </label>
+                
+                <label>
+                  <Text as="div" size="2" weight="bold" mb="1">Scheduled Date</Text>
+                  <TextField.Root type="date" />
+                </label>
+                
+                <Flex gap="3" justify="end" mt="3">
+                  <Dialog.Close>
+                    <Button variant="soft" color="gray">
+                      Cancel
+                    </Button>
+                  </Dialog.Close>
+                  <Button>Create Work Order</Button>
+                </Flex>
+              </Flex>
+            </Dialog.Content>
+          </Dialog.Root>
+        </Flex>
       </Flex>
 
-      {/* Stats Cards */}
-      <Grid columns="4" gap="4" mb="6">
-        <Card style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)' }}>
-          <Flex direction="column" gap="2">
+      {/* IoT Statistics Cards */}
+      <Grid columns="4" gap="4" mb="5">
+        <Card>
+          <Flex direction="column" gap="1">
             <Flex align="center" gap="2">
-              <Box style={{ padding: '8px', background: '#3b82f620', borderRadius: '8px' }}>
-                <DashboardIcon color="#3b82f6" />
-              </Box>
-              <Text size="2" weight="medium">Total Equipment</Text>
+              <Link2Icon color="blue" />
+              <Text size="2">IoT Connected Devices</Text>
             </Flex>
-            <Heading size="7" style={{ color: '#1e40af' }}>{equipmentData.length}</Heading>
+            <Heading size="7">{iotStats.connectedDevices}/{iotStats.totalDevices}</Heading>
+            <Progress value={iotStats.uptime} />
+            <Text size="1" color="gray">{iotStats.uptime}% IoT Coverage</Text>
           </Flex>
         </Card>
-
-        <Card style={{ background: 'linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)' }}>
-          <Flex direction="column" gap="2">
+        
+        <Card>
+          <Flex direction="column" gap="1">
             <Flex align="center" gap="2">
-              <Box style={{ padding: '8px', background: '#22c55e20', borderRadius: '8px' }}>
-                <Link2Icon color="#22c55e" />
-              </Box>
-              <Text size="2" weight="medium">IoT Connected</Text>
+              <DashboardIcon color="green" />
+              <Text size="2">System Uptime</Text>
             </Flex>
-            <Heading size="7" style={{ color: '#166534' }}>
-              {equipmentData.filter(e => e.iot).length}
+            <Heading size="7">98.7%</Heading>
+            <Text size="1" color="gray">Last 30 days</Text>
+          </Flex>
+        </Card>
+        
+        <Card>
+          <Flex direction="column" gap="1">
+            <Flex align="center" gap="2">
+              <BellIcon color="orange" />
+              <Text size="2">Active Alerts</Text>
+            </Flex>
+            <Heading size="7" style={{ color: iotStats.alerts > 0 ? '#ef4444' : 'inherit' }}>
+              {iotStats.alerts}
             </Heading>
+            <Text size="1" color="gray">Requiring attention</Text>
           </Flex>
         </Card>
-
-        <Card style={{ background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)' }}>
-          <Flex direction="column" gap="2">
+        
+        <Card>
+          <Flex direction="column" gap="1">
             <Flex align="center" gap="2">
-              <Box style={{ padding: '8px', background: '#f59e0b20', borderRadius: '8px' }}>
-                <BellIcon color="#f59e0b" />
-              </Box>
-              <Text size="2" weight="medium">Maintenance Due</Text>
+              <CalendarIcon color="purple" />
+              <Text size="2">Preventive Maintenance</Text>
             </Flex>
-            <Heading size="7" style={{ color: '#92400e' }}>3</Heading>
-          </Flex>
-        </Card>
-
-        <Card style={{ background: 'linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)' }}>
-          <Flex direction="column" gap="2">
-            <Flex align="center" gap="2">
-              <Box style={{ padding: '8px', background: '#ef444420', borderRadius: '8px' }}>
-                <ExclamationTriangleIcon color="#ef4444" />
-              </Box>
-              <Text size="2" weight="medium">Critical Alerts</Text>
-            </Flex>
-            <Heading size="7" style={{ color: '#dc2626' }}>1</Heading>
+            <Heading size="7">12</Heading>
+            <Text size="1" color="gray">Scheduled this week</Text>
           </Flex>
         </Card>
       </Grid>
 
-      {/* Filters and Search */}
-      <Card mb="5">
-        <Flex justify="between" align="center" p="4">
-          <Flex align="center" gap="4">
-            <Text weight="medium">Filters:</Text>
-            <Flex align="center" gap="2">
-              <Switch 
-                checked={showOnlyConnected}
-                onCheckedChange={setShowOnlyConnected}
-              />
-              <Text size="2">Show only IoT connected</Text>
-            </Flex>
-          </Flex>
-          
-          <TextField.Root
-            placeholder="Search equipment..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{ width: '300px' }}
-          >
-            <TextField.Slot>
-              <MagnifyingGlassIcon />
-            </TextField.Slot>
-          </TextField.Root>
+      {/* Main Equipment Table */}
+      <Card mb="4">
+        <Flex justify="between" align="center" mb="3">
+          <Heading size="5">Production Line Equipment</Heading>
+          <Text color="gray">{equipmentData.length} total devices</Text>
         </Flex>
-      </Card>
+        
+        <Table.Root variant="surface">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeaderCell>Equipment ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Part Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Criticality</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>
+                <Flex align="center" gap="2">
+                  <Link2Icon /> IoT Status
+                  <Tooltip content="Internet of Things connection and monitoring status">
+                    <InfoCircledIcon style={{ cursor: 'help' }} />
+                  </Tooltip>
+                </Flex>
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Health Score</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Last Service</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Next Due</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
 
-      {/* Equipment Table */}
-      <Card>
-        <Box style={{ overflowX: 'auto' }}>
-          <Table.Root variant="ghost" size="2">
-            <Table.Header>
-              <Table.Row style={{ background: '#f8fafc' }}>
-                <Table.ColumnHeaderCell 
-                  style={{ fontWeight: 600, padding: '16px', cursor: 'pointer' }}
-                  onClick={() => handleSort('id')}
-                >
-                  ID {sortConfig?.key === 'id' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell 
-                  style={{ fontWeight: 600, padding: '16px', cursor: 'pointer' }}
-                  onClick={() => handleSort('name')}
-                >
-                  Equipment {sortConfig?.key === 'name' && (sortConfig.direction === 'asc' ? '↑' : '↓')}
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={{ fontWeight: 600, padding: '16px' }}>
-                  Status
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={{ fontWeight: 600, padding: '16px' }}>
-                  IoT
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={{ fontWeight: 600, padding: '16px' }}>
-                  Last Service
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={{ fontWeight: 600, padding: '16px' }}>
-                  Next Due
-                </Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell style={{ fontWeight: 600, padding: '16px' }}>
-                  Actions
-                </Table.ColumnHeaderCell>
-              </Table.Row>
-            </Table.Header>
-
-            <Table.Body>
-              {sortedEquipment.map((item, index) => (
+          <Table.Body>
+            {equipmentData.map((item) => {
+              const healthScore = calculateHealthScore(item.sensorData);
+              const isHealthy = healthScore >= 80;
+              const needsAttention = healthScore < 80 && healthScore >= 60;
+              const isCritical = healthScore < 60;
+              
+              return (
                 <Table.Row 
-                  key={item.id}
+                  key={item.id} 
                   style={{ 
-                    background: index % 2 === 0 ? 'white' : '#fafafa',
-                    borderBottom: '1px solid #f1f5f9'
+                    cursor: item.iot ? 'pointer' : 'default',
+                    backgroundColor: item.iot ? '#f8fafc' : 'white'
                   }}
+                  onClick={() => item.iot && setSelectedDevice(item)}
                 >
-                  <Table.Cell style={{ padding: '16px', fontFamily: 'monospace', fontWeight: 500 }}>
-                    {item.id}
-                  </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <Flex direction="column" gap="1">
-                      <Text weight="medium" style={{ textAlign: 'right', direction: 'rtl' }}>
-                        {item.name}
-                      </Text>
-                      <Text size="1" color="gray">
-                        {item.criticality}
-                      </Text>
+                  <Table.Cell>{item.id}</Table.Cell>
+                  <Table.Cell style={{ direction: 'rtl', textAlign: 'right' }}>
+                    <Flex align="center" gap="2" justify="end">
+                      <Text>{item.name}</Text>
+                      {item.iot && (
+                        <Badge size="1" color="blue" variant="soft">
+                          IoT
+                        </Badge>
+                      )}
                     </Flex>
                   </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <Badge color="green" variant="soft" style={{ fontSize: '12px' }}>
-                      {item.status}
-                    </Badge>
+                  <Table.Cell>
+                    <Badge color="red" variant="soft">{item.criticality}</Badge>
                   </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <IotStatusBadge connected={item.iot} />
+                  <Table.Cell>
+                    <IotStatusBadge connected={item.iot} sensorData={item.sensorData} />
                   </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <Text size="2">{item.lastService}</Text>
+                  <Table.Cell>
+                    {item.iot && item.sensorData ? (
+                      <Flex align="center" gap="2">
+                        <Progress 
+                          value={healthScore} 
+                          color={
+                            isCritical ? "red" : 
+                            needsAttention ? "orange" : "green"
+                          } 
+                          style={{ width: '60px' }} 
+                        />
+                        <Text size="2" weight="bold">{healthScore}%</Text>
+                      </Flex>
+                    ) : (
+                      <Text size="2" color="gray">N/A</Text>
+                    )}
                   </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <Text size="2" weight="medium">{item.nextDue}</Text>
+                  <Table.Cell>{item.lastService}</Table.Cell>
+                  <Table.Cell>
+                    <Badge color="green" variant="soft">{item.status}</Badge>
                   </Table.Cell>
-                  
-                  <Table.Cell style={{ padding: '16px' }}>
-                    <Flex gap="2">
-                      <Button 
-                        size="1" 
-                        variant="ghost"
-                        onClick={() => setSelectedDevice(item)}
-                      >
-                        View
-                      </Button>
-                      <Button size="1" variant="soft">
-                        Schedule
-                      </Button>
-                    </Flex>
-                  </Table.Cell>
+                  <Table.Cell>{item.nextDue}</Table.Cell>
                 </Table.Row>
-              ))}
-            </Table.Body>
-          </Table.Root>
-        </Box>
-
-        {sortedEquipment.length === 0 && (
-          <Box p="6" style={{ textAlign: 'center' }}>
-            <Text color="gray">No equipment found matching your criteria</Text>
-          </Box>
-        )}
+              );
+            })}
+          </Table.Body>
+        </Table.Root>
       </Card>
 
-      {/* Equipment Details Dialog */}
+      {/* IoT Device Details Dialog */}
       <Dialog.Root open={!!selectedDevice} onOpenChange={() => setSelectedDevice(null)}>
         {selectedDevice && (
-          <Dialog.Content style={{ maxWidth: '600px' }}>
-            <Dialog.Title>
-              <Flex align="center" gap="2">
-                Equipment Details - {selectedDevice.name}
-              </Flex>
-            </Dialog.Title>
+          <Dialog.Content style={{ maxWidth: '800px' }}>
+            <Flex justify="between" align="center" mb="3">
+              <Dialog.Title>
+                <Flex align="center" gap="2">
+                  <Link2Icon /> IoT Device Details - {selectedDevice.name}
+                </Flex>
+              </Dialog.Title>
+              <Dialog.Close>
+                <Button variant="ghost" color="gray">
+                  <Cross2Icon />
+                </Button>
+              </Dialog.Close>
+            </Flex>
             
             <Grid columns="2" gap="4" mt="4">
-              <Box>
-                <Text size="2" weight="bold" color="gray">Equipment ID</Text>
-                <Text>{selectedDevice.id}</Text>
-              </Box>
-              <Box>
-                <Text size="2" weight="bold" color="gray">Criticality</Text>
-                <Text>{selectedDevice.criticality}</Text>
-              </Box>
-              <Box>
-                <Text size="2" weight="bold" color="gray">Status</Text>
-                <Text>{selectedDevice.status}</Text>
-              </Box>
-              <Box>
-                <Text size="2" weight="bold" color="gray">IoT Connection</Text>
-                <IotStatusBadge connected={selectedDevice.iot} />
-              </Box>
-              <Box>
-                <Text size="2" weight="bold" color="gray">Last Service</Text>
-                <Text>{selectedDevice.lastService}</Text>
-              </Box>
-              <Box>
-                <Text size="2" weight="bold" color="gray">Next Due</Text>
-                <Text>{selectedDevice.nextDue}</Text>
-              </Box>
+              <Card>
+                <Heading size="4" mb="3">Real-time Sensor Data</Heading>
+                <Flex direction="column" gap="3">
+                  <Flex justify="between">
+                    <Text size="2">Temperature</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.temperature || 'N/A'}</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Vibration Level</Text>
+                    <Text weight="bold" color={selectedDevice.sensorData && parseFloat(selectedDevice.sensorData.vibration) > 2.5 ? "red" : "green"}>
+                      {selectedDevice.sensorData?.vibration || 'N/A'}
+                    </Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Pressure</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.pressure || 'N/A'}</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Power Consumption</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.powerConsumption || 'N/A'}</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Operational Hours</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.operationalHours.toLocaleString() || 'N/A'} hours</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Last Data Update</Text>
+                    <Text size="2" color="gray">{selectedDevice.sensorData?.lastUpdate || 'N/A'}</Text>
+                  </Flex>
+                </Flex>
+              </Card>
+
+              <Card>
+                <Heading size="4" mb="3">Device Health & Analytics</Heading>
+                <Flex direction="column" gap="3">
+                  <Flex direction="column" gap="1">
+                    <Flex justify="between">
+                      <Text size="2">Health Score</Text>
+                      <Text weight="bold">{calculateHealthScore(selectedDevice.sensorData)}%</Text>
+                    </Flex>
+                    <Progress 
+                      value={calculateHealthScore(selectedDevice.sensorData)} 
+                      color={
+                        calculateHealthScore(selectedDevice.sensorData) < 60 ? "red" : 
+                        calculateHealthScore(selectedDevice.sensorData) < 80 ? "orange" : "green"
+                      } 
+                    />
+                  </Flex>
+                  
+                  <Button variant="soft">
+                    <BellIcon /> Set Up Custom Alerts
+                  </Button>
+                </Flex>
+              </Card>
             </Grid>
 
-            <Box mt="4" p="3" style={{ background: '#f8fafc', borderRadius: '8px' }}>
-              <Text size="2" weight="bold" mb="2">Maintenance History</Text>
-              {selectedDevice.maintenanceHistory.map((record, index) => (
-                <Flex key={index} justify="between" mb="2">
-                  <Text size="1">{record.date} - {record.type}</Text>
-                  <Text size="1" color="gray">{record.duration}</Text>
-                </Flex>
-              ))}
-            </Box>
+            <Card mt="4">
+              <Heading size="4" mb="3">Maintenance History</Heading>
+              <Table.Root>
+                <Table.Header>
+                  <Table.Row>
+                    <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Technician</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Duration</Table.ColumnHeaderCell>
+                  </Table.Row>
+                </Table.Header>
+                <Table.Body>
+                  {selectedDevice.maintenanceHistory.map((record: MaintenanceRecord, index: number) => (
+                    <Table.Row key={index}>
+                      <Table.Cell>{record.date}</Table.Cell>
+                      <Table.Cell>{record.type}</Table.Cell>
+                      <Table.Cell>{record.technician}</Table.Cell>
+                      <Table.Cell>{record.duration}</Table.Cell>
+                    </Table.Row>
+                  ))}
+                </Table.Body>
+              </Table.Root>
+            </Card>
 
             <Flex gap="3" mt="4" justify="end">
               <Button variant="soft" color="gray" onClick={() => setSelectedDevice(null)}>
