@@ -13,7 +13,6 @@ import {
   TextField,
   Select,
   Tooltip,
-  Switch,
   Progress
 } from '@radix-ui/themes';
 import { 
@@ -22,14 +21,49 @@ import {
   ExclamationTriangleIcon,
   InfoCircledIcon,
   DashboardIcon,
-  ActivityIcon,
   BellIcon,
   CalendarIcon,
-  LightningBoltIcon
+  ActivityIcon
 } from '@radix-ui/react-icons';
 
+// Type definitions
+interface SensorData {
+  temperature: string;
+  vibration: string;
+  pressure: string;
+  powerConsumption: string;
+  lastUpdate: string;
+  operationalHours: number;
+}
+
+interface MaintenanceRecord {
+  date: string;
+  type: string;
+  technician: string;
+  duration: string;
+}
+
+interface Equipment {
+  id: string;
+  name: string;
+  criticality: string;
+  lastService: string;
+  status: string;
+  nextDue: string;
+  iot: boolean;
+  sensorData: SensorData | null;
+  maintenanceHistory: MaintenanceRecord[];
+}
+
+interface IotStats {
+  connectedDevices: number;
+  totalDevices: number;
+  uptime: number;
+  alerts: number;
+}
+
 // Mock IoT sensor data generator
-const generateSensorData = () => {
+const generateSensorData = (): SensorData => {
   return {
     temperature: `${Math.floor(20 + Math.random() * 15)}°C`,
     vibration: `${(0.5 + Math.random() * 3).toFixed(1)}mm/s`,
@@ -41,7 +75,7 @@ const generateSensorData = () => {
 };
 
 // Equipment data with realistic IoT information
-const equipmentData = [
+const equipmentData: Equipment[] = [
   { 
     id: 'EQ00001', 
     name: 'Conveyor Belt System', 
@@ -111,8 +145,8 @@ const equipmentData = [
 ];
 
 const EquipmentMaintenance = () => {
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [iotStats, setIotStats] = useState({
+  const [selectedDevice, setSelectedDevice] = useState<Equipment | null>(null);
+  const [iotStats, setIotStats] = useState<IotStats>({
     connectedDevices: 0,
     totalDevices: 0,
     uptime: 0,
@@ -124,8 +158,9 @@ const EquipmentMaintenance = () => {
     const connected = equipmentData.filter(item => item.iot).length;
     const total = equipmentData.length;
     const uptime = Math.floor((connected / total) * 100);
+    
     const alerts = equipmentData.filter(item => 
-      item.iot && parseFloat(item.sensorData?.vibration) > 2.5
+      item.iot && item.sensorData && parseFloat(item.sensorData.vibration) > 2.5
     ).length;
 
     setIotStats({
@@ -136,9 +171,9 @@ const EquipmentMaintenance = () => {
     });
   }, []);
 
-  const IotStatusBadge = ({ connected, sensorData }) => {
-    if (connected) {
-      const isAlert = sensorData && parseFloat(sensorData.vibration) > 2.5;
+  const IotStatusBadge = ({ connected, sensorData }: { connected: boolean; sensorData: SensorData | null }) => {
+    if (connected && sensorData) {
+      const isAlert = parseFloat(sensorData.vibration) > 2.5;
       
       return (
         <Tooltip content={
@@ -173,7 +208,7 @@ const EquipmentMaintenance = () => {
     }
   };
 
-  const calculateHealthScore = (sensorData) => {
+  const calculateHealthScore = (sensorData: SensorData | null): number => {
     if (!sensorData) return 0;
     
     let score = 100;
@@ -354,7 +389,7 @@ const EquipmentMaintenance = () => {
                     <IotStatusBadge connected={item.iot} sensorData={item.sensorData} />
                   </Table.Cell>
                   <Table.Cell>
-                    {item.iot ? (
+                    {item.iot && item.sensorData ? (
                       <Flex align="center" gap="2">
                         <Progress 
                           value={healthScore} 
@@ -398,29 +433,29 @@ const EquipmentMaintenance = () => {
                 <Flex direction="column" gap="3">
                   <Flex justify="between">
                     <Text size="2">Temperature</Text>
-                    <Text weight="bold">{selectedDevice.sensorData.temperature}</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.temperature || 'N/A'}</Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Vibration Level</Text>
-                    <Text weight="bold" color={parseFloat(selectedDevice.sensorData.vibration) > 2.5 ? "red" : "green"}>
-                      {selectedDevice.sensorData.vibration}
+                    <Text weight="bold" color={selectedDevice.sensorData && parseFloat(selectedDevice.sensorData.vibration) > 2.5 ? "red" : "green"}>
+                      {selectedDevice.sensorData?.vibration || 'N/A'}
                     </Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Pressure</Text>
-                    <Text weight="bold">{selectedDevice.sensorData.pressure}</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.pressure || 'N/A'}</Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Power Consumption</Text>
-                    <Text weight="bold">{selectedDevice.sensorData.powerConsumption}</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.powerConsumption || 'N/A'}</Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Operational Hours</Text>
-                    <Text weight="bold">{selectedDevice.sensorData.operationalHours.toLocaleString()} hours</Text>
+                    <Text weight="bold">{selectedDevice.sensorData?.operationalHours.toLocaleString() || 'N/A'} hours</Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Last Data Update</Text>
-                    <Text size="2" color="gray">{selectedDevice.sensorData.lastUpdate}</Text>
+                    <Text size="2" color="gray">{selectedDevice.sensorData?.lastUpdate || 'N/A'}</Text>
                   </Flex>
                 </Flex>
               </Card>
@@ -470,7 +505,7 @@ const EquipmentMaintenance = () => {
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
-                  {selectedDevice.maintenanceHistory.map((record, index) => (
+                  {selectedDevice.maintenanceHistory.map((record: MaintenanceRecord, index: number) => (
                     <Table.Row key={index}>
                       <Table.Cell>{record.date}</Table.Cell>
                       <Table.Cell>{record.type}</Table.Cell>
