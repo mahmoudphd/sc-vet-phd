@@ -61,7 +61,6 @@ interface Equipment {
   maintenanceHistory: MaintenanceRecord[];
   maintenanceType: string;
   maintenanceFrequency: string;
-  estimatedTime: string;
 }
 
 interface IotStats {
@@ -100,8 +99,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-03-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly',
-    estimatedTime: '30 minutes'
+    maintenanceFrequency: 'Weekly'
   },
   { 
     id: 'EQ00002', 
@@ -117,8 +115,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-05', type: 'Lubrication', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
     ],
     maintenanceType: 'Lubrication',
-    maintenanceFrequency: 'Monthly',
-    estimatedTime: '20 minutes'
+    maintenanceFrequency: 'Monthly'
   },
   { 
     id: 'EQ00003', 
@@ -134,8 +131,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '30 minutes', status: 'Completed' }
     ],
     maintenanceType: 'Inspection and Adjustment',
-    maintenanceFrequency: 'Weekly',
-    estimatedTime: '25 minutes'
+    maintenanceFrequency: 'Weekly'
   },
   { 
     id: 'EQ00004', 
@@ -151,8 +147,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-07', type: 'Cleaning', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning',
-    maintenanceFrequency: 'Daily',
-    estimatedTime: '15 minutes'
+    maintenanceFrequency: 'Daily'
   },
   { 
     id: 'EQ00005', 
@@ -168,8 +163,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly',
-    estimatedTime: '30 minutes'
+    maintenanceFrequency: 'Weekly'
   },
   { 
     id: 'EQ00006', 
@@ -177,7 +171,7 @@ const equipmentData: Equipment[] = [
     nameEn: 'Filling Piston',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
-    status: 'Operational', 
+    status: 'Maintenance Needed', 
     nextDue: 'Monthly', 
     iot: false,
     sensorData: null,
@@ -185,8 +179,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly',
-    estimatedTime: '45 minutes'
+    maintenanceFrequency: 'Weekly'
   },
   { 
     id: 'EQ00007', 
@@ -202,8 +195,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-03-15', type: 'Overhaul', technician: 'Mohamed Ahmed', duration: '4 hours', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning and Sterilization',
-    maintenanceFrequency: 'Daily',
-    estimatedTime: '20 minutes'
+    maintenanceFrequency: 'Daily'
   },
   { 
     id: 'EQ00008', 
@@ -219,8 +211,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-03-15', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
     ],
     maintenanceType: 'Cleaning',
-    maintenanceFrequency: 'Daily',
-    estimatedTime: '15 minutes'
+    maintenanceFrequency: 'Daily'
   },
   { 
     id: 'EQ00009', 
@@ -228,7 +219,7 @@ const equipmentData: Equipment[] = [
     nameEn: 'Bottle Sensor',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
-    status: 'Operational', 
+    status: 'Needs Cleaning', 
     nextDue: 'Monthly', 
     iot: true,
     sensorData: generateSensorData(),
@@ -236,8 +227,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
     ],
     maintenanceType: 'Calibration',
-    maintenanceFrequency: 'Monthly',
-    estimatedTime: '15 minutes'
+    maintenanceFrequency: 'Monthly'
   },
   { 
     id: 'EQ00010', 
@@ -253,8 +243,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
     ],
     maintenanceType: 'Calibration',
-    maintenanceFrequency: 'Monthly',
-    estimatedTime: '15 minutes'
+    maintenanceFrequency: 'Monthly'
   },
   { 
     id: 'EQ00011', 
@@ -270,8 +259,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
     ],
     maintenanceType: 'Lubrication and Predictive',
-    maintenanceFrequency: 'Semi-Annual',
-    estimatedTime: '1 hour'
+    maintenanceFrequency: 'Semi-Annual'
   },
   { 
     id: 'EQ00012', 
@@ -287,8 +275,7 @@ const equipmentData: Equipment[] = [
       { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
     ],
     maintenanceType: 'Lubrication and Predictive',
-    maintenanceFrequency: 'Semi-Annual',
-    estimatedTime: '1 hour'
+    maintenanceFrequency: 'Semi-Annual'
   }
 ];
 
@@ -388,11 +375,30 @@ const EquipmentMaintenance = () => {
     );
   };
 
+  const StatusBadge = ({ status }: { status: string }) => {
+    let color: "red" | "green" | "orange" = "green";
+    let icon = "🟢";
+    
+    if (status === 'Maintenance Needed') {
+      color = "red";
+      icon = "🔴";
+    } else if (status === 'Needs Cleaning' || status === 'Needs Calibration') {
+      color = "orange";
+      icon = "🟡";
+    }
+    
+    return (
+      <Badge color={color} variant="soft">
+        {icon} {status}
+      </Badge>
+    );
+  };
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
         <Flex align="center" gap="3">
-          <Heading size="6">Liquid Filling and Packaging Machine Maintenance</Heading>
+          <Heading size="6">Equipment Maintenance Register</Heading>
           <Button color="green" variant="solid">
             <ActivityLogIcon /> IoT Dashboard
           </Button>
@@ -531,7 +537,7 @@ const EquipmentMaintenance = () => {
       {/* Main Equipment Table */}
       <Card mb="4">
         <Flex justify="between" align="center" mb="3">
-          <Heading size="5">Packaging Equipment Components</Heading>
+          <Heading size="5">Liquid Filling and Packaging Machine Components</Heading>
           <Text color="gray">{equipmentData.length} total components</Text>
         </Flex>
         
@@ -542,6 +548,7 @@ const EquipmentMaintenance = () => {
               <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Criticality</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Maintenance Type</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Frequency</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>
                 <Flex align="center" gap="2">
                   <Link2Icon /> IoT Status
@@ -549,7 +556,7 @@ const EquipmentMaintenance = () => {
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Health Score</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Last Service</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Next Due</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
@@ -584,6 +591,9 @@ const EquipmentMaintenance = () => {
                     <MaintenanceTypeBadge type={item.maintenanceType} />
                   </Table.Cell>
                   <Table.Cell>
+                    <Text size="2">{item.maintenanceFrequency}</Text>
+                  </Table.Cell>
+                  <Table.Cell>
                     <IotStatusBadge connected={item.iot} sensorData={item.sensorData} />
                   </Table.Cell>
                   <Table.Cell>
@@ -605,7 +615,7 @@ const EquipmentMaintenance = () => {
                   </Table.Cell>
                   <Table.Cell>{item.lastService}</Table.Cell>
                   <Table.Cell>
-                    <Badge color="blue" variant="soft">{item.nextDue}</Badge>
+                    <StatusBadge status={item.status} />
                   </Table.Cell>
                   <Table.Cell>
                     <Button size="1" variant="ghost">
@@ -650,16 +660,16 @@ const EquipmentMaintenance = () => {
                     <Text weight="bold">{selectedDevice.maintenanceFrequency}</Text>
                   </Flex>
                   <Flex justify="between">
-                    <Text size="2">Estimated Time</Text>
-                    <Text weight="bold">{selectedDevice.estimatedTime}</Text>
-                  </Flex>
-                  <Flex justify="between">
                     <Text size="2">Next Due</Text>
                     <Badge color="blue" variant="soft">{selectedDevice.nextDue}</Badge>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Last Service</Text>
                     <Text weight="bold">{selectedDevice.lastService}</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Status</Text>
+                    <StatusBadge status={selectedDevice.status} />
                   </Flex>
                 </Flex>
               </Card>
