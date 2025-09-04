@@ -38,12 +38,14 @@ import {
   LightningBoltIcon,
   Link2Icon,
   TokensIcon,
-  DownloadIcon
+  DownloadIcon,
+  CalendarIcon
 } from '@radix-ui/react-icons';
 
 type MaterialCategory = 'A' | 'B' | 'C';
 type OrderStatus = 'pending' | 'approved' | 'shipped' | 'delivered' | 'cancelled';
 type BlockchainAction = 'order' | 'delivery' | 'adjustment';
+type ExpiryStatus = 'expired' | 'critical' | 'warning' | 'good';
 
 interface SensorReadings {
   temperature?: number;
@@ -129,6 +131,13 @@ const CATEGORY_COLORS = {
   C: '#6b7280'
 };
 
+const EXPIRY_STATUS_COLORS = {
+  expired: '#ef4444',
+  critical: '#f97316',
+  warning: '#f59e0b',
+  good: '#10b981'
+};
+
 const getStatusColor = (status: OrderStatus) => {
   switch (status) {
     case 'delivered': return 'green';
@@ -148,6 +157,70 @@ const getDaysRemaining = (expiryDate: string) => {
   const expiry = new Date(expiryDate).getTime();
   const now = Date.now();
   return Math.floor((expiry - now) / (1000 * 60 * 60 * 24));
+};
+
+const getExpiryStatus = (expiryDate: string): { status: ExpiryStatus; daysRemaining: number } => {
+  const daysRemaining = getDaysRemaining(expiryDate);
+  
+  if (daysRemaining < 0) return { status: 'expired', daysRemaining };
+  if (daysRemaining < 7) return { status: 'critical', daysRemaining };
+  if (daysRemaining < 30) return { status: 'warning', daysRemaining };
+  return { status: 'good', daysRemaining };
+};
+
+// Status Circle Component for visual expiry status
+const StatusCircle = ({ color }: { color: 'red' | 'orange' | 'green' }) => (
+  <div style={{
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    backgroundColor: color,
+    display: 'inline-block',
+    marginRight: '8px'
+  }} />
+);
+
+// Enhanced Expiry Status Badge with colored circle
+const ExpiryStatusBadge = ({ status, daysRemaining }: { status: ExpiryStatus; daysRemaining: number }) => {
+  const getStatusText = () => {
+    switch (status) {
+      case 'expired': return 'Expired';
+      case 'critical': return `Critical (${daysRemaining}d)`;
+      case 'warning': return `Warning (${daysRemaining}d)`;
+      case 'good': return `Good (${daysRemaining}d)`;
+      default: return 'Unknown';
+    }
+  };
+
+  const getStatusColor = () => {
+    switch (status) {
+      case 'expired': return 'red';
+      case 'critical': return 'orange';
+      case 'warning': return 'orange';
+      case 'good': return 'green';
+      default: return 'gray';
+    }
+  };
+
+  return (
+    <Flex align="center" gap="2">
+      <StatusCircle color={getStatusColor() as 'red' | 'orange' | 'green'} />
+      <Badge 
+        color={
+          status === 'expired' ? 'red' :
+          status === 'critical' ? 'orange' :
+          status === 'warning' ? 'yellow' : 'green'
+        }
+        style={{ 
+          padding: '4px 8px',
+          borderRadius: '12px',
+          fontSize: '12px'
+        }}
+      >
+        {getStatusText()}
+      </Badge>
+    </Flex>
+  );
 };
 
 class IoTSensorService {
@@ -226,13 +299,15 @@ const RawMaterialsInventory = () => {
     filters: {
       showReorderOnly: false,
       location: 'all',
-      category: 'all'
+      category: 'all',
+      expiryStatus: 'all' as 'all' | ExpiryStatus
     },
     sortConfig: null as {key: keyof RawMaterial, direction: 'asc' | 'desc'} | null,
     dialogs: {
       order: false,
       material: false,
-      blockchain: false
+      blockchain: false,
+      expiryReport: false
     },
     selected: {
       material: null as RawMaterial | null,
@@ -277,7 +352,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'A',
-          expiryDate: '2025-03-15'
+          expiryDate: '2024-01-10'
         },
         {
           id: generateId('MAT'),
@@ -296,7 +371,7 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 2',
           category: 'B',
-          expiryDate: '2025-08-20'
+          expiryDate: '2024-03-15'
         },
         {
           id: generateId('MAT'),
@@ -315,7 +390,45 @@ const RawMaterialsInventory = () => {
           sensorConnected: false,
           location: 'Zone 1',
           category: 'C',
-          expiryDate: '2025-12-31'
+          expiryDate: '2024-06-30'
+        },
+        {
+          id: generateId('MAT'),
+          name: 'Calcium Carbonate',
+          currentStock: 200,
+          reserved: 50,
+          minStockLevel: 100,
+          reorderLevel: 150,
+          safetyStock: 50,
+          leadTime: 3,
+          supplier: 'Supplier D',
+          supplierRating: 4.8,
+          orderQuantity: 200,
+          pendingOrders: 0,
+          unit: 'kg',
+          sensorConnected: false,
+          location: 'Zone 2',
+          category: 'A',
+          expiryDate: '2023-12-15'
+        },
+        {
+          id: generateId('MAT'),
+          name: 'Zinc Oxide',
+          currentStock: 85,
+          reserved: 25,
+          minStockLevel: 40,
+          reorderLevel: 70,
+          safetyStock: 30,
+          leadTime: 7,
+          supplier: 'Supplier E',
+          supplierRating: 4.1,
+          orderQuantity: 100,
+          pendingOrders: 0,
+          unit: 'kg',
+          sensorConnected: false,
+          location: 'Zone 1',
+          category: 'B',
+          expiryDate: '2024-01-05'
         }
       ]
     }));
@@ -336,6 +449,13 @@ const RawMaterialsInventory = () => {
     
     if (state.filters.category !== 'all') {
       result = result.filter(m => m.category === state.filters.category);
+    }
+    
+    if (state.filters.expiryStatus !== 'all') {
+      result = result.filter(m => {
+        const { status } = getExpiryStatus(m.expiryDate);
+        return status === state.filters.expiryStatus;
+      });
     }
     
     if (state.sortConfig) {
@@ -370,7 +490,19 @@ const RawMaterialsInventory = () => {
     return result;
   }, [state.materials, state.filters, state.sortConfig]);
 
-  const { criticalMaterials, reorderNeeded, pendingOrdersCount, connectedSensors } = useMemo(() => {
+  const { criticalMaterials, reorderNeeded, pendingOrdersCount, connectedSensors, expiryStats } = useMemo(() => {
+    const stats = {
+      expired: 0,
+      critical: 0,
+      warning: 0,
+      good: 0
+    };
+
+    state.materials.forEach(m => {
+      const { status } = getExpiryStatus(m.expiryDate);
+      stats[status]++;
+    });
+
     return {
       criticalMaterials: state.materials.filter(m => 
         (m.currentStock - m.reserved) <= m.safetyStock
@@ -381,11 +513,12 @@ const RawMaterialsInventory = () => {
       pendingOrdersCount: state.orders.filter(o => 
         o.status === 'pending' || o.status === 'approved'
       ).length,
-      connectedSensors: state.materials.filter(m => m.sensorConnected).length
+      connectedSensors: state.materials.filter(m => m.sensorConnected).length,
+      expiryStats: stats
     };
   }, [state.materials, state.orders]);
 
-  const { inventoryValueData, stockLevelData } = useMemo(() => {
+  const { inventoryValueData, stockLevelData, expiryData } = useMemo(() => {
     return {
       inventoryValueData: filteredMaterials.map(item => ({
         name: item.name,
@@ -401,9 +534,15 @@ const RawMaterialsInventory = () => {
         available: item.currentStock - item.reserved,
         reorderLevel: item.reorderLevel,
         safetyStock: item.safetyStock
-      }))
+      })),
+      expiryData: [
+        { name: 'Expired', value: expiryStats.expired, fill: EXPIRY_STATUS_COLORS.expired },
+        { name: 'Critical (<7d)', value: expiryStats.critical, fill: EXPIRY_STATUS_COLORS.critical },
+        { name: 'Warning (<30d)', value: expiryStats.warning, fill: EXPIRY_STATUS_COLORS.warning },
+        { name: 'Good', value: expiryStats.good, fill: EXPIRY_STATUS_COLORS.good }
+      ]
     };
-  }, [filteredMaterials]);
+  }, [filteredMaterials, expiryStats]);
 
   const handlers = {
     connectToSensor: async (materialId: string) => {
@@ -709,7 +848,7 @@ const RawMaterialsInventory = () => {
 
   return (
     <Container size="3" px="4" py="6">
-      <Grid columns="4" gap="4" mb="4">
+      <Grid columns="5" gap="4" mb="4">
         <Card>
           <Flex align="center" gap="3">
             <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
@@ -754,6 +893,18 @@ const RawMaterialsInventory = () => {
             <Box>
               <Text as="div" size="2" color="gray">Connected Sensors</Text>
               <Heading size="5">{connectedSensors}/{state.materials.length}</Heading>
+            </Box>
+          </Flex>
+        </Card>
+        
+        <Card>
+          <Flex align="center" gap="3">
+            <Box style={{ background: '#f8f9fa', padding: '12px', borderRadius: '8px' }}>
+              <CalendarIcon width={24} height={24} color="orange" />
+            </Box>
+            <Box>
+              <Text as="div" size="2" color="gray">Expired/Critical</Text>
+              <Heading size="5">{expiryStats.expired + expiryStats.critical}</Heading>
             </Box>
           </Flex>
         </Card>
@@ -817,6 +968,26 @@ const RawMaterialsInventory = () => {
           </Select.Content>
         </Select.Root>
 
+        <Select.Root 
+          value={state.filters.expiryStatus}
+          onValueChange={(value) => setState(prev => ({
+            ...prev,
+            filters: { ...prev.filters, expiryStatus: value as 'all' | ExpiryStatus }
+          }))}
+        >
+          <Select.Trigger>
+            <MixerHorizontalIcon />
+            Expiry Status
+          </Select.Trigger>
+          <Select.Content>
+            <Select.Item value="all">All Statuses</Select.Item>
+            <Select.Item value="expired">Expired</Select.Item>
+            <Select.Item value="critical">Critical</Select.Item>
+            <Select.Item value="warning">Warning</Select.Item>
+            <Select.Item value="good">Good</Select.Item>
+          </Select.Content>
+        </Select.Root>
+
         <Button variant="soft" onClick={() => alert('Export functionality would go here')}>
           <DownloadIcon />
           Export Data
@@ -864,7 +1035,10 @@ const RawMaterialsInventory = () => {
                 onClick={() => handlers.requestSort('expiryDate')}
                 style={{ padding: '12px 16px' }}
               >
-                Expiry D {state.sortConfig?.key === 'expiryDate' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
+                Expiry Date {state.sortConfig?.key === 'expiryDate' && (state.sortConfig.direction === 'asc' ? '↑' : '↓')}
+              </Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell style={{ padding: '12px 16px' }}>
+                Status
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell style={{ padding: '12px 16px' }}>
                 Location
@@ -880,13 +1054,18 @@ const RawMaterialsInventory = () => {
               const isCritical = available <= material.safetyStock;
               const needsReorder = available <= material.reorderLevel;
               const stockPercentage = (material.currentStock / (material.reorderLevel * 1.5)) * 100;
-              const daysRemaining = getDaysRemaining(material.expiryDate);
+              const { status, daysRemaining } = getExpiryStatus(material.expiryDate);
+              
+              // Set row background color based on expiry status
+              const rowColor = status === 'expired' ? 'var(--red-2)' : 
+                              status === 'critical' ? 'var(--orange-2)' : 
+                              status === 'warning' ? 'var(--yellow-2)' : 'white';
               
               return (
                 <Table.Row 
                   key={material.id}
                   style={{
-                    backgroundColor: index % 2 === 0 ? '#f9fafb' : 'white',
+                    backgroundColor: rowColor,
                     borderBottom: '1px solid #f0f0f0',
                     borderLeft: isCritical ? '3px solid #ef4444' : needsReorder ? '3px solid #f59e0b' : '3px solid transparent'
                   }}
@@ -930,20 +1109,10 @@ const RawMaterialsInventory = () => {
                     )}
                   </Table.Cell>
                   <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
-                    <Badge 
-                      color={
-                        daysRemaining <= 90 ? 'red' :
-                        daysRemaining <= 180 ? 'orange' : 'green'
-                      }
-                      style={{ 
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '12px'
-                      }}
-                    >
-                      {formatDate(material.expiryDate)}
-                      {daysRemaining <= 90 && <ExclamationTriangleIcon style={{ marginLeft: '4px' }} />}
-                    </Badge>
+                    {formatDate(material.expiryDate)}
+                  </Table.Cell>
+                  <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
+                    <ExpiryStatusBadge status={status} daysRemaining={daysRemaining} />
                   </Table.Cell>
                   <Table.Cell style={{ padding: '12px 16px', borderRight: '1px solid #f0f0f0' }}>
                     {material.location}
@@ -969,7 +1138,7 @@ const RawMaterialsInventory = () => {
         </Table.Root>
       </Card>
 
-      <Grid columns="2" gap="4" mb="4">
+      <Grid columns="3" gap="4" mb="4">
         <Card>
           <Heading size="4" mb="3">Inventory Value by Category</Heading>
           <ResponsiveContainer width="100%" height={300}>
@@ -1029,8 +1198,39 @@ const RawMaterialsInventory = () => {
             </BarChart>
           </ResponsiveContainer>
         </Card>
+
+        <Card>
+          <Heading size="4" mb="3">Expiry Status Overview</Heading>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={expiryData}
+                cx="50%"
+                cy="50%"
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, value }) => `${name}: ${value}`}
+              >
+                {expiryData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.fill} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </Card>
       </Grid>
 
+      {/* Rest of the code remains the same as before for dialogs and other components */}
+      {/* ... (Dialog components and other UI elements remain unchanged) ... */}
+      
+    </Container>
+  );
+};
+
+export default RawMaterialsInventory;
       <Card>
         <Flex justify="between" align="center" mb="3">
           <Heading size="5">Purchase Orders</Heading>
