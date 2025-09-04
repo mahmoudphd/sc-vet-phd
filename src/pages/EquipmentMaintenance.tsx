@@ -74,11 +74,11 @@ const generateSensorData = (): SensorData => {
   };
 };
 
-// Equipment data with realistic IoT information
+// Equipment data with Arabic part names only
 const equipmentData: Equipment[] = [
   { 
     id: 'EQ00001', 
-    name: 'Conveyor Belt System', 
+    name: 'سير العبوات', 
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -92,7 +92,7 @@ const equipmentData: Equipment[] = [
   },
   { 
     id: 'EQ00002', 
-    name: 'Bottle Gate Mechanism', 
+    name: 'بوابة حجز العبوات', 
     criticality: 'Critical', 
     lastService: '2025-04-05', 
     status: 'Operational', 
@@ -105,7 +105,7 @@ const equipmentData: Equipment[] = [
   },
   { 
     id: 'EQ00003', 
-    name: 'Bottle Gripper Assembly', 
+    name: 'ماسك العبوات', 
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -118,7 +118,7 @@ const equipmentData: Equipment[] = [
   },
   { 
     id: 'EQ00004', 
-    name: 'Filling Nozzle', 
+    name: 'نوزل التعبئة', 
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -131,7 +131,7 @@ const equipmentData: Equipment[] = [
   },
   { 
     id: 'EQ00005', 
-    name: 'Material Path Gate', 
+    name: 'بوابة مسار الخامة', 
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -140,6 +140,97 @@ const equipmentData: Equipment[] = [
     sensorData: null,
     maintenanceHistory: [
       { date: '2025-04-07', type: 'Inspection', technician: 'Lisa Brown', duration: '45 minutes' }
+    ]
+  },
+  { 
+    id: 'EQ00006', 
+    name: 'بستم التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'John Smith', duration: '2 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00007', 
+    name: 'أسطوانة التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-03-15', 
+    status: 'Operational', 
+    nextDue: 'Semi-Annual', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-03-15', type: 'Overhaul', technician: 'David Kim', duration: '4 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00008', 
+    name: 'هوبر الماكينة', 
+    criticality: 'Critical', 
+    lastService: '2025-03-15', 
+    status: 'Operational', 
+    nextDue: 'Semi-Annual', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-03-15', type: 'Inspection', technician: 'Maria Garcia', duration: '2 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00009', 
+    name: 'حساس العبوات', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: true,
+    sensorData: generateSensorData(),
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mike Chen', duration: '1 hour' }
+    ]
+  },
+  { 
+    id: 'EQ00010', 
+    name: 'حساس الموضع', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: true,
+    sensorData: generateSensorData(),
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mike Chen', duration: '45 minutes' }
+    ]
+  },
+  { 
+    id: 'EQ00011', 
+    name: 'سيرفو موتور التعبئة', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'John Smith', duration: '1.5 hours' }
+    ]
+  },
+  { 
+    id: 'EQ00012', 
+    name: 'سيرفو موتور النوزل', 
+    criticality: 'Critical', 
+    lastService: '2025-04-01', 
+    status: 'Operational', 
+    nextDue: 'Monthly', 
+    iot: false,
+    sensorData: null,
+    maintenanceHistory: [
+      { date: '2025-04-01', type: 'Preventive', technician: 'John Smith', duration: '1.5 hours' }
     ]
   }
 ];
@@ -338,7 +429,7 @@ const EquipmentMaintenance = () => {
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Equipment ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Equipment Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Part Name</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Criticality</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>
                 <Flex align="center" gap="2">
@@ -372,8 +463,8 @@ const EquipmentMaintenance = () => {
                   onClick={() => item.iot && setSelectedDevice(item)}
                 >
                   <Table.Cell>{item.id}</Table.Cell>
-                  <Table.Cell>
-                    <Flex align="center" gap="2">
+                  <Table.Cell style={{ direction: 'rtl', textAlign: 'right' }}>
+                    <Flex align="center" gap="2" justify="end">
                       <Text>{item.name}</Text>
                       {item.iot && (
                         <Badge size="1" color="blue" variant="soft">
