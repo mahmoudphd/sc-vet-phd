@@ -23,7 +23,7 @@ import {
   DashboardIcon,
   BellIcon,
   CalendarIcon,
-  ActivityIcon
+  ActivityLogIcon
 } from '@radix-ui/react-icons';
 
 // Type definitions
@@ -230,7 +230,7 @@ const EquipmentMaintenance = () => {
         <Flex align="center" gap="3">
           <Heading size="6">Equipment Maintenance Register</Heading>
           <Button color="green" variant="solid">
-            <ActivityIcon /> IoT Dashboard
+            <ActivityLogIcon /> IoT Dashboard
           </Button>
         </Flex>
         <Flex gap="3">
