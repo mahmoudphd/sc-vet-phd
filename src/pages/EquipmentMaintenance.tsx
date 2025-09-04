@@ -14,7 +14,8 @@ import {
   Select,
   Tooltip,
   Progress,
-  IconButton
+  IconButton,
+  Separator
 } from '@radix-ui/themes';
 import { 
   MixerHorizontalIcon, 
@@ -27,7 +28,9 @@ import {
   ActivityLogIcon,
   Cross2Icon,
   ClockIcon,
-  PersonIcon
+  PersonIcon,
+  GearIcon,
+  UpdateIcon
 } from '@radix-ui/react-icons';
 
 // Type definitions
@@ -61,6 +64,7 @@ interface Equipment {
   maintenanceHistory: MaintenanceRecord[];
   maintenanceType: string;
   maintenanceFrequency: string;
+  estimatedTime: string;
 }
 
 interface IotStats {
@@ -91,15 +95,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-05-01', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' },
-      { date: '2025-03-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Cleaning', 
+        technician: 'Mohamed Ahmed', 
+        duration: '2 hours', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly'
+    maintenanceType: 'Cleaning',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '30 minutes'
   },
   { 
     id: 'EQ00002', 
@@ -108,14 +118,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-05', 
     status: 'Operational', 
-    nextDue: 'Weekly', 
+    nextDue: '2025-05-05', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-05', type: 'Lubrication', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+      { 
+        date: '2025-04-05', 
+        type: 'Lubrication', 
+        technician: 'Mohamed Ahmed', 
+        duration: '45 minutes', 
+        status: 'Completed'
+      }
     ],
     maintenanceType: 'Lubrication',
-    maintenanceFrequency: 'Monthly'
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '20 minutes'
   },
   { 
     id: 'EQ00003', 
@@ -123,15 +140,22 @@ const equipmentData: Equipment[] = [
     nameEn: 'Bottle Gripper',
     criticality: 'Critical', 
     lastService: '2025-04-07', 
-    status: 'Operational', 
-    nextDue: 'Weekly', 
+    status: 'Needs Calibration', 
+    nextDue: '2025-05-07', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '30 minutes', status: 'Completed' }
+      { 
+        date: '2025-04-07', 
+        type: 'Calibration', 
+        technician: 'Mohamed Ahmed', 
+        duration: '30 minutes', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Inspection and Adjustment',
-    maintenanceFrequency: 'Weekly'
+    maintenanceType: 'Calibration',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '25 minutes'
   },
   { 
     id: 'EQ00004', 
@@ -140,14 +164,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
-    nextDue: 'Weekly', 
+    nextDue: '2025-04-14', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Cleaning', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
+      { 
+        date: '2025-04-07', 
+        type: 'Cleaning', 
+        technician: 'Mohamed Ahmed', 
+        duration: '1 hour', 
+        status: 'Completed'
+      }
     ],
     maintenanceType: 'Cleaning',
-    maintenanceFrequency: 'Daily'
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00005', 
@@ -156,14 +187,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
-    nextDue: 'Weekly', 
+    nextDue: '2025-04-14', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+      { 
+        date: '2025-04-07', 
+        type: 'Inspection', 
+        technician: 'Mohamed Ahmed', 
+        duration: '45 minutes', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly'
+    maintenanceType: 'Inspection',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '30 minutes'
   },
   { 
     id: 'EQ00006', 
@@ -172,14 +210,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Maintenance Needed', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-05-01', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Inspection', 
+        technician: 'Mohamed Ahmed', 
+        duration: '2 hours', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Cleaning and Inspection',
-    maintenanceFrequency: 'Weekly'
+    maintenanceType: 'Inspection',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '45 minutes'
   },
   { 
     id: 'EQ00007', 
@@ -188,14 +233,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-03-15', 
     status: 'Operational', 
-    nextDue: 'Semi-Annual', 
+    nextDue: '2025-09-15', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-03-15', type: 'Overhaul', technician: 'Mohamed Ahmed', duration: '4 hours', status: 'Completed' }
+      { 
+        date: '2025-03-15', 
+        type: 'Cleaning', 
+        technician: 'Mohamed Ahmed', 
+        duration: '4 hours', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Cleaning and Sterilization',
-    maintenanceFrequency: 'Daily'
+    maintenanceType: 'Cleaning',
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '20 minutes'
   },
   { 
     id: 'EQ00008', 
@@ -204,14 +256,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-03-15', 
     status: 'Operational', 
-    nextDue: 'Semi-Annual', 
+    nextDue: '2025-09-15', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-03-15', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
+      { 
+        date: '2025-03-15', 
+        type: 'Cleaning', 
+        technician: 'Mohamed Ahmed', 
+        duration: '2 hours', 
+        status: 'Completed'
+      }
     ],
     maintenanceType: 'Cleaning',
-    maintenanceFrequency: 'Daily'
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00009', 
@@ -220,14 +279,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Needs Cleaning', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-05-01', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Calibration', 
+        technician: 'Mohamed Ahmed', 
+        duration: '1 hour', 
+        status: 'Completed'
+      }
     ],
     maintenanceType: 'Calibration',
-    maintenanceFrequency: 'Monthly'
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00010', 
@@ -236,14 +302,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-05-01', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Calibration', 
+        technician: 'Mohamed Ahmed', 
+        duration: '45 minutes', 
+        status: 'Completed'
+      }
     ],
     maintenanceType: 'Calibration',
-    maintenanceFrequency: 'Monthly'
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00011', 
@@ -252,14 +325,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-10-01', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Lubrication', 
+        technician: 'Mohamed Ahmed', 
+        duration: '1.5 hours', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Lubrication and Predictive',
-    maintenanceFrequency: 'Semi-Annual'
+    maintenanceType: 'Lubrication',
+    maintenanceFrequency: 'Semi-Annual',
+    estimatedTime: '1 hour'
   },
   { 
     id: 'EQ00012', 
@@ -268,14 +348,21 @@ const equipmentData: Equipment[] = [
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
-    nextDue: 'Monthly', 
+    nextDue: '2025-10-01', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+      { 
+        date: '2025-04-01', 
+        type: 'Lubrication', 
+        technician: 'Mohamed Ahmed', 
+        duration: '1.5 hours', 
+        status: 'Completed'
+      }
     ],
-    maintenanceType: 'Lubrication and Predictive',
-    maintenanceFrequency: 'Semi-Annual'
+    maintenanceType: 'Lubrication',
+    maintenanceFrequency: 'Semi-Annual',
+    estimatedTime: '1 hour'
   }
 ];
 
@@ -362,11 +449,10 @@ const EquipmentMaintenance = () => {
   const MaintenanceTypeBadge = ({ type }: { type: string }) => {
     let color: "red" | "green" | "blue" | "orange" | "purple" = "blue";
     
-    if (type.includes('Cleaning')) color = "green";
-    if (type.includes('Lubrication')) color = "orange";
-    if (type.includes('Calibration')) color = "purple";
-    if (type.includes('Predictive')) color = "blue";
-    if (type.includes('Inspection')) color = "green";
+    if (type === 'Cleaning') color = "green";
+    if (type === 'Lubrication') color = "orange";
+    if (type === 'Calibration') color = "purple";
+    if (type === 'Inspection') color = "blue";
     
     return (
       <Badge color={color} variant="soft" size="1">
@@ -448,7 +534,6 @@ const EquipmentMaintenance = () => {
                       <Select.Item value="inspection">Inspection</Select.Item>
                       <Select.Item value="lubrication">Lubrication</Select.Item>
                       <Select.Item value="calibration">Calibration</Select.Item>
-                      <Select.Item value="predictive">Predictive Maintenance</Select.Item>
                     </Select.Content>
                   </Select.Root>
                 </label>
@@ -544,20 +629,18 @@ const EquipmentMaintenance = () => {
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Criticality</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Maintenance Type</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Frequency</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="8%">ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="22%">Component</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="15%">Maintenance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="12%">Frequency</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="10%">
                 <Flex align="center" gap="2">
-                  <Link2Icon /> IoT Status
+                  <Link2Icon /> Status
                 </Flex>
               </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Health Score</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Last Service</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="13%">Health</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="10%">Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell width="10%">Action</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -577,15 +660,14 @@ const EquipmentMaintenance = () => {
                   }}
                   onClick={() => setSelectedDevice(item)}
                 >
-                  <Table.Cell>{item.id}</Table.Cell>
                   <Table.Cell>
-                    <Flex direction="column" gap="1">
-                      <Text weight="bold">{item.nameEn}</Text>
-                      <Text size="1" color="gray">{item.name}</Text>
-                    </Flex>
+                    <Text size="2" weight="bold">{item.id}</Text>
                   </Table.Cell>
                   <Table.Cell>
-                    <Badge color="red" variant="soft">{item.criticality}</Badge>
+                    <Flex direction="column">
+                      <Text weight="medium">{item.nameEn}</Text>
+                      <Text size="1" color="gray">{item.name}</Text>
+                    </Flex>
                   </Table.Cell>
                   <Table.Cell>
                     <MaintenanceTypeBadge type={item.maintenanceType} />
@@ -613,13 +695,12 @@ const EquipmentMaintenance = () => {
                       <Text size="2" color="gray">N/A</Text>
                     )}
                   </Table.Cell>
-                  <Table.Cell>{item.lastService}</Table.Cell>
                   <Table.Cell>
                     <StatusBadge status={item.status} />
                   </Table.Cell>
                   <Table.Cell>
                     <Button size="1" variant="ghost">
-                      <CalendarIcon /> Schedule
+                      <InfoCircledIcon /> Details
                     </Button>
                   </Table.Cell>
                 </Table.Row>
@@ -632,7 +713,7 @@ const EquipmentMaintenance = () => {
       {/* Equipment Details Dialog */}
       <Dialog.Root open={!!selectedDevice} onOpenChange={() => setSelectedDevice(null)}>
         {selectedDevice && (
-          <Dialog.Content style={{ maxWidth: '900px' }}>
+          <Dialog.Content style={{ maxWidth: '800px' }}>
             <Flex justify="between" align="center" mb="3">
               <Dialog.Title>
                 <Flex align="center" gap="2">
@@ -658,6 +739,10 @@ const EquipmentMaintenance = () => {
                   <Flex justify="between">
                     <Text size="2">Frequency</Text>
                     <Text weight="bold">{selectedDevice.maintenanceFrequency}</Text>
+                  </Flex>
+                  <Flex justify="between">
+                    <Text size="2">Estimated Time</Text>
+                    <Text weight="bold">{selectedDevice.estimatedTime}</Text>
                   </Flex>
                   <Flex justify="between">
                     <Text size="2">Next Due</Text>
