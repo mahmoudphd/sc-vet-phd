@@ -36,7 +36,8 @@ import {
   CommitIcon,
   SymbolIcon,
   ClockIcon,
-  UpdateIcon
+  UpdateIcon,
+  CalendarIcon
 } from '@radix-ui/react-icons';
 
 interface InventoryItem {
@@ -69,12 +70,12 @@ const initialData: InventoryItem[] = [
     quantity: 120,
     reserved: 40,
     storage: '4°C',
-    expiry: '2025-08-10',
+    expiry: '2024-01-10',
     location: 'Zone 1',
     unitPrice: 225,
     unitCost: 171,
     category: 'A',
-    lastRestock: '2023-05-15',
+    lastRestock: '2023-12-15',
     cogs: 20520,
     movement: [
       { month: 'Jan', quantity: 100 },
@@ -91,12 +92,12 @@ const initialData: InventoryItem[] = [
     quantity: 100,
     reserved: 30,
     storage: '6°C',
-    expiry: '2025-09-15',
+    expiry: '2024-01-15',
     location: 'Zone 2',
     unitPrice: 215,
     unitCost: 160,
     category: 'B',
-    lastRestock: '2023-06-20',
+    lastRestock: '2023-12-20',
     cogs: 19200,
     movement: [
       { month: 'Jan', quantity: 80 },
@@ -113,12 +114,12 @@ const initialData: InventoryItem[] = [
     quantity: 80,
     reserved: 20,
     storage: '8°C',
-    expiry: '2025-07-28',
+    expiry: '2024-03-28',
     location: 'Zone 2',
     unitPrice: 230,
     unitCost: 171,
     category: 'C',
-    lastRestock: '2023-07-10',
+    lastRestock: '2023-12-10',
     cogs: 20520,
     movement: [
       { month: 'Jan', quantity: 70 },
@@ -141,6 +142,45 @@ const StatusCircle = ({ color }: { color: 'red' | 'green' | 'orange' }) => (
     marginRight: '8px'
   }} />
 );
+
+const DateInput = ({ 
+  value, 
+  onChange,
+  placeholder = "YYYY-MM-DD"
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}) => {
+  const [isValid, setIsValid] = useState(true);
+
+  const validateDate = (dateString: string) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!regex.test(dateString)) return false;
+    
+    const date = new Date(dateString);
+    return date instanceof Date && !isNaN(date.getTime());
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value;
+    onChange(newValue);
+    setIsValid(validateDate(newValue) || newValue === '');
+  };
+
+  return (
+    <TextField.Root
+      value={value}
+      onChange={handleChange}
+      placeholder={placeholder}
+      style={{ 
+        width: '120px',
+        borderColor: isValid ? undefined : 'var(--red-8)',
+        fontFamily: 'monospace'
+      }}
+    />
+  );
+};
 
 const InventoryDashboard = () => {
   const [data, setData] = useState<InventoryItem[]>(initialData);
@@ -490,7 +530,10 @@ const InventoryDashboard = () => {
                     </Table.Cell>
                     <Table.Cell>{formatNumber(item.quantity - item.reserved)}</Table.Cell>
                     <Table.Cell>
-                      {new Date(item.expiry).toLocaleDateString('en-US')}
+                      <DateInput
+                        value={item.expiry}
+                        onChange={(newDate) => updateItemField(item.id, 'expiry', newDate)}
+                      />
                     </Table.Cell>
                     <Table.Cell>
                       <Flex align="center" gap="2">
@@ -641,12 +684,20 @@ const InventoryDashboard = () => {
                       <Text color="gray">Expiry Date:</Text>
                       <Flex align="center" gap="2">
                         <StatusCircle color={getExpiryStatus(selectedItem.expiry).color} />
-                        <Text>{new Date(selectedItem.expiry).toLocaleDateString('en-US')}</Text>
+                        <DateInput
+                          value={selectedItem.expiry}
+                          onChange={(newDate) => updateItemField(selectedItem.id, 'expiry', newDate)}
+                        />
                       </Flex>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Last Restock:</Text>
-                      <Text>{new Date(selectedItem.lastRestock).toLocaleDateString('en-US')}</Text>
+                      <Flex align="center" gap="2">
+                        <DateInput
+                          value={selectedItem.lastRestock}
+                          onChange={(newDate) => updateItemField(selectedItem.id, 'lastRestock', newDate)}
+                        />
+                      </Flex>
                     </Flex>
                     <Flex justify="between">
                       <Text color="gray">Cost of Goods Sold:</Text>
