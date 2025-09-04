@@ -13,7 +13,8 @@ import {
   TextField,
   Select,
   Tooltip,
-  Progress
+  Progress,
+  IconButton
 } from '@radix-ui/themes';
 import { 
   MixerHorizontalIcon, 
@@ -24,7 +25,9 @@ import {
   BellIcon,
   CalendarIcon,
   ActivityLogIcon,
-  Cross2Icon
+  Cross2Icon,
+  ClockIcon,
+  PersonIcon
 } from '@radix-ui/react-icons';
 
 // Type definitions
@@ -42,11 +45,13 @@ interface MaintenanceRecord {
   type: string;
   technician: string;
   duration: string;
+  status: string;
 }
 
 interface Equipment {
   id: string;
   name: string;
+  nameEn: string;
   criticality: string;
   lastService: string;
   status: string;
@@ -54,6 +59,9 @@ interface Equipment {
   iot: boolean;
   sensorData: SensorData | null;
   maintenanceHistory: MaintenanceRecord[];
+  maintenanceType: string;
+  maintenanceFrequency: string;
+  estimatedTime: string;
 }
 
 interface IotStats {
@@ -75,11 +83,12 @@ const generateSensorData = (): SensorData => {
   };
 };
 
-// Equipment data with Arabic part names and updated technician names
+// Equipment data with maintenance information
 const equipmentData: Equipment[] = [
   { 
     id: 'EQ00001', 
     name: 'سير العبوات', 
+    nameEn: 'Conveyor Belt',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -87,13 +96,17 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours' },
-      { date: '2025-03-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
-    ]
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' },
+      { date: '2025-03-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning and Inspection',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '30 minutes'
   },
   { 
     id: 'EQ00002', 
     name: 'بوابة حجز العبوات', 
+    nameEn: 'Bottle Stopping Gate',
     criticality: 'Critical', 
     lastService: '2025-04-05', 
     status: 'Operational', 
@@ -101,12 +114,16 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-05', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes' }
-    ]
+      { date: '2025-04-05', type: 'Lubrication', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+    ],
+    maintenanceType: 'Lubrication',
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '20 minutes'
   },
   { 
     id: 'EQ00003', 
     name: 'ماسك العبوات', 
+    nameEn: 'Bottle Gripper',
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -114,12 +131,16 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Lubrication', technician: 'Mohamed Ahmed', duration: '30 minutes' }
-    ]
+      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '30 minutes', status: 'Completed' }
+    ],
+    maintenanceType: 'Inspection and Adjustment',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '25 minutes'
   },
   { 
     id: 'EQ00004', 
     name: 'نوزل التعبئة', 
+    nameEn: 'Filling Nozzle',
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -127,12 +148,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Cleaning', technician: 'Mohamed Ahmed', duration: '1 hour' }
-    ]
+      { date: '2025-04-07', type: 'Cleaning', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning',
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00005', 
     name: 'بوابة مسار الخامة', 
+    nameEn: 'Raw Material Path Gate',
     criticality: 'Critical', 
     lastService: '2025-04-07', 
     status: 'Operational', 
@@ -140,12 +165,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '45 minutes' }
-    ]
+      { date: '2025-04-07', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning and Inspection',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '30 minutes'
   },
   { 
     id: 'EQ00006', 
     name: 'بستم التعبئة', 
+    nameEn: 'Filling Piston',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -153,12 +182,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours' }
-    ]
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning and Inspection',
+    maintenanceFrequency: 'Weekly',
+    estimatedTime: '45 minutes'
   },
   { 
     id: 'EQ00007', 
     name: 'أسطوانة التعبئة', 
+    nameEn: 'Filling Cylinder',
     criticality: 'Critical', 
     lastService: '2025-03-15', 
     status: 'Operational', 
@@ -166,12 +199,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-03-15', type: 'Overhaul', technician: 'Mohamed Ahmed', duration: '4 hours' }
-    ]
+      { date: '2025-03-15', type: 'Overhaul', technician: 'Mohamed Ahmed', duration: '4 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning and Sterilization',
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '20 minutes'
   },
   { 
     id: 'EQ00008', 
     name: 'هوبر الماكينة', 
+    nameEn: 'Machine Hopper',
     criticality: 'Critical', 
     lastService: '2025-03-15', 
     status: 'Operational', 
@@ -179,12 +216,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-03-15', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '2 hours' }
-    ]
+      { date: '2025-03-15', type: 'Inspection', technician: 'Mohamed Ahmed', duration: '2 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Cleaning',
+    maintenanceFrequency: 'Daily',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00009', 
     name: 'حساس العبوات', 
+    nameEn: 'Bottle Sensor',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -192,12 +233,16 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '1 hour' }
-    ]
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '1 hour', status: 'Completed' }
+    ],
+    maintenanceType: 'Calibration',
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00010', 
     name: 'حساس الموضع', 
+    nameEn: 'Position Sensor',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -205,12 +250,16 @@ const equipmentData: Equipment[] = [
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes' }
-    ]
+      { date: '2025-04-01', type: 'Calibration', technician: 'Mohamed Ahmed', duration: '45 minutes', status: 'Completed' }
+    ],
+    maintenanceType: 'Calibration',
+    maintenanceFrequency: 'Monthly',
+    estimatedTime: '15 minutes'
   },
   { 
     id: 'EQ00011', 
     name: 'سيرفو موتور التعبئة', 
+    nameEn: 'Filling Servo Motor',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -218,12 +267,16 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
-    ]
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Lubrication and Predictive',
+    maintenanceFrequency: 'Semi-Annual',
+    estimatedTime: '1 hour'
   },
   { 
     id: 'EQ00012', 
     name: 'سيرفو موتور النوزل', 
+    nameEn: 'Nozzle Servo Motor',
     criticality: 'Critical', 
     lastService: '2025-04-01', 
     status: 'Operational', 
@@ -231,8 +284,11 @@ const equipmentData: Equipment[] = [
     iot: false,
     sensorData: null,
     maintenanceHistory: [
-      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours' }
-    ]
+      { date: '2025-04-01', type: 'Preventive', technician: 'Mohamed Ahmed', duration: '1.5 hours', status: 'Completed' }
+    ],
+    maintenanceType: 'Lubrication and Predictive',
+    maintenanceFrequency: 'Semi-Annual',
+    estimatedTime: '1 hour'
   }
 ];
 
@@ -316,11 +372,27 @@ const EquipmentMaintenance = () => {
     return Math.max(0, Math.floor(score));
   };
 
+  const MaintenanceTypeBadge = ({ type }: { type: string }) => {
+    let color: "red" | "green" | "blue" | "orange" | "purple" = "blue";
+    
+    if (type.includes('Cleaning')) color = "green";
+    if (type.includes('Lubrication')) color = "orange";
+    if (type.includes('Calibration')) color = "purple";
+    if (type.includes('Predictive')) color = "blue";
+    if (type.includes('Inspection')) color = "green";
+    
+    return (
+      <Badge color={color} variant="soft" size="1">
+        {type}
+      </Badge>
+    );
+  };
+
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
         <Flex align="center" gap="3">
-          <Heading size="6">Equipment Maintenance Register</Heading>
+          <Heading size="6">Liquid Filling and Packaging Machine Maintenance</Heading>
           <Button color="green" variant="solid">
             <ActivityLogIcon /> IoT Dashboard
           </Button>
@@ -354,9 +426,23 @@ const EquipmentMaintenance = () => {
                     <Select.Content>
                       {equipmentData.map((item) => (
                         <Select.Item key={item.id} value={item.id}>
-                          {item.name} ({item.id})
+                          {item.nameEn} ({item.id})
                         </Select.Item>
                       ))}
+                    </Select.Content>
+                  </Select.Root>
+                </label>
+                
+                <label>
+                  <Text as="div" size="2" weight="bold" mb="1">Maintenance Type</Text>
+                  <Select.Root>
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="cleaning">Cleaning</Select.Item>
+                      <Select.Item value="inspection">Inspection</Select.Item>
+                      <Select.Item value="lubrication">Lubrication</Select.Item>
+                      <Select.Item value="calibration">Calibration</Select.Item>
+                      <Select.Item value="predictive">Predictive Maintenance</Select.Item>
                     </Select.Content>
                   </Select.Root>
                 </label>
@@ -445,28 +531,26 @@ const EquipmentMaintenance = () => {
       {/* Main Equipment Table */}
       <Card mb="4">
         <Flex justify="between" align="center" mb="3">
-          <Heading size="5">Production Line Equipment</Heading>
-          <Text color="gray">{equipmentData.length} total devices</Text>
+          <Heading size="5">Packaging Equipment Components</Heading>
+          <Text color="gray">{equipmentData.length} total components</Text>
         </Flex>
         
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>Equipment ID</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Part Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Criticality</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Maintenance Type</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>
                 <Flex align="center" gap="2">
                   <Link2Icon /> IoT Status
-                  <Tooltip content="Internet of Things connection and monitoring status">
-                    <InfoCircledIcon style={{ cursor: 'help' }} />
-                  </Tooltip>
                 </Flex>
               </Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Health Score</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Last Service</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Next Due</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Action</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
 
@@ -481,24 +565,23 @@ const EquipmentMaintenance = () => {
                 <Table.Row 
                   key={item.id} 
                   style={{ 
-                    cursor: item.iot ? 'pointer' : 'default',
+                    cursor: 'pointer',
                     backgroundColor: item.iot ? '#f8fafc' : 'white'
                   }}
-                  onClick={() => item.iot && setSelectedDevice(item)}
+                  onClick={() => setSelectedDevice(item)}
                 >
                   <Table.Cell>{item.id}</Table.Cell>
-                  <Table.Cell style={{ direction: 'rtl', textAlign: 'right' }}>
-                    <Flex align="center" gap="2" justify="end">
-                      <Text>{item.name}</Text>
-                      {item.iot && (
-                        <Badge size="1" color="blue" variant="soft">
-                          IoT
-                        </Badge>
-                      )}
+                  <Table.Cell>
+                    <Flex direction="column" gap="1">
+                      <Text weight="bold">{item.nameEn}</Text>
+                      <Text size="1" color="gray">{item.name}</Text>
                     </Flex>
                   </Table.Cell>
                   <Table.Cell>
                     <Badge color="red" variant="soft">{item.criticality}</Badge>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <MaintenanceTypeBadge type={item.maintenanceType} />
                   </Table.Cell>
                   <Table.Cell>
                     <IotStatusBadge connected={item.iot} sensorData={item.sensorData} />
@@ -522,9 +605,13 @@ const EquipmentMaintenance = () => {
                   </Table.Cell>
                   <Table.Cell>{item.lastService}</Table.Cell>
                   <Table.Cell>
-                    <Badge color="green" variant="soft">{item.status}</Badge>
+                    <Badge color="blue" variant="soft">{item.nextDue}</Badge>
                   </Table.Cell>
-                  <Table.Cell>{item.nextDue}</Table.Cell>
+                  <Table.Cell>
+                    <Button size="1" variant="ghost">
+                      <CalendarIcon /> Schedule
+                    </Button>
+                  </Table.Cell>
                 </Table.Row>
               );
             })}
@@ -532,14 +619,15 @@ const EquipmentMaintenance = () => {
         </Table.Root>
       </Card>
 
-      {/* IoT Device Details Dialog */}
+      {/* Equipment Details Dialog */}
       <Dialog.Root open={!!selectedDevice} onOpenChange={() => setSelectedDevice(null)}>
         {selectedDevice && (
-          <Dialog.Content style={{ maxWidth: '800px' }}>
+          <Dialog.Content style={{ maxWidth: '900px' }}>
             <Flex justify="between" align="center" mb="3">
               <Dialog.Title>
                 <Flex align="center" gap="2">
-                  <Link2Icon /> IoT Device Details - {selectedDevice.name}
+                  {selectedDevice.iot && <Link2Icon />}
+                  {selectedDevice.nameEn} - {selectedDevice.id}
                 </Flex>
               </Dialog.Title>
               <Dialog.Close>
@@ -551,59 +639,60 @@ const EquipmentMaintenance = () => {
             
             <Grid columns="2" gap="4" mt="4">
               <Card>
-                <Heading size="4" mb="3">Real-time Sensor Data</Heading>
+                <Heading size="4" mb="3">Maintenance Information</Heading>
                 <Flex direction="column" gap="3">
                   <Flex justify="between">
-                    <Text size="2">Temperature</Text>
-                    <Text weight="bold">{selectedDevice.sensorData?.temperature || 'N/A'}</Text>
+                    <Text size="2">Maintenance Type</Text>
+                    <MaintenanceTypeBadge type={selectedDevice.maintenanceType} />
                   </Flex>
                   <Flex justify="between">
-                    <Text size="2">Vibration Level</Text>
-                    <Text weight="bold" color={selectedDevice.sensorData && parseFloat(selectedDevice.sensorData.vibration) > 2.5 ? "red" : "green"}>
-                      {selectedDevice.sensorData?.vibration || 'N/A'}
-                    </Text>
+                    <Text size="2">Frequency</Text>
+                    <Text weight="bold">{selectedDevice.maintenanceFrequency}</Text>
                   </Flex>
                   <Flex justify="between">
-                    <Text size="2">Pressure</Text>
-                    <Text weight="bold">{selectedDevice.sensorData?.pressure || 'N/A'}</Text>
+                    <Text size="2">Estimated Time</Text>
+                    <Text weight="bold">{selectedDevice.estimatedTime}</Text>
                   </Flex>
                   <Flex justify="between">
-                    <Text size="2">Power Consumption</Text>
-                    <Text weight="bold">{selectedDevice.sensorData?.powerConsumption || 'N/A'}</Text>
+                    <Text size="2">Next Due</Text>
+                    <Badge color="blue" variant="soft">{selectedDevice.nextDue}</Badge>
                   </Flex>
                   <Flex justify="between">
-                    <Text size="2">Operational Hours</Text>
-                    <Text weight="bold">{selectedDevice.sensorData?.operationalHours.toLocaleString() || 'N/A'} hours</Text>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text size="2">Last Data Update</Text>
-                    <Text size="2" color="gray">{selectedDevice.sensorData?.lastUpdate || 'N/A'}</Text>
+                    <Text size="2">Last Service</Text>
+                    <Text weight="bold">{selectedDevice.lastService}</Text>
                   </Flex>
                 </Flex>
               </Card>
 
-              <Card>
-                <Heading size="4" mb="3">Device Health & Analytics</Heading>
-                <Flex direction="column" gap="3">
-                  <Flex direction="column" gap="1">
+              {selectedDevice.iot && selectedDevice.sensorData && (
+                <Card>
+                  <Heading size="4" mb="3">Real-time Sensor Data</Heading>
+                  <Flex direction="column" gap="3">
                     <Flex justify="between">
-                      <Text size="2">Health Score</Text>
-                      <Text weight="bold">{calculateHealthScore(selectedDevice.sensorData)}%</Text>
+                      <Text size="2">Temperature</Text>
+                      <Text weight="bold">{selectedDevice.sensorData.temperature}</Text>
                     </Flex>
-                    <Progress 
-                      value={calculateHealthScore(selectedDevice.sensorData)} 
-                      color={
-                        calculateHealthScore(selectedDevice.sensorData) < 60 ? "red" : 
-                        calculateHealthScore(selectedDevice.sensorData) < 80 ? "orange" : "green"
-                      } 
-                    />
+                    <Flex justify="between">
+                      <Text size="2">Vibration Level</Text>
+                      <Text weight="bold" color={parseFloat(selectedDevice.sensorData.vibration) > 2.5 ? "red" : "green"}>
+                        {selectedDevice.sensorData.vibration}
+                      </Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text size="2">Pressure</Text>
+                      <Text weight="bold">{selectedDevice.sensorData.pressure}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text size="2">Power Consumption</Text>
+                      <Text weight="bold">{selectedDevice.sensorData.powerConsumption}</Text>
+                    </Flex>
+                    <Flex justify="between">
+                      <Text size="2">Operational Hours</Text>
+                      <Text weight="bold">{selectedDevice.sensorData.operationalHours.toLocaleString()} hours</Text>
+                    </Flex>
                   </Flex>
-                  
-                  <Button variant="soft">
-                    <BellIcon /> Set Up Custom Alerts
-                  </Button>
-                </Flex>
-              </Card>
+                </Card>
+              )}
             </Grid>
 
             <Card mt="4">
@@ -615,15 +704,31 @@ const EquipmentMaintenance = () => {
                     <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Technician</Table.ColumnHeaderCell>
                     <Table.ColumnHeaderCell>Duration</Table.ColumnHeaderCell>
+                    <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
                   </Table.Row>
                 </Table.Header>
                 <Table.Body>
                   {selectedDevice.maintenanceHistory.map((record: MaintenanceRecord, index: number) => (
                     <Table.Row key={index}>
                       <Table.Cell>{record.date}</Table.Cell>
-                      <Table.Cell>{record.type}</Table.Cell>
-                      <Table.Cell>{record.technician}</Table.Cell>
-                      <Table.Cell>{record.duration}</Table.Cell>
+                      <Table.Cell>
+                        <Badge variant="soft">{record.type}</Badge>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Flex align="center" gap="2">
+                          <PersonIcon />
+                          {record.technician}
+                        </Flex>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Flex align="center" gap="2">
+                          <ClockIcon />
+                          {record.duration}
+                        </Flex>
+                      </Table.Cell>
+                      <Table.Cell>
+                        <Badge color="green" variant="soft">{record.status}</Badge>
+                      </Table.Cell>
                     </Table.Row>
                   ))}
                 </Table.Body>
