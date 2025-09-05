@@ -45,18 +45,25 @@ const BatchRecords: React.FC = () => {
 
   const records: BatchRecord[] = [
     { 
-      id: 'BR2023-045', 
+      id: 'BR-001', 
       product: 'Poultry Drug A',
       approval: 'approved',
       date: '2025-07-25',
       author: 'QA Auditor 1'
     },
     { 
-      id: 'BR2023-046', 
+      id: 'BR-002', 
       product: 'Poultry Drug B',
       approval: 'pending',
       date: '2025-07-26',
       author: 'QA Auditor 2'
+    },
+    { 
+      id: 'BR-003', 
+      product: 'Poultry Drug C',
+      approval: 'rejected',
+      date: '2025-07-27',
+      author: 'QA Auditor 3'
     },
   ];
 
@@ -130,13 +137,13 @@ const BatchRecords: React.FC = () => {
 
       <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
         <Table.Header className="bg-gray-50">
-          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700">
-            <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Author</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+          <Table.Row>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Batch ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Product</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Date</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Author</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -144,7 +151,11 @@ const BatchRecords: React.FC = () => {
           {filteredRecords.map((record) => (
             <Table.Row key={record.id} className="hover:bg-gray-50/50">
               <Table.Cell className="font-medium">
-                <Badge variant="soft" className="px-2 py-1">
+                <Badge 
+                  color="blue" 
+                  variant="soft"
+                  className="px-2 py-1 rounded-full text-xs font-medium text-blue-700"
+                >
                   {record.id}
                 </Badge>
               </Table.Cell>
@@ -195,7 +206,7 @@ const BatchRecords: React.FC = () => {
               <Text as="label" size="2" weight="bold" className="text-gray-700">
                 Batch ID
               </Text>
-              <TextField.Root placeholder="BR2023-XXX" />
+              <TextField.Root placeholder="BR-XXX" />
             </Flex>
 
             <Flex direction="column" gap="2">
