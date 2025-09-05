@@ -238,12 +238,6 @@ const ScrapProducts = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fixed color functions with valid Radix UI colors
-  const getScrapTypeColor = () => 'blue' as const;
-  const getDamageExtentColor = (extent: string) => (extent === 'Full' ? 'red' : 'orange') as const;
-  const getDamageReasonColor = () => 'gray' as const;
-  const getMethodColor = (method: string) => (method === 'Recycling' ? 'green' : 'orange') as const;
-
   const IoTDashboard = () => (
     <Card className="mb-4">
       <Heading size="4" mb="3">IoT Monitoring System</Heading>
