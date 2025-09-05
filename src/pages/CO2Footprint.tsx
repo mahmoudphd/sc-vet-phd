@@ -4,7 +4,7 @@ import {
   Dialog, Badge
 } from '@radix-ui/themes';
 import {
-  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell
 } from 'recharts';
 
 // Constants
@@ -426,20 +426,20 @@ const CO2Footprint = () => {
   };
 
   const totalEmissions = useMemo(() => {
-  const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
-    const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-    return sum + emissions;
-  }, 0);
-  return parseFloat(total.toFixed(3));
-}, [emissionData]);
+    const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
+      const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+      return sum + emissions;
+    }, 0);
+    return parseFloat(total.toFixed(3));
+  }, [emissionData]);
 
   const totalCost = useMemo(() => {
-  const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
-    const cost = currency === 'EGP' ? item.costEGP : item.costUSD;
-    return sum + (isNaN(cost) || !isFinite(cost) ? 0 : cost);
-  }, 0);
-  return parseFloat(total.toFixed(2));
-}, [emissionData, currency]);
+    const total = emissionData.reduce((sum: number, item: EmissionDataItem) => {
+      const cost = currency === 'EGP' ? item.costEGP : item.costUSD;
+      return sum + (isNaN(cost) || !isFinite(cost) ? 0 : cost);
+    }, 0);
+    return parseFloat(total.toFixed(2));
+  }, [emissionData, currency]);
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
@@ -455,13 +455,13 @@ const CO2Footprint = () => {
   };
 
   // Data for charts
-  const pieChartData = emissionData.map((item: EmissionDataItem) => ({
-  name: item.category,
-  value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
-  cost: currency === 'EGP' ? 
-    (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
-    (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
-}));
+  const barChartData = emissionData.map((item: EmissionDataItem) => ({
+    name: item.category,
+    value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
+    cost: currency === 'EGP' ? 
+      (isNaN(item.costEGP) || !isFinite(item.costEGP) ? 0 : item.costEGP) : 
+      (isNaN(item.costUSD) || !isFinite(item.costUSD) ? 0 : item.costUSD)
+  }));
 
   return (
     <Box p="6">
@@ -596,22 +596,23 @@ const CO2Footprint = () => {
           <Box p="3">
             <Heading size="4" mb="2">Emissions by Category</Heading>
             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={pieChartData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                  {pieChartData.map((entry: any, index: number) => (
-  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-))}
-                </Pie>
+              <BarChart data={barChartData}>
+                <XAxis 
+                  dataKey="name" 
+                  angle={-45} 
+                  textAnchor="end" 
+                  height={80}
+                  tick={{ fontSize: 12 }}
+                />
+                <YAxis 
+                  label={{ 
+                    value: 'kg CO₂e', 
+                    angle: -90, 
+                    position: 'insideLeft',
+                    offset: -5,
+                    style: { textAnchor: 'middle' }
+                  }}
+                />
                 <Tooltip 
                   formatter={(value: number, name: string, props: any) => [
                     `${value.toFixed(3)} kg CO₂e`,
@@ -620,7 +621,12 @@ const CO2Footprint = () => {
                   ]}
                 />
                 <Legend />
-              </PieChart>
+                <Bar dataKey="value" name="Emissions">
+                  {barChartData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </Box>
         </Card>
@@ -628,22 +634,9 @@ const CO2Footprint = () => {
           <Box p="3">
             <Heading size="4" mb="2">GHG Protocol Scopes</Heading>
             <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={ghgScopeData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={80}
-                  fill="#8884d8"
-                  dataKey="value"
-                  nameKey="name"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                >
-                 {ghgScopeData.map((entry: any, index: number) => (
-  <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
-))}
-                </Pie>
+              <BarChart data={ghgScopeData}>
+                <XAxis dataKey="name" />
+                <YAxis />
                 <Tooltip 
                   formatter={(value: number, name: string) => [
                     `${value.toFixed(3)} kg CO₂e`,
@@ -651,7 +644,12 @@ const CO2Footprint = () => {
                   ]}
                 />
                 <Legend />
-              </PieChart>
+                <Bar dataKey="value" name="Emissions">
+                  {ghgScopeData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
+                  ))}
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
             <Box mt="2" style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>
               <div>Scope 1+2: Manufacturing + Packaging</div>
@@ -674,8 +672,8 @@ const CO2Footprint = () => {
             </Table.Row>
           </Table.Header>
           <Table.Body>
-           {emissionData.map((item: EmissionDataItem, i: number) => (
-  <Table.Row key={i}>
+            {emissionData.map((item: EmissionDataItem, i: number) => (
+              <Table.Row key={i}>
                 <Table.Cell>
                   <Button 
                     variant="ghost" 
@@ -1220,4 +1218,3 @@ const CO2Footprint = () => {
 };
 
 export default CO2Footprint;
-
