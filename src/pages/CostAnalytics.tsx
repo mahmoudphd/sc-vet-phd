@@ -668,7 +668,7 @@ const GHGProtocolDialog = ({
         <Dialog.Title style={{ 
           fontSize: '1.5rem',
           fontWeight: 'bold',
-          color: '#1f2937',
+          color: '1f2937',
           marginBottom: '20px'
         }}>
           {getScopeTitle()}
@@ -1405,7 +1405,7 @@ function CostAnalytics() {
                       fontWeight: '500'
                     }}
                   >
-                    {item.trend === 'up' ? '↓' : item.trend === 'down' : '↑' : '→'}
+                    {item.trend === 'up' ? '↓' : item.trend === 'down' ? '↑' : '→'}
                   </Badge>
                 )}
               </Flex>
@@ -1807,7 +1807,7 @@ function CostAnalytics() {
                                     />
                                   )}
                                 </Table.Cell>
-                                <Table.Cell style={tableCellStyle>
+                                <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
                                     unitPrice ? formatCurrency(unitPrice, currency) : '-'
                                   ) : (
@@ -1929,7 +1929,7 @@ function CostAnalytics() {
 
                         return (
                           <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name</Table.RowHeaderCell>
+                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
 
                             <Table.Cell style={tableCellStyle}>
                               <input
@@ -2222,416 +2222,416 @@ function CostAnalytics() {
                             value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
-                            style: { textAnchor: 'middle', fill: '#f59e0b', fontSize: '10
-                        }}
-                      />
-                      <Tooltip 
-                        formatter={(value, name) => {
-                          if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
-                          if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
-                          if (name === 'totalScore') return [`${value}/200`, 'Total Score'];
-                          return [value, name];
-                        }}
-                        contentStyle={{
-                          backgroundColor: 'white',
-                          border: '1px solid #e5e7eb',
-                          borderRadius: '6px',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                          fontSize: '0.9rem'
-                        }}
-                      />
-                      <Legend />
-                      <Bar 
-                        yAxisId="left"
-                        dataKey="price" 
-                        name="Price/kg" 
-                        fill="#3b82f6"
-                        barSize={25}
-                        radius={[4, 4, 0, 0]}
-                      >
-                        {suppliers.map((supplier, index) => (
-                          <Cell 
-                            key={`price-cell-${index}`} 
-                            fill={supplier.selected ? '#10b981' : '#3b82f6'}
-                            stroke={supplier.selected ? '#059669' : '#3b82f6'}
-                            strokeWidth={supplier.selected ? 2 : 0}
-                          />
-                        ))}
-                      </Bar>
-                      <Bar 
-                        yAxisId="right"
-                        dataKey="compliance" 
-                        name="Compliance Score" 
-                        fill="#8b5cf6"
-                        barSize={25}
-                        radius={[4, 4, 0, 0]}
-                      >
-                        {suppliers.map((supplier, index) => (
-                          <Cell 
-                            key={`compliance-cell-${index}`} 
-                            fill={supplier.selected ? '#10b981' : '#8b5cf6'}
-                            stroke={supplier.selected ? '#059669' : '#8b5cf6'}
-                            strokeWidth={supplier.selected ? 2 : 0}
-                          />
-                        ))}
-                      </Bar>
-                      <Bar 
-                        yAxisId="right"
-                        dataKey="totalScore" 
-                        name="Total Score" 
-                        fill="#ec4899"
-                        barSize={25}
-                        radius={[4, 4, 0, 0]}
-                      >
-                        {suppliers.map((supplier, index) => (
-                          <Cell 
-                            key={`totalScore-cell-${index}`} 
-                            fill={supplier.selected ? '#10b981' : '#ec4899'}
-                            stroke={supplier.selected ? '#059669' : '#ec4899'}
-                            strokeWidth={supplier.selected ? 2 : 0}
-                          />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  
-                  {/* Chart color key */}
-                  <Flex justify="center" gap="3" mt="3" wrap="wrap">
-                    <Flex align="center" gap="1">
-                      <Box style={{ width: '12px', height: '12px', backgroundColor: '#3b82f6', borderRadius: '2px' }}></Box>
-                      <Text size="1">Price/kg</Text>
+                            style: { textAnchor: 'middle', fill: '#f59e0b', fontSize: '10px' }
+                          }}
+                        />
+                        <Tooltip 
+                          formatter={(value, name) => {
+                            if (name === 'price') return [`${formatCurrency(Number(value), currency)}`, 'Price/kg'];
+                            if (name === 'compliance') return [`${value}/100`, 'Compliance Score'];
+                            if (name === 'totalScore') return [`${value}/200`, 'Total Score'];
+                            return [value, name];
+                          }}
+                          contentStyle={{
+                            backgroundColor: 'white',
+                            border: '1px solid #e5e7eb',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                            fontSize: '0.9rem'
+                          }}
+                        />
+                        <Legend />
+                        <Bar 
+                          yAxisId="left"
+                          dataKey="price" 
+                          name="Price/kg" 
+                          fill="#3b82f6"
+                          barSize={25}
+                          radius={[4, 4, 0, 0]}
+                        >
+                          {suppliers.map((supplier, index) => (
+                            <Cell 
+                              key={`price-cell-${index}`} 
+                              fill={supplier.selected ? '#10b981' : '#3b82f6'}
+                              stroke={supplier.selected ? '#059669' : '#3b82f6'}
+                              strokeWidth={supplier.selected ? 2 : 0}
+                            />
+                          ))}
+                        </Bar>
+                        <Bar 
+                          yAxisId="right"
+                          dataKey="compliance" 
+                          name="Compliance Score" 
+                          fill="#8b5cf6"
+                          barSize={25}
+                          radius={[4, 4, 0, 0]}
+                        >
+                          {suppliers.map((supplier, index) => (
+                            <Cell 
+                              key={`compliance-cell-${index}`} 
+                              fill={supplier.selected ? '#10b981' : '#8b5cf6'}
+                              stroke={supplier.selected ? '#059669' : '#8b5cf6'}
+                              strokeWidth={supplier.selected ? 2 : 0}
+                            />
+                          ))}
+                        </Bar>
+                        <Bar 
+                          yAxisId="right"
+                          dataKey="totalScore" 
+                          name="Total Score" 
+                          fill="#ec4899"
+                          barSize={25}
+                          radius={[4, 4, 0, 0]}
+                        >
+                          {suppliers.map((supplier, index) => (
+                            <Cell 
+                              key={`totalScore-cell-${index}`} 
+                              fill={supplier.selected ? '#10b981' : '#ec4899'}
+                              stroke={supplier.selected ? '#059669' : '#ec4899'}
+                              strokeWidth={supplier.selected ? 2 : 0}
+                            />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    
+                    {/* Chart color key */}
+                    <Flex justify="center" gap="3" mt="3" wrap="wrap">
+                      <Flex align="center" gap="1">
+                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#3b82f6', borderRadius: '2px' }}></Box>
+                        <Text size="1">Price/kg</Text>
+                      </Flex>
+                      <Flex align="center" gap="1">
+                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#8b5cf6', borderRadius: '2px' }}></Box>
+                        <Text size="1">Compliance Score</Text>
+                      </Flex>
+                      <Flex align="center" gap="1">
+                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#ec4899', borderRadius: '2px' }}></Box>
+                        <Text size="1">Total Score</Text>
+                      </Flex>
+                      <Flex align="center" gap="1">
+                        <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '2px' }}></Box>
+                        <Text size="1">Selected Supplier</Text>
+                      </Flex>
                     </Flex>
-                    <Flex align="center" gap="1">
-                      <Box style={{ width: '12px', height: '12px', backgroundColor: '#8b5cf6', borderRadius: '2px' }}></Box>
-                      <Text size="1">Compliance Score</Text>
-                    </Flex>
-                    <Flex align="center" gap="1">
-                      <Box style={{ width: '12px', height: '12px', backgroundColor: '#ec4899', borderRadius: '2px' }}></Box>
-                      <Text size="1">Total Score</Text>
-                    </Flex>
-                    <Flex align="center" gap="1">
-                      <Box style={{ width: '12px', height: '12px', backgroundColor: '#10b981', border: '2px solid #059669', borderRadius: '2px' }}></Box>
-                      <Text size="1">Selected Supplier</Text>
-                    </Flex>
-                  </Flex>
-                </Card>
+                  </Card>
 
-                <Card style={{
-                  borderRadius: '8px',
-                  backgroundColor: 'white',
-                  padding: '16px',
-                  boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
-                }}>
-                  <div style={{ overflowX: 'auto' }}>
-                    <Table.Root size="1">
-                      <Table.Header style={{ 
-                        backgroundColor: '#f1f5f9',
-                      }}>
-                        <Table.Row>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Supplier</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Price/kg</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Rating</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Delivery</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Reliability</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Compliance</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Total Score</Table.ColumnHeaderCell>
-                          <Table.ColumnHeaderCell style={{
-                            fontWeight: 'bold',
-                            padding: '10px',
-                            fontSize: '0.9rem',
-                            color: '#1e293b',
-                            whiteSpace: 'nowrap'
-                          }}>Select</Table.ColumnHeaderCell>
-                        </Table.Row>
-                      </Table.Header>
-                      <Table.Body>
-                        {suppliers.map((supplier, index) => (
-                          <Table.Row 
-                            key={supplier.id} 
-                            style={{
-                              backgroundColor: hoveredRow === index ? '#f8fafc' : 
-                                              (supplier.selected ? '#f0fdf4' : 
-                                              (index % 2 === 0 ? '#fafafa' : 'white')),
-                            }}
-                            onMouseEnter={() => setHoveredRow(index)}
-                            onMouseLeave={() => setHoveredRow(null)}
-                          >
-                            <Table.Cell style={{
-                              padding: '10px',
-                              fontWeight: supplier.selected ? '600' : '400',
-                              color: supplier.selected ? '#059669' : '#334155',
-                              fontSize: '0.9rem',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              <Flex align="center" gap="1">
-                                {supplier.selected && (
-                                  <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.7rem' }}>
-                                    ✓
-                                  </Badge>
-                                )}
-                                {supplier.name}
-                              </Flex>
-                            </Table.Cell>
-                            <Table.Cell style={{
-                              padding: '10px',
-                              fontWeight: '500',
-                              color: '#334155',
-                              fontSize: '0.9rem',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {formatCurrency(supplier.pricePerKg, currency)}
-                            </Table.Cell>
-                            <Table.Cell style={{
+                  <Card style={{
+                    borderRadius: '8px',
+                    backgroundColor: 'white',
+                    padding: '16px',
+                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.08)',
+                  }}>
+                    <div style={{ overflowX: 'auto' }}>
+                      <Table.Root size="1">
+                        <Table.Header style={{ 
+                          backgroundColor: '#f1f5f9',
+                        }}>
+                          <Table.Row>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
+                              color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>
-                              <Flex align="center" gap="1">
-                                <span style={{ 
-                                  color: '#f59e0b',
-                                  fontSize: '14px'
-                                }}>
-                                  ★
-                                </span>
-                                <Text style={{ color: '#64748b' }}>
-                                  {supplier.rating}
-                                </Text>
-                              </Flex>
-                            </Table.Cell>
-                            <Table.Cell style={{
+                            }}>Supplier</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
                               padding: '10px',
-                              color: '#475569',
                               fontSize: '0.9rem',
+                              color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>{supplier.delivery}</Table.Cell>
-                            <Table.Cell style={{
+                            }}>Price/kg</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
                               padding: '10px',
-                              color: '#475569',
                               fontSize: '0.9rem',
+                              color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>{supplier.reliability}</Table.Cell>
-                            <Table.Cell 
+                            }}>Rating</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '#1e293b',
+                              whiteSpace: 'nowrap'
+                            }}>Delivery</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '#1e293b',
+                              whiteSpace: 'nowrap'
+                            }}>Reliability</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '#1e293b',
+                              whiteSpace: 'nowrap'
+                            }}>Compliance</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '#1e293b',
+                              whiteSpace: 'nowrap'
+                            }}>Total Score</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
+                              fontWeight: 'bold',
+                              padding: '10px',
+                              fontSize: '0.9rem',
+                              color: '#1e293b',
+                              whiteSpace: 'nowrap'
+                            }}>Select</Table.ColumnHeaderCell>
+                          </Table.Row>
+                        </Table.Header>
+                        <Table.Body>
+                          {suppliers.map((supplier, index) => (
+                            <Table.Row 
+                              key={supplier.id} 
                               style={{
+                                backgroundColor: hoveredRow === index ? '#f8fafc' : 
+                                                (supplier.selected ? '#f0fdf4' : 
+                                                (index % 2 === 0 ? '#fafafa' : 'white')),
+                              }}
+                              onMouseEnter={() => setHoveredRow(index)}
+                              onMouseLeave={() => setHoveredRow(null)}
+                            >
+                              <Table.Cell style={{
                                 padding: '10px',
-                                fontWeight: 'bold',
-                                color: supplier.complianceScore > 80 ? '#10b981' : 
-                                      supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
-                                cursor: 'pointer',
+                                fontWeight: supplier.selected ? '600' : '400',
+                                color: supplier.selected ? '#059669' : '#334155',
                                 fontSize: '0.9rem',
                                 whiteSpace: 'nowrap'
-                              }}
-                              onClick={() => {
-                                setComplianceTooltip({
-                                  visible: true,
-                                  x: 0,
-                                  y: 0,
-                                  supplier: supplier
-                                });
-                              }}
-                            >
-                              {supplier.complianceScore}/100
-                            </Table.Cell>
-                            <Table.Cell style={{
-                              padding: '10px',
-                              fontWeight: 'bold',
-                              color: supplier.score > 200 ? '#10b981' : 
-                                    supplier.score > 150 ? '#f59e0b' : '#ef4444',
-                              fontSize: '0.9rem',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              {supplier.score}/200
-                            </Table.Cell>
-                            <Table.Cell style={{
-                              padding: '10px',
-                              whiteSpace: 'nowrap'
-                            }}>
-                              <Button
-                                size="1"
-                                variant={supplier.selected ? 'solid' : 'outline'}
-                                onClick={() => handleSupplierSelect(supplier.id)}
+                              }}>
+                                <Flex align="center" gap="1">
+                                  {supplier.selected && (
+                                    <Badge color="green" variant="solid" style={{ padding: '1px 4px', fontSize: '0.7rem' }}>
+                                      ✓
+                                    </Badge>
+                                  )}
+                                  {supplier.name}
+                                </Flex>
+                              </Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                fontWeight: '500',
+                                color: '#334155',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {formatCurrency(supplier.pricePerKg, currency)}
+                              </Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                <Flex align="center" gap="1">
+                                  <span style={{ 
+                                    color: '#f59e0b',
+                                    fontSize: '14px'
+                                  }}>
+                                    ★
+                                  </span>
+                                  <Text style={{ color: '#64748b' }}>
+                                    {supplier.rating}
+                                  </Text>
+                                </Flex>
+                              </Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                color: '#475569',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                              }}>{supplier.delivery}</Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                color: '#475569',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                              }}>{supplier.reliability}</Table.Cell>
+                              <Table.Cell 
                                 style={{
-                                  borderRadius: '4px',
-                                  padding: '4px 8px',
-                                  fontSize: '0.8rem',
-                                  backgroundColor: supplier.selected ? '#10b981' : 'white',
-                                  color: supplier.selected ? 'white' : '#1f2937',
-                                  borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
+                                  padding: '10px',
                                   fontWeight: 'bold',
-                                  width: '100%',
+                                  color: supplier.complianceScore > 80 ? '#10b981' : 
+                                        supplier.complianceScore > 60 ? '#f59e0b' : '#ef4444',
+                                  cursor: 'pointer',
+                                  fontSize: '0.9rem',
+                                  whiteSpace: 'nowrap'
+                                }}
+                                onClick={() => {
+                                  setComplianceTooltip({
+                                    visible: true,
+                                    x: 0,
+                                    y: 0,
+                                    supplier: supplier
+                                  });
                                 }}
                               >
-                                {supplier.selected ? 'Selected' : 'Select'}
-                              </Button>
-                            </Table.Cell>
-                          </Table.Row>
-                        ))}
-                      </Table.Body>
-                    </Table.Root>
-                  </div>
-                </Card>
-              </>
-            )}
+                                {supplier.complianceScore}/100
+                              </Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                fontWeight: 'bold',
+                                color: supplier.score > 200 ? '#10b981' : 
+                                      supplier.score > 150 ? '#f59e0b' : '#ef4444',
+                                fontSize: '0.9rem',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                {supplier.score}/200
+                              </Table.Cell>
+                              <Table.Cell style={{
+                                padding: '10px',
+                                whiteSpace: 'nowrap'
+                              }}>
+                                <Button
+                                  size="1"
+                                  variant={supplier.selected ? 'solid' : 'outline'}
+                                  onClick={() => handleSupplierSelect(supplier.id)}
+                                  style={{
+                                    borderRadius: '4px',
+                                    padding: '4px 8px',
+                                    fontSize: '0.8rem',
+                                    backgroundColor: supplier.selected ? '#10b981' : 'white',
+                                    color: supplier.selected ? 'white' : '#1f2937',
+                                    borderColor: supplier.selected ? '#10b981' : '#e5e7eb',
+                                    fontWeight: 'bold',
+                                    width: '100%',
+                                  }}
+                                >
+                                  {supplier.selected ? 'Selected' : 'Select'}
+                                </Button>
+                              </Table.Cell>
+                            </Table.Row>
+                          ))}
+                        </Table.Body>
+                      </Table.Root>
+                    </div>
+                  </Card>
+                </>
+              )}
 
-            <Flex justify="end" gap="2" mt="3">
-              <Button 
-                variant="solid"
-                onClick={() => {
-                  const selectedSupplier = suppliers.find(s => s.selected);
-                  if (selectedSupplier && selectedSolution) {
-                    const items = [...getDetailsByCategory(selectedSolution.category)];
-                    items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
-                    setData(prev => ({
-                      ...prev,
-                      rawMaterials: [...prev.rawMaterials]
-                    }));
-                    updateCategoryTotals(selectedSolution.category, {...data});
-                  }
-                  setSelectedSolution(null);
-                }}
-                style={{
-                  backgroundColor: '#2563eb',
-                  color: 'white',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  fontSize: '0.9rem'
-                }}
-                disabled={!suppliers.find(s => s.selected)}
-              >
-                💾 Apply Changes
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => setSelectedSolution(null)}
-                style={{
-                  backgroundColor: '#f3f4f6',
-                  color: '#1f2937',
-                  padding: '8px 16px',
-                  borderRadius: '6px',
-                  fontWeight: 'bold',
-                  fontSize: '0.9rem'
-                }}
-              >
-                ❌ Cancel
-              </Button>
-            </Flex>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
-    )}
-
-    {/* Compliance tooltip dialog */}
-    {complianceTooltip.visible && complianceTooltip.supplier && (
-      <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
-    )}
-
-    {/* Charts section - Restored to original sizes */}
-    <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
-      <Card style={{
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        backgroundColor: 'white',
-        padding: '16px',
-        height: '400px' // Increased height for better clarity
-      }}>
-        <Flex direction="column" height="100%">
-          <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-            Cost Breakdown
-          </Heading>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={categories.map((category) => ({
-                  name: category,
-                  value: getDetailsByCategory(category).reduce(
-                    (sum, item) => sum + calculateActualCost(item), 0
-                  ),
-                }))}
-                cx="50%"
-                cy="50%"
-                outerRadius={100} // Increased outer radius
-                innerRadius={60} // Added inner radius for donut chart
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
-                labelLine={true}
-              >
-                {categories.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value: number) => formatCurrency(value, currency)}
-              />
-              <Legend 
-                layout="vertical" 
-                verticalAlign="middle" 
-                align="right"
-                formatter={(value, entry, index) => (
-                  <span style={{ 
-                    fontSize: '12px', 
+              <Flex justify="end" gap="2" mt="3">
+                <Button 
+                  variant="solid"
+                  onClick={() => {
+                    const selectedSupplier = suppliers.find(s => s.selected);
+                    if (selectedSupplier && selectedSolution) {
+                      const items = [...getDetailsByCategory(selectedSolution.category)];
+                      items[selectedSolution.index].pricePerKg = selectedSupplier.pricePerKg;
+                      setData(prev => ({
+                        ...prev,
+                        rawMaterials: [...prev.rawMaterials]
+                      }));
+                      updateCategoryTotals(selectedSolution.category, {...data});
+                    }
+                    setSelectedSolution(null);
+                  }}
+                  style={{
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
                     fontWeight: 'bold',
-                    color: '#333'
-                  }}>
-                    {value}
-                  </span>
-                )}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        </Flex>
-      </Card>
+                    fontSize: '0.9rem'
+                  }}
+                  disabled={!suppliers.find(s => s.selected)}
+                >
+                  💾 Apply Changes
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => setSelectedSolution(null)}
+                  style={{
+                    backgroundColor: '#f3f4f6',
+                    color: '#1f2937',
+                    padding: '8px 16px',
+                    borderRadius: '6px',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  ❌ Cancel
+                </Button>
+              </Flex>
+            </Flex>
+          </Dialog.Content>
+        </Dialog.Root>
+      )}
 
-      <Card style={{
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        backgroundColor: 'white',
-        padding: '16px',
-        height: '350px' // Restored original height
-      }}>
-        <Flex direction="column" height="100%">
+      {/* Compliance tooltip dialog */}
+      {complianceTooltip.visible && complianceTooltip.supplier && (
+        <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
+      )}
+
+      {/* Charts section - Restored to original sizes */}
+      <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
+        <Card style={{
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          backgroundColor: 'white',
+          padding: '16px',
+          height: '400px' // Increased height for better clarity
+        }}>
+          <Flex direction="column" height="100%">
+            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+              Cost Breakdown
+            </Heading>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={categories.map((category) => ({
+                    name: category,
+                    value: getDetailsByCategory(category).reduce(
+                      (sum, item) => sum + calculateActualCost(item), 0
+                    ),
+                  }))}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={100} // Increased outer radius
+                  innerRadius={60} // Added inner radius for donut chart
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                  labelLine={true}
+                >
+                  {categories.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value: number) => formatCurrency(value, currency)}
+                />
+                <Legend 
+                  layout="vertical" 
+                  verticalAlign="middle" 
+                  align="right"
+                  formatter={(value, entry, index) => (
+                    <span style={{ 
+                      fontSize: '12px', 
+                      fontWeight: 'bold',
+                      color: '#333'
+                    }}>
+                      {value}
+                    </span>
+                  )}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+
+        <Card style={{
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          backgroundColor: 'white',
+          padding: '16px',
+          height: '350px' // Restored original height
+        }}>
+                  <Flex direction="column" height="100%">
           <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
             Cost Gap Calculation
           </Heading>
@@ -2678,7 +2678,7 @@ function CostAnalytics() {
       </Card>
 
       <Card style={{
-                borderRadius: '12px',
+        borderRadius: '12px',
         boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
         backgroundColor: 'white',
         padding: '16px',
