@@ -27,7 +27,8 @@ import {
   ActivityLogIcon,
   Cross2Icon,
   ClockIcon,
-  PersonIcon
+  PersonIcon,
+  CubeIcon
 } from '@radix-ui/react-icons';
 
 // Type definitions
@@ -492,81 +493,81 @@ const calculateHealthScore = (sensorData: SensorData | null): number => {
 // New Work Order Dialog Component
 const NewWorkOrderDialog = () => (
   <Dialog.Root>
-    <Dialog.Trigger>
-      <Button variant="soft">
-        <MixerHorizontalIcon /> New Work Order
-      </Button>
-    </Dialog.Trigger>
-    <Dialog.Content style={{ maxWidth: '500px' }}>
-      <Flex justify="between" align="center" mb="3">
-        <Dialog.Title>Create New Work Order</Dialog.Title>
+  <Dialog.Trigger>
+    <Button variant="soft">
+      <MixerHorizontalIcon /> New Work Order
+    </Button>
+  </Dialog.Trigger>
+  <Dialog.Content style={{ maxWidth: '500px' }}>
+    <Flex justify="between" align="center" mb="3">
+      <Dialog.Title>Create New Work Order</Dialog.Title>
+      <Dialog.Close>
+        <Button variant="ghost" color="gray">
+          <Cross2Icon />
+        </Button>
+      </Dialog.Close>
+    </Flex>
+    <Flex direction="column" gap="3">
+      <label>
+        <Text as="div" size="2" weight="bold" mb="1">Work Order Title</Text>
+        <TextField.Root placeholder="Enter work order title" />
+      </label>
+      
+      <label>
+        <Text as="div" size="2" weight="bold" mb="1">Select Equipment</Text>
+        <Select.Root>
+          <Select.Trigger />
+          <Select.Content>
+            {equipmentData.map((item) => (
+              <Select.Item key={item.id} value={item.id}>
+                {item.nameEn} ({item.id})
+              </Select.Item>
+            ))}
+          </Select.Content>
+        </Select.Root>
+      </label>
+      
+      <label>
+        <Text as="div" size="2" weight="bold" mb="1">Maintenance Type</Text>
+        <Select.Root>
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="cleaning">Cleaning</Select.Item>
+            <Select.Item value="inspection">Inspection</Select.Item>
+            <Select.Item value="lubrication">Lubrication</Select.Item>
+            <Select.Item value="calibration">Calibration</Select.Item>
+          </Select.Content>
+        </Select.Root>
+      </label>
+      
+      <label>
+        <Text as="div" size="2" weight="bold" mb="1">Priority Level</Text>
+        <Select.Root>
+          <Select.Trigger />
+          <Select.Content>
+            <Select.Item value="high">High Priority</Select.Item>
+            <Select.Item value="medium">Medium Priority</Select.Item>
+            <Select.Item value="low">Low Priority</Select.Item>
+          </Select.Content>
+        </Select.Root>
+      </label>
+      
+      <label>
+        <Text as="div" size="2" weight="bold" mb="1">Scheduled Date</Text>
+        <TextField.Root type="date" />
+      </label>
+      
+      <Flex gap="3" justify="end" mt="3">
         <Dialog.Close>
-          <Button variant="ghost" color="gray">
-            <Cross2Icon />
+          <Button variant="soft" color="gray">
+            Cancel
           </Button>
         </Dialog.Close>
+        <Button>Create Work Order</Button>
       </Flex>
-      <Flex direction="column" gap="3">
-        <label>
-          <Text as="div" size="2" weight="bold" mb="1">Work Order Title</Text>
-          <TextField.Root placeholder="Enter work order title" />
-        </label>
-        
-        <label>
-          <Text as="div" size="2" weight="bold" mb="1">Select Equipment</Text>
-          <Select.Root>
-            <Select.Trigger />
-            <Select.Content>
-              {equipmentData.map((item) => (
-                <Select.Item key={item.id} value={item.id}>
-                  {item.nameEn} ({item.id})
-                </Select.Item>
-              ))}
-            </Select.Content>
-          </Select.Root>
-        </label>
-        
-        <label>
-          <Text as="div" size="2" weight="bold" mb="1">Maintenance Type</Text>
-          <Select.Root>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="cleaning">Cleaning</Select.Item>
-              <Select.Item value="inspection">Inspection</Select.Item>
-              <Select.Item value="lubrication">Lubrication</Select.Item>
-              <Select.Item value="calibration">Calibration</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </label>
-        
-        <label>
-          <Text as="div" size="2" weight="bold" mb="1">Priority Level</Text>
-          <Select.Root>
-            <Select.Trigger />
-            <Select.Content>
-              <Select.Item value="high">High Priority</Select.Item>
-              <Select.Item value="medium">Medium Priority</Select.Item>
-              <Select.Item value="low">Low Priority</Select.Item>
-            </Select.Content>
-          </Select.Root>
-        </label>
-        
-        <label>
-          <Text as="div" size="2" weight="bold" mb="1">Scheduled Date</Text>
-          <TextField.Root type="date" />
-        </label>
-        
-        <Flex gap="3" justify="end" mt="3">
-          <Dialog.Close>
-            <Button variant="soft" color="gray">
-              Cancel
-            </Button>
-          </Dialog.Close>
-          <Button>Create Work Order</Button>
-        </Flex>
-      </Flex>
-    </Dialog.Content>
-  </Dialog.Root>
+    </Flex>
+  </Dialog.Content>
+</Dialog.Root>
 );
 
 // Equipment Details Dialog Component
@@ -762,6 +763,74 @@ const IotStatisticsCards = ({ iotStats }: { iotStats: IotStats }) => (
   </Grid>
 );
 
+// Blockchain Submission Dialog
+const BlockchainDialog = () => {
+  const [transactionHash, setTransactionHash] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSubmitToBlockchain = () => {
+    setIsLoading(true);
+    // Simulate blockchain submission
+    setTimeout(() => {
+      const mockHash = '0x' + Math.random().toString(16).substr(2, 64);
+      setTransactionHash(mockHash);
+      setIsLoading(false);
+    }, 2000);
+  };
+
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <Button 
+          style={{ 
+            backgroundColor: '#166534', 
+            color: 'white',
+            cursor: 'pointer'
+          }}
+        >
+          <CubeIcon /> Submit to Blockchain
+        </Button>
+      </Dialog.Trigger>
+      <Dialog.Content style={{ maxWidth: '500px' }}>
+        <Flex justify="between" align="center" mb="3">
+          <Dialog.Title>Submit Maintenance Records to Blockchain</Dialog.Title>
+          <Dialog.Close>
+            <Button variant="ghost" color="gray">
+              <Cross2Icon />
+            </Button>
+          </Dialog.Close>
+        </Flex>
+        
+        <Flex direction="column" gap="3">
+          <Text>
+            This will submit all maintenance records to the blockchain for immutable storage and verification.
+          </Text>
+          
+          {transactionHash ? (
+            <Box>
+              <Text weight="bold" mb="2">Transaction Successful!</Text>
+              <Text size="2" style={{ wordBreak: 'break-all' }}>
+                Transaction Hash: {transactionHash}
+              </Text>
+              <Button variant="soft" mt="3" onClick={() => navigator.clipboard.writeText(transactionHash)}>
+                Copy Hash
+              </Button>
+            </Box>
+          ) : (
+            <Button 
+              onClick={handleSubmitToBlockchain} 
+              disabled={isLoading}
+              style={{ backgroundColor: '#166534', color: 'white' }}
+            >
+              {isLoading ? 'Processing...' : 'Confirm Submission'}
+            </Button>
+          )}
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
+
 // Main Component
 const EquipmentMaintenance = () => {
   const [selectedDevice, setSelectedDevice] = useState<Equipment | null>(null);
@@ -800,9 +869,7 @@ const EquipmentMaintenance = () => {
       <Flex justify="between" align="center" mb="5">
         <Flex align="center" gap="3">
           <Heading size="6">Equipment Maintenance Register</Heading>
-          <Button color="green" variant="solid">
-            <ActivityLogIcon /> IoT Dashboard
-          </Button>
+          <BlockchainDialog />
         </Flex>
         <Flex gap="3">
           <NewWorkOrderDialog />
