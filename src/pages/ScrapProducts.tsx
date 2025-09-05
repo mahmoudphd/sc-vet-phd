@@ -18,10 +18,7 @@ import {
   CubeIcon as BlockchainIcon,
   PlusIcon,
   MagnifyingGlassIcon,
-  Cross2Icon,
-  CheckCircledIcon,
-  ClockIcon,
-  ExclamationTriangleIcon
+  Cross2Icon
 } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
 
@@ -162,27 +159,24 @@ const ScrapProducts = () => {
     toast.success('Scrap data submitted to blockchain successfully');
   };
 
+  // Simplified color scheme - using only 3 professional colors
   const getScrapTypeColor = (type: string) => {
     switch (type) {
       case 'Product Only': return 'blue';
       case 'Packaging Only': return 'green';
-      case 'Both': return 'red';
+      case 'Both': return 'orange';
       default: return 'gray';
     }
   };
 
   const getDamageExtentColor = (extent: string) => {
-    switch (extent) {
-      case 'Full': return 'red';
-      case 'Partial': return 'orange';
-      default: return 'gray';
-    }
+    return extent === 'Full' ? 'red' : 'orange';
   };
 
   const getDamageReasonColor = (reason: string) => {
     switch (reason) {
       case 'Expiration': return 'gray';
-      case 'Transportation Damage': return 'orange';
+      case 'Transportation Damage': return 'blue';
       case 'Contamination': return 'red';
       case 'Manufacturing Defect': return 'purple';
       default: return 'gray';
@@ -341,6 +335,7 @@ const ScrapProducts = () => {
                         setNewEntry({ ...newEntry, weight: parseInt(e.target.value) || 0 })
                       }
                     />
+                    <Text size="1" color="gray">Enter weight in grams</Text>
                   </Flex>
                 </Flex>
 
