@@ -167,11 +167,11 @@ const ScrapProducts = () => {
     );
   };
 
-  // Minimal color scheme - only 2 colors for better professionalism
-  const getScrapTypeColor = () => 'blue';
-  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' : 'orange';
-  const getDamageReasonColor = () => 'gray';
-  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' : 'orange';
+  // Fixed color functions - using valid Radix UI color values
+  const getScrapTypeColor = () => 'blue' as const;
+  const getDamageExtentColor = (extent: string) => (extent === 'Full' ? 'red' : 'orange') as const;
+  const getDamageReasonColor = () => 'gray' as const;
+  const getMethodColor = (method: string) => (method === 'Recycling' ? 'green' : 'orange') as const;
 
   return (
     <Card className="p-6 rounded-lg shadow-sm">
