@@ -4,7 +4,7 @@ import {
   Dialog, Badge
 } from '@radix-ui/themes';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, Cell
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 
 // Constants
@@ -455,7 +455,7 @@ const CO2Footprint = () => {
   };
 
   // Data for charts
-  const barChartData = emissionData.map((item: EmissionDataItem) => ({
+  const pieChartData = emissionData.map((item: EmissionDataItem) => ({
     name: item.category,
     value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
     cost: currency === 'EGP' ? 
@@ -595,24 +595,24 @@ const CO2Footprint = () => {
         <Card>
           <Box p="3">
             <Heading size="4" mb="2">Emissions by Category</Heading>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={barChartData}>
-                <XAxis 
-                  dataKey="name" 
-                  angle={-45} 
-                  textAnchor="end" 
-                  height={80}
-                  tick={{ fontSize: 12 }}
-                />
-                <YAxis 
-                  label={{ 
-                    value: 'kg CO₂e', 
-                    angle: -90, 
-                    position: 'insideLeft',
-                    offset: -5,
-                    style: { textAnchor: 'middle' }
-                  }}
-                />
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={pieChartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={true}
+                  outerRadius={100}
+                  innerRadius={60}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                >
+                  {pieChartData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   formatter={(value: number, name: string, props: any) => [
                     `${value.toFixed(3)} kg CO₂e`,
@@ -620,13 +620,21 @@ const CO2Footprint = () => {
                     `${currency} ${props.payload.cost.toFixed(2)}`
                   ]}
                 />
-                <Legend />
-                <Bar dataKey="value" name="Emissions">
-                  {barChartData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
+                <Legend 
+                  layout="vertical" 
+                  verticalAlign="middle" 
+                  align="right"
+                  formatter={(value, entry, index) => (
+                    <span style={{ 
+                      fontSize: '12px', 
+                      fontWeight: 'bold',
+                      color: '#333'
+                    }}>
+                      {value}
+                    </span>
+                  )}
+                />
+              </PieChart>
             </ResponsiveContainer>
           </Box>
         </Card>
@@ -634,9 +642,22 @@ const CO2Footprint = () => {
           <Box p="3">
             <Heading size="4" mb="2">GHG Protocol Scopes</Heading>
             <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={ghgScopeData}>
-                <XAxis dataKey="name" />
-                <YAxis />
+              <PieChart>
+                <Pie
+                  data={ghgScopeData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  nameKey="name"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {ghgScopeData.map((entry: any, index: number) => (
+                    <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
+                  ))}
+                </Pie>
                 <Tooltip 
                   formatter={(value: number, name: string) => [
                     `${value.toFixed(3)} kg CO₂e`,
@@ -644,12 +665,7 @@ const CO2Footprint = () => {
                   ]}
                 />
                 <Legend />
-                <Bar dataKey="value" name="Emissions">
-                  {ghgScopeData.map((entry: any, index: number) => (
-                    <Cell key={`cell-${index}`} fill={SCOPE_COLORS[index % SCOPE_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
+              </PieChart>
             </ResponsiveContainer>
             <Box mt="2" style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>
               <div>Scope 1+2: Manufacturing + Packaging</div>
