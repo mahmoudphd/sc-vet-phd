@@ -105,7 +105,7 @@ const ActiveBatches: React.FC = () => {
       temp: 3.2,
       status: 'onTrack',
       progress: 35,
-      priority: 'normal' // Changed from 'high' to 'normal' to make it blue
+      priority: 'high'
     },
   ]);
 
@@ -333,11 +333,11 @@ const ActiveBatches: React.FC = () => {
         <Table.Body className="divide-y divide-gray-100">
           {filteredBatches.map((batch) => (
             <Table.Row key={batch.id} className="hover:bg-gray-50/50">
-              <Table.Cell className="font-bold text-black">
+              <Table.Cell>
                 <Badge 
-                  color={getPriorityColor(batch.priority)} 
+                  color="blue" 
                   variant="soft"
-                  className="px-2 py-1 rounded-full text-xs font-medium"
+                  className="px-2 py-1 rounded-full text-xs font-medium text-blue-700"
                 >
                   {batch.id}
                 </Badge>
@@ -442,7 +442,7 @@ const ActiveBatches: React.FC = () => {
                   <Tooltip content="Cancel batch" delayDuration={300}>
                     <IconButton 
                       variant="soft" 
-                      color 'red' 
+                      color="red" 
                       size="2"
                       className="hover:bg-red-100 transition-colors"
                     >
