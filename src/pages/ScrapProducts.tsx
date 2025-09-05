@@ -19,8 +19,7 @@ import {
   PlusIcon,
   MagnifyingGlassIcon,
   Cross2Icon,
-  PersonIcon,
-  WifiIcon
+  PersonIcon
 } from '@radix-ui/react-icons';
 import { toast } from 'sonner';
 
@@ -239,16 +238,16 @@ const ScrapProducts = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fixed color functions
-  const getScrapTypeColor = () => 'blue' as const;
-  const getDamageExtentColor = (extent: string) => (extent === 'Full' ? 'red' : 'orange') as const;
-  const getDamageReasonColor = () => 'gray' as const;
-  const getMethodColor = (method: string) => (method === 'Recycling' ? 'green' : 'orange') as const;
+  // Fixed color functions without const assertions
+  const getScrapTypeColor = () => 'blue';
+  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' : 'orange';
+  const getDamageReasonColor = () => 'gray';
+  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' : 'orange';
 
   const IoTDashboard = () => (
     <Card className="mb-4">
       <Heading size="4" mb="3">IoT Monitoring System</Heading>
-      <Grid columns="3" gap="3">
+      <Flex gap="4">
         <Box>
           <Text weight="bold" size="2">Connected Sensors</Text>
           <Text size="6">12/12</Text>
@@ -261,7 +260,7 @@ const ScrapProducts = () => {
           <Text weight="bold" size="2">System Uptime</Text>
           <Text size="6">99.8%</Text>
         </Box>
-      </Grid>
+      </Flex>
     </Card>
   );
 
@@ -285,7 +284,7 @@ const ScrapProducts = () => {
           
           <Flex gap="2" align="center">
             <Badge color="blue" variant="soft">
-              <WifiIcon /> {scrapData.filter(item => item.detectedAt).length} IoT
+              IoT {scrapData.filter(item => item.detectedAt).length}
             </Badge>
             <Button 
               variant="solid" 
@@ -613,7 +612,7 @@ const ScrapProducts = () => {
                 {entry.detectedAt ? (
                   <Tooltip content={`Auto-detected via IoT sensor\nTime: ${entry.detectedAt}\nSensor: SNSR-${Math.floor(1000 + Math.random() * 9000)}`}>
                     <Badge color="green" variant="soft" className="cursor-help">
-                      <WifiIcon /> Connected
+                      IoT Connected
                     </Badge>
                   </Tooltip>
                 ) : (
