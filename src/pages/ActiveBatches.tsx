@@ -58,7 +58,7 @@ interface Batch {
   product: ProductType;
   stage: BatchStage;
   temp: number;
-  status: 'status.onTrack' | 'status.delayed';
+  status: 'onTrack' | 'delayed';
   progress: number;
   priority: PriorityType;
 }
@@ -87,22 +87,23 @@ const ActiveBatches: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<FormData>(INITIAL_FORM_DATA);
+  const [batchCounter, setBatchCounter] = useState(3); // Starting from 3 as we have initial batches
   const [batches, setBatches] = useState<Batch[]>([
     { 
-      id: 'VC23001', 
+      id: 'BR-001', 
       product: 'Poultry Drug A',
       stage: 'Mixing',
       temp: 2.5,
-      status: 'status.onTrack',
+      status: 'onTrack',
       progress: 65,
       priority: 'normal'
     },
     { 
-      id: 'VC23002', 
+      id: 'BR-002', 
       product: 'Poultry Drug B',
       stage: 'Compression',
       temp: 3.2,
-      status: 'status.onTrack',
+      status: 'onTrack',
       progress: 35,
       priority: 'high'
     },
@@ -128,6 +129,12 @@ const ActiveBatches: React.FC = () => {
            formData.selectedProduct;
   }, [formData]);
 
+  const generateBatchId = useCallback(() => {
+    const nextId = `BR-${String(batchCounter).padStart(3, '0')}`;
+    setBatchCounter(prev => prev + 1);
+    return nextId;
+  }, [batchCounter]);
+
   const handleNewBatch = useCallback(() => {
     if (!validateForm()) {
       alert('Please fill all required fields');
@@ -135,11 +142,11 @@ const ActiveBatches: React.FC = () => {
     }
 
     const newBatch: Batch = {
-      id: `VC${Math.floor(Math.random() * 90000) + 10000}`,
+      id: generateBatchId(),
       product: formData.selectedProduct as ProductType,
       stage: STAGE_OPTIONS[0],
       temp: 0,
-      status: 'status.onTrack',
+      status: 'onTrack',
       progress: 0,
       priority: formData.priority
     };
@@ -148,7 +155,7 @@ const ActiveBatches: React.FC = () => {
     resetForm();
     setIsDialogOpen(false);
     alert('Batch created successfully');
-  }, [formData, validateForm, resetForm]);
+  }, [formData, validateForm, resetForm, generateBatchId]);
 
   const handleProductChange = useCallback((batchId: string, newProduct: ProductType) => {
     setBatches(prev => prev.map(batch => 
@@ -165,19 +172,6 @@ const ActiveBatches: React.FC = () => {
   const handleSubmitToBlockchain = useCallback(() => {
     alert('Batch data submitted to blockchain successfully');
   }, []);
-
-  const memoizedTempChart = useMemo(() => (
-    <LineChart width={96} height={40} data={TEMP_CHART_DATA}>
-      <Line 
-        type="monotone" 
-        dataKey="temp" 
-        stroke="#3b82f6" 
-        strokeWidth={2}
-        dot={false}
-      />
-      <ReferenceLine y={2} stroke="#10b981" strokeDasharray="3 3" />
-    </LineChart>
-  ), []);
 
   const getPriorityColor = (priority: PriorityType) => {
     switch (priority) {
@@ -247,7 +241,7 @@ const ActiveBatches: React.FC = () => {
                   <TextField.Root
                     value={formData.batchName}
                     onChange={(e) => handleFormChange('batchName', e.target.value)}
-                    placeholder="VC-2023-001"
+                    placeholder="Enter batch name"
                     className="w-full"
                   />
                 </Flex>
@@ -409,11 +403,11 @@ const ActiveBatches: React.FC = () => {
 
               <Table.Cell>
                 <Badge 
-                  color={batch.status === 'status.onTrack' ? 'green' : 'red'}
+                  color={batch.status === 'onTrack' ? 'green' : 'red'}
                   variant="soft"
                   className="px-2 py-1 rounded-full text-xs font-medium"
                 >
-                  {batch.status === 'status.onTrack' ? (
+                  {batch.status === 'onTrack' ? (
                     <span className="flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-green-500"></span>
                       On Track
