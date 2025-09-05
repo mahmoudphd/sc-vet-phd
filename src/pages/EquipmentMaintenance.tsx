@@ -72,6 +72,31 @@ interface IotStats {
   alerts: number;
 }
 
+// Helper function to generate future dates based on frequency
+const generateNextDueDate = (lastService: string, frequency: string): string => {
+  const lastDate = new Date(lastService);
+  const nextDate = new Date(lastDate);
+  
+  switch(frequency) {
+    case 'Daily':
+      nextDate.setDate(nextDate.getDate() + 1);
+      break;
+    case 'Weekly':
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case 'Monthly':
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    case 'Semi-Annual':
+      nextDate.setMonth(nextDate.getMonth() + 6);
+      break;
+    default:
+      nextDate.setMonth(nextDate.getMonth() + 1);
+  }
+  
+  return nextDate.toISOString().split('T')[0];
+};
+
 // Mock IoT sensor data generator
 const generateSensorData = (): SensorData => {
   return {
@@ -91,14 +116,14 @@ const equipmentData: Equipment[] = [
     name: 'سير العبوات', 
     nameEn: 'Conveyor Belt',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-09-05', 
     status: 'Operational', 
-    nextDue: '2025-05-01', 
+    nextDue: '', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-09-05', 
         type: 'Lubrication', 
         technician: 'Mohamed Ahmed', 
         duration: '2 hours', 
@@ -115,14 +140,14 @@ const equipmentData: Equipment[] = [
     name: 'بوابة حجز العبوات', 
     nameEn: 'Bottle Stopping Gate',
     criticality: 'Critical', 
-    lastService: '2025-04-05', 
+    lastService: '2025-09-10', 
     status: 'Operational', 
-    nextDue: '2025-04-12', 
+    nextDue: '', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
       { 
-        date: '2025-04-05', 
+        date: '2025-09-10', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '45 minutes', 
@@ -139,14 +164,14 @@ const equipmentData: Equipment[] = [
     name: 'ماسك العبوات', 
     nameEn: 'Bottle Gripper',
     criticality: 'Critical', 
-    lastService: '2025-04-07', 
+    lastService: '2025-09-12', 
     status: 'Needs Calibration', 
-    nextDue: '2025-04-14', 
+    nextDue: '', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
       { 
-        date: '2025-04-07', 
+        date: '2025-09-12', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '30 minutes', 
@@ -163,14 +188,14 @@ const equipmentData: Equipment[] = [
     name: 'نوزل التعبئة', 
     nameEn: 'Filling Nozzle',
     criticality: 'Critical', 
-    lastService: '2025-04-07', 
+    lastService: '2025-09-15', 
     status: 'Operational', 
-    nextDue: '2025-04-14', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-04-07', 
+        date: '2025-09-15', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '1 hour', 
@@ -187,14 +212,14 @@ const equipmentData: Equipment[] = [
     name: 'بوابة مسار الخامة', 
     nameEn: 'Raw Material Path Gate',
     criticality: 'Critical', 
-    lastService: '2025-04-07', 
+    lastService: '2025-09-14', 
     status: 'Operational', 
-    nextDue: '2025-04-14', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-04-07', 
+        date: '2025-09-14', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '45 minutes', 
@@ -211,14 +236,14 @@ const equipmentData: Equipment[] = [
     name: 'بستم التعبئة', 
     nameEn: 'Filling Piston',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-09-08', 
     status: 'Maintenance Needed', 
-    nextDue: '2025-04-08', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-09-08', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '2 hours', 
@@ -235,14 +260,14 @@ const equipmentData: Equipment[] = [
     name: 'أسطوانة التعبئة', 
     nameEn: 'Filling Cylinder',
     criticality: 'Critical', 
-    lastService: '2025-03-15', 
+    lastService: '2025-06-15', 
     status: 'Operational', 
-    nextDue: '2025-09-15', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-03-15', 
+        date: '2025-06-15', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '4 hours', 
@@ -259,14 +284,14 @@ const equipmentData: Equipment[] = [
     name: 'هوبر الماكينة', 
     nameEn: 'Machine Hopper',
     criticality: 'Critical', 
-    lastService: '2025-03-15', 
+    lastService: '2025-06-20', 
     status: 'Operational', 
-    nextDue: '2025-09-15', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-03-15', 
+        date: '2025-06-20', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '2 hours', 
@@ -283,14 +308,14 @@ const equipmentData: Equipment[] = [
     name: 'حساس العبوات', 
     nameEn: 'Bottle Sensor',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-08-25', 
     status: 'Needs Cleaning', 
-    nextDue: '2025-05-01', 
+    nextDue: '', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-08-25', 
         type: 'Calibration', 
         technician: 'Mohamed Ahmed', 
         duration: '1 hour', 
@@ -307,14 +332,14 @@ const equipmentData: Equipment[] = [
     name: 'حساس الموضع', 
     nameEn: 'Position Sensor',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-08-28', 
     status: 'Operational', 
-    nextDue: '2025-05-01', 
+    nextDue: '', 
     iot: true,
     sensorData: generateSensorData(),
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-08-28', 
         type: 'Calibration', 
         technician: 'Mohamed Ahmed', 
         duration: '45 minutes', 
@@ -331,14 +356,14 @@ const equipmentData: Equipment[] = [
     name: 'سيرفو موتور التعبئة', 
     nameEn: 'Filling Servo Motor',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-08-30', 
     status: 'Operational', 
-    nextDue: '2025-05-01', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-08-30', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '1.5 hours', 
@@ -355,14 +380,14 @@ const equipmentData: Equipment[] = [
     name: 'سيرفو موتور النوزل', 
     nameEn: 'Nozzle Servo Motor',
     criticality: 'Critical', 
-    lastService: '2025-04-01', 
+    lastService: '2025-08-30', 
     status: 'Operational', 
-    nextDue: '2025-05-01', 
+    nextDue: '', 
     iot: false,
     sensorData: null,
     maintenanceHistory: [
       { 
-        date: '2025-04-01', 
+        date: '2025-08-30', 
         type: 'Inspection', 
         technician: 'Mohamed Ahmed', 
         duration: '1.5 hours', 
@@ -747,8 +772,13 @@ const EquipmentMaintenance = () => {
     alerts: 0
   });
 
-  // Calculate IoT statistics
+  // Calculate next due dates and IoT statistics
   useEffect(() => {
+    // Calculate next due dates for each equipment
+    equipmentData.forEach(item => {
+      item.nextDue = generateNextDueDate(item.lastService, item.maintenanceFrequency);
+    });
+
     const connected = equipmentData.filter(item => item.iot).length;
     const total = equipmentData.length;
     const uptime = Math.floor((connected / total) * 100);
