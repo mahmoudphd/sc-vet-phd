@@ -167,11 +167,11 @@ const ScrapProducts = () => {
     );
   };
 
-  // Fixed color functions - using valid Radix UI color values
+  // Fixed color functions - using valid Radix UI color values without const assertions
   const getScrapTypeColor = () => 'blue' as const;
-  const getDamageExtentColor = (extent: string) => (extent === 'Full' ? 'red' : 'orange') as const;
+  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' as const : 'orange' as const;
   const getDamageReasonColor = () => 'gray' as const;
-  const getMethodColor = (method: string) => (method === 'Recycling' ? 'green' : 'orange') as const;
+  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' as const : 'orange' as const;
 
   return (
     <Card className="p-6 rounded-lg shadow-sm">
