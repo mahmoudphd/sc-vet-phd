@@ -47,7 +47,7 @@ const ScrapProducts = () => {
       damageExtent: 'Full',
       damageReason: 'Transportation Damage',
       handlingMethod: 'Recycling',
-      weight: 500,
+      weight: 0.5,
       date: '2025-09-24',
       detectedAt: '2025-09-24 14:30:45'
     },
@@ -59,7 +59,7 @@ const ScrapProducts = () => {
       damageExtent: 'Partial',
       damageReason: 'Expiration',
       handlingMethod: 'Safe Disposal',
-      weight: 300,
+      weight: 0.3,
       date: '2025-09-24',
       detectedAt: '2025-09-24 09:15:22'
     },
@@ -71,7 +71,7 @@ const ScrapProducts = () => {
       damageExtent: 'Full',
       damageReason: 'Contamination',
       handlingMethod: 'Incineration',
-      weight: 750,
+      weight: 0.75,
       date: '2025-09-23',
       detectedAt: '2025-09-23 16:45:30'
     },
@@ -159,39 +159,19 @@ const ScrapProducts = () => {
     toast.success('Scrap data submitted to blockchain successfully');
   };
 
-  // Simplified color scheme - using only 3 professional colors
-  const getScrapTypeColor = (type: string) => {
-    switch (type) {
-      case 'Product Only': return 'blue';
-      case 'Packaging Only': return 'green';
-      case 'Both': return 'orange';
-      default: return 'gray';
-    }
+  const handleFieldUpdate = (id: string, field: string, value: string) => {
+    setScrapData(prevData => 
+      prevData.map(item => 
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
   };
 
-  const getDamageExtentColor = (extent: string) => {
-    return extent === 'Full' ? 'red' : 'orange';
-  };
-
-  const getDamageReasonColor = (reason: string) => {
-    switch (reason) {
-      case 'Expiration': return 'gray';
-      case 'Transportation Damage': return 'blue';
-      case 'Contamination': return 'red';
-      case 'Manufacturing Defect': return 'purple';
-      default: return 'gray';
-    }
-  };
-
-  const getMethodColor = (method: string) => {
-    switch (method) {
-      case 'Recycling': return 'green';
-      case 'Repackaging': return 'blue';
-      case 'Safe Disposal': return 'orange';
-      case 'Incineration': return 'red';
-      default: return 'gray';
-    }
-  };
+  // Minimal color scheme - only 2 colors for better professionalism
+  const getScrapTypeColor = () => 'blue';
+  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' : 'orange';
+  const getDamageReasonColor = () => 'gray';
+  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' : 'orange';
 
   return (
     <Card className="p-6 rounded-lg shadow-sm">
@@ -286,6 +266,21 @@ const ScrapProducts = () => {
                   </Flex>
 
                   <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Weight (kg)</Text>
+                    <TextField.Root
+                      type="number"
+                      step="0.1"
+                      placeholder="0.5"
+                      value={newEntry.weight}
+                      onChange={(e) =>
+                        setNewEntry({ ...newEntry, weight: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </Flex>
+                </Flex>
+
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
                     <Text as="label" size="2" weight="bold">Damage Extent</Text>
                     <Select.Root
                       value={newEntry.damageExtent}
@@ -303,9 +298,7 @@ const ScrapProducts = () => {
                       </Select.Content>
                     </Select.Root>
                   </Flex>
-                </Flex>
 
-                <Flex gap="3">
                   <Flex direction="column" gap="2" className="flex-1">
                     <Text as="label" size="2" weight="bold">Damage Reason</Text>
                     <Select.Root
@@ -323,19 +316,6 @@ const ScrapProducts = () => {
                         ))}
                       </Select.Content>
                     </Select.Root>
-                  </Flex>
-
-                  <Flex direction="column" gap="2" className="flex-1">
-                    <Text as="label" size="2" weight="bold">Weight (g)</Text>
-                    <TextField.Root
-                      type="number"
-                      placeholder="500"
-                      value={newEntry.weight.toString()}
-                      onChange={(e) =>
-                        setNewEntry({ ...newEntry, weight: parseInt(e.target.value) || 0 })
-                      }
-                    />
-                    <Text size="1" color="gray">Enter weight in grams</Text>
                   </Flex>
                 </Flex>
 
@@ -400,7 +380,7 @@ const ScrapProducts = () => {
             <Table.ColumnHeaderCell>Scrap Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Damage Extent</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Damage Reason</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Weight (g)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
           </Table.Row>
@@ -417,47 +397,87 @@ const ScrapProducts = () => {
               </Table.Cell>
               
               <Table.Cell>
-                <Badge 
-                  color={getScrapTypeColor(entry.scrapType)}
-                  variant="soft"
-                  className="px-2 py-1 rounded-full"
+                <Select.Root
+                  value={entry.scrapType}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'scrapType', value)}
                 >
-                  {entry.scrapType}
-                </Badge>
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getScrapTypeColor()} variant="soft">
+                      {entry.scrapType}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {scrapTypes.map((type) => (
+                      <Select.Item key={type.value} value={type.value}>
+                        {type.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
               
               <Table.Cell>
-                <Badge 
-                  color={getDamageExtentColor(entry.damageExtent)}
-                  variant="soft"
-                  className="px-2 py-1 rounded-full"
+                <Select.Root
+                  value={entry.damageExtent}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'damageExtent', value)}
                 >
-                  {entry.damageExtent}
-                </Badge>
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getDamageExtentColor(entry.damageExtent)} variant="soft">
+                      {entry.damageExtent}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {damageExtents.map((extent) => (
+                      <Select.Item key={extent.value} value={extent.value}>
+                        {extent.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
               
               <Table.Cell>
-                <Badge 
-                  color={getDamageReasonColor(entry.damageReason)}
-                  variant="soft"
-                  className="px-2 py-1 rounded-full"
+                <Select.Root
+                  value={entry.damageReason}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'damageReason', value)}
                 >
-                  {entry.damageReason}
-                </Badge>
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getDamageReasonColor()} variant="soft">
+                      {entry.damageReason}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {damageReasons.map((reason) => (
+                      <Select.Item key={reason.value} value={reason.value}>
+                        {reason.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
               
               <Table.Cell className="font-medium">
-                {entry.weight.toLocaleString()}
+                {entry.weight.toFixed(2)} kg
               </Table.Cell>
               
               <Table.Cell>
-                <Badge 
-                  color={getMethodColor(entry.handlingMethod)}
-                  variant="soft"
-                  className="px-2 py-1 rounded-full"
+                <Select.Root
+                  value={entry.handlingMethod}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'handlingMethod', value)}
                 >
-                  {entry.handlingMethod}
-                </Badge>
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getMethodColor(entry.handlingMethod)} variant="soft">
+                      {entry.handlingMethod}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {handlingMethods.map((method) => (
+                      <Select.Item key={method.value} value={method.value}>
+                        {method.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
               </Table.Cell>
               
               <Table.Cell className="text-gray-700">
