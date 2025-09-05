@@ -29,6 +29,8 @@ interface ScrapEntry {
   id: string;
   productName: string;
   batchId: string;
+  scrapType: string;
+  damageExtent: string;
   damageReason: string;
   handlingMethod: string;
   weight: number;
@@ -44,6 +46,8 @@ const ScrapProducts = () => {
       id: '1',
       productName: 'Poultry Drug A',
       batchId: 'BR-001',
+      scrapType: 'Product Only',
+      damageExtent: 'Full',
       damageReason: 'Transportation Damage',
       handlingMethod: 'Recycling',
       weight: 500,
@@ -54,11 +58,25 @@ const ScrapProducts = () => {
       id: '2',
       productName: 'Poultry Drug B',
       batchId: 'BR-002',
+      scrapType: 'Packaging Only',
+      damageExtent: 'Partial',
       damageReason: 'Expiration',
       handlingMethod: 'Safe Disposal',
       weight: 300,
       date: '2025-09-24',
       detectedAt: '2025-09-24 09:15:22'
+    },
+    {
+      id: '3',
+      productName: 'Poultry Drug C',
+      batchId: 'BR-003',
+      scrapType: 'Both',
+      damageExtent: 'Full',
+      damageReason: 'Contamination',
+      handlingMethod: 'Incineration',
+      weight: 750,
+      date: '2025-09-23',
+      detectedAt: '2025-09-23 16:45:30'
     },
   ]);
 
@@ -66,11 +84,26 @@ const ScrapProducts = () => {
     id: '',
     productName: '',
     batchId: '',
+    scrapType: 'Product Only',
+    damageExtent: 'Full',
     damageReason: 'Expiration',
     handlingMethod: 'Recycling',
     weight: 0,
     date: new Date().toISOString().split('T')[0],
   });
+
+  // Scrap type options
+  const scrapTypes = [
+    { value: 'Product Only', label: 'Product Only' },
+    { value: 'Packaging Only', label: 'Packaging Only' },
+    { value: 'Both', label: 'Both' }
+  ];
+
+  // Damage extent options
+  const damageExtents = [
+    { value: 'Full', label: 'Full' },
+    { value: 'Partial', label: 'Partial' }
+  ];
 
   // Damage reason options
   const damageReasons = [
@@ -92,6 +125,7 @@ const ScrapProducts = () => {
     return scrapData.filter(scrap =>
       scrap.batchId.toLowerCase().includes(searchQuery.toLowerCase()) ||
       scrap.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.scrapType.toLowerCase().includes(searchQuery.toLowerCase()) ||
       scrap.damageReason.toLowerCase().includes(searchQuery.toLowerCase()) ||
       scrap.handlingMethod.toLowerCase().includes(searchQuery.toLowerCase())
     );
@@ -114,6 +148,8 @@ const ScrapProducts = () => {
       id: '',
       productName: '',
       batchId: '',
+      scrapType: 'Product Only',
+      damageExtent: 'Full',
       damageReason: 'Expiration',
       handlingMethod: 'Recycling',
       weight: 0,
@@ -126,23 +162,20 @@ const ScrapProducts = () => {
     toast.success('Scrap data submitted to blockchain successfully');
   };
 
-  const getMethodColor = (method: string) => {
-    switch (method) {
-      case 'Recycling': return 'green';
-      case 'Repackaging': return 'blue';
-      case 'Safe Disposal': return 'orange';
-      case 'Incineration': return 'red';
+  const getScrapTypeColor = (type: string) => {
+    switch (type) {
+      case 'Product Only': return 'blue';
+      case 'Packaging Only': return 'green';
+      case 'Both': return 'red';
       default: return 'gray';
     }
   };
 
-  const getMethodIcon = (method: string) => {
-    switch (method) {
-      case 'Recycling': return <CheckCircledIcon className="mr-1" />;
-      case 'Repackaging': return <ClockIcon className="mr-1" />;
-      case 'Safe Disposal': return <ExclamationTriangleIcon className="mr-1" />;
-      case 'Incineration': return <ExclamationTriangleIcon className="mr-1" />;
-      default: return null;
+  const getDamageExtentColor = (extent: string) => {
+    switch (extent) {
+      case 'Full': return 'red';
+      case 'Partial': return 'orange';
+      default: return 'gray';
     }
   };
 
@@ -152,6 +185,16 @@ const ScrapProducts = () => {
       case 'Transportation Damage': return 'orange';
       case 'Contamination': return 'red';
       case 'Manufacturing Defect': return 'purple';
+      default: return 'gray';
+    }
+  };
+
+  const getMethodColor = (method: string) => {
+    switch (method) {
+      case 'Recycling': return 'green';
+      case 'Repackaging': return 'blue';
+      case 'Safe Disposal': return 'orange';
+      case 'Incineration': return 'red';
       default: return 'gray';
     }
   };
@@ -191,7 +234,7 @@ const ScrapProducts = () => {
               </Button>
             </Dialog.Trigger>
 
-            <Dialog.Content style={{ maxWidth: 500 }} className="p-6">
+            <Dialog.Content style={{ maxWidth: 600 }} className="p-6">
               <Flex justify="between" align="center" mb="4">
                 <Dialog.Title className="font-bold">Add New Scrap Entry</Dialog.Title>
                 <IconButton variant="ghost" onClick={() => setIsDialogOpen(false)}>
@@ -226,6 +269,46 @@ const ScrapProducts = () => {
                       setNewEntry({ ...newEntry, batchId: e.target.value })
                     }
                   />
+                </Flex>
+
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Scrap Type</Text>
+                    <Select.Root
+                      value={newEntry.scrapType}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, scrapType: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {scrapTypes.map((type) => (
+                          <Select.Item key={type.value} value={type.value}>
+                            {type.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Damage Extent</Text>
+                    <Select.Root
+                      value={newEntry.damageExtent}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, damageExtent: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {damageExtents.map((extent) => (
+                          <Select.Item key={extent.value} value={extent.value}>
+                            {extent.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
                 </Flex>
 
                 <Flex gap="3">
@@ -319,6 +402,8 @@ const ScrapProducts = () => {
         <Table.Header className="bg-gray-50">
           <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
             <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Scrap Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Damage Extent</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Damage Reason</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Weight (g)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
@@ -334,6 +419,26 @@ const ScrapProducts = () => {
                   <Text weight="bold">{entry.batchId}</Text>
                   <Text size="2" color="gray">{entry.productName}</Text>
                 </Flex>
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Badge 
+                  color={getScrapTypeColor(entry.scrapType)}
+                  variant="soft"
+                  className="px-2 py-1 rounded-full"
+                >
+                  {entry.scrapType}
+                </Badge>
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Badge 
+                  color={getDamageExtentColor(entry.damageExtent)}
+                  variant="soft"
+                  className="px-2 py-1 rounded-full"
+                >
+                  {entry.damageExtent}
+                </Badge>
               </Table.Cell>
               
               <Table.Cell>
@@ -356,7 +461,6 @@ const ScrapProducts = () => {
                   variant="soft"
                   className="px-2 py-1 rounded-full"
                 >
-                  {getMethodIcon(entry.handlingMethod)}
                   {entry.handlingMethod}
                 </Badge>
               </Table.Cell>
