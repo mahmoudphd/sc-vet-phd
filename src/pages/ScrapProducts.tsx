@@ -238,11 +238,11 @@ const ScrapProducts = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Fixed color functions without const assertions
-  const getScrapTypeColor = () => 'blue';
-  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' : 'orange';
-  const getDamageReasonColor = () => 'gray';
-  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' : 'orange';
+  // Fixed color functions with valid Radix UI colors
+  const getScrapTypeColor = () => 'blue' as const;
+  const getDamageExtentColor = (extent: string) => (extent === 'Full' ? 'red' : 'orange') as const;
+  const getDamageReasonColor = () => 'gray' as const;
+  const getMethodColor = (method: string) => (method === 'Recycling' ? 'green' : 'orange') as const;
 
   const IoTDashboard = () => (
     <Card className="mb-4">
@@ -534,7 +534,7 @@ const ScrapProducts = () => {
                   onValueChange={(value) => handleFieldUpdate(entry.id, 'scrapType', value)}
                 >
                   <Select.Trigger variant="ghost" className="w-full">
-                    <Badge color={getScrapTypeColor()} variant="soft">
+                    <Badge color="blue" variant="soft">
                       {entry.scrapType}
                     </Badge>
                   </Select.Trigger>
@@ -554,7 +554,7 @@ const ScrapProducts = () => {
                   onValueChange={(value) => handleFieldUpdate(entry.id, 'damageExtent', value)}
                 >
                   <Select.Trigger variant="ghost" className="w-full">
-                    <Badge color={getDamageExtentColor(entry.damageExtent)} variant="soft">
+                    <Badge color={entry.damageExtent === 'Full' ? 'red' : 'orange'} variant="soft">
                       {entry.damageExtent}
                     </Badge>
                   </Select.Trigger>
@@ -574,7 +574,7 @@ const ScrapProducts = () => {
                   onValueChange={(value) => handleFieldUpdate(entry.id, 'damageReason', value)}
                 >
                   <Select.Trigger variant="ghost" className="w-full">
-                    <Badge color={getDamageReasonColor()} variant="soft">
+                    <Badge color="gray" variant="soft">
                       {entry.damageReason}
                     </Badge>
                   </Select.Trigger>
@@ -594,7 +594,7 @@ const ScrapProducts = () => {
                   onValueChange={(value) => handleFieldUpdate(entry.id, 'handlingMethod', value)}
                 >
                   <Select.Trigger variant="ghost" className="w-full">
-                    <Badge color={getMethodColor(entry.handlingMethod)} variant="soft">
+                    <Badge color={entry.handlingMethod === 'Recycling' ? 'green' : 'orange'} variant="soft">
                       {entry.handlingMethod}
                     </Badge>
                   </Select.Trigger>
