@@ -46,8 +46,8 @@ const ProductionOrdersDashboard = () => {
       priority: 'High',
       materials: 'Allocated',
       progress: 65,
-      schedule: '2025-07-25',
-      batchSize: 5000
+      schedule: '2025-09-25',
+      batchSize: 1000
     },
     {
       id: 'PO23046',
@@ -55,7 +55,7 @@ const ProductionOrdersDashboard = () => {
       priority: 'Medium',
       materials: 'Pending',
       progress: 30,
-      schedule: '2025-07-28',
+      schedule: '2025-09-28',
       batchSize: 8000
     },
     {
@@ -64,7 +64,7 @@ const ProductionOrdersDashboard = () => {
       priority: 'Low',
       materials: 'Insufficient',
       progress: 15,
-      schedule: '2025-08-01',
+      schedule: '2025-10-01',
       batchSize: 6000
     },
   ];
@@ -95,14 +95,6 @@ const ProductionOrdersDashboard = () => {
     setIsDialogOpen(false);
   };
 
-  const getPriorityIcon = (priority: string) => {
-    switch (priority) {
-      case 'High': return <ExclamationTriangleIcon className="mr-1" />;
-      case 'Medium': return <ClockIcon className="mr-1" />;
-      default: return <CheckCircledIcon className="mr-1" />;
-    }
-  };
-
   const getMaterialsIcon = (status: string) => {
     switch (status) {
       case 'Allocated': return <CheckCircledIcon className="mr-1" />;
@@ -116,7 +108,6 @@ const ProductionOrdersDashboard = () => {
       <Flex justify="between" align="center" mb="6">
         <div>
           <Heading size="6" className="text-gray-800 font-bold">Production Orders Dashboard</Heading>
-          <Text size="2" className="text-gray-500">Pharmaceutical manufacturing orders</Text>
         </div>
         
         <Flex gap="3" align="center">
@@ -272,17 +263,7 @@ const ProductionOrdersDashboard = () => {
               <Table.Cell className="font-medium">{order.product}</Table.Cell>
               
               <Table.Cell>
-                <Badge 
-                  color={
-                    order.priority === 'High' ? 'red' :
-                    order.priority === 'Medium' ? 'amber' : 'green'
-                  }
-                  variant="soft"
-                  className="px-2 py-1 rounded-full"
-                >
-                  {getPriorityIcon(order.priority)}
-                  {order.priority}
-                </Badge>
+                <Text size="2" weight="medium">{order.priority}</Text>
               </Table.Cell>
               
               <Table.Cell>
