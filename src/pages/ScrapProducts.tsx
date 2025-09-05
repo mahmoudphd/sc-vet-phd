@@ -29,10 +29,9 @@ interface ScrapEntry {
   id: string;
   productName: string;
   batchId: string;
-  type: string;
-  weight: number;
+  damageReason: string;
   handlingMethod: string;
-  reason: string;
+  weight: number;
   date: string;
   detectedAt?: string;
 }
@@ -45,23 +44,21 @@ const ScrapProducts = () => {
       id: '1',
       productName: 'Poultry Drug A',
       batchId: 'BR-001',
-      type: 'Full',
+      damageReason: 'Transportation Damage',
+      handlingMethod: 'Recycling',
       weight: 500,
-      handlingMethod: 'Recycled',
-      reason: 'Expiration',
-      date: '2025-07-24',
-      detectedAt: '2025-07-24 14:30:45'
+      date: '2025-09-24',
+      detectedAt: '2025-09-24 14:30:45'
     },
     {
       id: '2',
       productName: 'Poultry Drug B',
       batchId: 'BR-002',
-      type: 'Partial',
+      damageReason: 'Expiration',
+      handlingMethod: 'Safe Disposal',
       weight: 300,
-      handlingMethod: 'Disposed',
-      reason: 'Damage',
-      date: '2025-07-24',
-      detectedAt: '2025-07-24 09:15:22'
+      date: '2025-09-24',
+      detectedAt: '2025-09-24 09:15:22'
     },
   ]);
 
@@ -69,18 +66,34 @@ const ScrapProducts = () => {
     id: '',
     productName: '',
     batchId: '',
-    type: 'Full',
+    damageReason: 'Expiration',
+    handlingMethod: 'Recycling',
     weight: 0,
-    handlingMethod: 'Recycled',
-    reason: 'Expiration',
     date: new Date().toISOString().split('T')[0],
-    detectedAt: new Date().toLocaleString()
   });
+
+  // Damage reason options
+  const damageReasons = [
+    { value: 'Expiration', label: 'Expiration' },
+    { value: 'Transportation Damage', label: 'Transportation Damage' },
+    { value: 'Contamination', label: 'Contamination' },
+    { value: 'Manufacturing Defect', label: 'Manufacturing Defect' }
+  ];
+
+  // Handling method options
+  const handlingMethods = [
+    { value: 'Recycling', label: 'Recycling' },
+    { value: 'Safe Disposal', label: 'Safe Disposal' },
+    { value: 'Repackaging', label: 'Repackaging' },
+    { value: 'Incineration', label: 'Incineration' }
+  ];
 
   const filteredScraps = useCallback(() => {
     return scrapData.filter(scrap =>
       scrap.batchId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      scrap.productName.toLowerCase().includes(searchQuery.toLowerCase())
+      scrap.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.damageReason.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.handlingMethod.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [scrapData, searchQuery]);
 
@@ -101,10 +114,9 @@ const ScrapProducts = () => {
       id: '',
       productName: '',
       batchId: '',
-      type: 'Full',
+      damageReason: 'Expiration',
+      handlingMethod: 'Recycling',
       weight: 0,
-      handlingMethod: 'Recycled',
-      reason: 'Expiration',
       date: new Date().toISOString().split('T')[0],
     });
     toast.success('Scrap entry added successfully');
@@ -116,19 +128,31 @@ const ScrapProducts = () => {
 
   const getMethodColor = (method: string) => {
     switch (method) {
-      case 'Recycled': return 'green';
-      case 'Disposed': return 'red';
-      case 'Incinerated': return 'amber';
+      case 'Recycling': return 'green';
+      case 'Repackaging': return 'blue';
+      case 'Safe Disposal': return 'orange';
+      case 'Incineration': return 'red';
       default: return 'gray';
     }
   };
 
   const getMethodIcon = (method: string) => {
     switch (method) {
-      case 'Recycled': return <CheckCircledIcon className="mr-1" />;
-      case 'Disposed': return <ExclamationTriangleIcon className="mr-1" />;
-      case 'Incinerated': return <ClockIcon className="mr-1" />;
+      case 'Recycling': return <CheckCircledIcon className="mr-1" />;
+      case 'Repackaging': return <ClockIcon className="mr-1" />;
+      case 'Safe Disposal': return <ExclamationTriangleIcon className="mr-1" />;
+      case 'Incineration': return <ExclamationTriangleIcon className="mr-1" />;
       default: return null;
+    }
+  };
+
+  const getDamageReasonColor = (reason: string) => {
+    switch (reason) {
+      case 'Expiration': return 'gray';
+      case 'Transportation Damage': return 'orange';
+      case 'Contamination': return 'red';
+      case 'Manufacturing Defect': return 'purple';
+      default: return 'gray';
     }
   };
 
@@ -206,17 +230,20 @@ const ScrapProducts = () => {
 
                 <Flex gap="3">
                   <Flex direction="column" gap="2" className="flex-1">
-                    <Text as="label" size="2" weight="bold">Type</Text>
+                    <Text as="label" size="2" weight="bold">Damage Reason</Text>
                     <Select.Root
-                      value={newEntry.type}
+                      value={newEntry.damageReason}
                       onValueChange={(value) =>
-                        setNewEntry({ ...newEntry, type: value })
+                        setNewEntry({ ...newEntry, damageReason: value })
                       }
                     >
                       <Select.Trigger />
                       <Select.Content>
-                        <Select.Item value="Full">Full</Select.Item>
-                        <Select.Item value="Partial">Partial</Select.Item>
+                        {damageReasons.map((reason) => (
+                          <Select.Item key={reason.value} value={reason.value}>
+                            {reason.label}
+                          </Select.Item>
+                        ))}
                       </Select.Content>
                     </Select.Root>
                   </Flex>
@@ -236,7 +263,7 @@ const ScrapProducts = () => {
 
                 <Flex gap="3">
                   <Flex direction="column" gap="2" className="flex-1">
-                    <Text as="label" size="2" weight="bold">Handling</Text>
+                    <Text as="label" size="2" weight="bold">Handling Method</Text>
                     <Select.Root
                       value={newEntry.handlingMethod}
                       onValueChange={(value) =>
@@ -245,40 +272,25 @@ const ScrapProducts = () => {
                     >
                       <Select.Trigger />
                       <Select.Content>
-                        <Select.Item value="Recycled">Recycled</Select.Item>
-                        <Select.Item value="Disposed">Disposed</Select.Item>
-                        <Select.Item value="Incinerated">Incinerated</Select.Item>
+                        {handlingMethods.map((method) => (
+                          <Select.Item key={method.value} value={method.value}>
+                            {method.label}
+                          </Select.Item>
+                        ))}
                       </Select.Content>
                     </Select.Root>
                   </Flex>
 
                   <Flex direction="column" gap="2" className="flex-1">
-                    <Text as="label" size="2" weight="bold">Reason</Text>
-                    <Select.Root
-                      value={newEntry.reason}
-                      onValueChange={(value) =>
-                        setNewEntry({ ...newEntry, reason: value })
+                    <Text as="label" size="2" weight="bold">Date</Text>
+                    <TextField.Root
+                      type="date"
+                      value={newEntry.date}
+                      onChange={(e) =>
+                        setNewEntry({ ...newEntry, date: e.target.value })
                       }
-                    >
-                      <Select.Trigger />
-                      <Select.Content>
-                        <Select.Item value="Expiration">Expiration</Select.Item>
-                        <Select.Item value="Damage">Damage</Select.Item>
-                        <Select.Item value="Quality Issue">Quality Issue</Select.Item>
-                      </Select.Content>
-                    </Select.Root>
+                    />
                   </Flex>
-                </Flex>
-
-                <Flex direction="column" gap="2">
-                  <Text as="label" size="2" weight="bold">Date</Text>
-                  <TextField.Root
-                    type="date"
-                    value={newEntry.date}
-                    onChange={(e) =>
-                      setNewEntry({ ...newEntry, date: e.target.value })
-                    }
-                  />
                 </Flex>
               </Flex>
 
@@ -307,10 +319,9 @@ const ScrapProducts = () => {
         <Table.Header className="bg-gray-50">
           <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
             <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Damage Reason</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Weight (g)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Reason</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
@@ -324,14 +335,21 @@ const ScrapProducts = () => {
                   <Text size="2" color="gray">{entry.productName}</Text>
                 </Flex>
               </Table.Cell>
+              
               <Table.Cell>
-                <Badge variant="soft" className="px-2 py-1">
-                  {entry.type}
+                <Badge 
+                  color={getDamageReasonColor(entry.damageReason)}
+                  variant="soft"
+                  className="px-2 py-1 rounded-full"
+                >
+                  {entry.damageReason}
                 </Badge>
               </Table.Cell>
+              
               <Table.Cell className="font-medium">
                 {entry.weight.toLocaleString()}
               </Table.Cell>
+              
               <Table.Cell>
                 <Badge 
                   color={getMethodColor(entry.handlingMethod)}
@@ -342,20 +360,16 @@ const ScrapProducts = () => {
                   {entry.handlingMethod}
                 </Badge>
               </Table.Cell>
-              <Table.Cell>
-                <Flex direction="column" gap="1">
-                  <Text>{entry.reason}</Text>
-                  {entry.detectedAt && (
-                    <Tooltip content={`Detected at: ${entry.detectedAt}`}>
-                      <Badge color="blue" variant="soft" className="w-fit cursor-pointer">
-                        Via IoT
-                      </Badge>
-                    </Tooltip>
-                  )}
-                </Flex>
-              </Table.Cell>
+              
               <Table.Cell className="text-gray-700">
                 {entry.date}
+                {entry.detectedAt && (
+                  <Tooltip content={`Detected at: ${entry.detectedAt}`}>
+                    <Badge color="blue" variant="soft" className="ml-2 cursor-pointer">
+                      Via IoT
+                    </Badge>
+                  </Tooltip>
+                )}
               </Table.Cell>
             </Table.Row>
           ))}
