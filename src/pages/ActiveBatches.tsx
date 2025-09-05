@@ -319,21 +319,21 @@ const ActiveBatches: React.FC = () => {
 
       <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
         <Table.Header className="bg-gray-50">
-          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700">
-            <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Stage</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Temperature</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Progress</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+          <Table.Row>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Batch ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Product</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Stage</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Temperature</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Progress</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
         <Table.Body className="divide-y divide-gray-100">
           {filteredBatches.map((batch) => (
             <Table.Row key={batch.id} className="hover:bg-gray-50/50">
-              <Table.Cell className="font-medium">
+              <Table.Cell className="font-bold text-black">
                 <Badge 
                   color={getPriorityColor(batch.priority)} 
                   variant="soft"
