@@ -159,7 +159,7 @@ const ScrapProducts = () => {
     toast.success('Scrap data submitted to blockchain successfully');
   };
 
-  const handleFieldUpdate = (id: string, field: string, value: string) => {
+  const handleFieldUpdate = (id: string, field: string, value: string | number) => {
     setScrapData(prevData => 
       prevData.map(item => 
         item.id === id ? { ...item, [field]: value } : item
@@ -376,13 +376,14 @@ const ScrapProducts = () => {
       <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
         <Table.Header className="bg-gray-50">
           <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
-            <Table.ColumnHeaderCell>Batch ID / Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Scrap Type</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Damage Extent</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Damage Reason</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
             <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
 
@@ -390,10 +391,33 @@ const ScrapProducts = () => {
           {filteredScraps().map((entry) => (
             <Table.Row key={entry.id} className="hover:bg-gray-50/50">
               <Table.Cell className="font-medium">
-                <Flex direction="column" gap="1">
-                  <Text weight="bold">{entry.batchId}</Text>
-                  <Text size="2" color="gray">{entry.productName}</Text>
-                </Flex>
+                {entry.batchId}
+              </Table.Cell>
+              
+              <Table.Cell>
+                {entry.productName}
+              </Table.Cell>
+              
+              <Table.Cell className="text-gray-700">
+                {entry.date}
+                {entry.detectedAt && (
+                  <Tooltip content={`Detected at: ${entry.detectedAt}`}>
+                    <Badge color="blue" variant="soft" className="ml-2 cursor-pointer">
+                      Via IoT
+                    </Badge>
+                  </Tooltip>
+                )}
+              </Table.Cell>
+              
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  step="0.1"
+                  value={entry.weight}
+                  onChange={(e) => handleFieldUpdate(entry.id, 'weight', parseFloat(e.target.value) || 0)}
+                  className="w-20"
+                  variant="soft"
+                />
               </Table.Cell>
               
               <Table.Cell>
@@ -456,10 +480,6 @@ const ScrapProducts = () => {
                 </Select.Root>
               </Table.Cell>
               
-              <Table.Cell className="font-medium">
-                {entry.weight.toFixed(2)} kg
-              </Table.Cell>
-              
               <Table.Cell>
                 <Select.Root
                   value={entry.handlingMethod}
@@ -478,17 +498,6 @@ const ScrapProducts = () => {
                     ))}
                   </Select.Content>
                 </Select.Root>
-              </Table.Cell>
-              
-              <Table.Cell className="text-gray-700">
-                {entry.date}
-                {entry.detectedAt && (
-                  <Tooltip content={`Detected at: ${entry.detectedAt}`}>
-                    <Badge color="blue" variant="soft" className="ml-2 cursor-pointer">
-                      Via IoT
-                    </Badge>
-                  </Tooltip>
-                )}
               </Table.Cell>
             </Table.Row>
           ))}
