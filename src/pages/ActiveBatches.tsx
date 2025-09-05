@@ -105,7 +105,7 @@ const ActiveBatches: React.FC = () => {
       temp: 3.2,
       status: 'onTrack',
       progress: 35,
-      priority: 'high'
+      priority: 'normal' // Changed from 'high' to 'normal' to make it blue
     },
   ]);
 
@@ -442,7 +442,7 @@ const ActiveBatches: React.FC = () => {
                   <Tooltip content="Cancel batch" delayDuration={300}>
                     <IconButton 
                       variant="soft" 
-                      color="red" 
+                      color 'red' 
                       size="2"
                       className="hover:bg-red-100 transition-colors"
                     >
