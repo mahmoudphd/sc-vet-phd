@@ -297,16 +297,43 @@ const categories: CostCategory[] = [
 
 const products = ['Poultry Drug A', 'Poultry Drug B', 'Poultry Drug C'];
 
-const solutionsOptions = [
-  'Negotiating better prices with supplier',
-  'Reducing waste in material usage',
-  'Automation to reduce manual labor costs',
-  'Optimizing machine usage',
-  'Improving inventory management',
-  'Minimize transportation costs',
-  'Reduce rework costs',
-  'Other',
-];
+// Define solutions for each category
+const solutionsByCategory: Record<CostCategory, string[]> = {
+  'Direct Materials': [
+    'Negotiating better prices with supplier',
+    'Reducing waste in material usage',
+    'Adopting PLC-controlled machines',
+    'GHG Protocol Scopes'
+  ],
+  'Packaging Materials': [
+    'Negotiating better prices with supplier',
+    'Reducing waste in material usage',
+    'Optimizing machine usage',
+    'Adopting PLC-controlled machines',
+    'GHG Protocol Scopes'
+  ],
+  'Direct Labor': [
+    'Automation to reduce manual labor costs',
+    'Optimizing machine usage',
+    'Reduce rework costs',
+    'Adopting PLC-controlled machines',
+    'GHG Protocol Scopes'
+  ],
+  'Overhead': [
+    'Optimizing machine usage',
+    'Reduce rework costs',
+    'Automation to reduce manual labor costs',
+    'Adopting PLC-controlled machines',
+    'GHG Protocol Scopes'
+  ],
+  'Other Costs': [
+    'Improving inventory management',
+    'Minimize transportation costs',
+    'Reduce rework costs',
+    'Adopting PLC-controlled machines',
+    'GHG Protocol Scopes'
+  ]
+};
 
 // ========== STYLES ==========
 const tableHeaderStyle = {
@@ -593,6 +620,102 @@ const EnhancedComplianceDisplay = ({ supplier }: { supplier: Supplier }) => {
   );
 };
 
+// GHG Protocol Dialog Component
+const GHGProtocolDialog = ({ 
+  category, 
+  itemName, 
+  open, 
+  onOpenChange 
+}: { 
+  category: CostCategory; 
+  itemName: string; 
+  open: boolean; 
+  onOpenChange: (open: boolean) => void;
+}) => {
+  const getScopeTitle = () => {
+    switch (category) {
+      case 'Direct Materials':
+        return `${itemName} - Scope 3 (Suppliers)`;
+      case 'Packaging Materials':
+        return `${itemName} - Scope 1 & 2 (Manufacturer)`;
+      case 'Direct Labor':
+        return `${itemName} - Scope 2 (Manufacturer)`;
+      case 'Overhead':
+        if (itemName === 'Electricity') return `${itemName} - Scope 2 (Manufacturer)`;
+        if (itemName === 'Maintenance') return `${itemName} - Scope 2 (Manufacturer)`;
+        if (itemName === 'Rent') return `${itemName} - Scope 1 (Manufacturer)`;
+        return `${itemName} - Scope 1 & 2 (Manufacturer)`;
+      case 'Other Costs':
+        if (itemName === 'Transportation') return `${itemName} - Scope 3 (Logistics)`;
+        if (itemName === 'Packaging Waste Disposal') return `${itemName} - Scope 3 (Waste Management)`;
+        if (itemName === 'Rework') return `${itemName} - Scope 3 (Manufacturing)`;
+        return `${itemName} - Scope 3`;
+      default:
+        return `${itemName} - GHG Protocol Scopes`;
+    }
+  };
+
+  return (
+    <Dialog.Root open={open} onOpenChange={onOpenChange}>
+      <Dialog.Content style={{ 
+        maxWidth: '600px',
+        padding: '20px',
+        borderRadius: '10px',
+        boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
+        border: '1px solid #e5e7eb',
+        backgroundColor: 'white'
+      }}>
+        <Dialog.Title style={{ 
+          fontSize: '1.5rem',
+          fontWeight: 'bold',
+          color: '1f2937',
+          marginBottom: '20px'
+        }}>
+          {getScopeTitle()}
+        </Dialog.Title>
+
+        <Box mb="4">
+          <Heading size="4" mb="2">About GHG Protocol Scopes</Heading>
+          <Text>
+            The GHG Protocol classifies emissions into three scopes to help organizations measure and manage their carbon footprint.
+          </Text>
+        </Box>
+
+        <Grid columns="3" gap="3">
+          <Card style={{ padding: '15px', backgroundColor: '#f0fdf4' }}>
+            <Heading size="3" mb="2" style={{ color: '#166534' }}>Scope 1</Heading>
+            <Text size="2">Direct emissions from owned or controlled sources</Text>
+          </Card>
+          <Card style={{ padding: '15px', backgroundColor: '#f0f9ff' }}>
+            <Heading size="3" mb="2" style={{ color: '#0369a1' }}>Scope 2</Heading>
+            <Text size="2">Indirect emissions from purchased electricity, steam, heating, and cooling</Text>
+          </Card>
+          <Card style={{ padding: '15px', backgroundColor: 'fdf2f8' }}>
+            <Heading size="3" mb="2" style={{ color: '#9d174d' }}>Scope 3</Heading>
+            <Text size="2">All other indirect emissions in the value chain</Text>
+          </Card>
+        </Grid>
+
+        <Flex justify="end" gap="3" mt="4">
+          <Button
+            variant="soft"
+            onClick={() => onOpenChange(false)}
+            style={{
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              padding: '8px 16px',
+              borderRadius: '6px',
+              fontWeight: 'bold'
+            }}
+          >
+            Close
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+};
+
 interface CostAfterViewProps {
   category: CostCategory;
   data: CostData;
@@ -765,6 +888,8 @@ function CostAnalytics() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+  const [ghgDialogOpen, setGhgDialogOpen] = useState(false);
+  const [selectedGhgItem, setSelectedGhgItem] = useState<{category: CostCategory, itemName: string} | null>(null);
 
   // Utility functions
   const formatNumber = (value: number, decimalPlaces: number = 2, showExact: boolean = false) => {
@@ -1019,6 +1144,13 @@ function CostAnalytics() {
   };
 
   const handleSolutionSelect = (category: CostCategory, index: number, solution: string) => {
+    if (solution === 'GHG Protocol Scopes') {
+      const item = getDetailsByCategory(category)[index];
+      setSelectedGhgItem({ category, itemName: item.name });
+      setGhgDialogOpen(true);
+      return;
+    }
+    
     const item = getDetailsByCategory(category)[index];
     setCurrentPrice(item.pricePerKg || 0);
     
@@ -1710,7 +1842,7 @@ function CostAnalytics() {
                                 </Table.Cell>
                                 <Table.Cell style={tableCellStyle}>
                                   {autoMode ? (
-                                    formatCurrency(item.cost || 0, currency)
+                                    formatCurrency(totalCost, currency) 
                                   ) : (
                                     <input
                                       type="number"
@@ -1744,7 +1876,7 @@ function CostAnalytics() {
                                   aria-label="Select solution" 
                                   style={{
                                     backgroundColor: 'white',
-                                    border: '1px solid ',
+                                    border: '1px solid #e5e7eb',
                                     borderRadius: '4px',
                                     padding: '4px 8px',
                                     fontSize: '0.8rem'
@@ -1755,7 +1887,7 @@ function CostAnalytics() {
                                     borderRadius: '4px',
                                     boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                                   }}>
-                                  {solutionsOptions.map((sol) => (
+                                  {solutionsByCategory[dialogCategory].map((sol) => (
                                     <RadixSelect.Item 
                                       key={sol} 
                                       value={sol}
@@ -1779,11 +1911,12 @@ function CostAnalytics() {
 
                 <Tabs.Content value="target">
                   <Table.Root variant="surface" style={{ border: 'none' }}>
-                    <Table.Header style={{ backgroundColor: '#f3f4f6' }}>
+                    <Table.Header style={{ backgroundColor: 'f3f4f6' }}>
                       <Table.Row>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Item</Table.ColumnHeaderCell>
                         <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Qty</Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell><Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Target Price</Table.ColumnHeaderCell>
+                        <Table.ColumnHeaderCell style={tableHeaderStyle}>Potential Savings</Table.ColumnHeaderCell>
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
@@ -1904,8 +2037,18 @@ function CostAnalytics() {
         </Dialog.Root>
       )}
 
+      {/* GHG Protocol Dialog */}
+      {ghgDialogOpen && selectedGhgItem && (
+        <GHGProtocolDialog 
+          category={selectedGhgItem.category} 
+          itemName={selectedGhgItem.itemName}
+          open={ghgDialogOpen}
+          onOpenChange={setGhgDialogOpen}
+        />
+      )}
+
       {/* Supplier selection dialog */}
-      {selectedSolution && (
+      {selectedSolution && selectedSolution.solution !== 'GHG Protocol Scopes' && (
         <Dialog.Root open onOpenChange={() => setSelectedSolution(null)}>
           <Dialog.Content style={{ 
             maxWidth: '1000px',
@@ -2061,7 +2204,7 @@ function CostAnalytics() {
                           yAxisId="left"
                           orientation="left"
                           tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
+                          axisLine={{ stroke: 'e5e7eb' }}
                           label={{ 
                             value: 'Price (Currency)', 
                             angle: -90, 
@@ -2074,12 +2217,12 @@ function CostAnalytics() {
                           orientation="right"
                           domain={[0, 200]}
                           tick={{ fill: '#4b5563', fontSize: 10 }}
-                          axisLine={{ stroke: '#e5e7eb' }}
+                          axisLine={{ stroke: 'e5e7eb' }}
                           label={{ 
                             value: 'Scores', 
                             angle: 90, 
                             position: 'insideRight',
-                            style: { textAnchor: 'middle', fill: '#f59e0b', fontSize: '10px' } 
+                            style: { textAnchor: 'middle', fill: '#f59e0b', fontSize: '10px' }
                           }}
                         />
                         <Tooltip 
@@ -2205,7 +2348,8 @@ function CostAnalytics() {
                               fontSize: '0.9rem',
                               color: '#1e293b',
                               whiteSpace: 'nowrap'
-                            }}>Rating</Table.ColumnHeaderCell>                            <Table.ColumnHeaderCell style={{
+                            }}>Rating</Table.ColumnHeaderCell>
+                            <Table.ColumnHeaderCell style={{
                               fontWeight: 'bold',
                               padding: '10px',
                               fontSize: '0.9rem',
@@ -2430,7 +2574,7 @@ function CostAnalytics() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '350px' // Restored original height
+          height: '400px' // Increased height for better clarity
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2447,11 +2591,12 @@ function CostAnalytics() {
                   }))}
                   cx="50%"
                   cy="50%"
-                  outerRadius={80} // Restored original size
+                  outerRadius={100} // Increased outer radius
+                  innerRadius={60} // Added inner radius for donut chart
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
-                  labelLine={false}
+                  label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
+                  labelLine={true}
                 >
                   {categories.map((_, index) => (
                     <Cell key={`cell-${index}`} fill={pieColors[index % pieColors.length]} />
@@ -2460,7 +2605,20 @@ function CostAnalytics() {
                 <Tooltip 
                   formatter={(value: number) => formatCurrency(value, currency)}
                 />
-                <Legend />
+                <Legend 
+                  layout="vertical" 
+                  verticalAlign="middle" 
+                  align="right"
+                  formatter={(value, entry, index) => (
+                    <span style={{ 
+                      fontSize: '12px', 
+                      fontWeight: 'bold',
+                      color: '#333'
+                    }}>
+                      {value}
+                    </span>
+                  )}
+                />
               </PieChart>
             </ResponsiveContainer>
           </Flex>
@@ -2473,121 +2631,121 @@ function CostAnalytics() {
           padding: '16px',
           height: '350px' // Restored original height
         }}>
-          <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-              Cost Gap Calculation
-            </Heading>
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={costGapDataWithGap}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <Tooltip content={<CustomTooltip />} />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="actual" 
-                  stroke="#3b82f6" 
-                  strokeWidth={2}
-                  name="Actual Cost"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="benchmark" 
-                  stroke="#f59e0b" 
-                  strokeWidth={2}
-                  strokeDasharray="5 5"
-                  name="Benchmark Price"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="targetCost" 
-                  stroke="#10b981" 
-                  strokeWidth={2}
-                  strokeDasharray="3 4 5 2"
-                  name="Target Cost"
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="gap" 
-                  stroke="#ef4444" 
-                  strokeWidth={2}
-                  name="Cost Gap"
-                />
-              </LineChart>
-            </ResponsiveContainer>
-          </Flex>
-        </Card>
+                  <Flex direction="column" height="100%">
+          <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+            Cost Gap Calculation
+          </Heading>
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={costGapDataWithGap}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+              <Line 
+                type="monotone" 
+                dataKey="actual" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                name="Actual Cost"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="benchmark" 
+                stroke="#f59e0b" 
+                strokeWidth={2}
+                strokeDasharray="5 5"
+                name="Benchmark Price"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="targetCost" 
+                stroke="#10b981" 
+                strokeWidth={2}
+                strokeDasharray="3 4 5 2"
+                name="Target Cost"
+              />
+              <Line 
+                type="monotone" 
+                dataKey="gap" 
+                stroke="#ef4444" 
+                strokeWidth={2}
+                name="Cost Gap"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </Flex>
+      </Card>
 
-        <Card style={{
-          borderRadius: '12px',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-          backgroundColor: 'white',
-          padding: '16px',
-          gridColumn: '1 / -1',
-          height: '350px' // Restored original height
-        }}>
-          <Flex direction="column" height="100%">
-            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-              Cost Gap Analysis
-            </Heading>
-            <Text align="center" mb="2" size="2">
-              Total Cost Gap: {formatCurrency(
-                categories.reduce((sum, category) => 
-                  sum + getDetailsByCategory(category).reduce(
-                    (catSum, item) => catSum + calculateActualCost(item), 0
-                  ), 0) - targetCost, 
-                currency
-              )}
-            </Text>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={categories.map(category => ({
-                  name: category,
-                  actual: getDetailsByCategory(category).reduce(
-                    (sum, item) => sum + calculateActualCost(item), 0
-                  ),
-                  target: totals[category].budget,
-                  gap: getDetailsByCategory(category).reduce(
-                    (sum, item) => sum + calculateActualCost(item), 0
-                  ) - totals[category].budget
-                }))}
-                margin={{ top: 20, right: 30, left: 20, bottom: 5 }} // Restored original margins
-              >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip 
-                  formatter={(value: number) => formatCurrency(value, currency)}
-                />
-                <Legend />
-                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
-                <Bar dataKey="target" fill="#10b981" name="Target Cost" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Flex>
-        </Card>
-      </Grid>
+      <Card style={{
+        borderRadius: '12px',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+        backgroundColor: 'white',
+        padding: '16px',
+        gridColumn: '1 / -1',
+        height: '350px' // Restored original height
+      }}>
+        <Flex direction="column" height="100%">
+          <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+            Cost Gap Analysis
+          </Heading>
+          <Text align="center" mb="2" size="2">
+            Total Cost Gap: {formatCurrency(
+              categories.reduce((sum, category) => 
+                sum + getDetailsByCategory(category).reduce(
+                  (catSum, item) => catSum + calculateActualCost(item), 0
+                ), 0) - targetCost, 
+              currency
+            )}
+          </Text>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={categories.map(category => ({
+                name: category,
+                actual: getDetailsByCategory(category).reduce(
+                  (sum, item) => sum + calculateActualCost(item), 0
+                ),
+                target: totals[category].budget,
+                gap: getDetailsByCategory(category).reduce(
+                  (sum, item) => sum + calculateActualCost(item), 0
+                ) - totals[category].budget
+              }))}
+              margin={{ top: 20, right: 30, left: 20, bottom: 5 }} // Restored original margins
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip 
+                formatter={(value: number) => formatCurrency(value, currency)}
+              />
+              <Legend />
+              <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+              <Bar dataKey="target" fill="#10b981" name="Target Cost" />
+            </BarChart>
+          </ResponsiveContainer>
+        </Flex>
+      </Card>
+    </Grid>
 
-      {/* Submit to blockchain button */}
-      <Flex justify="end" mt="6">
-        <Button 
-          size="2" 
-          style={{ 
-            backgroundColor: '#10b981', 
-            color: '#fff', 
-            fontWeight: 'bold',
-            padding: '12px 24px',
-            borderRadius: '6px'
-          }}
-          onClick={handleSubmitToBlockchain}
-          disabled={true}
-        >
-          <UploadIcon style={{ marginRight: '8px' }} />
-          Submit to Blockchain
-        </Button>
-      </Flex>
-    </Box>
+    {/* Submit to blockchain button */}
+    <Flex justify="end" mt="6">
+      <Button 
+        size="2" 
+        style={{ 
+          backgroundColor: '#10b981', 
+          color: '#fff', 
+          fontWeight: 'bold',
+          padding: '12px 24px',
+          borderRadius: '6px'
+        }}
+        onClick={handleSubmitToBlockchain}
+        disabled={true}
+      >
+        <UploadIcon style={{ marginRight: '8px' }} />
+        Submit to Blockchain
+      </Button>
+    </Flex>
+  </Box>
   );
 }
 
