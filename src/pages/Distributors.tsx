@@ -20,7 +20,8 @@ import {
   PieChartIcon,
   Pencil1Icon,
   Cross2Icon,
-  CheckIcon
+  CheckIcon,
+  EyeOpenIcon,
 } from "@radix-ui/react-icons";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
@@ -29,6 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "sonner";
 
+// Validation Schemas
 const distributorSchema = z.object({
   name: z.string().min(1, "Name is required"),
   region: z.string().min(1, "Region is required"),
@@ -54,6 +56,19 @@ const reportSchema = z.object({
   path: ["endDate"]
 });
 
+// Types
+interface Distributor {
+  id: string;
+  name: string;
+  region: string;
+  compliance: "gdp-certified" | "pending";
+  licenses: "active" | "inactive";
+  onTimeDelivery: number;
+  lastAudit: string;
+  contact: string;
+  phone: string;
+}
+
 const Distributors = () => {
   const { t } = useTranslation("distributors-page");
 
@@ -61,17 +76,19 @@ const Distributors = () => {
   const [isDistributorModalOpen, setIsDistributorModalOpen] = useState(false);
   const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isComplianceReportModalOpen, setIsComplianceReportModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedDistributor, setSelectedDistributor] = useState<Distributor | null>(null);
 
   // Inline editing states
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [tempData, setTempData] = useState<any>({});
+  const [tempData, setTempData] = useState<Partial<Distributor>>({});
 
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
 
   // Data states
-  const [distributors, setDistributors] = useState<any[]>([
+  const [distributors, setDistributors] = useState<Distributor[]>([
     {
       id: 'DIST-001',
       name: 'Distributor 1',
@@ -107,7 +124,7 @@ const Distributors = () => {
     }
   ]);
 
-  const [regions, setRegions] = useState<any[]>([
+  const [regions, setRegions] = useState<string[]>([
     'North Region',
     'South Region',
     'East Region',
@@ -155,7 +172,7 @@ const Distributors = () => {
   // CRUD operations
   const handleAddDistributor = async (data: z.infer<typeof distributorSchema>) => {
     try {
-      const newDistributor = {
+      const newDistributor: Distributor = {
         id: `DIST-${Math.random().toString(36).substring(2, 9)}`,
         ...data
       };
@@ -189,18 +206,48 @@ const Distributors = () => {
   };
 
   // Inline editing functions
-  const handleEdit = (distributor: any) => {
+  const handleEdit = (distributor: Distributor) => {
     setEditingId(distributor.id);
     setTempData({ ...distributor });
   };
 
   const handleSave = (id: string) => {
     setDistributors(distributors.map(d => 
-      d.id === id ? { ...tempData } : d
+      d.id === id ? { ...d, ...tempData } : d
     ));
     setEditingId(null);
     toast.success("Distributor updated successfully");
   };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setTempData({});
+  };
+
+  // View details function
+  const handleViewDetails = (distributor: Distributor) => {
+    setSelectedDistributor(distributor);
+    setIsDetailsModalOpen(true);
+  };
+
+  // Update temp data for inline editing
+  const handleUpdateTempData = (field: keyof Distributor, value: any) => {
+    setTempData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Render compliance badge
+  const renderComplianceBadge = (compliance: string) => (
+    <Badge variant="soft" color={compliance === "gdp-certified" ? "green" : "orange"}>
+      {compliance === "gdp-certified" ? "GDP Certified" : "Pending"}
+    </Badge>
+  );
+
+  // Render license badge
+  const renderLicenseBadge = (license: string) => (
+    <Badge color={license === "active" ? "green" : "red"}>
+      {license === "active" ? "Active" : "Inactive"}
+    </Badge>
+  );
 
   return (
     <Box p="6" className="flex-1">
@@ -226,7 +273,7 @@ const Distributors = () => {
           <Flex direction="column" gap="1">
             <Text size="2">{t("metrics.certified-partners.title")}</Text>
             <Heading size="7">{distributors.length}</Heading>
-            <Text size="1" className="text-green-500">{t("metrics.certified-partners.compliant-text")}</Text>
+            <Text size="1" color="green">{t("metrics.certified-partners.compliant-text")}</Text>
           </Flex>
         </Card>
         <Card>
@@ -238,7 +285,7 @@ const Distributors = () => {
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">{t("metrics.license-expirations.title")}</Text>
-            <Heading size="7" className="text-red-500">
+            <Heading size="7" color="red">
               {distributors.filter(d => d.licenses === 'inactive').length}
             </Heading>
           </Flex>
@@ -285,14 +332,12 @@ const Distributors = () => {
         </Flex>
       </Card>
 
-      {/* Distributors Table */}
+      {/* Distributors Table - Simplified */}
       <Card mb="5">
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>{t("table-headers.distributor")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>{t("table-headers.region")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>Contact</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t("table-headers.compliance")}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t("table-headers.otd")}</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>{t("table-headers.licenses")}</Table.ColumnHeaderCell>
@@ -304,89 +349,29 @@ const Distributors = () => {
             {paginatedDistributors.map((distributor) => (
               <Table.Row key={distributor.id}>
                 <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <TextField.Root
-                      value={tempData.name}
-                      onChange={(e) => setTempData({...tempData, name: e.target.value})}
-                    />
-                  ) : (
-                    distributor.name
-                  )}
+                  {distributor.name}
                 </Table.Cell>
                 <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <Select.Root 
-                      value={tempData.region}
-                      onValueChange={(value) => setTempData({...tempData, region: value})}
-                    >
-                      <Select.Trigger />
-                      <Select.Content>
-                        {regions.map(region => (
-                          <Select.Item key={region} value={region}>{region}</Select.Item>
-                        ))}
-                      </Select.Content>
-                    </Select.Root>
-                  ) : (
-                    distributor.region
-                  )}
+                  {renderComplianceBadge(distributor.compliance)}
                 </Table.Cell>
                 <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <TextField.Root
-                      value={tempData.contact}
-                      onChange={(e) => setTempData({...tempData, contact: e.target.value})}
-                    />
-                  ) : (
-                    distributor.contact
-                  )}
+                  {`${distributor.onTimeDelivery}%`}
                 </Table.Cell>
                 <Table.Cell>
-                  <Badge variant="soft" color={distributor.compliance === "gdp-certified" ? "green" : "orange"}>
-                    {distributor.compliance === "gdp-certified" ? "GDP Certified" : "Pending"}
-                  </Badge>
+                  {renderLicenseBadge(distributor.licenses)}
                 </Table.Cell>
                 <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <TextField.Root
-                      type="number"
-                      value={tempData.onTimeDelivery}
-                      onChange={(e) => setTempData({...tempData, onTimeDelivery: Number(e.target.value)})}
-                    />
-                  ) : (
-                    `${distributor.onTimeDelivery}%`
-                  )}
+                  {distributor.lastAudit}
                 </Table.Cell>
                 <Table.Cell>
-                  <Badge color={distributor.licenses === "active" ? "green" : "red"}>
-                    {distributor.licenses === "active" ? "Active" : "Inactive"}
-                  </Badge>
-                </Table.Cell>
-                <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <TextField.Root
-                      type="date"
-                      value={tempData.lastAudit}
-                      onChange={(e) => setTempData({...tempData, lastAudit: e.target.value})}
-                    />
-                  ) : (
-                    distributor.lastAudit
-                  )}
-                </Table.Cell>
-                <Table.Cell>
-                  {editingId === distributor.id ? (
-                    <Flex gap="2">
-                      <Button size="1" color="green" onClick={() => handleSave(distributor.id)}>
-                        <CheckIcon /> Save
-                      </Button>
-                      <Button size="1" variant="soft" onClick={() => setEditingId(null)}>
-                        <Cross2Icon /> Cancel
-                      </Button>
-                    </Flex>
-                  ) : (
+                  <Flex gap="2">
+                    <Button size="1" onClick={() => handleViewDetails(distributor)}>
+                      <EyeOpenIcon /> Details
+                    </Button>
                     <Button size="1" onClick={() => handleEdit(distributor)}>
                       <Pencil1Icon /> Edit
                     </Button>
-                  )}
+                  </Flex>
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -416,6 +401,54 @@ const Distributors = () => {
           </Flex>
         </Flex>
       </Card>
+
+      {/* Distributor Details Modal */}
+      <Dialog.Root open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <Dialog.Content>
+          <Dialog.Title>Distributor Details</Dialog.Title>
+          {selectedDistributor && (
+            <Flex direction="column" gap="3">
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Name:</Text>
+                <Text>{selectedDistributor.name}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Region:</Text>
+                <Text>{selectedDistributor.region}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Contact Email:</Text>
+                <Text>{selectedDistributor.contact}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Phone:</Text>
+                <Text>{selectedDistributor.phone}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Compliance Status:</Text>
+                {renderComplianceBadge(selectedDistributor.compliance)}
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">License Status:</Text>
+                {renderLicenseBadge(selectedDistributor.licenses)}
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">On-Time Delivery:</Text>
+                <Text>{selectedDistributor.onTimeDelivery}%</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Last Audit:</Text>
+                <Text>{selectedDistributor.lastAudit}</Text>
+              </Flex>
+              <Flex justify="end" mt="3">
+                <Button onClick={() => setIsDetailsModalOpen(false)}>
+                  Close
+                </Button>
+              </Flex>
+            </Flex>
+          )}
+        </Dialog.Content>
+      </Dialog.Root>
 
       {/* Add Distributor Modal */}
       <Dialog.Root open={isDistributorModalOpen} onOpenChange={setIsDistributorModalOpen}>
