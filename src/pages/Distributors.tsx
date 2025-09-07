@@ -162,10 +162,12 @@ const Distributors = () => {
 
   // Calculate performance metrics
   const averageDelivery = useMemo(() => {
+    if (distributors.length === 0) return 0;
     return distributors.reduce((sum, d) => sum + d.onTimeDelivery, 0) / distributors.length;
   }, [distributors]);
 
   const complianceRate = useMemo(() => {
+    if (distributors.length === 0) return 0;
     return (distributors.filter(d => d.compliance === 'gdp-certified').length / distributors.length) * 100;
   }, [distributors]);
 
@@ -178,30 +180,30 @@ const Distributors = () => {
       };
       setDistributors(prev => [...prev, newDistributor]);
       setIsDistributorModalOpen(false);
-      toast.success(t("toast.distributor-added"));
+      toast.success("Distributor added successfully");
     } catch (error) {
-      toast.error(t("toast.error-generic"));
+      toast.error("Error adding distributor");
     }
   };
 
   const handleAddRegion = async (data: z.infer<typeof regionSchema>) => {
     if (regions.includes(data.name)) {
-      toast.error(t("validation.duplicate-region"));
+      toast.error("Region already exists");
       return;
     }
     setRegions(prev => [...prev, data.name]);
-    toast.success(t("toast.region-added"));
+    toast.success("Region added successfully");
     setIsRegionModalOpen(false);
     regionForm.reset();
   };
 
   const handleGenerateReport = async (data: z.infer<typeof reportSchema>) => {
     try {
-      toast.success(t("toast.report-generated"));
+      toast.success("Report generated successfully");
       setIsComplianceReportModalOpen(false);
       reportForm.reset();
     } catch (error) {
-      toast.error(t("toast.error-generic"));
+      toast.error("Error generating report");
     }
   };
 
@@ -213,7 +215,7 @@ const Distributors = () => {
 
   const handleSave = (id: string) => {
     setDistributors(distributors.map(d => 
-      d.id === id ? { ...d, ...tempData } : d
+      d.id === id ? { ...d, ...tempData } as Distributor : d
     ));
     setEditingId(null);
     toast.success("Distributor updated successfully");
@@ -249,20 +251,36 @@ const Distributors = () => {
     </Badge>
   );
 
+  // Find top and bottom performers
+  const { topPerformer, needsImprovement } = useMemo(() => {
+    if (distributors.length === 0) {
+      return { topPerformer: null, needsImprovement: null };
+    }
+    
+    const sortedByPerformance = [...distributors].sort((a, b) => 
+      b.onTimeDelivery - a.onTimeDelivery
+    );
+    
+    return {
+      topPerformer: sortedByPerformance[0],
+      needsImprovement: sortedByPerformance[sortedByPerformance.length - 1]
+    };
+  }, [distributors]);
+
   return (
     <Box p="6" className="flex-1">
       {/* Header with actions */}
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t("main-heading")}</Heading>
+        <Heading size="6">Distributors Management</Heading>
         <Flex gap="3">
           <Button variant="soft" onClick={() => setIsDistributorModalOpen(true)}>
-            <CheckCircledIcon /> {t("actions.add-distributor")}
+            <CheckCircledIcon /> Add Distributor
           </Button>
           <Button variant="soft" onClick={() => setIsRegionModalOpen(true)}>
-            <GlobeIcon /> {t("actions.add-region")}
+            <GlobeIcon /> Add Region
           </Button>
           <Button variant="soft" onClick={() => setIsComplianceReportModalOpen(true)}>
-            <DownloadIcon /> {t("actions.compliance-report")}
+            <DownloadIcon /> Compliance Report
           </Button>
         </Flex>
       </Flex>
@@ -271,29 +289,32 @@ const Distributors = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t("metrics.certified-partners.title")}</Text>
+            <Text size="2">Certified Partners</Text>
             <Heading size="7">{distributors.length}</Heading>
-            <Text size="1" color="green">{t("metrics.certified-partners.compliant-text")}</Text>
+            <Text size="1" style={{color: "green"}}>All compliant with regulations</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t("metrics.avg-delivery-time.title")}</Text>
+            <Text size="2">Avg. Delivery Time</Text>
             <Heading size="7">{averageDelivery.toFixed(1)}%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t("metrics.license-expirations.title")}</Text>
-            <Heading size="7" color="red">
+            <Text size="2">License Expirations</Text>
+            <Heading size="7" style={{color: "red"}}>
               {distributors.filter(d => d.licenses === 'inactive').length}
             </Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t("metrics.gdp-compliance.title")}</Text>
-            <Progress value={complianceRate} />
+            <Text size="2">GDP Compliance</Text>
+            <Flex align="center" gap="2">
+              <Progress value={complianceRate} style={{width: "100%"}} />
+              <Text size="1">{complianceRate.toFixed(0)}%</Text>
+            </Flex>
           </Flex>
         </Card>
       </Grid>
@@ -309,23 +330,19 @@ const Distributors = () => {
             <Card>
               <Text size="2">Top Performer</Text>
               <Heading size="5">
-                {distributors.reduce((prev, current) => 
-                  (prev.onTimeDelivery > current.onTimeDelivery) ? prev : current
-                ).name}
+                {topPerformer ? topPerformer.name : "N/A"}
               </Heading>
-              <Text size="1" color="green">
-                {Math.max(...distributors.map(d => d.onTimeDelivery))}% OTD
+              <Text size="1" style={{color: "green"}}>
+                {topPerformer ? `${topPerformer.onTimeDelivery}% OTD` : "No data"}
               </Text>
             </Card>
             <Card>
               <Text size="2">Needs Improvement</Text>
               <Heading size="5">
-                {distributors.reduce((prev, current) => 
-                  (prev.onTimeDelivery < current.onTimeDelivery) ? prev : current
-                ).name}
+                {needsImprovement ? needsImprovement.name : "N/A"}
               </Heading>
-              <Text size="1" color="red">
-                {Math.min(...distributors.map(d => d.onTimeDelivery))}% OTD
+              <Text size="1" style={{color: "red"}}>
+                {needsImprovement ? `${needsImprovement.onTimeDelivery}% OTD` : "No data"}
               </Text>
             </Card>
           </Grid>
@@ -337,11 +354,11 @@ const Distributors = () => {
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
-              <Table.ColumnHeaderCell>{t("table-headers.distributor")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>{t("table-headers.compliance")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>{t("table-headers.otd")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>{t("table-headers.licenses")}</Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>{t("table-headers.last-audit")}</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Distributor</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>OTD</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Licenses</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Last Audit</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
             </Table.Row>
           </Table.Header>
