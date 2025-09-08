@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   Card,
@@ -19,8 +19,6 @@ import {
 import { 
   BarChart, 
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -30,11 +28,8 @@ import {
   PieChart,
   Pie,
   Cell,
-  RadarChart,
-  Radar,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis
+  ComposedChart,
+  Area
 } from 'recharts';
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
@@ -42,7 +37,8 @@ import {
   Pencil1Icon, 
   CheckIcon, 
   Cross2Icon,
-  CubeIcon
+  CubeIcon,
+  EyeOpenIcon
 } from '@radix-ui/react-icons';
 
 const SupplierManagement = () => {
@@ -54,6 +50,8 @@ const SupplierManagement = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [tempData, setTempData] = useState<any>({});
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<any>(null);
   
   const [suppliers, setSuppliers] = useState([
     { 
@@ -100,6 +98,21 @@ const SupplierManagement = () => {
     },
   ]);
 
+  // Calculate dynamic metrics from suppliers data
+  const metrics = useMemo(() => {
+    const totalSuppliers = suppliers.length;
+    const avgLeadTime = suppliers.reduce((sum, supplier) => sum + supplier.leadTime, 0) / totalSuppliers;
+    const avgOnTimeDelivery = suppliers.reduce((sum, supplier) => sum + supplier.onTimeDelivery, 0) / totalSuppliers;
+    const avgQualityRating = suppliers.reduce((sum, supplier) => sum + supplier.qualityRating, 0) / totalSuppliers;
+    
+    return {
+      totalSuppliers,
+      avgLeadTime: avgLeadTime.toFixed(1),
+      avgOnTimeDelivery: avgOnTimeDelivery.toFixed(1),
+      avgQualityRating: avgQualityRating.toFixed(1)
+    };
+  }, [suppliers]);
+
   const performanceData = [
     { month: 'Jan', orders: 245, deliveries: 240 },
     { month: 'Feb', orders: 278, deliveries: 275 },
@@ -117,46 +130,24 @@ const SupplierManagement = () => {
     (selectedRegion === 'all' || supplier.location === selectedRegion)
   );
 
-  // Risk distribution data for pie chart
-  const riskDistributionData = [
+  // Risk distribution data for pie chart - dynamic from suppliers
+  const riskDistributionData = useMemo(() => [
     { name: 'Low Risk', value: suppliers.filter(s => s.riskScore < 20).length },
     { name: 'Medium Risk', value: suppliers.filter(s => s.riskScore >= 20 && s.riskScore < 40).length },
     { name: 'High Risk', value: suppliers.filter(s => s.riskScore >= 40).length }
-  ];
+  ], [suppliers]);
 
   const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
 
-  // Radar chart data for supplier performance comparison
-  const radarData = [
-    {
-      subject: 'Delivery',
-      SupplierA: 98,
-      SupplierB: 92,
-      SupplierC: 85,
-      fullMark: 100,
-    },
-    {
-      subject: 'Quality',
-      SupplierA: 4.9,
-      SupplierB: 4.5,
-      SupplierC: 4.0,
-      fullMark: 5,
-    },
-    {
-      subject: 'Lead Time',
-      SupplierA: 14,
-      SupplierB: 21,
-      SupplierC: 30,
-      fullMark: 35,
-    },
-    {
-      subject: 'Compliance',
-      SupplierA: 100,
-      SupplierB: 70,
-      SupplierC: 50,
-      fullMark: 100,
-    },
-  ];
+  // Supplier performance data for bar chart - dynamic from filtered suppliers
+  const supplierPerformanceData = useMemo(() => 
+    filteredSuppliers.map(supplier => ({
+      name: supplier.name,
+      delivery: supplier.onTimeDelivery,
+      quality: supplier.qualityRating * 20, // Convert to percentage for better visualization
+      leadTime: supplier.leadTime
+    }))
+  , [filteredSuppliers]);
 
   const handleComplianceUpdate = (id: number, newStatus: string) => {
     setSuppliers(suppliers.map(supplier => 
@@ -184,10 +175,14 @@ const SupplierManagement = () => {
     setTempData({});
   };
 
-    const handleUpdateTempData = (field: string, value: any) => {
+  const handleUpdateTempData = (field: string, value: any) => {
     setTempData((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleViewDetails = (supplier: any) => {
+    setSelectedSupplier(supplier);
+    setIsDetailsModalOpen(true);
+  };
 
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
@@ -306,46 +301,48 @@ const SupplierManagement = () => {
         </AlertDialog.Content>
       </AlertDialog.Root>
 
+      {/* Dynamic Metrics Cards */}
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Active Suppliers</Text>
-            <Heading size="7">80</Heading>
+            <Heading size="7">{metrics.totalSuppliers}</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Avg Lead Time</Text>
-            <Heading size="7">21.7 days</Heading>
+            <Heading size="7">{metrics.avgLeadTime} days</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">On-Time Delivery</Text>
-            <Heading size="7">91.7%</Heading>
+            <Heading size="7">{metrics.avgOnTimeDelivery}%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Quality Compliance</Text>
-            <Heading size="7">4.5/5</Heading>
+            <Heading size="7">{metrics.avgQualityRating}/5</Heading>
           </Flex>
         </Card>
       </Grid>
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 2 }}>
-          <Heading size="4" mb="3">Order Performance</Heading>
+          <Heading size="4" mb="3">Supplier Performance Comparison</Heading>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={performanceData}>
+              <BarChart data={supplierPerformanceData}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
+                <XAxis dataKey="name" />
                 <YAxis />
                 <Tooltip />
                 <Legend />
-                <Bar dataKey="orders" fill="#3b82f6" />
-                <Bar dataKey="deliveries" fill="#60a5fa" />
+                <Bar dataKey="delivery" fill="#3b82f6" name="On-Time Delivery %" />
+                <Bar dataKey="quality" fill="#82ca9d" name="Quality Score (%)" />
+                <Bar dataKey="leadTime" fill="#ffc658" name="Lead Time (days)" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -390,24 +387,6 @@ const SupplierManagement = () => {
           </Flex>
         </Card>
       </Flex>
-
-      <Card mb="5">
-        <Heading size="4" mb="3">Supplier Performance Comparison</Heading>
-        <div className="h-64">
-          <ResponsiveContainer width="100%" height="100%">
-            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
-              <PolarGrid />
-              <PolarAngleAxis dataKey="subject" />
-              <PolarRadiusAxis angle={30} domain={[0, 100]} />
-              <Radar name="Supplier A" dataKey="SupplierA" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
-              <Radar name="Supplier B" dataKey="SupplierB" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
-              <Radar name="Supplier C" dataKey="SupplierC" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
-              <Legend />
-              <Tooltip />
-            </RadarChart>
-          </ResponsiveContainer>
-        </div>
-      </Card>
 
       <Table.Root variant="surface">
         <Table.Header>
@@ -481,14 +460,36 @@ const SupplierManagement = () => {
                 )}
               </Table.Cell>
               <Table.Cell>
-                <Flex gap="2">
-                  <Badge color={supplier.onTimeDelivery >= 95 ? 'green' : 'yellow'}>
-                    {supplier.onTimeDelivery}% Delivery
-                  </Badge>
-                  <Badge color={supplier.qualityRating >= 4.5 ? 'green' : 'yellow'}>
-                    {supplier.qualityRating}/5 Quality
-                  </Badge>
-                </Flex>
+                {editingId === supplier.id ? (
+                  <Flex direction="column" gap="2">
+                    <TextField.Root
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="On-time delivery %"
+                      value={tempData.onTimeDelivery || supplier.onTimeDelivery}
+                      onChange={(e) => handleUpdateTempData('onTimeDelivery', parseInt(e.target.value))}
+                    />
+                    <TextField.Root
+                      type="number"
+                      min="0"
+                      max="5"
+                      step="0.1"
+                      placeholder="Quality rating"
+                      value={tempData.qualityRating || supplier.qualityRating}
+                      onChange={(e) => handleUpdateTempData('qualityRating', parseFloat(e.target.value))}
+                    />
+                  </Flex>
+                ) : (
+                  <Flex direction="column" gap="1">
+                    <Badge color={supplier.onTimeDelivery >= 95 ? 'green' : 'yellow'}>
+                      {supplier.onTimeDelivery}% Delivery
+                    </Badge>
+                    <Badge color={supplier.qualityRating >= 4.5 ? 'green' : 'yellow'}>
+                      {supplier.qualityRating}/5 Quality
+                    </Badge>
+                  </Flex>
+                )}
               </Table.Cell>
               <Table.Cell>
                 <Badge color={
@@ -511,20 +512,12 @@ const SupplierManagement = () => {
                     </>
                   ) : (
                     <>
+                      <Button size="1" onClick={() => handleViewDetails(supplier)}>
+                        <EyeOpenIcon /> View
+                      </Button>
                       <Button size="1" onClick={() => handleEdit(supplier)}>
                         <Pencil1Icon /> Edit
                       </Button>
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger>
-                          <Button variant="ghost">•••</Button>
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
-                          <DropdownMenu.Item>View Analytics</DropdownMenu.Item>
-                          <DropdownMenu.Item>Edit Details</DropdownMenu.Item>
-                          <DropdownMenu.Separator />
-                          <DropdownMenu.Item color="red">Terminate</DropdownMenu.Item>
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
                     </>
                   )}
                 </Flex>
@@ -532,21 +525,53 @@ const SupplierManagement = () => {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Root>
+      </Table.Row>
 
-      <Dialog.Root>
-        <Dialog.Trigger>
-          <Button variant="soft" style={{ position: 'fixed', bottom: 20, right: 20 }}>
-            Supply Chain Map
-          </Button>
-        </Dialog.Trigger>
-        <Dialog.Content style={{ width: '80vw', height: '80vh' }}>
-          <Dialog.Title>Global Supply Network</Dialog.Title>
-          <div className="h-full w-full bg-gray-50 rounded-lg p-4">
-            <Flex align="center" justify="center" className="h-full">
-              <Text color="gray">Map integration placeholder</Text>
+      {/* Supplier Details Modal */}
+      <Dialog.Root open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <Dialog.Content>
+          <Dialog.Title>Supplier Details</Dialog.Title>
+          {selectedSupplier && (
+            <Flex direction="column" gap="3">
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Name:</Text>
+                <Text>{selectedSupplier.name}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Location:</Text>
+                <Text>{selectedSupplier.location}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Contact Email:</Text>
+                <Text>{selectedSupplier.contact}</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Lead Time:</Text>
+                <Text>{selectedSupplier.leadTime} days</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Compliance Status:</Text>
+                {renderComplianceBadge(selectedSupplier.compliance)}
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">On-Time Delivery:</Text>
+                <Text>{selectedSupplier.onTimeDelivery}%</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Quality Rating:</Text>
+                <Text>{selectedSupplier.qualityRating}/5</Text>
+              </Flex>
+              <Flex direction="column" gap="1">
+                <Text weight="bold">Risk Score:</Text>
+                <Text>{selectedSupplier.riskScore}</Text>
+              </Flex>
+              <Flex justify="end" mt="3">
+                <Button onClick={() => setIsDetailsModalOpen(false)}>
+                  Close
+                </Button>
+              </Flex>
             </Flex>
-          </div>
+          )}
         </Dialog.Content>
       </Dialog.Root>
     </Box>
