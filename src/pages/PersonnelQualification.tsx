@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   Table,
   Badge,
@@ -25,19 +24,40 @@ import {
   CubeIcon,
   Pencil1Icon,
   CheckIcon,
-  Cross2Icon
+  Cross2Icon,
+  PlusIcon
 } from '@radix-ui/react-icons';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
+interface Employee {
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  certifications: number;
+  trainingProgress: number;
+  expiry: string;
+  status: 'qualified' | 'pending' | 'expired';
+}
+
 const PersonnelQualification = () => {
-  const { t } = useTranslation('personnel-qualification-page');
   const [searchTerm, setSearchTerm] = useState('');
   const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isAddEmployeeDialogOpen, setIsAddEmployeeDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [tempData, setTempData] = useState<any>({});
+  const [tempData, setTempData] = useState<Partial<Employee>>({});
+  const [newEmployee, setNewEmployee] = useState<Partial<Employee>>({
+    name: '',
+    role: '',
+    department: 'Quality Control',
+    certifications: 0,
+    trainingProgress: 0,
+    expiry: '',
+    status: 'pending'
+  });
 
-  const [employees, setEmployees] = useState([
+  const [employees, setEmployees] = useState<Employee[]>([
     {
       id: 'EMP-0451',
       name: 'Mohamed Ahmed',
@@ -91,7 +111,6 @@ const PersonnelQualification = () => {
 
   // Calculate compliance data dynamically
   const complianceData = useMemo(() => {
-    const totalEmployees = employees.length;
     const qualified = employees.filter(e => e.status === 'qualified').length;
     const pending = employees.filter(e => e.status === 'pending').length;
     const expired = employees.filter(e => e.status === 'expired').length;
@@ -118,16 +137,17 @@ const PersonnelQualification = () => {
   }, [employees]);
 
   // Inline editing functions
-  const handleEdit = (employee: any) => {
+  const handleEdit = (employee: Employee) => {
     setEditingId(employee.id);
     setTempData({ ...employee });
   };
 
   const handleSave = (id: string) => {
     setEmployees(employees.map(e => 
-      e.id === id ? { ...e, ...tempData } : e
+      e.id === id ? { ...e, ...tempData } as Employee : e
     ));
     setEditingId(null);
+    setTempData({});
   };
 
   const handleCancelEdit = () => {
@@ -135,8 +155,38 @@ const PersonnelQualification = () => {
     setTempData({});
   };
 
-  const handleUpdateTempData = (field: string, value: any) => {
-    setTempData((prev: any) => ({ ...prev, [field]: value }));
+  const handleUpdateTempData = (field: keyof Employee, value: any) => {
+    setTempData(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Add new employee functions
+  const handleAddEmployee = () => {
+    const newEmployeeData: Employee = {
+      id: `EMP-${Math.random().toString(36).substring(2, 9).toUpperCase()}`,
+      name: newEmployee.name || '',
+      role: newEmployee.role || '',
+      department: newEmployee.department || 'Quality Control',
+      certifications: newEmployee.certifications || 0,
+      trainingProgress: newEmployee.trainingProgress || 0,
+      expiry: newEmployee.expiry || '',
+      status: newEmployee.status || 'pending'
+    };
+
+    setEmployees(prev => [...prev, newEmployeeData]);
+    setIsAddEmployeeDialogOpen(false);
+    setNewEmployee({
+      name: '',
+      role: '',
+      department: 'Quality Control',
+      certifications: 0,
+      trainingProgress: 0,
+      expiry: '',
+      status: 'pending'
+    });
+  };
+
+  const handleNewEmployeeChange = (field: keyof Employee, value: any) => {
+    setNewEmployee(prev => ({ ...prev, [field]: value }));
   };
 
   const submitToBlockchain = async () => {
@@ -190,6 +240,13 @@ const PersonnelQualification = () => {
             <CubeIcon /> Submit to Blockchain
           </Button>
 
+          <Button 
+            variant="soft"
+            onClick={() => setIsAddEmployeeDialogOpen(true)}
+          >
+            <PlusIcon /> Add Employee
+          </Button>
+
           <Dialog.Root>
             <Dialog.Trigger>
               <Button variant="soft">
@@ -230,6 +287,126 @@ const PersonnelQualification = () => {
           </Dialog.Root>
         </Flex>
       </Flex>
+
+      {/* Add Employee Dialog */}
+      <Dialog.Root open={isAddEmployeeDialogOpen} onOpenChange={setIsAddEmployeeDialogOpen}>
+        <Dialog.Content style={{ maxWidth: 500 }}>
+          <Dialog.Title>Add New Employee</Dialog.Title>
+          <Flex direction="column" gap="3">
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Full Name
+              </Text>
+              <TextField.Root
+                placeholder="Enter employee name"
+                value={newEmployee.name}
+                onChange={(e) => handleNewEmployeeChange('name', e.target.value)}
+              />
+            </label>
+            
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Role/Position
+              </Text>
+              <TextField.Root
+                placeholder="Enter employee role"
+                value={newEmployee.role}
+                onChange={(e) => handleNewEmployeeChange('role', e.target.value)}
+              />
+            </label>
+            
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Department
+              </Text>
+              <Select.Root
+                value={newEmployee.department}
+                onValueChange={(value) => handleNewEmployeeChange('department', value)}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  <Select.Item value="Quality Control">Quality Control</Select.Item>
+                  <Select.Item value="Manufacturing">Manufacturing</Select.Item>
+                  <Select.Item value="Quality Assurance">Quality Assurance</Select.Item>
+                  <Select.Item value="Engineering">Engineering</Select.Item>
+                  <Select.Item value="Research & Development">Research & Development</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </label>
+            
+            <Grid columns="2" gap="3">
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Certifications
+                </Text>
+                <TextField.Root
+                  type="number"
+                  min="0"
+                  value={newEmployee.certifications}
+                  onChange={(e) => handleNewEmployeeChange('certifications', parseInt(e.target.value))}
+                />
+              </label>
+              
+              <label>
+                <Text as="div" size="2" mb="1" weight="bold">
+                  Training Progress (%)
+                </Text>
+                <TextField.Root
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={newEmployee.trainingProgress}
+                  onChange={(e) => handleNewEmployeeChange('trainingProgress', parseInt(e.target.value))}
+                />
+              </label>
+            </Grid>
+            
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Certification Expiry Date
+              </Text>
+              <TextField.Root
+                type="date"
+                value={newEmployee.expiry}
+                onChange={(e) => handleNewEmployeeChange('expiry', e.target.value)}
+              />
+            </label>
+            
+            <label>
+              <Text as="div" size="2" mb="1" weight="bold">
+                Status
+              </Text>
+              <Select.Root
+                value={newEmployee.status}
+                onValueChange={(value) => handleNewEmployeeChange('status', value)}
+              >
+                <Select.Trigger />
+                <Select.Content>
+                  <Select.Item value="qualified">Qualified</Select.Item>
+                  <Select.Item value="pending">Pending</Select.Item>
+                  <Select.Item value="expired">Expired</Select.Item>
+                </Select.Content>
+              </Select.Root>
+            </label>
+            
+            <Flex gap="3" mt="4" justify="end">
+              <Button 
+                variant="soft" 
+                color="gray"
+                onClick={() => setIsAddEmployeeDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button 
+                onClick={handleAddEmployee}
+                disabled={!newEmployee.name || !newEmployee.role}
+              >
+                Add Employee
+              </Button>
+            </Flex>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
 
       {/* Blockchain Submission Dialog */}
       <AlertDialog.Root open={isBlockchainDialogOpen}>
@@ -391,6 +568,7 @@ const PersonnelQualification = () => {
                       <Select.Item value="Manufacturing">Manufacturing</Select.Item>
                       <Select.Item value="Quality Assurance">Quality Assurance</Select.Item>
                       <Select.Item value="Engineering">Engineering</Select.Item>
+                      <Select.Item value="Research & Development">Research & Development</Select.Item>
                     </Select.Content>
                   </Select.Root>
                 ) : (
