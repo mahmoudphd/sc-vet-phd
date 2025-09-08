@@ -45,7 +45,7 @@ interface Authority {
   accreditationStatus: string;
 }
 
-interface TempData extends Partial<Authority> {
+interface TempData extends Partial<Omit<Authority, 'findings'>> {
   findings?: {
     critical: number;
     major: number;
@@ -95,9 +95,26 @@ const RegulatoryAuthorityManagement = () => {
   };
 
   const handleSave = (id: string) => {
-    setAuthorities(authorities.map(a => 
-      a.id === id ? { ...a, ...tempData } as Authority : a
-    ));
+    if (tempData.findings) {
+      // Ensure all findings fields have numbers, not undefined
+      const completeFindings = {
+        critical: tempData.findings.critical ?? 0,
+        major: tempData.findings.major ?? 0,
+        minor: tempData.findings.minor ?? 0
+      };
+      
+      setAuthorities(authorities.map(a => 
+        a.id === id ? { 
+          ...a, 
+          ...tempData,
+          findings: completeFindings
+        } as Authority : a
+      ));
+    } else {
+      setAuthorities(authorities.map(a => 
+        a.id === id ? { ...a, ...tempData } as Authority : a
+      ));
+    }
     setEditingId(null);
     setTempData({});
   };
@@ -112,11 +129,14 @@ const RegulatoryAuthorityManagement = () => {
   };
 
   const handleUpdateFindings = (type: 'critical' | 'major' | 'minor', value: string) => {
+    const numValue = parseInt(value) || 0;
     setTempData(prev => ({
       ...prev,
       findings: {
-        ...prev.findings,
-        [type]: parseInt(value) || 0
+        critical: prev.findings?.critical ?? 0,
+        major: prev.findings?.major ?? 0,
+        minor: prev.findings?.minor ?? 0,
+        [type]: numValue
       }
     }));
   };
