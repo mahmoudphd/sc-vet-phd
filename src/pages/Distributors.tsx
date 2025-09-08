@@ -657,18 +657,18 @@ const Distributors = () => {
               />
 
               <Controller
-                name="licenses"
-                control={distributorForm.control}
-                render={({ field }) => (
-                  <Select.Root value={field.value} onValueChange={field.onChange}>
-                    <Select.Trigger placeholder="Select license status" />
-                    <Select.Content>
-                      <Select.Item value="active">Active</Select.Item>
-                      <Select.Item value="inactive">Inactive</Select.Item>
-                    </Select.Content>
-                                   </Select.Content>
-                )}
-              />
+  name="licenses"
+  control={distributorForm.control}
+  render={({ field }) => (
+    <Select.Root value={field.value} onValueChange={field.onChange}>
+      <Select.Trigger placeholder="Select license status" />
+      <Select.Content>
+        <Select.Item value="active">Active</Select.Item>
+        <Select.Item value="inactive">Inactive</Select.Item>
+      </Select.Content>
+    </Select.Root>
+  )}
+/>
 
 
               <Controller
