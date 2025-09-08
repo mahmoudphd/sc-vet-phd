@@ -27,13 +27,23 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  ScatterChart,
-  Scatter,
-  ZAxis,
-  ReferenceLine
+  PieChart,
+  Pie,
+  Cell,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis
 } from 'recharts';
 import { toast } from 'sonner';
 import { Toaster } from 'sonner';
+import { 
+  Pencil1Icon, 
+  CheckIcon, 
+  Cross2Icon,
+  CubeIcon
+} from '@radix-ui/react-icons';
 
 const SupplierManagement = () => {
   const { t } = useTranslation('suppliers');
@@ -42,6 +52,8 @@ const SupplierManagement = () => {
   const [selectedRegion, setSelectedRegion] = useState('all');
   const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [tempData, setTempData] = useState<any>({});
   
   const [suppliers, setSuppliers] = useState([
     { 
@@ -89,15 +101,15 @@ const SupplierManagement = () => {
   ]);
 
   const performanceData = [
-    { month: t('jan'), orders: 245, deliveries: 240 },
-    { month: t('feb'), orders: 278, deliveries: 275 },
-    { month: t('mar'), orders: 312, deliveries: 308 },
-    { month: t('apr'), orders: 298, deliveries: 295 },
-    { month: t('may'), orders: 331, deliveries: 328 },
-    { month: t('jun'), orders: 356, deliveries: 352 },
+    { month: 'Jan', orders: 245, deliveries: 240 },
+    { month: 'Feb', orders: 278, deliveries: 275 },
+    { month: 'Mar', orders: 312, deliveries: 308 },
+    { month: 'Apr', orders: 298, deliveries: 295 },
+    { month: 'May', orders: 331, deliveries: 328 },
+    { month: 'Jun', orders: 356, deliveries: 352 },
   ];
 
-  const regions = [t('all-regions'), t('north-america'), t('europe'), t('asia'), t('middle-east')];
+  const regions = ['All Regions', 'North America', 'Europe', 'Asia', 'Middle East'];
 
   const filteredSuppliers = suppliers.filter(supplier => 
     supplier.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -105,21 +117,75 @@ const SupplierManagement = () => {
     (selectedRegion === 'all' || supplier.location === selectedRegion)
   );
 
-  // Enhanced risk data for visualization
-  const riskData = suppliers.map(supplier => ({
-    name: supplier.name,
-    leadTime: supplier.leadTime,
-    delivery: supplier.onTimeDelivery,
-    quality: supplier.qualityRating,
-    risk: supplier.riskScore,
-    size: supplier.orderVolume / 1000 // Scale for bubble size
-  }));
+  // Risk distribution data for pie chart
+  const riskDistributionData = [
+    { name: 'Low Risk', value: suppliers.filter(s => s.riskScore < 20).length },
+    { name: 'Medium Risk', value: suppliers.filter(s => s.riskScore >= 20 && s.riskScore < 40).length },
+    { name: 'High Risk', value: suppliers.filter(s => s.riskScore >= 40).length }
+  ];
+
+  const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
+
+  // Radar chart data for supplier performance comparison
+  const radarData = [
+    {
+      subject: 'Delivery',
+      SupplierA: 98,
+      SupplierB: 92,
+      SupplierC: 85,
+      fullMark: 100,
+    },
+    {
+      subject: 'Quality',
+      SupplierA: 4.9,
+      SupplierB: 4.5,
+      SupplierC: 4.0,
+      fullMark: 5,
+    },
+    {
+      subject: 'Lead Time',
+      SupplierA: 14,
+      SupplierB: 21,
+      SupplierC: 30,
+      fullMark: 35,
+    },
+    {
+      subject: 'Compliance',
+      SupplierA: 100,
+      SupplierB: 70,
+      SupplierC: 50,
+      fullMark: 100,
+    },
+  ];
 
   const handleComplianceUpdate = (id: number, newStatus: string) => {
     setSuppliers(suppliers.map(supplier => 
       supplier.id === id ? { ...supplier, compliance: newStatus } : supplier
     ));
-    toast.success(t('compliance-updated'));
+    toast.success('Compliance status updated');
+  };
+
+  // Inline editing functions
+  const handleEdit = (supplier: any) => {
+    setEditingId(supplier.id);
+    setTempData({ ...supplier });
+  };
+
+  const handleSave = (id: number) => {
+    setSuppliers(suppliers.map(s => 
+      s.id === id ? { ...s, ...tempData } : s
+    ));
+    setEditingId(null);
+    toast.success('Supplier updated successfully');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setTempData({});
+  };
+
+  const handleUpdateTempData = (field: string, value: any) => {
+    setTempData(prev => ({ ...prev, [field]: value }));
   };
 
   const submitToBlockchain = async () => {
@@ -135,20 +201,33 @@ const SupplierManagement = () => {
     }
   };
 
+  const renderComplianceBadge = (compliance: string) => {
+    switch (compliance) {
+      case 'certified':
+        return <Badge color="green">Certified</Badge>;
+      case 'pending':
+        return <Badge color="yellow">Pending</Badge>;
+      case 'non-compliant':
+        return <Badge color="red">Non-Compliant</Badge>;
+      default:
+        return <Badge color="gray">Unknown</Badge>;
+    }
+  };
+
   return (
     <Box p="6">
       <Toaster position="top-right" />
       
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('supplier-management')}</Heading>
+        <Heading size="6">Supplier Management</Heading>
         <Flex gap="3">
           <TextField.Root
-            placeholder={t('search-suppliers')}
+            placeholder="Search suppliers"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <Select.Root value={selectedRegion} onValueChange={setSelectedRegion}>
-            <Select.Trigger placeholder={t('select-region')} />
+            <Select.Trigger placeholder="Select region" />
             <Select.Content>
               {regions.map(region => (
                 <Select.Item key={region} value={region}>{region}</Select.Item>
@@ -161,35 +240,36 @@ const SupplierManagement = () => {
             variant="solid" 
             color="green"
             onClick={() => setIsBlockchainDialogOpen(true)}
+            style={{ backgroundColor: '#006400' }}
           >
-            Submit to Blockchain
+            <CubeIcon /> Submit to Blockchain
           </Button>
 
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button>{t('add-supplier')}</Button>
+              <Button>Add Supplier</Button>
             </Dialog.Trigger>
             <Dialog.Content style={{ maxWidth: 600 }}>
-              <Dialog.Title>{t('new-supplier')}</Dialog.Title>
+              <Dialog.Title>New Supplier</Dialog.Title>
               <Flex direction="column" gap="3" mt="4">
                 <Grid columns="2" gap="3">
-                  <TextField.Root placeholder={t('supplier-name')} />
-                  <TextField.Root placeholder={t('contact-email')} />
+                  <TextField.Root placeholder="Supplier name" />
+                  <TextField.Root placeholder="Contact email" />
                   <Select.Root>
-                    <Select.Trigger placeholder={t('region')} />
+                    <Select.Trigger placeholder="Region" />
                     <Select.Content>
-                      <Select.Item value="north-america">{t('north-america')}</Select.Item>
-                      <Select.Item value="europe">{t('europe')}</Select.Item>
-                      <Select.Item value="asia">{t('asia')}</Select.Item>
+                      <Select.Item value="north-america">North America</Select.Item>
+                      <Select.Item value="europe">Europe</Select.Item>
+                      <Select.Item value="asia">Asia</Select.Item>
                     </Select.Content>
                   </Select.Root>
-                  <TextField.Root placeholder={t('lead-time')} type="number" />
+                  <TextField.Root placeholder="Lead time" type="number" />
                 </Grid>
                 <Flex gap="3" mt="4" justify="end">
                   <Dialog.Close>
-                    <Button variant="soft">{t('cancel')}</Button>
+                    <Button variant="soft">Cancel</Button>
                   </Dialog.Close>
-                  <Button>{t('save-supplier')}</Button>
+                  <Button>Save Supplier</Button>
                 </Flex>
               </Flex>
             </Dialog.Content>
@@ -217,6 +297,7 @@ const SupplierManagement = () => {
               color="green"
               onClick={submitToBlockchain}
               disabled={isSubmitting}
+              style={{ backgroundColor: '#006400' }}
             >
               {isSubmitting ? 'Submitting...' : 'Confirm'}
             </Button>
@@ -227,25 +308,25 @@ const SupplierManagement = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('active-suppliers')}</Text>
-            <Heading size="7">80</Heading> {/* Updated to 80 active suppliers */}
+            <Text size="2">Active Suppliers</Text>
+            <Heading size="7">80</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avg-lead-time')}</Text>
-            <Heading size="7">21.7 {t('days')}</Heading>
+            <Text size="2">Avg Lead Time</Text>
+            <Heading size="7">21.7 days</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('on-time-delivery')}</Text>
+            <Text size="2">On-Time Delivery</Text>
             <Heading size="7">91.7%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('quality-compliance')}</Text>
+            <Text size="2">Quality Compliance</Text>
             <Heading size="7">4.5/5</Heading>
           </Flex>
         </Card>
@@ -253,7 +334,7 @@ const SupplierManagement = () => {
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 2 }}>
-          <Heading size="4" mb="3">{t('order-performance')}</Heading>
+          <Heading size="4" mb="3">Order Performance</Heading>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={performanceData}>
@@ -270,138 +351,182 @@ const SupplierManagement = () => {
         </Card>
         
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('risk-distribution')}</Heading>
+          <Heading size="4" mb="3">Risk Distribution</Heading>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis 
-                  type="number" 
-                  dataKey="leadTime" 
-                  name="Lead Time (days)" 
-                  unit="d"
-                  domain={[0, 40]}
-                />
-                <YAxis 
-                  type="number" 
-                  dataKey="delivery" 
-                  name="On-Time Delivery %" 
-                  unit="%"
-                  domain={[80, 100]}
-                />
-                <ZAxis 
-                  type="number" 
-                  dataKey="risk" 
-                  range={[50, 500]} 
-                  name="Risk Score"
-                />
-                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-                <Legend />
-                <ReferenceLine y={90} stroke="orange" label="Target" />
-                <Scatter 
-                  name="Suppliers" 
-                  data={riskData} 
-                  fill="#3b82f6" 
-                  shape="circle"
-                />
-              </ScatterChart>
+              <PieChart>
+                <Pie
+                  data={riskDistributionData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                >
+                  {riskDistributionData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
             </ResponsiveContainer>
           </div>
           <Flex justify="center" mt="2" gap="3">
             <Flex align="center" gap="1">
-              <Box style={{ width: 10, height: 10, backgroundColor: '#3b82f6', borderRadius: '50%' }} />
+              <Box style={{ width: 10, height: 10, backgroundColor: '#00C49F', borderRadius: '50%' }} />
               <Text size="1">Low Risk</Text>
             </Flex>
             <Flex align="center" gap="1">
-              <Box style={{ width: 10, height: 10, backgroundColor: '#60a5fa', borderRadius: '50%' }} />
+              <Box style={{ width: 10, height: 10, backgroundColor: '#FFBB28', borderRadius: '50%' }} />
               <Text size="1">Medium Risk</Text>
             </Flex>
             <Flex align="center" gap="1">
-              <Box style={{ width: 10, height: 10, backgroundColor: '#93c5fd', borderRadius: '50%' }} />
+              <Box style={{ width: 10, height: 10, backgroundColor: '#FF8042', borderRadius: '50%' }} />
               <Text size="1">High Risk</Text>
             </Flex>
           </Flex>
         </Card>
       </Flex>
 
+      <Card mb="5">
+        <Heading size="4" mb="3">Supplier Performance Comparison</Heading>
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+              <PolarGrid />
+              <PolarAngleAxis dataKey="subject" />
+              <PolarRadiusAxis angle={30} domain={[0, 100]} />
+              <Radar name="Supplier A" dataKey="SupplierA" stroke="#8884d8" fill="#8884d8" fillOpacity={0.6} />
+              <Radar name="Supplier B" dataKey="SupplierB" stroke="#82ca9d" fill="#82ca9d" fillOpacity={0.6} />
+              <Radar name="Supplier C" dataKey="SupplierC" stroke="#ffc658" fill="#ffc658" fillOpacity={0.6} />
+              <Legend />
+              <Tooltip />
+            </RadarChart>
+          </ResponsiveContainer>
+        </div>
+      </Card>
+
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('supplier')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('location')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('lead-time')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('compliance')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('performance')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('contracts')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actions')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Supplier</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Lead Time</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Performance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Risk Score</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {filteredSuppliers.map(supplier => (
+          {filteredSuppliers.map((supplier) => (
             <Table.Row key={supplier.id}>
               <Table.Cell>
-                <Flex direction="column">
+                {editingId === supplier.id ? (
+                  <TextField.Root
+                    value={tempData.name || supplier.name}
+                    onChange={(e) => handleUpdateTempData('name', e.target.value)}
+                  />
+                ) : (
                   <Text weight="bold">{supplier.name}</Text>
-                  <Text size="1" color="gray">{supplier.contact}</Text>
-                </Flex>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Badge variant="soft">{t(supplier.location.toLowerCase())}</Badge>
+                {editingId === supplier.id ? (
+                  <Select.Root
+                    value={tempData.location || supplier.location}
+                    onValueChange={(value) => handleUpdateTempData('location', value)}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="North America">North America</Select.Item>
+                      <Select.Item value="Europe">Europe</Select.Item>
+                      <Select.Item value="Asia">Asia</Select.Item>
+                      <Select.Item value="Middle East">Middle East</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                ) : (
+                  <Badge variant="soft">{supplier.location}</Badge>
+                )}
               </Table.Cell>
-              <Table.Cell>{supplier.leadTime} {t('days')}</Table.Cell>
               <Table.Cell>
-                <Select.Root
-                  value={supplier.compliance}
-                  onValueChange={(value) => handleComplianceUpdate(supplier.id, value)}
-                >
-                  <Select.Trigger variant="ghost" />
-                  <Select.Content>
-                    <Select.Item value="certified">{t('certified')}</Select.Item>
-                    <Select.Item value="pending">{t('pending')}</Select.Item>
-                    <Select.Item value="non-compliant">{t('non-compliant')}</Select.Item>
-                  </Select.Content>
-                </Select.Root>
+                {editingId === supplier.id ? (
+                  <TextField.Root
+                    type="number"
+                    value={tempData.leadTime || supplier.leadTime}
+                    onChange={(e) => handleUpdateTempData('leadTime', parseInt(e.target.value))}
+                  />
+                ) : (
+                  `${supplier.leadTime} days`
+                )}
+              </Table.Cell>
+              <Table.Cell>
+                {editingId === supplier.id ? (
+                  <Select.Root
+                    value={tempData.compliance || supplier.compliance}
+                    onValueChange={(value) => handleUpdateTempData('compliance', value)}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="certified">Certified</Select.Item>
+                      <Select.Item value="pending">Pending</Select.Item>
+                      <Select.Item value="non-compliant">Non-Compliant</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                ) : (
+                  renderComplianceBadge(supplier.compliance)
+                )}
               </Table.Cell>
               <Table.Cell>
                 <Flex gap="2">
                   <Badge color={supplier.onTimeDelivery >= 95 ? 'green' : 'yellow'}>
-                    {supplier.onTimeDelivery}% {t('delivery')}
+                    {supplier.onTimeDelivery}% Delivery
                   </Badge>
                   <Badge color={supplier.qualityRating >= 4.5 ? 'green' : 'yellow'}>
-                    {supplier.qualityRating}/5 {t('quality')}
+                    {supplier.qualityRating}/5 Quality
                   </Badge>
                 </Flex>
               </Table.Cell>
               <Table.Cell>
-                {supplier.contracts.length > 0 ? (
-                  <DropdownMenu.Root>
-                    <DropdownMenu.Trigger>
-                      <Button variant="soft" size="1">
-                        {supplier.contracts.length} {t('contracts')}
-                      </Button>
-                    </DropdownMenu.Trigger>
-                    <DropdownMenu.Content>
-                      {supplier.contracts.map(contract => (
-                        <DropdownMenu.Item key={contract}>{contract}</DropdownMenu.Item>
-                      ))}
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Root>
-                ) : (
-                  <Text color="gray">{t('no-contracts')}</Text>
-                )}
+                <Badge color={
+                  supplier.riskScore < 20 ? 'green' : 
+                  supplier.riskScore < 40 ? 'yellow' : 'red'
+                }>
+                  {supplier.riskScore}
+                </Badge>
               </Table.Cell>
               <Table.Cell>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger>
-                    <Button variant="ghost">•••</Button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content>
-                    <DropdownMenu.Item>{t('view-analytics')}</DropdownMenu.Item>
-                    <DropdownMenu.Item>{t('edit-details')}</DropdownMenu.Item>
-                    <DropdownMenu.Separator />
-                    <DropdownMenu.Item color="red">{t('terminate')}</DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Root>
+                <Flex gap="2">
+                  {editingId === supplier.id ? (
+                    <>
+                      <Button size="1" color="green" onClick={() => handleSave(supplier.id)}>
+                        <CheckIcon /> Save
+                      </Button>
+                      <Button size="1" color="red" onClick={handleCancelEdit}>
+                        <Cross2Icon /> Cancel
+                      </Button>
+                    </>
+                  ) : (
+                    <>
+                      <Button size="1" onClick={() => handleEdit(supplier)}>
+                        <Pencil1Icon /> Edit
+                      </Button>
+                      <DropdownMenu.Root>
+                        <DropdownMenu.Trigger>
+                          <Button variant="ghost">•••</Button>
+                        </DropdownMenu.Trigger>
+                        <DropdownMenu.Content>
+                          <DropdownMenu.Item>View Analytics</DropdownMenu.Item>
+                          <DropdownMenu.Item>Edit Details</DropdownMenu.Item>
+                          <DropdownMenu.Separator />
+                          <DropdownMenu.Item color="red">Terminate</DropdownMenu.Item>
+                        </DropdownMenu.Content>
+                      </DropdownMenu.Root>
+                    </>
+                  )}
+                </Flex>
               </Table.Cell>
             </Table.Row>
           ))}
@@ -411,14 +536,14 @@ const SupplierManagement = () => {
       <Dialog.Root>
         <Dialog.Trigger>
           <Button variant="soft" style={{ position: 'fixed', bottom: 20, right: 20 }}>
-            {t('supply-chain-map')}
+            Supply Chain Map
           </Button>
         </Dialog.Trigger>
         <Dialog.Content style={{ width: '80vw', height: '80vh' }}>
-          <Dialog.Title>{t('global-supply-network')}</Dialog.Title>
+          <Dialog.Title>Global Supply Network</Dialog.Title>
           <div className="h-full w-full bg-gray-50 rounded-lg p-4">
             <Flex align="center" justify="center" className="h-full">
-              <Text color="gray">{t('map-integration-placeholder')}</Text>
+              <Text color="gray">Map integration placeholder</Text>
             </Flex>
           </div>
         </Dialog.Content>
