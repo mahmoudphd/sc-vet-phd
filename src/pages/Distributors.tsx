@@ -666,9 +666,10 @@ const Distributors = () => {
                       <Select.Item value="active">Active</Select.Item>
                       <Select.Item value="inactive">Inactive</Select.Item>
                     </Select.Content>
-                  </Select.Root>
+                                   </Select.Content>
                 )}
-              );
+              />
+
 
               <Controller
                 name="onTimeDelivery"
