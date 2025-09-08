@@ -525,7 +525,7 @@ const SupplierManagement = () => {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Row>
+    </Table.Root>
 
       {/* Supplier Details Modal */}
       <Dialog.Root open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
