@@ -275,7 +275,7 @@ const Distributors = () => {
     };
   }, [distributors]);
 
-  // Performance distribution data
+  // Performance distribution data - Clearer visualization
   const performanceDistribution = useMemo(() => {
     const distribution = {
       excellent: 0, // 95-100%
@@ -373,7 +373,7 @@ const Distributors = () => {
         </Flex>
       </Card>
 
-      {/* Performance Distribution Chart */}
+      {/* Performance Distribution Chart - Clearer visualization */}
       <Card mb="5">
         <Flex direction="column" gap="3">
           <Flex align="center" gap="2">
@@ -413,7 +413,7 @@ const Distributors = () => {
         </Flex>
       </Card>
 
-      {/* Distributors Table */}
+      {/* Distributors Table - Email column removed, location is editable text */}
       <Card mb="5">
         <Table.Root variant="surface">
           <Table.Header>
@@ -632,7 +632,7 @@ const Distributors = () => {
                 name="location"
                 control={distributorForm.control}
                 render={({ field }) => (
-                  <TextField.Root placeholder="Location" {...field}>
+                  <TextField.Root placeholder="Location (e.g., Cairo, Egypt)" {...field}>
                     <TextField.Slot>Location</TextField.Slot>
                   </TextField.Root>
                 )}
