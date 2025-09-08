@@ -23,6 +23,7 @@ import {
   CheckIcon,
   EyeOpenIcon,
   BarChartIcon,
+  CubeIcon,
 } from "@radix-ui/react-icons";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
@@ -87,68 +88,68 @@ const Distributors = () => {
   const [distributors, setDistributors] = useState<Distributor[]>([
     {
       id: 'DIST-001',
-      name: 'Pharma Distributors Inc.',
-      location: 'Cairo, Egypt',
+      name: 'Distributor A',
+      location: 'Cairo',
       compliance: 'gdp-certified',
       licenses: 'active',
       onTimeDelivery: 96,
       lastAudit: '2025-05-12',
-      contact: 'dist1@example.com',
+      contact: 'distA@example.com',
       phone: '+201000000001'
     },
     {
       id: 'DIST-002',
-      name: 'MediSupply Co.',
-      location: 'Alexandria, Egypt',
+      name: 'Distributor B',
+      location: 'Alexandria',
       compliance: 'pending',
       licenses: 'inactive',
       onTimeDelivery: 87,
       lastAudit: '2024-12-22',
-      contact: 'dist2@example.com',
+      contact: 'distB@example.com',
       phone: '+201000000002'
     },
     {
       id: 'DIST-003',
-      name: 'HealthCare Logistics',
-      location: 'Giza, Egypt',
+      name: 'Distributor C',
+      location: 'Mansoura',
       compliance: 'gdp-certified',
       licenses: 'active',
       onTimeDelivery: 99,
       lastAudit: '2025-03-30',
-      contact: 'dist3@example.com',
+      contact: 'distC@example.com',
       phone: '+201000000003'
     },
     {
       id: 'DIST-004',
-      name: 'BioPharm Distributors',
-      location: 'Luxor, Egypt',
+      name: 'Distributor D',
+      location: 'Tanta',
       compliance: 'gdp-certified',
       licenses: 'active',
       onTimeDelivery: 92,
       lastAudit: '2025-01-15',
-      contact: 'dist4@example.com',
+      contact: 'distD@example.com',
       phone: '+201000000004'
     },
     {
       id: 'DIST-005',
-      name: 'Prime Medical Supplies',
-      location: 'Aswan, Egypt',
+      name: 'Distributor E',
+      location: 'Cairo',
       compliance: 'pending',
       licenses: 'active',
       onTimeDelivery: 78,
       lastAudit: '2024-11-05',
-      contact: 'dist5@example.com',
+      contact: 'distE@example.com',
       phone: '+201000000005'
     },
     {
       id: 'DIST-006',
-      name: 'Elite Pharma Network',
-      location: 'Port Said, Egypt',
+      name: 'Distributor F',
+      location: 'Alexandria',
       compliance: 'gdp-certified',
       licenses: 'inactive',
       onTimeDelivery: 85,
       lastAudit: '2024-10-18',
-      contact: 'dist6@example.com',
+      contact: 'distF@example.com',
       phone: '+201000000006'
     }
   ]);
@@ -294,12 +295,25 @@ const Distributors = () => {
     return distribution;
   }, [distributors]);
 
+  // Submit to blockchain function
+  const handleSubmitToBlockchain = () => {
+    toast.success("Data submitted to blockchain successfully");
+  };
+
   return (
     <Box p="6" className="flex-1">
       {/* Header with actions */}
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Distributors Management</Heading>
         <Flex gap="3">
+          <Button 
+            color="green" 
+            variant="solid" 
+            onClick={handleSubmitToBlockchain}
+            style={{ backgroundColor: '#006400' }}
+          >
+            <CubeIcon /> Submit to Blockchain
+          </Button>
           <Button variant="soft" onClick={() => setIsDistributorModalOpen(true)}>
             <CheckCircledIcon /> Add Distributor
           </Button>
@@ -632,7 +646,7 @@ const Distributors = () => {
                 name="location"
                 control={distributorForm.control}
                 render={({ field }) => (
-                  <TextField.Root placeholder="Location (e.g., Cairo, Egypt)" {...field}>
+                  <TextField.Root placeholder="Location (e.g., Cairo, Alexandria)" {...field}>
                     <TextField.Slot>Location</TextField.Slot>
                   </TextField.Root>
                 )}
