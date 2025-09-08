@@ -23,7 +23,6 @@ import {
   CheckIcon,
   EyeOpenIcon,
   BarChartIcon,
-  MapPinIcon,
 } from "@radix-ui/react-icons";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
@@ -449,7 +448,7 @@ const Distributors = () => {
                     />
                   ) : (
                     <Flex align="center" gap="1">
-                      <MapPinIcon />
+                      <GlobeIcon />
                       {distributor.location}
                     </Flex>
                   )}
@@ -657,19 +656,18 @@ const Distributors = () => {
               />
 
               <Controller
-  name="licenses"
-  control={distributorForm.control}
-  render={({ field }) => (
-    <Select.Root value={field.value} onValueChange={field.onChange}>
-      <Select.Trigger placeholder="Select license status" />
-      <Select.Content>
-        <Select.Item value="active">Active</Select.Item>
-        <Select.Item value="inactive">Inactive</Select.Item>
-      </Select.Content>
-    </Select.Root>
-  )}
-/>
-
+                name="licenses"
+                control={distributorForm.control}
+                render={({ field }) => (
+                  <Select.Root value={field.value} onValueChange={field.onChange}>
+                    <Select.Trigger placeholder="Select license status" />
+                    <Select.Content>
+                      <Select.Item value="active">Active</Select.Item>
+                      <Select.Item value="inactive">Inactive</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                )}
+              />
 
               <Controller
                 name="onTimeDelivery"
