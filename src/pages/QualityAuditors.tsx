@@ -21,8 +21,6 @@ import {
   CheckCircledIcon,
   CrossCircledIcon,
   PersonIcon,
-  LockClosedIcon,
-  TrashIcon,
   DownloadIcon
 } from '@radix-ui/react-icons';
 import { useTranslation } from 'react-i18next';
@@ -39,96 +37,113 @@ const QualityAuditors = () => {
 
   const auditors = [
     {
-      id: 'AUD-04521',
-      firm: t('pharma-cert-eu'),
-      certifications: [t('eu-gmp'), t('fda'), t('iso-9001')],
-      lastAudit: '2023-06-15',
-      findings: { critical: 2, major: 5, minor: 12 },
-      status: t('active'),
-      complianceScore: 98.4,
-      nextAudit: '2024-01-15',
-      capaStatus: t('in-progress')
+      id: 'AUD-001',
+      firm: 'Egyptian Drug Authority (EDA)',
+      certifications: [
+        'WHO GBT', 
+        'OMCL Network', 
+        'ISO 9001:2015',
+        'ISO/IEC 17025:2017',
+        'ISO/IEC 17043:2010',
+        'ISO/IEC 17034:2016'
+      ],
+      lastAudit: '2024-01-20',
+      findings: { critical: 0, major: 2, minor: 5 },
+      status: 'Active',
+      complianceScore: 98.7,
+      nextAudit: '2024-07-15',
+      capaStatus: 'In Progress',
+      country: 'Egypt',
+      accreditationStatus: 'Valid'
     },
   ];
 
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('gmp-auditor-management-system')}</Heading>
+        <Heading size="6">GMP Auditor Management System</Heading>
         <Flex gap="3">
-          {/* Schedule Audit Modal */}
-          <Dialog.Root open={scheduleAuditOpen} onOpenChange={setScheduleAuditOpen}>
-            <Dialog.Content>
-              <Dialog.Title>{t('schedule-audit')}</Dialog.Title>
-              <Flex direction="column" gap="3">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('select-auditor')} />
-                  <Select.Content>
-                    {auditors.map(auditor => (
-                      <Select.Item key={auditor.id} value={auditor.id}>
-                        {auditor.firm}
-                      </Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-
-                <TextField.Root type="date" placeholder={t('audit-date')} />
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Button variant="soft" onClick={() => setScheduleAuditOpen(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button onClick={() => setScheduleAuditOpen(false)}>
-                    {t('schedule')}
-                  </Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          {/* Compliance Report Modal */}
-          <Dialog.Root open={complianceReportOpen} onOpenChange={setComplianceReportOpen}>
-            <Dialog.Content>
-              <Dialog.Title>{t('compliance-report')}</Dialog.Title>
-              <Flex direction="column" gap="3">
-                <Text>{t('generate-compliance-report')}</Text>
-                <Select.Root>
-                  <Select.Trigger placeholder={t('select-format')} />
-                  <Select.Content>
-                    <Select.Item value="pdf">PDF</Select.Item>
-                    <Select.Item value="excel">Excel</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Button variant="soft" onClick={() => setComplianceReportOpen(false)}>
-                    {t('cancel')}
-                  </Button>
-                  <Button onClick={() => setComplianceReportOpen(false)}>
-                    <DownloadIcon /> {t('download')}
-                  </Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
+          <Button variant="soft" onClick={() => setScheduleAuditOpen(true)}>
+            <CalendarIcon /> Schedule Audit
+          </Button>
+          <Button variant="soft" onClick={() => setComplianceReportOpen(true)}>
+            <DownloadIcon /> Compliance Report
+          </Button>
         </Flex>
       </Flex>
 
-            {/* Action Modals */}
-            <Dialog.Root 
+      {/* Schedule Audit Modal */}
+      <Dialog.Root open={scheduleAuditOpen} onOpenChange={setScheduleAuditOpen}>
+        <Dialog.Content>
+          <Dialog.Title>Schedule Audit</Dialog.Title>
+          <Flex direction="column" gap="3">
+            <Select.Root>
+              <Select.Trigger placeholder="Select auditor" />
+              <Select.Content>
+                {auditors.map(auditor => (
+                  <Select.Item key={auditor.id} value={auditor.id}>
+                    {auditor.firm}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+
+            <TextField.Root type="date" placeholder="Audit date" />
+
+            <Flex gap="3" mt="4" justify="end">
+              <Button variant="soft" onClick={() => setScheduleAuditOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setScheduleAuditOpen(false)}>
+                Schedule
+              </Button>
+            </Flex>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Compliance Report Modal */}
+      <Dialog.Root open={complianceReportOpen} onOpenChange={setComplianceReportOpen}>
+        <Dialog.Content>
+          <Dialog.Title>Compliance Report</Dialog.Title>
+          <Flex direction="column" gap="3">
+            <Text>Generate compliance report</Text>
+            <Select.Root>
+              <Select.Trigger placeholder="Select format" />
+              <Select.Content>
+                <Select.Item value="pdf">PDF</Select.Item>
+                <Select.Item value="excel">Excel</Select.Item>
+              </Select.Content>
+            </Select.Root>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Button variant="soft" onClick={() => setComplianceReportOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={() => setComplianceReportOpen(false)}>
+                <DownloadIcon /> Download
+              </Button>
+            </Flex>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      {/* Action Modals */}
+      <Dialog.Root 
         open={selectedAction.type !== null} 
         onOpenChange={(open) => !open && setSelectedAction({ type: null, auditorId: null })}
       >
         <Dialog.Content>
           {selectedAction.type === 'report' && (
             <>
-              <Dialog.Title>{t('audit-report')}</Dialog.Title>
-              <Text>{t('download-audit-report')}</Text>
+              <Dialog.Title>Audit Report</Dialog.Title>
+              <Text>Download audit report</Text>
               <Flex gap="3" mt="4" justify="end">
                 <Button variant="soft" onClick={() => setSelectedAction({ type: null, auditorId: null })}>
-                  {t('cancel')}
+                  Cancel
                 </Button>
                 <Button>
-                  <DownloadIcon /> {t('download')}
+                  <DownloadIcon /> Download
                 </Button>
               </Flex>
             </>
@@ -136,14 +151,14 @@ const QualityAuditors = () => {
 
           {selectedAction.type === 'approve' && (
             <>
-              <Dialog.Title>{t('approve-capa')}</Dialog.Title>
-              <Text>{t('approve-capa-confirm')}</Text>
+              <Dialog.Title>Approve CAPA</Dialog.Title>
+              <Text>Approve corrective action plan</Text>
               <Flex gap="3" mt="4" justify="end">
                 <Button variant="soft" onClick={() => setSelectedAction({ type: null, auditorId: null })}>
-                  {t('cancel')}
+                  Cancel
                 </Button>
                 <Button color="green">
-                  <CheckCircledIcon /> {t('approve')}
+                  <CheckCircledIcon /> Approve
                 </Button>
               </Flex>
             </>
@@ -151,22 +166,22 @@ const QualityAuditors = () => {
 
           {selectedAction.type === 'finding' && (
             <>
-              <Dialog.Title>{t('raise-finding')}</Dialog.Title>
-              <TextField.Root placeholder={t('finding-description')} />
+              <Dialog.Title>Raise Finding</Dialog.Title>
+              <TextField.Root placeholder="Finding description" />
               <Select.Root>
-                <Select.Trigger placeholder={t('severity')} />
+                <Select.Trigger placeholder="Severity" />
                 <Select.Content>
-                  <Select.Item value="critical">{t('critical')}</Select.Item>
-                  <Select.Item value="major">{t('major')}</Select.Item>
-                  <Select.Item value="minor">{t('minor')}</Select.Item>
+                  <Select.Item value="critical">Critical</Select.Item>
+                  <Select.Item value="major">Major</Select.Item>
+                  <Select.Item value="minor">Minor</Select.Item>
                 </Select.Content>
               </Select.Root>
               <Flex gap="3" mt="4" justify="end">
                 <Button variant="soft" onClick={() => setSelectedAction({ type: null, auditorId: null })}>
-                  {t('cancel')}
+                  Cancel
                 </Button>
                 <Button color="red">
-                  <CrossCircledIcon /> {t('submit-finding')}
+                  <CrossCircledIcon /> Submit Finding
                 </Button>
               </Flex>
             </>
@@ -177,30 +192,30 @@ const QualityAuditors = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card className="bg-green-50">
           <Flex direction="column" gap="1">
-            <Text size="2">{t('certified-auditors')}</Text>
+            <Text size="2">Certified Auditors</Text>
             <Heading size="7">24</Heading>
-            <Text size="1" className="text-green-600">{t('98-compliant')}</Text>
+            <Text size="1" className="text-green-600">98% compliant</Text>
           </Flex>
         </Card>
         <Card className="bg-amber-50">
           <Flex direction="column" gap="1">
-            <Text size="2">{t('open-findings')}</Text>
-            <Heading size="7" className="text-amber-600">45</Heading>
-            <Text size="1">{t('12-critical')}</Text>
+            <Text size="2">Open Findings</Text>
+            <Heading size="7" className="text-amber-600">7</Heading>
+            <Text size="1">2 Major, 5 Minor</Text>
           </Flex>
         </Card>
         <Card className="bg-blue-50">
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avg-capa-time')}</Text>
-            <Heading size="7">7.2 {t('days')}</Heading>
+            <Text size="2">Average CAPA Time</Text>
+            <Heading size="7">7.2 days</Heading>
             <Progress value={65} />
           </Flex>
         </Card>
         <Card className="bg-purple-50">
           <Flex direction="column" gap="1">
-            <Text size="2">{t('certifications')}</Text>
-            <Heading size="7">{t('98-valid')}</Heading>
-            <Text size="1">{t('3-expiring-soon')}</Text>
+            <Text size="2">Certifications</Text>
+            <Heading size="7">98% Valid</Heading>
+            <Text size="1">All certifications active</Text>
           </Flex>
         </Card>
       </Grid>
@@ -208,7 +223,7 @@ const QualityAuditors = () => {
       <Flex gap="4" mb="5">
         <Card style={{ flex: 2 }}>
           <Heading size="4" mb="3" className="flex items-center gap-2">
-            <CalendarIcon /> {t('audit-schedule')}
+            <CalendarIcon /> Audit Schedule
           </Heading>
           <div className="h-96">
             {/* GanttChart component */}
@@ -216,10 +231,10 @@ const QualityAuditors = () => {
         </Card>
         <Card style={{ flex: 1 }}>
           <Heading size="4" mb="3" className="flex items-center gap-2">
-            <MagnifyingGlassIcon /> {t('compliance-heatmap')}
+            <MagnifyingGlassIcon /> Compliance Heatmap
           </Heading>
           <div className="grid grid-cols-2 gap-4 h-96 p-4">
-            {[t('eu-gmp'), t('fda'), t('iso-13485'), t('who')].map((standard) => (
+            {['WHO GBT', 'OMCL', 'ISO 9001', 'ISO 17025'].map((standard) => (
               <Badge
                 key={standard}
                 variant="soft"
@@ -236,13 +251,13 @@ const QualityAuditors = () => {
       <Table.Root variant="surface" className="mt-6">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('audit-firm')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('certifications')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('last-audit')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('findings')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('compliance-score')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('capa-status')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('actions')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Regulatory Authority</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Certifications</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Last Audit</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Findings</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Compliance Score</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>CAPA Status</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -252,15 +267,19 @@ const QualityAuditors = () => {
                 <Flex align="center" gap="2">
                   <PersonIcon className="text-blue-600" />
                   {auditor.firm}
+                  <Badge variant="soft" color="blue">Regulatory</Badge>
                 </Flex>
               </Table.Cell>
               <Table.Cell>
-                <Flex gap="2">
-                  {auditor.certifications.map(cert => (
-                    <Badge key={cert} variant="outline" color="blue">
+                <Flex gap="1" wrap="wrap" style={{ maxWidth: '250px' }}>
+                  {auditor.certifications.slice(0, 3).map(cert => (
+                    <Badge key={cert} variant="outline" color="green">
                       {cert}
                     </Badge>
                   ))}
+                  {auditor.certifications.length > 3 && (
+                    <Badge variant="soft">+{auditor.certifications.length - 3} more</Badge>
+                  )}
                 </Flex>
               </Table.Cell>
               <Table.Cell>
@@ -271,9 +290,9 @@ const QualityAuditors = () => {
               </Table.Cell>
               <Table.Cell>
                 <Flex gap="2">
-                  <Badge color="red">{auditor.findings.critical} {t('critical')}</Badge>
-                  <Badge color="amber">{auditor.findings.major} {t('major')}</Badge>
-                  <Badge color="gray">{auditor.findings.minor} {t('minor')}</Badge>
+                  <Badge color="red">{auditor.findings.critical} Critical</Badge>
+                  <Badge color="amber">{auditor.findings.major} Major</Badge>
+                  <Badge color="gray">{auditor.findings.minor} Minor</Badge>
                 </Flex>
               </Table.Cell>
               <Table.Cell>
@@ -282,7 +301,7 @@ const QualityAuditors = () => {
               </Table.Cell>
               <Table.Cell>
                 <Badge
-                  color={auditor.capaStatus === t('completed') ? 'green' : 'blue'}
+                  color={auditor.capaStatus === 'Completed' ? 'green' : 'blue'}
                   variant="soft"
                 >
                   {auditor.capaStatus}
@@ -291,17 +310,17 @@ const QualityAuditors = () => {
               <Table.Cell>
                 <DropdownMenu.Root>
                   <DropdownMenu.Trigger>
-                    <Button variant="ghost">{t('actions')}</Button>
+                    <Button variant="ghost">Actions</Button>
                   </DropdownMenu.Trigger>
                   <DropdownMenu.Content>
                     <DropdownMenu.Item onSelect={() => setSelectedAction({ type: 'report', auditorId: auditor.id })}>
-                      <FileTextIcon /> {t('audit-report')}
+                      <FileTextIcon /> Audit Report
                     </DropdownMenu.Item>
                     <DropdownMenu.Item onSelect={() => setSelectedAction({ type: 'approve', auditorId: auditor.id })}>
-                      <CheckCircledIcon /> {t('approve-capa')}
+                      <CheckCircledIcon /> Approve CAPA
                     </DropdownMenu.Item>
                     <DropdownMenu.Item onSelect={() => setSelectedAction({ type: 'finding', auditorId: auditor.id })}>
-                      <CrossCircledIcon /> {t('raise-finding')}
+                      <CrossCircledIcon /> Raise Finding
                     </DropdownMenu.Item>
                   </DropdownMenu.Content>
                 </DropdownMenu.Root>
