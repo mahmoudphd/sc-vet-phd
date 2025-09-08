@@ -22,6 +22,8 @@ import {
   Cross2Icon,
   CheckIcon,
   EyeOpenIcon,
+  BarChartIcon,
+  MapPinIcon,
 } from "@radix-ui/react-icons";
 import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
@@ -33,17 +35,13 @@ import { toast } from "sonner";
 // Validation Schemas
 const distributorSchema = z.object({
   name: z.string().min(1, "Name is required"),
-  region: z.string().min(1, "Region is required"),
+  location: z.string().min(1, "Location is required"),
   compliance: z.enum(["gdp-certified", "pending"]),
   licenses: z.enum(["active", "inactive"]),
   onTimeDelivery: z.number().min(0).max(100),
   lastAudit: z.string().date(),
   contact: z.string().email(),
   phone: z.string().min(10)
-});
-
-const regionSchema = z.object({
-  name: z.string().min(1, "Name is required")
 });
 
 const reportSchema = z.object({
@@ -60,7 +58,7 @@ const reportSchema = z.object({
 interface Distributor {
   id: string;
   name: string;
-  region: string;
+  location: string;
   compliance: "gdp-certified" | "pending";
   licenses: "active" | "inactive";
   onTimeDelivery: number;
@@ -74,7 +72,6 @@ const Distributors = () => {
 
   // Dialog states
   const [isDistributorModalOpen, setIsDistributorModalOpen] = useState(false);
-  const [isRegionModalOpen, setIsRegionModalOpen] = useState(false);
   const [isComplianceReportModalOpen, setIsComplianceReportModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedDistributor, setSelectedDistributor] = useState<Distributor | null>(null);
@@ -91,8 +88,8 @@ const Distributors = () => {
   const [distributors, setDistributors] = useState<Distributor[]>([
     {
       id: 'DIST-001',
-      name: 'Distributor 1',
-      region: 'North Region',
+      name: 'Pharma Distributors Inc.',
+      location: 'Cairo, Egypt',
       compliance: 'gdp-certified',
       licenses: 'active',
       onTimeDelivery: 96,
@@ -102,8 +99,8 @@ const Distributors = () => {
     },
     {
       id: 'DIST-002',
-      name: 'Distributor 2',
-      region: 'South Region',
+      name: 'MediSupply Co.',
+      location: 'Alexandria, Egypt',
       compliance: 'pending',
       licenses: 'inactive',
       onTimeDelivery: 87,
@@ -113,22 +110,48 @@ const Distributors = () => {
     },
     {
       id: 'DIST-003',
-      name: 'Distributor 3',
-      region: 'East Region',
+      name: 'HealthCare Logistics',
+      location: 'Giza, Egypt',
       compliance: 'gdp-certified',
       licenses: 'active',
       onTimeDelivery: 99,
       lastAudit: '2025-03-30',
       contact: 'dist3@example.com',
       phone: '+201000000003'
+    },
+    {
+      id: 'DIST-004',
+      name: 'BioPharm Distributors',
+      location: 'Luxor, Egypt',
+      compliance: 'gdp-certified',
+      licenses: 'active',
+      onTimeDelivery: 92,
+      lastAudit: '2025-01-15',
+      contact: 'dist4@example.com',
+      phone: '+201000000004'
+    },
+    {
+      id: 'DIST-005',
+      name: 'Prime Medical Supplies',
+      location: 'Aswan, Egypt',
+      compliance: 'pending',
+      licenses: 'active',
+      onTimeDelivery: 78,
+      lastAudit: '2024-11-05',
+      contact: 'dist5@example.com',
+      phone: '+201000000005'
+    },
+    {
+      id: 'DIST-006',
+      name: 'Elite Pharma Network',
+      location: 'Port Said, Egypt',
+      compliance: 'gdp-certified',
+      licenses: 'inactive',
+      onTimeDelivery: 85,
+      lastAudit: '2024-10-18',
+      contact: 'dist6@example.com',
+      phone: '+201000000006'
     }
-  ]);
-
-  const [regions, setRegions] = useState<string[]>([
-    'North Region',
-    'South Region',
-    'East Region',
-    'West Region'
   ]);
 
   // Form handlers
@@ -136,7 +159,7 @@ const Distributors = () => {
     resolver: zodResolver(distributorSchema),
     defaultValues: {
       name: "",
-      region: "",
+      location: "",
       compliance: "pending",
       licenses: "active",
       onTimeDelivery: 100,
@@ -144,10 +167,6 @@ const Distributors = () => {
       contact: "",
       phone: ""
     }
-  });
-
-  const regionForm = useForm<z.infer<typeof regionSchema>>({
-    resolver: zodResolver(regionSchema)
   });
 
   const reportForm = useForm<z.infer<typeof reportSchema>>({
@@ -180,21 +199,11 @@ const Distributors = () => {
       };
       setDistributors(prev => [...prev, newDistributor]);
       setIsDistributorModalOpen(false);
+      distributorForm.reset();
       toast.success("Distributor added successfully");
     } catch (error) {
       toast.error("Error adding distributor");
     }
-  };
-
-  const handleAddRegion = async (data: z.infer<typeof regionSchema>) => {
-    if (regions.includes(data.name)) {
-      toast.error("Region already exists");
-      return;
-    }
-    setRegions(prev => [...prev, data.name]);
-    toast.success("Region added successfully");
-    setIsRegionModalOpen(false);
-    regionForm.reset();
   };
 
   const handleGenerateReport = async (data: z.infer<typeof reportSchema>) => {
@@ -267,6 +276,25 @@ const Distributors = () => {
     };
   }, [distributors]);
 
+  // Performance distribution data
+  const performanceDistribution = useMemo(() => {
+    const distribution = {
+      excellent: 0, // 95-100%
+      good: 0,      // 85-94%
+      average: 0,   // 75-84%
+      poor: 0       // <75%
+    };
+    
+    distributors.forEach(distributor => {
+      if (distributor.onTimeDelivery >= 95) distribution.excellent++;
+      else if (distributor.onTimeDelivery >= 85) distribution.good++;
+      else if (distributor.onTimeDelivery >= 75) distribution.average++;
+      else distribution.poor++;
+    });
+    
+    return distribution;
+  }, [distributors]);
+
   return (
     <Box p="6" className="flex-1">
       {/* Header with actions */}
@@ -275,9 +303,6 @@ const Distributors = () => {
         <Flex gap="3">
           <Button variant="soft" onClick={() => setIsDistributorModalOpen(true)}>
             <CheckCircledIcon /> Add Distributor
-          </Button>
-          <Button variant="soft" onClick={() => setIsRegionModalOpen(true)}>
-            <GlobeIcon /> Add Region
           </Button>
           <Button variant="soft" onClick={() => setIsComplianceReportModalOpen(true)}>
             <DownloadIcon /> Compliance Report
@@ -289,14 +314,14 @@ const Distributors = () => {
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Certified Partners</Text>
+            <Text size="2">Total Distributors</Text>
             <Heading size="7">{distributors.length}</Heading>
             <Text size="1" style={{color: "green"}}>All compliant with regulations</Text>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Avg. Delivery Time</Text>
+            <Text size="2">Avg. Delivery Rate</Text>
             <Heading size="7">{averageDelivery.toFixed(1)}%</Heading>
           </Flex>
         </Card>
@@ -349,12 +374,53 @@ const Distributors = () => {
         </Flex>
       </Card>
 
-      {/* Distributors Table - Simplified */}
+      {/* Performance Distribution Chart */}
+      <Card mb="5">
+        <Flex direction="column" gap="3">
+          <Flex align="center" gap="2">
+            <BarChartIcon />
+            <Heading size="4">Performance Distribution</Heading>
+          </Flex>
+          <Grid columns="4" gap="3">
+            <Card variant="classic">
+              <Flex direction="column" align="center" gap="1">
+                <Text size="2">Excellent</Text>
+                <Heading size="7" style={{color: "green"}}>{performanceDistribution.excellent}</Heading>
+                <Text size="1">95-100% OTD</Text>
+              </Flex>
+            </Card>
+            <Card variant="classic">
+              <Flex direction="column" align="center" gap="1">
+                <Text size="2">Good</Text>
+                <Heading size="7" style={{color: "blue"}}>{performanceDistribution.good}</Heading>
+                <Text size="1">85-94% OTD</Text>
+              </Flex>
+            </Card>
+            <Card variant="classic">
+              <Flex direction="column" align="center" gap="1">
+                <Text size="2">Average</Text>
+                <Heading size="7" style={{color: "orange"}}>{performanceDistribution.average}</Heading>
+                <Text size="1">75-84% OTD</Text>
+              </Flex>
+            </Card>
+            <Card variant="classic">
+              <Flex direction="column" align="center" gap="1">
+                <Text size="2">Poor</Text>
+                <Heading size="7" style={{color: "red"}}>{performanceDistribution.poor}</Heading>
+                <Text size="1">Below 75% OTD</Text>
+              </Flex>
+            </Card>
+          </Grid>
+        </Flex>
+      </Card>
+
+      {/* Distributors Table */}
       <Card mb="5">
         <Table.Root variant="surface">
           <Table.Header>
             <Table.Row>
               <Table.ColumnHeaderCell>Distributor</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell>Location</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Compliance</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>OTD</Table.ColumnHeaderCell>
               <Table.ColumnHeaderCell>Licenses</Table.ColumnHeaderCell>
@@ -366,28 +432,105 @@ const Distributors = () => {
             {paginatedDistributors.map((distributor) => (
               <Table.Row key={distributor.id}>
                 <Table.Cell>
-                  {distributor.name}
+                  {editingId === distributor.id ? (
+                    <TextField.Root
+                      value={tempData.name || distributor.name}
+                      onChange={(e) => handleUpdateTempData('name', e.target.value)}
+                    />
+                  ) : (
+                    distributor.name
+                  )}
                 </Table.Cell>
                 <Table.Cell>
-                  {renderComplianceBadge(distributor.compliance)}
+                  {editingId === distributor.id ? (
+                    <TextField.Root
+                      value={tempData.location || distributor.location}
+                      onChange={(e) => handleUpdateTempData('location', e.target.value)}
+                    />
+                  ) : (
+                    <Flex align="center" gap="1">
+                      <MapPinIcon />
+                      {distributor.location}
+                    </Flex>
+                  )}
                 </Table.Cell>
                 <Table.Cell>
-                  {`${distributor.onTimeDelivery}%`}
+                  {editingId === distributor.id ? (
+                    <Select.Root
+                      value={tempData.compliance || distributor.compliance}
+                      onValueChange={(value: "gdp-certified" | "pending") => handleUpdateTempData('compliance', value)}
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="gdp-certified">GDP Certified</Select.Item>
+                        <Select.Item value="pending">Pending</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  ) : (
+                    renderComplianceBadge(distributor.compliance)
+                  )}
                 </Table.Cell>
                 <Table.Cell>
-                  {renderLicenseBadge(distributor.licenses)}
+                  {editingId === distributor.id ? (
+                    <TextField.Root
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={tempData.onTimeDelivery || distributor.onTimeDelivery}
+                      onChange={(e) => handleUpdateTempData('onTimeDelivery', parseInt(e.target.value))}
+                    />
+                  ) : (
+                    `${distributor.onTimeDelivery}%`
+                  )}
                 </Table.Cell>
                 <Table.Cell>
-                  {distributor.lastAudit}
+                  {editingId === distributor.id ? (
+                    <Select.Root
+                      value={tempData.licenses || distributor.licenses}
+                      onValueChange={(value: "active" | "inactive") => handleUpdateTempData('licenses', value)}
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        <Select.Item value="active">Active</Select.Item>
+                        <Select.Item value="inactive">Inactive</Select.Item>
+                      </Select.Content>
+                    </Select.Root>
+                  ) : (
+                    renderLicenseBadge(distributor.licenses)
+                  )}
+                </Table.Cell>
+                <Table.Cell>
+                  {editingId === distributor.id ? (
+                    <TextField.Root
+                      type="date"
+                      value={tempData.lastAudit || distributor.lastAudit}
+                      onChange={(e) => handleUpdateTempData('lastAudit', e.target.value)}
+                    />
+                  ) : (
+                    distributor.lastAudit
+                  )}
                 </Table.Cell>
                 <Table.Cell>
                   <Flex gap="2">
-                    <Button size="1" onClick={() => handleViewDetails(distributor)}>
-                      <EyeOpenIcon /> Details
-                    </Button>
-                    <Button size="1" onClick={() => handleEdit(distributor)}>
-                      <Pencil1Icon /> Edit
-                    </Button>
+                    {editingId === distributor.id ? (
+                      <>
+                        <Button size="1" color="green" onClick={() => handleSave(distributor.id)}>
+                          <CheckIcon /> Save
+                        </Button>
+                        <Button size="1" color="red" onClick={handleCancelEdit}>
+                          <Cross2Icon /> Cancel
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button size="1" onClick={() => handleViewDetails(distributor)}>
+                          <EyeOpenIcon /> Details
+                        </Button>
+                        <Button size="1" onClick={() => handleEdit(distributor)}>
+                          <Pencil1Icon /> Edit
+                        </Button>
+                      </>
+                    )}
                   </Flex>
                 </Table.Cell>
               </Table.Row>
@@ -430,8 +573,8 @@ const Distributors = () => {
                 <Text>{selectedDistributor.name}</Text>
               </Flex>
               <Flex direction="column" gap="1">
-                <Text weight="bold">Region:</Text>
-                <Text>{selectedDistributor.region}</Text>
+                <Text weight="bold">Location:</Text>
+                <Text>{selectedDistributor.location}</Text>
               </Flex>
               <Flex direction="column" gap="1">
                 <Text weight="bold">Contact Email:</Text>
@@ -487,22 +630,72 @@ const Distributors = () => {
               )}
 
               <Controller
-                name="region"
+                name="location"
+                control={distributorForm.control}
+                render={({ field }) => (
+                  <TextField.Root placeholder="Location" {...field}>
+                    <TextField.Slot>Location</TextField.Slot>
+                  </TextField.Root>
+                )}
+              />
+              {distributorForm.formState.errors.location && (
+                <Text color="red" size="1">{distributorForm.formState.errors.location.message}</Text>
+              )}
+
+              <Controller
+                name="compliance"
                 control={distributorForm.control}
                 render={({ field }) => (
                   <Select.Root value={field.value} onValueChange={field.onChange}>
-                    <Select.Trigger placeholder="Select region" />
+                    <Select.Trigger placeholder="Select compliance status" />
                     <Select.Content>
-                      {regions.map(region => (
-                        <Select.Item key={region} value={region}>{region}</Select.Item>
-                      ))}
+                      <Select.Item value="gdp-certified">GDP Certified</Select.Item>
+                      <Select.Item value="pending">Pending</Select.Item>
                     </Select.Content>
                   </Select.Root>
                 )}
               />
-              {distributorForm.formState.errors.region && (
-                <Text color="red" size="1">{distributorForm.formState.errors.region.message}</Text>
-              )}
+
+              <Controller
+                name="licenses"
+                control={distributorForm.control}
+                render={({ field }) => (
+                  <Select.Root value={field.value} onValueChange={field.onChange}>
+                    <Select.Trigger placeholder="Select license status" />
+                    <Select.Content>
+                      <Select.Item value="active">Active</Select.Item>
+                      <Select.Item value="inactive">Inactive</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                )}
+              );
+
+              <Controller
+                name="onTimeDelivery"
+                control={distributorForm.control}
+                render={({ field }) => (
+                  <TextField.Root 
+                    type="number" 
+                    min="0" 
+                    max="100" 
+                    placeholder="On-time delivery rate" 
+                    {...field}
+                    onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  >
+                    <TextField.Slot>OTD %</TextField.Slot>
+                  </TextField.Root>
+                )}
+              />
+
+              <Controller
+                name="lastAudit"
+                control={distributorForm.control}
+                render={({ field }) => (
+                  <TextField.Root type="date" {...field}>
+                    <TextField.Slot>Last Audit</TextField.Slot>
+                  </TextField.Root>
+                )}
+              />
 
               <Controller
                 name="contact"
@@ -532,35 +725,6 @@ const Distributors = () => {
                   Save Distributor
                 </Button>
               </Flex>
-            </Flex>
-          </form>
-        </Dialog.Content>
-      </Dialog.Root>
-
-      {/* Add Region Modal */}
-      <Dialog.Root open={isRegionModalOpen} onOpenChange={setIsRegionModalOpen}>
-        <Dialog.Content>
-          <Dialog.Title>Add New Region</Dialog.Title>
-          <form onSubmit={regionForm.handleSubmit(handleAddRegion)}>
-            <Controller
-              name="name"
-              control={regionForm.control}
-              render={({ field }) => (
-                <TextField.Root placeholder="Region name" {...field}>
-                  <TextField.Slot>Name</TextField.Slot>
-                </TextField.Root>
-              )}
-            />
-            {regionForm.formState.errors.name && (
-              <Text color="red" size="1">{regionForm.formState.errors.name.message}</Text>
-            )}
-            <Flex justify="end" mt="3" gap="2">
-              <Button type="button" variant="soft" onClick={() => setIsRegionModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit" color="green">
-                Save Region
-              </Button>
             </Flex>
           </form>
         </Dialog.Content>
