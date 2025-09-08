@@ -184,9 +184,10 @@ const SupplierManagement = () => {
     setTempData({});
   };
 
-  const handleUpdateTempData = (field: string, value: any) => {
-    setTempData(prev => ({ ...prev, [field]: value }));
+    const handleUpdateTempData = (field: string, value: any) => {
+    setTempData((prev: any) => ({ ...prev, [field]: value }));
   };
+
 
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
