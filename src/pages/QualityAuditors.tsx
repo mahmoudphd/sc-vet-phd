@@ -28,8 +28,33 @@ import {
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
+interface Authority {
+  id: string;
+  name: string;
+  certifications: string[];
+  lastAudit: string;
+  findings: {
+    critical: number;
+    major: number;
+    minor: number;
+  };
+  complianceScore: number;
+  nextAudit: string;
+  capaStatus: string;
+  country: string;
+  accreditationStatus: string;
+}
+
+interface TempData extends Partial<Authority> {
+  findings?: {
+    critical: number;
+    major: number;
+    minor: number;
+  };
+}
+
 const RegulatoryAuthorityManagement = () => {
-  const [authorities, setAuthorities] = useState([
+  const [authorities, setAuthorities] = useState<Authority[]>([
     {
       id: 'AUD-001',
       name: 'Egyptian Drug Authority (EDA)',
@@ -51,8 +76,8 @@ const RegulatoryAuthorityManagement = () => {
     }
   ]);
 
-  const [editingId, setEditingId] = useState(null);
-  const [tempData, setTempData] = useState({});
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [tempData, setTempData] = useState<TempData>({});
   const [scheduleAuditOpen, setScheduleAuditOpen] = useState(false);
   const [complianceReportOpen, setComplianceReportOpen] = useState(false);
 
@@ -64,14 +89,14 @@ const RegulatoryAuthorityManagement = () => {
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
   };
 
-  const handleEdit = (authority) => {
+  const handleEdit = (authority: Authority) => {
     setEditingId(authority.id);
     setTempData({ ...authority });
   };
 
-  const handleSave = (id) => {
+  const handleSave = (id: string) => {
     setAuthorities(authorities.map(a => 
-      a.id === id ? { ...a, ...tempData } : a
+      a.id === id ? { ...a, ...tempData } as Authority : a
     ));
     setEditingId(null);
     setTempData({});
@@ -82,11 +107,11 @@ const RegulatoryAuthorityManagement = () => {
     setTempData({});
   };
 
-  const handleUpdateTempData = (field, value) => {
+  const handleUpdateTempData = (field: keyof Authority, value: any) => {
     setTempData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleUpdateFindings = (type, value) => {
+  const handleUpdateFindings = (type: 'critical' | 'major' | 'minor', value: string) => {
     setTempData(prev => ({
       ...prev,
       findings: {
@@ -96,8 +121,8 @@ const RegulatoryAuthorityManagement = () => {
     }));
   };
 
-  const renderStatusBadge = (status) => {
-    const statusConfig = {
+  const renderStatusBadge = (status: string) => {
+    const statusConfig: Record<string, { color: 'green' | 'blue' | 'orange' | 'red' | 'gray'; text: string }> = {
       'Completed': { color: 'green', text: 'Completed' },
       'In Progress': { color: 'blue', text: 'In Progress' },
       'Under Review': { color: 'orange', text: 'Under Review' },
@@ -108,26 +133,26 @@ const RegulatoryAuthorityManagement = () => {
     return <Badge color={config.color}>{config.text}</Badge>;
   };
 
-  const renderFindings = (findings, isEditing = false) => {
+  const renderFindings = (findings: { critical: number; major: number; minor: number }, isEditing: boolean = false) => {
     if (isEditing) {
       return (
         <Flex direction="column" gap="2">
           <TextField.Root
             size="1"
             placeholder="Critical"
-            value={tempData.findings?.critical || ''}
+            value={tempData.findings?.critical?.toString() || ''}
             onChange={(e) => handleUpdateFindings('critical', e.target.value)}
           />
           <TextField.Root
             size="1"
             placeholder="Major"
-            value={tempData.findings?.major || ''}
+            value={tempData.findings?.major?.toString() || ''}
             onChange={(e) => handleUpdateFindings('major', e.target.value)}
           />
           <TextField.Root
             size="1"
             placeholder="Minor"
-            value={tempData.findings?.minor || ''}
+            value={tempData.findings?.minor?.toString() || ''}
             onChange={(e) => handleUpdateFindings('minor', e.target.value)}
           />
         </Flex>
@@ -244,7 +269,7 @@ const RegulatoryAuthorityManagement = () => {
                   <TextField.Root
                     placeholder="Certifications (comma separated)"
                     value={tempData.certifications?.join(', ') || authority.certifications.join(', ')}
-                    onChange={(e) => handleUpdateTempData('certifications', e.target.value.split(',').map(c => c.trim()))}
+                    onChange={(e) => handleUpdateTempData('certifications', e.target.value.split(',').map((c: string) => c.trim()))}
                   />
                 ) : (
                   <Flex gap="1" wrap="wrap" style={{ maxWidth: '250px' }}>
@@ -274,7 +299,7 @@ const RegulatoryAuthorityManagement = () => {
                 )}
               </Table.Cell>
               <Table.Cell>
-                {renderFindings(editingId === authority.id ? tempData.findings || authority.findings : authority.findings, editingId === authority.id)}
+                {renderFindings(editingId === authority.id ? (tempData.findings || authority.findings) : authority.findings, editingId === authority.id)}
               </Table.Cell>
               <Table.Cell>
                 {editingId === authority.id ? (
