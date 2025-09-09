@@ -102,6 +102,45 @@ const RegulatoryAuthorityManagement = () => {
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
   };
 
+  const certificationDetails = {
+    'WHO GBT': {
+      title: 'WHO Good Practices for Pharmaceutical Quality Control Laboratories',
+      description: 'International standards for quality control laboratories in the pharmaceutical sector',
+      validity: '2025-12-31',
+      scope: 'Pharmaceutical Quality Control'
+    },
+    'OMCL Network': {
+      title: 'Official Medicines Control Laboratories Network',
+      description: 'European network of official medicines control laboratories',
+      validity: '2025-12-31',
+      scope: 'Medicines Control'
+    },
+    'ISO 9001:2015': {
+      title: 'Quality Management Systems',
+      description: 'International standard for quality management systems',
+      validity: '2025-12-31',
+      scope: 'Quality Management'
+    },
+    'ISO/IEC 17025:2017': {
+      title: 'General Requirements for the Competence of Testing and Calibration Laboratories',
+      description: 'International standard for laboratory competence',
+      validity: '2025-12-31',
+      scope: 'Laboratory Testing'
+    },
+    'ISO/IEC 17043:2010': {
+      title: 'Conformity Assessment - General Requirements for Proficiency Testing',
+      description: 'International standard for proficiency testing',
+      validity: '2025-12-31',
+      scope: 'Proficiency Testing'
+    },
+    'ISO/IEC 17034:2016': {
+      title: 'General Requirements for the Competence of Reference Material Producers',
+      description: 'International standard for reference material producers',
+      validity: '2025-12-31',
+      scope: 'Reference Materials'
+    }
+  };
+
   const handleEdit = (authority: Authority) => {
     setEditingId(authority.id);
     setTempData({ ...authority });
@@ -178,7 +217,8 @@ const RegulatoryAuthorityManagement = () => {
       <Badge 
         variant="soft" 
         color="green"
-        style={{ margin: '2px' }}
+        style={{ margin: '2px', cursor: 'pointer' }}
+        onClick={() => setSelectedCertification(certification)}
       >
         {certification}
       </Badge>
@@ -302,7 +342,7 @@ const RegulatoryAuthorityManagement = () => {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Root>
+      </Table.Row>
 
       {/* Submit to Blockchain Button */}
       <Flex justify="center" mt="6">
@@ -320,6 +360,59 @@ const RegulatoryAuthorityManagement = () => {
           <CubeIcon /> Submit to Blockchain
         </Button>
       </Flex>
+
+      {/* Certification Details Dialog */}
+      <Dialog.Root open={!!selectedCertification} onOpenChange={(open) => {
+        if (!open) setSelectedCertification(null);
+      }}>
+        <Dialog.Content style={{ maxWidth: 600 }}>
+          {selectedCertification && (
+            <>
+              <Dialog.Title>
+                <Flex align="center" gap="2">
+                  <FileTextIcon />
+                  {selectedCertification} - Certification Details
+                </Flex>
+              </Dialog.Title>
+              
+              <Flex direction="column" gap="4">
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">Full Title:</Text>
+                  <Text>{certificationDetails[selectedCertification as keyof typeof certificationDetails]?.title}</Text>
+                </Flex>
+
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">Description:</Text>
+                  <Text>{certificationDetails[selectedCertification as keyof typeof certificationDetails]?.description}</Text>
+                </Flex>
+
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">Scope:</Text>
+                  <Text>{certificationDetails[selectedCertification as keyof typeof certificationDetails]?.scope}</Text>
+                </Flex>
+
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">Validity:</Text>
+                  <Badge color="green" variant="soft">
+                    Valid until {certificationDetails[selectedCertification as keyof typeof certificationDetails]?.validity}
+                  </Badge>
+                </Flex>
+
+                <Flex direction="column" gap="1">
+                  <Text weight="bold">Status:</Text>
+                  <Badge color="green">Active</Badge>
+                </Flex>
+              </Flex>
+
+              <Flex gap="3" mt="4" justify="end">
+                <Button variant="soft" onClick={() => setSelectedCertification(null)}>
+                  Close
+                </Button>
+              </Flex>
+            </>
+          )}
+        </Dialog.Content>
+      </Dialog.Root>
 
       {/* Schedule Audit Dialog */}
       <Dialog.Root open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
