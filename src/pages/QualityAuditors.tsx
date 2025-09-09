@@ -13,7 +13,8 @@ import {
   Dialog,
   TextField,
   Select,
-  AlertDialog
+  AlertDialog,
+  ScrollArea
 } from '@radix-ui/themes';
 import {
   MagnifyingGlassIcon,
@@ -27,7 +28,11 @@ import {
   CheckIcon,
   Cross2Icon,
   CubeIcon,
-  LockClosedIcon
+  LockClosedIcon,
+  GlobeIcon,
+  ShieldIcon,
+  StarIcon,
+  CertificateIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -57,18 +62,18 @@ interface TempData extends Partial<Omit<Authority, 'findings'>> {
   };
 }
 
-const EDAAuthorityManagement = () => {
+const RegulatoryAuthorityManagement = () => {
   const [authorities, setAuthorities] = useState<Authority[]>([
     {
       id: 'EDA-001',
       name: 'Egyptian Drug Authority (EDA)',
       certifications: [
-        'WHO GBT Certification', 
-        'OMCL Network Membership', 
-        'ISO 9001:2015 Quality Management',
-        'ISO/IEC 17025:2017 Laboratory Competence',
-        'ISO/IEC 17043:2010 Proficiency Testing',
-        'ISO/IEC 17034:2016 Reference Materials'
+        'WHO GBT', 
+        'OMCL Network', 
+        'ISO 9001:2015',
+        'ISO/IEC 17025:2017',
+        'ISO/IEC 17043:2010',
+        'ISO/IEC 17034:2016'
       ],
       lastAudit: '2024-03-15',
       findings: { critical: 0, major: 2, minor: 4 },
@@ -85,6 +90,7 @@ const EDAAuthorityManagement = () => {
   const [tempData, setTempData] = useState<TempData>({});
   const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedCertification, setSelectedCertification] = useState<string | null>(null);
 
   // Calculate dynamic metrics
   const metrics = {
@@ -95,6 +101,45 @@ const EDAAuthorityManagement = () => {
     majorFindings: authorities.reduce((sum, a) => sum + a.findings.major, 0),
     minorFindings: authorities.reduce((sum, a) => sum + a.findings.minor, 0),
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
+  };
+
+  const certificationDetails = {
+    'WHO GBT': {
+      title: 'WHO Good Practices for Pharmaceutical Quality Control Laboratories',
+      description: 'International standards for quality control laboratories in the pharmaceutical sector',
+      icon: <GlobeIcon />,
+      color: 'blue'
+    },
+    'OMCL Network': {
+      title: 'Official Medicines Control Laboratories Network',
+      description: 'European network of official medicines control laboratories',
+      icon: <ShieldIcon />,
+      color: 'purple'
+    },
+    'ISO 9001:2015': {
+      title: 'Quality Management Systems',
+      description: 'International standard for quality management systems',
+      icon: <StarIcon />,
+      color: 'green'
+    },
+    'ISO/IEC 17025:2017': {
+      title: 'General Requirements for the Competence of Testing and Calibration Laboratories',
+      description: 'International standard for laboratory competence',
+      icon: <CertificateIcon />,
+      color: 'orange'
+    },
+    'ISO/IEC 17043:2010': {
+      title: 'Conformity Assessment - General Requirements for Proficiency Testing',
+      description: 'International standard for proficiency testing',
+      icon: <CheckCircledIcon />,
+      color: 'red'
+    },
+    'ISO/IEC 17034:2016': {
+      title: 'General Requirements for the Competence of Reference Material Producers',
+      description: 'International standard for reference material producers',
+      icon: <FileTextIcon />,
+      color: 'yellow'
+    }
   };
 
   const handleEdit = (authority: Authority) => {
@@ -131,27 +176,9 @@ const EDAAuthorityManagement = () => {
     setTempData({});
   };
 
-  const handleUpdateTempData = (field: keyof Authority, value: any) => {
-    setTempData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleUpdateFindings = (type: 'critical' | 'major' | 'minor', value: string) => {
-    const numValue = parseInt(value) || 0;
-    setTempData(prev => ({
-      ...prev,
-      findings: {
-        critical: prev.findings?.critical ?? 0,
-        major: prev.findings?.major ?? 0,
-        minor: prev.findings?.minor ?? 0,
-        [type]: numValue
-      }
-    }));
-  };
-
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
     try {
-      // Simulate blockchain submission
       await new Promise(resolve => setTimeout(resolve, 2000));
       alert('EDA data successfully submitted to blockchain!');
     } catch (error) {
@@ -174,45 +201,24 @@ const EDAAuthorityManagement = () => {
     return <Badge color={config.color}>{config.text}</Badge>;
   };
 
-  const renderFindings = (findings: { critical: number; major: number; minor: number }, isEditing: boolean = false) => {
-    if (isEditing) {
-      return (
-        <Flex direction="column" gap="2">
-          <TextField.Root
-            size="1"
-            placeholder="Critical"
-            value={tempData.findings?.critical?.toString() || ''}
-            onChange={(e) => handleUpdateFindings('critical', e.target.value)}
-          />
-          <TextField.Root
-            size="1"
-            placeholder="Major"
-            value={tempData.findings?.major?.toString() || ''}
-            onChange={(e) => handleUpdateFindings('major', e.target.value)}
-          />
-          <TextField.Root
-            size="1"
-            placeholder="Minor"
-            value={tempData.findings?.minor?.toString() || ''}
-            onChange={(e) => handleUpdateFindings('minor', e.target.value)}
-          />
-        </Flex>
-      );
-    }
-
+  const renderCertificationBadge = (certification: string) => {
+    const config = certificationDetails[certification as keyof typeof certificationDetails];
     return (
-      <Flex direction="column" gap="1">
-        {findings.critical > 0 && <Text size="1" color="red">Critical: {findings.critical}</Text>}
-        {findings.major > 0 && <Text size="1" color="orange">Major: {findings.major}</Text>}
-        {findings.minor > 0 && <Text size="1" color="yellow">Minor: {findings.minor}</Text>}
-      </Flex>
+      <Badge 
+        variant="soft" 
+        color={config?.color as any || 'gray'}
+        style={{ cursor: 'pointer', margin: '2px' }}
+        onClick={() => setSelectedCertification(certification)}
+      >
+        {certification}
+      </Badge>
     );
   };
 
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Egyptian Drug Authority (EDA) Management</Heading>
+        <Heading size="6">Regulatory Authority Management System</Heading>
         <Flex gap="3">
           <Button variant="soft">
             <DownloadIcon /> Compliance Report
@@ -252,6 +258,28 @@ const EDAAuthorityManagement = () => {
         </Card>
       </Grid>
 
+      {/* Certifications Overview */}
+      <Card mb="5">
+        <Heading size="4" mb="3">International Certifications</Heading>
+        <Grid columns="3" gap="3">
+          {authorities[0].certifications.map((certification) => {
+            const config = certificationDetails[certification as keyof typeof certificationDetails];
+            return (
+              <Card key={certification} variant="classic">
+                <Flex align="center" gap="2" mb="2">
+                  {config?.icon}
+                  <Text weight="bold">{certification}</Text>
+                </Flex>
+                <Text size="2">{config?.description}</Text>
+                <Badge color="green" variant="soft" mt="2">
+                  Valid until 2025-12-31
+                </Badge>
+              </Card>
+            );
+          })}
+        </Grid>
+      </Card>
+
       {/* Editable Table */}
       <Table.Root variant="surface" className="mt-6">
         <Table.Header>
@@ -270,120 +298,55 @@ const EDAAuthorityManagement = () => {
           {authorities.map((authority) => (
             <Table.Row key={authority.id}>
               <Table.Cell>
-                {editingId === authority.id ? (
-                  <TextField.Root
-                    value={tempData.name || authority.name}
-                    onChange={(e) => handleUpdateTempData('name', e.target.value)}
-                  />
-                ) : (
-                  <Flex align="center" gap="2">
-                    <PersonIcon className="text-blue-600" />
-                    {authority.name}
-                    <Badge variant="soft" color="blue">Regulatory</Badge>
-                  </Flex>
-                )}
+                <Flex align="center" gap="2">
+                  <PersonIcon className="text-blue-600" />
+                  {authority.name}
+                  <Badge variant="soft" color="blue">Regulatory</Badge>
+                </Flex>
               </Table.Cell>
               <Table.Cell>
-                {editingId === authority.id ? (
-                  <TextField.Root
-                    placeholder="Certifications (comma separated)"
-                    value={tempData.certifications?.join(', ') || authority.certifications.join(', ')}
-                    onChange={(e) => handleUpdateTempData('certifications', e.target.value.split(',').map((c: string) => c.trim()))}
-                  />
-                ) : (
-                  <Flex direction="column" gap="1" style={{ maxWidth: '300px' }}>
-                    {authority.certifications.map((cert, index) => (
-                      <Badge key={index} variant="outline" color="green" style={{ margin: '2px' }}>
-                        {cert}
-                      </Badge>
+                <ScrollArea style={{ maxHeight: '120px', maxWidth: '300px' }}>
+                  <Flex direction="column" gap="1">
+                    {authority.certifications.map((certification) => (
+                      <div key={certification}>
+                        {renderCertificationBadge(certification)}
+                      </div>
                     ))}
                   </Flex>
-                )}
+                </ScrollArea>
               </Table.Cell>
               <Table.Cell>
-                {editingId === authority.id ? (
-                  <TextField.Root
-                    type="date"
-                    value={tempData.lastAudit || authority.lastAudit}
-                    onChange={(e) => handleUpdateTempData('lastAudit', e.target.value)}
-                  />
-                ) : (
-                  <Flex align="center" gap="2">
-                    <CalendarIcon />
-                    {authority.lastAudit}
-                  </Flex>
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                {renderFindings(editingId === authority.id ? (tempData.findings || authority.findings) : authority.findings, editingId === authority.id)}
-              </Table.Cell>
-              <Table.Cell>
-                {editingId === authority.id ? (
-                  <TextField.Root
-                    type="number"
-                    min="0"
-                    max="100"
-                    value={tempData.complianceScore || authority.complianceScore}
-                    onChange={(e) => handleUpdateTempData('complianceScore', parseFloat(e.target.value))}
-                  />
-                ) : (
-                  <Flex align="center" gap="2">
-                    <Progress value={authority.complianceScore} />
-                    <Text>{authority.complianceScore}%</Text>
-                  </Flex>
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                {editingId === authority.id ? (
-                  <Select.Root
-                    value={tempData.capaStatus || authority.capaStatus}
-                    onValueChange={(value) => handleUpdateTempData('capaStatus', value)}
-                  >
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="Completed">Completed</Select.Item>
-                      <Select.Item value="In Progress">In Progress</Select.Item>
-                      <Select.Item value="Under Review">Under Review</Select.Item>
-                      <Select.Item value="Not Started">Not Started</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-                ) : (
-                  renderStatusBadge(authority.capaStatus)
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                {editingId === authority.id ? (
-                  <TextField.Root
-                    type="date"
-                    value={tempData.nextAudit || authority.nextAudit}
-                    onChange={(e) => handleUpdateTempData('nextAudit', e.target.value)}
-                  />
-                ) : (
-                  <Flex align="center" gap="2">
-                    <CalendarIcon />
-                    {authority.nextAudit}
-                  </Flex>
-                )}
-              </Table.Cell>
-              <Table.Cell>
-                <Flex gap="2">
-                  {editingId === authority.id ? (
-                    <>
-                      <Button size="1" color="green" onClick={() => handleSave(authority.id)}>
-                        <CheckIcon /> Save
-                      </Button>
-                      <Button size="1" color="red" onClick={handleCancelEdit}>
-                        <Cross2Icon /> Cancel
-                      </Button>
-                    </>
-                  ) : (
-                    <>
-                      <Button size="1" onClick={() => handleEdit(authority)}>
-                        <Pencil1Icon /> Edit
-                      </Button>
-                    </>
-                  )}
+                <Flex align="center" gap="2">
+                  <CalendarIcon />
+                  {authority.lastAudit}
                 </Flex>
+              </Table.Cell>
+              <Table.Cell>
+                <Flex direction="column" gap="1">
+                  {authority.findings.critical > 0 && <Text size="1" color="red">Critical: {authority.findings.critical}</Text>}
+                  {authority.findings.major > 0 && <Text size="1" color="orange">Major: {authority.findings.major}</Text>}
+                  {authority.findings.minor > 0 && <Text size="1" color="yellow">Minor: {authority.findings.minor}</Text>}
+                </Flex>
+              </Table.Cell>
+              <Table.Cell>
+                <Flex align="center" gap="2">
+                  <Progress value={authority.complianceScore} />
+                  <Text>{authority.complianceScore}%</Text>
+                </Flex>
+              </Table.Cell>
+              <Table.Cell>
+                {renderStatusBadge(authority.capaStatus)}
+              </Table.Cell>
+              <Table.Cell>
+                <Flex align="center" gap="2">
+                  <CalendarIcon />
+                  {authority.nextAudit}
+                </Flex>
+              </Table.Cell>
+              <Table.Cell>
+                <Button size="1" onClick={() => handleEdit(authority)}>
+                  <Pencil1Icon /> Edit
+                </Button>
               </Table.Cell>
             </Table.Row>
           ))}
@@ -403,9 +366,36 @@ const EDAAuthorityManagement = () => {
             fontSize: '16px'
           }}
         >
-          <CubeIcon /> Submit EDA Data to Blockchain
+          <CubeIcon /> Submit to Blockchain
         </Button>
       </Flex>
+
+      {/* Certification Details Dialog */}
+      <Dialog.Root open={!!selectedCertification} onOpenChange={() => setSelectedCertification(null)}>
+        <Dialog.Content>
+          {selectedCertification && (
+            <>
+              <Dialog.Title>
+                <Flex align="center" gap="2">
+                  {certificationDetails[selectedCertification as keyof typeof certificationDetails]?.icon}
+                  {selectedCertification}
+                </Flex>
+              </Dialog.Title>
+              <Dialog.Description>
+                {certificationDetails[selectedCertification as keyof typeof certificationDetails]?.description}
+              </Dialog.Description>
+              <Flex direction="column" gap="3" mt="4">
+                <Text weight="bold">Full Title:</Text>
+                <Text>{certificationDetails[selectedCertification as keyof typeof certificationDetails]?.title}</Text>
+                <Text weight="bold">Status:</Text>
+                <Badge color="green">Active - Valid until 2025-12-31</Badge>
+                <Text weight="bold">Scope:</Text>
+                <Text>Egyptian Drug Authority - All departments</Text>
+              </Flex>
+            </>
+          )}
+        </Dialog.Content>
+      </Dialog.Root>
 
       {/* Blockchain Submission Dialog */}
       <AlertDialog.Root open={isBlockchainDialogOpen}>
@@ -417,8 +407,8 @@ const EDAAuthorityManagement = () => {
             </Flex>
           </AlertDialog.Title>
           <AlertDialog.Description size="2" mb="4">
-            Are you sure you want to submit Egyptian Drug Authority data to the blockchain? 
-            This action will create an immutable record of all EDA accreditations and compliance data.
+            Are you sure you want to submit regulatory authority data to the blockchain? 
+            This action will create an immutable record of all accreditations and compliance data.
           </AlertDialog.Description>
           
           <Flex direction="column" gap="3" mb="4">
@@ -444,11 +434,7 @@ const EDAAuthorityManagement = () => {
               disabled={isSubmitting}
               style={{ backgroundColor: '#006400' }}
             >
-              {isSubmitting ? (
-                <>Submitting to Blockchain...</>
-              ) : (
-                <>Confirm Submission</>
-              )}
+              {isSubmitting ? 'Submitting...' : 'Confirm Submission'}
             </Button>
           </Flex>
         </AlertDialog.Content>
@@ -457,4 +443,4 @@ const EDAAuthorityManagement = () => {
   );
 };
 
-export default EDAAuthorityManagement;
+export default RegulatoryAuthorityManagement;
