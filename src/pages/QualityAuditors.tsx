@@ -29,10 +29,7 @@ import {
   Cross2Icon,
   CubeIcon,
   LockClosedIcon,
-  GlobeIcon,
-  ShieldIcon,
-  StarIcon,
-  CertificateIcon
+  GlobeIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -113,19 +110,19 @@ const RegulatoryAuthorityManagement = () => {
     'OMCL Network': {
       title: 'Official Medicines Control Laboratories Network',
       description: 'European network of official medicines control laboratories',
-      icon: <ShieldIcon />,
+      icon: <CheckCircledIcon />,
       color: 'purple'
     },
     'ISO 9001:2015': {
       title: 'Quality Management Systems',
       description: 'International standard for quality management systems',
-      icon: <StarIcon />,
+      icon: <FileTextIcon />,
       color: 'green'
     },
     'ISO/IEC 17025:2017': {
       title: 'General Requirements for the Competence of Testing and Calibration Laboratories',
       description: 'International standard for laboratory competence',
-      icon: <CertificateIcon />,
+      icon: <FileTextIcon />,
       color: 'orange'
     },
     'ISO/IEC 17043:2010': {
