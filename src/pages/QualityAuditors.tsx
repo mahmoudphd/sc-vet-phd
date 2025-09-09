@@ -30,12 +30,16 @@ import {
   CubeIcon,
   LockClosedIcon,
   GlobeIcon,
-  BuildingIcon,
-  WarningIcon,
+  // Remove BuildingIcon and WarningIcon imports
   TargetIcon,
   StarIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
+
+// Replace BuildingIcon with HomeIcon (or another appropriate icon)
+import { HomeIcon } from '@radix-ui/react-icons';
+// Replace WarningIcon with ExclamationTriangleIcon
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 interface Authority {
   id: string;
@@ -253,7 +257,7 @@ const RegulatoryAuthorityManagement = () => {
         {/* Regulatory Authorities Card */}
         <Card>
           <Flex direction="column" gap="2" align="center">
-            <BuildingIcon width="24" height="24" color="blue" />
+            <HomeIcon width="24" height="24" color="blue" /> {/* Replaced BuildingIcon with HomeIcon */}
             <Text size="2" weight="bold">Regulatory Authorities</Text>
             <Heading size="7" style={{ color: '#2563eb' }}>{metrics.totalAuthorities}</Heading>
             <Text size="1">Active in system</Text>
@@ -263,7 +267,7 @@ const RegulatoryAuthorityManagement = () => {
         {/* Open Findings Card */}
         <Card>
           <Flex direction="column" gap="2" align="center">
-            <WarningIcon width="24" height="24" color="orange" />
+            <ExclamationTriangleIcon width="24" height="24" color="orange" /> {/* Replaced WarningIcon with ExclamationTriangleIcon */}
             <Text size="2" weight="bold">Open Findings</Text>
             <Heading size="7" style={{ color: '#ea580c' }}>{metrics.openFindings}</Heading>
             <Flex gap="1">
