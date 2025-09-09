@@ -86,8 +86,10 @@ const RegulatoryAuthorityManagement = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempData, setTempData] = useState<TempData>({});
   const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isScheduleDialogOpen, setIsScheduleDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedCertification, setSelectedCertification] = useState<string | null>(null);
+  const [auditDate, setAuditDate] = useState('');
 
   // Calculate dynamic metrics
   const metrics = {
@@ -98,45 +100,6 @@ const RegulatoryAuthorityManagement = () => {
     majorFindings: authorities.reduce((sum, a) => sum + a.findings.major, 0),
     minorFindings: authorities.reduce((sum, a) => sum + a.findings.minor, 0),
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
-  };
-
-  const certificationDetails = {
-    'WHO GBT': {
-      title: 'WHO Good Practices for Pharmaceutical Quality Control Laboratories',
-      description: 'International standards for quality control laboratories in the pharmaceutical sector',
-      icon: <GlobeIcon />,
-      color: 'blue'
-    },
-    'OMCL Network': {
-      title: 'Official Medicines Control Laboratories Network',
-      description: 'European network of official medicines control laboratories',
-      icon: <CheckCircledIcon />,
-      color: 'purple'
-    },
-    'ISO 9001:2015': {
-      title: 'Quality Management Systems',
-      description: 'International standard for quality management systems',
-      icon: <FileTextIcon />,
-      color: 'green'
-    },
-    'ISO/IEC 17025:2017': {
-      title: 'General Requirements for the Competence of Testing and Calibration Laboratories',
-      description: 'International standard for laboratory competence',
-      icon: <FileTextIcon />,
-      color: 'orange'
-    },
-    'ISO/IEC 17043:2010': {
-      title: 'Conformity Assessment - General Requirements for Proficiency Testing',
-      description: 'International standard for proficiency testing',
-      icon: <CheckCircledIcon />,
-      color: 'red'
-    },
-    'ISO/IEC 17034:2016': {
-      title: 'General Requirements for the Competence of Reference Material Producers',
-      description: 'International standard for reference material producers',
-      icon: <FileTextIcon />,
-      color: 'yellow'
-    }
   };
 
   const handleEdit = (authority: Authority) => {
@@ -186,6 +149,18 @@ const RegulatoryAuthorityManagement = () => {
     }
   };
 
+  const scheduleAudit = () => {
+    if (auditDate) {
+      setAuthorities(authorities.map(a => ({
+        ...a,
+        nextAudit: auditDate
+      })));
+      alert(`Audit scheduled for ${auditDate}`);
+      setIsScheduleDialogOpen(false);
+      setAuditDate('');
+    }
+  };
+
   const renderStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: 'green' | 'blue' | 'orange' | 'red' | 'gray'; text: string }> = {
       'Completed': { color: 'green', text: 'Completed' },
@@ -199,13 +174,11 @@ const RegulatoryAuthorityManagement = () => {
   };
 
   const renderCertificationBadge = (certification: string) => {
-    const config = certificationDetails[certification as keyof typeof certificationDetails];
     return (
       <Badge 
         variant="soft" 
-        color={config?.color as any || 'gray'}
-        style={{ cursor: 'pointer', margin: '2px' }}
-        onClick={() => setSelectedCertification(certification)}
+        color="green"
+        style={{ margin: '2px' }}
       >
         {certification}
       </Badge>
@@ -217,6 +190,9 @@ const RegulatoryAuthorityManagement = () => {
       <Flex justify="between" align="center" mb="5">
         <Heading size="6">Regulatory Authority Management System</Heading>
         <Flex gap="3">
+          <Button variant="soft" onClick={() => setIsScheduleDialogOpen(true)}>
+            <CalendarIcon /> Schedule Audit
+          </Button>
           <Button variant="soft">
             <DownloadIcon /> Compliance Report
           </Button>
@@ -254,28 +230,6 @@ const RegulatoryAuthorityManagement = () => {
           </Flex>
         </Card>
       </Grid>
-
-      {/* Certifications Overview */}
-      <Card mb="5">
-        <Heading size="4" mb="3">International Certifications</Heading>
-        <Grid columns="3" gap="3">
-          {authorities[0].certifications.map((certification) => {
-            const config = certificationDetails[certification as keyof typeof certificationDetails];
-            return (
-              <Card key={certification} variant="classic">
-                <Flex align="center" gap="2" mb="2">
-                  {config?.icon}
-                  <Text weight="bold">{certification}</Text>
-                </Flex>
-                <Text size="2">{config?.description}</Text>
-                <Badge color="green" variant="soft" mt="2">
-                  Valid until 2025-12-31
-                </Badge>
-              </Card>
-            );
-          })}
-        </Grid>
-      </Card>
 
       {/* Editable Table */}
       <Table.Root variant="surface" className="mt-6">
@@ -367,30 +321,47 @@ const RegulatoryAuthorityManagement = () => {
         </Button>
       </Flex>
 
-      {/* Certification Details Dialog */}
-      <Dialog.Root open={!!selectedCertification} onOpenChange={() => setSelectedCertification(null)}>
+      {/* Schedule Audit Dialog */}
+      <Dialog.Root open={isScheduleDialogOpen} onOpenChange={setIsScheduleDialogOpen}>
         <Dialog.Content>
-          {selectedCertification && (
-            <>
-              <Dialog.Title>
-                <Flex align="center" gap="2">
-                  {certificationDetails[selectedCertification as keyof typeof certificationDetails]?.icon}
-                  {selectedCertification}
-                </Flex>
-              </Dialog.Title>
-              <Dialog.Description>
-                {certificationDetails[selectedCertification as keyof typeof certificationDetails]?.description}
-              </Dialog.Description>
-              <Flex direction="column" gap="3" mt="4">
-                <Text weight="bold">Full Title:</Text>
-                <Text>{certificationDetails[selectedCertification as keyof typeof certificationDetails]?.title}</Text>
-                <Text weight="bold">Status:</Text>
-                <Badge color="green">Active - Valid until 2025-12-31</Badge>
-                <Text weight="bold">Scope:</Text>
-                <Text>Egyptian Drug Authority - All departments</Text>
-              </Flex>
-            </>
-          )}
+          <Dialog.Title>
+            <Flex align="center" gap="2">
+              <CalendarIcon />
+              Schedule New Audit
+            </Flex>
+          </Dialog.Title>
+          <Flex direction="column" gap="3">
+            <Text>Schedule a new audit for Egyptian Drug Authority</Text>
+            
+            <Flex direction="column" gap="2">
+              <Text weight="bold">Authority:</Text>
+              <Text>Egyptian Drug Authority (EDA)</Text>
+            </Flex>
+
+            <Flex direction="column" gap="2">
+              <Text weight="bold">Current Next Audit:</Text>
+              <Text>{authorities[0].nextAudit}</Text>
+            </Flex>
+
+            <Flex direction="column" gap="2">
+              <Text weight="bold">Select New Audit Date:</Text>
+              <TextField.Root
+                type="date"
+                value={auditDate}
+                onChange={(e) => setAuditDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </Flex>
+
+            <Flex gap="3" mt="4" justify="end">
+              <Button variant="soft" onClick={() => setIsScheduleDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={scheduleAudit} disabled={!auditDate}>
+                Schedule Audit
+              </Button>
+            </Flex>
+          </Flex>
         </Dialog.Content>
       </Dialog.Root>
 
@@ -413,7 +384,7 @@ const RegulatoryAuthorityManagement = () => {
             <Text size="2">• 6 International Certifications</Text>
             <Text size="2">• Compliance Score: 97.8%</Text>
             <Text size="2">• Audit Findings: 2 Major, 4 Minor</Text>
-            <Text size="2">• Next Audit Date: 2024-09-15</Text>
+            <Text size="2">• Next Audit Date: {authorities[0].nextAudit}</Text>
           </Flex>
 
           <Flex gap="3" mt="4" justify="end">
