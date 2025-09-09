@@ -12,7 +12,8 @@ import {
   Box,
   Dialog,
   TextField,
-  Select
+  Select,
+  AlertDialog
 } from '@radix-ui/themes';
 import {
   MagnifyingGlassIcon,
@@ -24,7 +25,9 @@ import {
   DownloadIcon,
   Pencil1Icon,
   CheckIcon,
-  Cross2Icon
+  Cross2Icon,
+  CubeIcon,
+  LockClosedIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -43,6 +46,7 @@ interface Authority {
   capaStatus: string;
   country: string;
   accreditationStatus: string;
+  validityDate: string;
 }
 
 interface TempData extends Partial<Omit<Authority, 'findings'>> {
@@ -53,39 +57,43 @@ interface TempData extends Partial<Omit<Authority, 'findings'>> {
   };
 }
 
-const RegulatoryAuthorityManagement = () => {
+const EDAAuthorityManagement = () => {
   const [authorities, setAuthorities] = useState<Authority[]>([
     {
-      id: 'AUD-001',
+      id: 'EDA-001',
       name: 'Egyptian Drug Authority (EDA)',
       certifications: [
-        'WHO GBT', 
-        'OMCL Network', 
-        'ISO 9001:2015',
-        'ISO/IEC 17025:2017',
-        'ISO/IEC 17043:2010',
-        'ISO/IEC 17034:2016'
+        'WHO GBT Certification', 
+        'OMCL Network Membership', 
+        'ISO 9001:2015 Quality Management',
+        'ISO/IEC 17025:2017 Laboratory Competence',
+        'ISO/IEC 17043:2010 Proficiency Testing',
+        'ISO/IEC 17034:2016 Reference Materials'
       ],
-      lastAudit: '2024-01-20',
-      findings: { critical: 0, major: 2, minor: 5 },
-      complianceScore: 98.7,
-      nextAudit: '2024-07-15',
+      lastAudit: '2024-03-15',
+      findings: { critical: 0, major: 2, minor: 4 },
+      complianceScore: 97.8,
+      nextAudit: '2024-09-15',
       capaStatus: 'In Progress',
       country: 'Egypt',
-      accreditationStatus: 'Active'
+      accreditationStatus: 'Active',
+      validityDate: '2025-12-31'
     }
   ]);
 
   const [editingId, setEditingId] = useState<string | null>(null);
   const [tempData, setTempData] = useState<TempData>({});
-  const [scheduleAuditOpen, setScheduleAuditOpen] = useState(false);
-  const [complianceReportOpen, setComplianceReportOpen] = useState(false);
+  const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Calculate dynamic metrics
   const metrics = {
     totalAuthorities: authorities.length,
     activeAccreditations: authorities.filter(a => a.accreditationStatus === 'Active').length,
     openFindings: authorities.reduce((sum, a) => sum + a.findings.critical + a.findings.major + a.findings.minor, 0),
+    criticalFindings: authorities.reduce((sum, a) => sum + a.findings.critical, 0),
+    majorFindings: authorities.reduce((sum, a) => sum + a.findings.major, 0),
+    minorFindings: authorities.reduce((sum, a) => sum + a.findings.minor, 0),
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
   };
 
@@ -96,7 +104,6 @@ const RegulatoryAuthorityManagement = () => {
 
   const handleSave = (id: string) => {
     if (tempData.findings) {
-      // Ensure all findings fields have numbers, not undefined
       const completeFindings = {
         critical: tempData.findings.critical ?? 0,
         major: tempData.findings.major ?? 0,
@@ -139,6 +146,20 @@ const RegulatoryAuthorityManagement = () => {
         [type]: numValue
       }
     }));
+  };
+
+  const submitToBlockchain = async () => {
+    setIsSubmitting(true);
+    try {
+      // Simulate blockchain submission
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      alert('EDA data successfully submitted to blockchain!');
+    } catch (error) {
+      alert('Error submitting to blockchain');
+    } finally {
+      setIsSubmitting(false);
+      setIsBlockchainDialogOpen(false);
+    }
   };
 
   const renderStatusBadge = (status: string) => {
@@ -191,67 +212,45 @@ const RegulatoryAuthorityManagement = () => {
   return (
     <Box p="6" className="flex-1">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Regulatory Authority Management System</Heading>
+        <Heading size="6">Egyptian Drug Authority (EDA) Management</Heading>
         <Flex gap="3">
-          <Button variant="soft" onClick={() => setScheduleAuditOpen(true)}>
-            <CalendarIcon /> Schedule Audit
-          </Button>
-          <Button variant="soft" onClick={() => setComplianceReportOpen(true)}>
+          <Button variant="soft">
             <DownloadIcon /> Compliance Report
           </Button>
         </Flex>
       </Flex>
 
-      {/* Metrics Cards - Dynamic with table data */}
+      {/* Metrics Cards */}
       <Grid columns="4" gap="4" mb="5">
-        <Card className="bg-green-50">
+        <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Regulatory Authorities</Text>
-            <Heading size="7">{metrics.totalAuthorities}</Heading>
-            <Text size="1" className="text-green-600">
-              {metrics.activeAccreditations} Active
-            </Text>
+            <Text size="2">Accreditations Status</Text>
+            <Heading size="7" style={{ color: '#10b981' }}>Active</Heading>
+            <Text size="1">Valid until 2025-12-31</Text>
           </Flex>
         </Card>
-        <Card className="bg-amber-50">
+        <Card>
+          <Flex direction="column" gap="1">
+            <Text size="2">Total Certifications</Text>
+            <Heading size="7">6</Heading>
+            <Text size="1">International Standards</Text>
+          </Flex>
+        </Card>
+        <Card>
           <Flex direction="column" gap="1">
             <Text size="2">Open Findings</Text>
-            <Heading size="7" className="text-amber-600">{metrics.openFindings}</Heading>
-            <Text size="1">
-              {authorities.reduce((sum, a) => sum + a.findings.major, 0)} Major, 
-              {authorities.reduce((sum, a) => sum + a.findings.minor, 0)} Minor
-            </Text>
+            <Heading size="7">6</Heading>
+            <Text size="1" color="orange">2 Major, 4 Minor</Text>
           </Flex>
         </Card>
-        <Card className="bg-blue-50">
+        <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">Avg Compliance Score</Text>
-            <Heading size="7">{metrics.avgComplianceScore.toFixed(1)}%</Heading>
-            <Progress value={metrics.avgComplianceScore} />
-          </Flex>
-        </Card>
-        <Card className="bg-purple-50">
-          <Flex direction="column" gap="1">
-            <Text size="2">Certification Status</Text>
-            <Heading size="7">100% Valid</Heading>
-            <Text size="1">All accreditations active</Text>
+            <Text size="2">Compliance Score</Text>
+            <Heading size="7">97.8%</Heading>
+            <Progress value={97.8} />
           </Flex>
         </Card>
       </Grid>
-
-      {/* Compliance Heatmap */}
-      <Card mb="5">
-        <Heading size="4" mb="3">Compliance Heatmap</Heading>
-        <Grid columns="4" gap="3">
-          {['WHO GBT', 'OMCL Network', 'ISO 9001', 'ISO 17025'].map((standard) => (
-            <Flex key={standard} direction="column" align="center">
-              <Text weight="bold">{standard}</Text>
-              <Progress value={98} />
-              <Text size="2">98%</Text>
-            </Flex>
-          ))}
-        </Grid>
-      </Card>
 
       {/* Editable Table */}
       <Table.Root variant="surface" className="mt-6">
@@ -292,15 +291,12 @@ const RegulatoryAuthorityManagement = () => {
                     onChange={(e) => handleUpdateTempData('certifications', e.target.value.split(',').map((c: string) => c.trim()))}
                   />
                 ) : (
-                  <Flex gap="1" wrap="wrap" style={{ maxWidth: '250px' }}>
-                    {authority.certifications.slice(0, 3).map(cert => (
-                      <Badge key={cert} variant="outline" color="green">
+                  <Flex direction="column" gap="1" style={{ maxWidth: '300px' }}>
+                    {authority.certifications.map((cert, index) => (
+                      <Badge key={index} variant="outline" color="green" style={{ margin: '2px' }}>
                         {cert}
                       </Badge>
                     ))}
-                    {authority.certifications.length > 3 && (
-                      <Badge variant="soft">+{authority.certifications.length - 3} more</Badge>
-                    )}
                   </Flex>
                 )}
               </Table.Cell>
@@ -385,22 +381,6 @@ const RegulatoryAuthorityManagement = () => {
                       <Button size="1" onClick={() => handleEdit(authority)}>
                         <Pencil1Icon /> Edit
                       </Button>
-                      <DropdownMenu.Root>
-                        <DropdownMenu.Trigger>
-                          <Button size="1" variant="ghost">•••</Button>
-                        </DropdownMenu.Trigger>
-                        <DropdownMenu.Content>
-                          <DropdownMenu.Item>
-                            <FileTextIcon /> Audit Report
-                          </DropdownMenu.Item>
-                          <DropdownMenu.Item>
-                            <CheckCircledIcon /> Approve CAPA
-                          </DropdownMenu.Item>
-                          <DropdownMenu.Item>
-                            <CrossCircledIcon /> Raise Finding
-                          </DropdownMenu.Item>
-                        </DropdownMenu.Content>
-                      </DropdownMenu.Root>
                     </>
                   )}
                 </Flex>
@@ -410,59 +390,71 @@ const RegulatoryAuthorityManagement = () => {
         </Table.Body>
       </Table.Root>
 
-      {/* Modals */}
-      <Dialog.Root open={scheduleAuditOpen} onOpenChange={setScheduleAuditOpen}>
-        <Dialog.Content>
-          <Dialog.Title>Schedule Audit</Dialog.Title>
-          <Flex direction="column" gap="3">
-            <Select.Root>
-              <Select.Trigger placeholder="Select authority" />
-              <Select.Content>
-                {authorities.map(authority => (
-                  <Select.Item key={authority.id} value={authority.id}>
-                    {authority.name}
-                  </Select.Item>
-                ))}
-              </Select.Content>
-            </Select.Root>
-            <TextField.Root type="date" placeholder="Audit date" />
-            <Flex gap="3" mt="4" justify="end">
-              <Button variant="soft" onClick={() => setScheduleAuditOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setScheduleAuditOpen(false)}>
-                Schedule
-              </Button>
-            </Flex>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+      {/* Submit to Blockchain Button */}
+      <Flex justify="center" mt="6">
+        <Button 
+          size="3" 
+          color="green" 
+          variant="solid"
+          onClick={() => setIsBlockchainDialogOpen(true)}
+          style={{ 
+            backgroundColor: '#006400',
+            padding: '12px 24px',
+            fontSize: '16px'
+          }}
+        >
+          <CubeIcon /> Submit EDA Data to Blockchain
+        </Button>
+      </Flex>
 
-      <Dialog.Root open={complianceReportOpen} onOpenChange={setComplianceReportOpen}>
-        <Dialog.Content>
-          <Dialog.Title>Compliance Report</Dialog.Title>
-          <Flex direction="column" gap="3">
-            <Text>Generate compliance report</Text>
-            <Select.Root>
-              <Select.Trigger placeholder="Select format" />
-              <Select.Content>
-                <Select.Item value="pdf">PDF</Select.Item>
-                <Select.Item value="excel">Excel</Select.Item>
-              </Select.Content>
-            </Select.Root>
-            <Flex gap="3" mt="4" justify="end">
-              <Button variant="soft" onClick={() => setComplianceReportOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => setComplianceReportOpen(false)}>
-                <DownloadIcon /> Download
-              </Button>
+      {/* Blockchain Submission Dialog */}
+      <AlertDialog.Root open={isBlockchainDialogOpen}>
+        <AlertDialog.Content style={{ maxWidth: 500 }}>
+          <AlertDialog.Title>
+            <Flex align="center" gap="2">
+              <LockClosedIcon />
+              Submit to Blockchain
             </Flex>
+          </AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="4">
+            Are you sure you want to submit Egyptian Drug Authority data to the blockchain? 
+            This action will create an immutable record of all EDA accreditations and compliance data.
+          </AlertDialog.Description>
+          
+          <Flex direction="column" gap="3" mb="4">
+            <Text weight="bold">Data to be submitted:</Text>
+            <Text size="2">• 6 International Certifications</Text>
+            <Text size="2">• Compliance Score: 97.8%</Text>
+            <Text size="2">• Audit Findings: 2 Major, 4 Minor</Text>
+            <Text size="2">• Next Audit Date: 2024-09-15</Text>
           </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray" 
+              onClick={() => setIsBlockchainDialogOpen(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              color="green"
+              onClick={submitToBlockchain}
+              disabled={isSubmitting}
+              style={{ backgroundColor: '#006400' }}
+            >
+              {isSubmitting ? (
+                <>Submitting to Blockchain...</>
+              ) : (
+                <>Confirm Submission</>
+              )}
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
     </Box>
   );
 };
 
-export default RegulatoryAuthorityManagement;
+export default EDAAuthorityManagement;
