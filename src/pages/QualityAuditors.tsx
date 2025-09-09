@@ -342,7 +342,7 @@ const RegulatoryAuthorityManagement = () => {
             </Table.Row>
           ))}
         </Table.Body>
-      </Table.Row>
+    </Table.Root>
 
       {/* Submit to Blockchain Button */}
       <Flex justify="center" mt="6">
