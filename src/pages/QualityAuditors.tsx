@@ -29,7 +29,11 @@ import {
   Cross2Icon,
   CubeIcon,
   LockClosedIcon,
-  GlobeIcon
+  GlobeIcon,
+  BuildingIcon,
+  WarningIcon,
+  TargetIcon,
+  StarIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
 
@@ -92,13 +96,18 @@ const RegulatoryAuthorityManagement = () => {
   const [auditDate, setAuditDate] = useState('');
 
   // Calculate dynamic metrics
+  const criticalFindings = authorities.reduce((sum, a) => sum + a.findings.critical, 0);
+  const majorFindings = authorities.reduce((sum, a) => sum + a.findings.major, 0);
+  const minorFindings = authorities.reduce((sum, a) => sum + a.findings.minor, 0);
+  const totalFindings = criticalFindings + majorFindings + minorFindings;
+
   const metrics = {
     totalAuthorities: authorities.length,
     activeAccreditations: authorities.filter(a => a.accreditationStatus === 'Active').length,
-    openFindings: authorities.reduce((sum, a) => sum + a.findings.critical + a.findings.major + a.findings.minor, 0),
-    criticalFindings: authorities.reduce((sum, a) => sum + a.findings.critical, 0),
-    majorFindings: authorities.reduce((sum, a) => sum + a.findings.major, 0),
-    minorFindings: authorities.reduce((sum, a) => sum + a.findings.minor, 0),
+    openFindings: totalFindings,
+    criticalFindings: criticalFindings,
+    majorFindings: majorFindings,
+    minorFindings: minorFindings,
     avgComplianceScore: authorities.reduce((sum, a) => sum + a.complianceScore, 0) / authorities.length
   };
 
@@ -239,34 +248,53 @@ const RegulatoryAuthorityManagement = () => {
         </Flex>
       </Flex>
 
-      {/* Metrics Cards */}
+      {/* Metrics Cards - Updated with requested titles */}
       <Grid columns="4" gap="4" mb="5">
+        {/* Regulatory Authorities Card */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Accreditations Status</Text>
-            <Heading size="7" style={{ color: '#10b981' }}>Active</Heading>
-            <Text size="1">Valid until 2025-12-31</Text>
+          <Flex direction="column" gap="2" align="center">
+            <BuildingIcon width="24" height="24" color="blue" />
+            <Text size="2" weight="bold">Regulatory Authorities</Text>
+            <Heading size="7" style={{ color: '#2563eb' }}>{metrics.totalAuthorities}</Heading>
+            <Text size="1">Active in system</Text>
           </Flex>
         </Card>
+
+        {/* Open Findings Card */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Total Certifications</Text>
-            <Heading size="7">6</Heading>
-            <Text size="1">International Standards</Text>
+          <Flex direction="column" gap="2" align="center">
+            <WarningIcon width="24" height="24" color="orange" />
+            <Text size="2" weight="bold">Open Findings</Text>
+            <Heading size="7" style={{ color: '#ea580c' }}>{metrics.openFindings}</Heading>
+            <Flex gap="1">
+              <Text size="1" color="red">{metrics.criticalFindings} Critical</Text>
+              <Text size="1">•</Text>
+              <Text size="1" color="orange">{metrics.majorFindings} Major</Text>
+              <Text size="1">•</Text>
+              <Text size="1" color="yellow">{metrics.minorFindings} Minor</Text>
+            </Flex>
           </Flex>
         </Card>
+
+        {/* Avg Compliance Score Card */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Open Findings</Text>
-            <Heading size="7">6</Heading>
-            <Text size="1" color="orange">2 Major, 4 Minor</Text>
+          <Flex direction="column" gap="2" align="center">
+            <TargetIcon width="24" height="24" color="green" />
+            <Text size="2" weight="bold">Avg Compliance Score</Text>
+            <Heading size="7" style={{ color: '#16a34a' }}>{metrics.avgComplianceScore.toFixed(1)}%</Heading>
+            <Progress value={metrics.avgComplianceScore} />
+            <Text size="1">Industry benchmark: 95%</Text>
           </Flex>
         </Card>
+
+        {/* Certification Status Card */}
         <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">Compliance Score</Text>
-            <Heading size="7">97.8%</Heading>
-            <Progress value={97.8} />
+          <Flex direction="column" gap="2" align="center">
+            <StarIcon width="24" height="24" color="purple" />
+            <Text size="2" weight="bold">Certification Status</Text>
+            <Heading size="7" style={{ color: '#9333ea' }}>100%</Heading>
+            <Text size="1">Valid certifications</Text>
+            <Badge color="green" variant="soft">All active</Badge>
           </Flex>
         </Card>
       </Grid>
@@ -342,7 +370,7 @@ const RegulatoryAuthorityManagement = () => {
             </Table.Row>
           ))}
         </Table.Body>
-    </Table.Root>
+      </Table.Root>
 
       {/* Submit to Blockchain Button */}
       <Flex justify="center" mt="6">
