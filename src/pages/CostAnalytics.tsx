@@ -926,19 +926,24 @@ function CostAnalytics() {
   };
 
   const calculateActualCost = (item: Item): number => {
+    // For Direct Materials
     if ('concentrationKg' in item && item.originalConcentrationKg !== undefined) 
       return (item.originalConcentrationKg || 0) * (item.originalPricePerKg || item.pricePerKg || 0);
     
+    // For Direct Labor
     if ('hours' in item && item.originalHours !== undefined) 
       return (item.originalHours || 0) * (item.originalHourlyRate || item.hourlyRate || 0);
     
+    // For Overhead
     if ('totalCost' in item) 
       return (item.totalCost || 0) / (item.basis || 1);
     
+    // For Packaging Materials and Other Costs with original values
     if (item.originalQty !== undefined && item.originalUnitPrice !== undefined)
       return (item.originalQty || 0) * (item.originalUnitPrice || 0);
     
-    return (item.qty || 0) * (item.unitPrice || 0);
+    // Default case for Packaging Materials and Other Costs
+    return (item.qty || 1) * (item.unitPrice || 0);
   };
 
   const calculateCostAfter = (item: Item): number => {
