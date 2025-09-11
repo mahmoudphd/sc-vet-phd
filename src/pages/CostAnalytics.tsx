@@ -1688,7 +1688,7 @@ function CostAnalytics() {
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                    {getDetailsByCategory(dialogCategory).map((item, index) => {
+                     {getDetailsByCategory(dialogCategory).map((item, index) => {
   const concentration = dialogCategory === 'Direct Materials' ? 
     (item.originalConcentrationKg !== undefined ? item.originalConcentrationKg : item.concentrationKg) : 
     null;
@@ -1871,6 +1871,7 @@ function CostAnalytics() {
         </>
       )}
       
+      {/* Other Costs Section - ADDED THIS PART */}
       {dialogCategory === 'Other Costs' && (
         <>
           <Table.Cell style={tableCellStyle}>
@@ -1922,7 +1923,7 @@ function CostAnalytics() {
         </>
       )}
       
-      {/* Solution Column - Common for all categories */}
+      <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
       <Table.Cell style={tableCellStyle}>
         <RadixSelect.Root
           value={solutions[dialogCategory]?.[index] || ''}
