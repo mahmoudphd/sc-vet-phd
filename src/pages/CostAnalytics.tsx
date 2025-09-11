@@ -1871,7 +1871,6 @@ function CostAnalytics() {
         </>
       )}
       
-      {/* Other Costs Section - ADDED THIS PART */}
       {dialogCategory === 'Other Costs' && (
         <>
           <Table.Cell style={tableCellStyle}>
@@ -1923,7 +1922,10 @@ function CostAnalytics() {
         </>
       )}
       
+      {/* Total Cost Column - Common for all categories */}
       <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
+      
+      {/* Solution Column - Common for all categories */}
       <Table.Cell style={tableCellStyle}>
         <RadixSelect.Root
           value={solutions[dialogCategory]?.[index] || ''}
