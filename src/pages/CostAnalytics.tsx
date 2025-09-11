@@ -1688,228 +1688,280 @@ function CostAnalytics() {
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                      {getDetailsByCategory(dialogCategory).map((item, index) => {
-                        const concentration = dialogCategory === 'Direct Materials' ? 
-                          (item.originalConcentrationKg !== undefined ? item.originalConcentrationKg : item.concentrationKg) : 
-                          null;
-                        
-                        const unitPrice = dialogCategory === 'Direct Materials' ? 
-                          (item.originalPricePerKg !== undefined ? item.originalPricePerKg : item.pricePerKg) :
-                          dialogCategory === 'Direct Labor' ? 
-                          (item.originalHourlyRate !== undefined ? item.originalHourlyRate : item.hourlyRate) : 
-                          (item.originalUnitPrice !== undefined ? item.originalUnitPrice : item.unitPrice);
+                     {getDetailsByCategory(dialogCategory).map((item, index) => {
+  const concentration = dialogCategory === 'Direct Materials' ? 
+    (item.originalConcentrationKg !== undefined ? item.originalConcentrationKg : item.concentrationKg) : 
+    null;
+  
+  const unitPrice = dialogCategory === 'Direct Materials' ? 
+    (item.originalPricePerKg !== undefined ? item.originalPricePerKg : item.pricePerKg) :
+    dialogCategory === 'Direct Labor' ? 
+    (item.originalHourlyRate !== undefined ? item.originalHourlyRate : item.hourlyRate) : 
+    (item.originalUnitPrice !== undefined ? item.originalUnitPrice : item.unitPrice);
 
-                        const totalCost = calculateActualCost(item);
+  const totalCost = calculateActualCost(item);
 
-                        return (
-                          <Table.Row key={index}>
-                            <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
-                            
-                            {dialogCategory === 'Direct Materials' && (
-                              <>
-                                <Table.Cell style={tableCellStyle}>
-                                  {formatNumber(concentration || 0, 6, true)}
-                                </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={unitPrice || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: 'white',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            {dialogCategory === 'Packaging Materials' && (
-                              <>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={item.qty || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        item.qty = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: '#f9fafb',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                               </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={unitPrice || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        if (item.unitPrice !== undefined) item.unitPrice = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                       border: '1px solid #e2e8f0',
-                                        backgroundColor: 'white',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            {dialogCategory === 'Direct Labor' && (
-                              <>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={item.hours || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        item.hours = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: '#f9fafb',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    unitPrice ? formatCurrency(unitPrice, currency) : '-'
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={unitPrice || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }} style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: 'white',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            {dialogCategory === 'Overhead' && (
-                              <>
-                                <Table.Cell style={tableCellStyle}>
-                                  {formatCurrency(item.totalCost || 0, currency)}
-                                </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {item.basis}
-                                </Table.Cell>
-                                <Table.Cell style={tableCellStyle}>
-                                  {autoMode ? (
-                                    formatCurrency(totalCost, currency) 
-                                  ) : (
-                                    <input
-                                      type="number"
-                                      value={item.cost || 0}
-                                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                                        const value = parseFloat(e.target.value) || 0;
-                                        item.cost = value;
-                                        updateCategoryTotals(dialogCategory, {...data});
-                                      }}
-                                      style={{ 
-                                        width: '70px',
-                                        padding: '4px 8px',
-                                        borderRadius: '4px',
-                                        border: '1px solid #e2e8f0',
-                                        backgroundColor: 'white',
-                                        fontSize: '12px'
-                                      }}
-                                    />
-                                  )}
-                                </Table.Cell>
-                              </>
-                            )}
-                            
-                            <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
-                            <Table.Cell style={tableCellStyle}>
-                              <RadixSelect.Root
-                                value={solutions[dialogCategory]?.[index] || ''}
-                                onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
-                              >
-                                <RadixSelect.Trigger 
-                                  aria-label="Select solution" 
-                                  style={{
-                                    backgroundColor: 'white',
-                                    border: '1px solid #e5e7eb',
-                                    borderRadius: '4px',
-                                    padding: '4px 8px',
-                                    fontSize: '0.8rem'
-                                  }}
-                                />
-                                <RadixSelect.Content style={{
-                                    backgroundColor: 'white',
-                                    borderRadius: '4px',
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-                                  }}>
-                                  {solutionsByCategory[dialogCategory].map((sol) => (
-                                    <RadixSelect.Item 
-                                      key={sol} 
-                                      value={sol}
-                                      style={{
-                                        padding: '6px 10px',
-                                        fontSize: '0.8rem'
-                                      }}
-                                    >
-                                      {sol}
-                                    </RadixSelect.Item>
-                                  ))}
-                                </RadixSelect.Content>
-                              </RadixSelect.Root>
-                            </Table.Cell>
-                          </Table.Row>
-                        );
-                      })}
+  return (
+    <Table.Row key={index}>
+      <Table.RowHeaderCell style={tableRowHeaderStyle}>{item.name}</Table.RowHeaderCell>
+      
+      {dialogCategory === 'Direct Materials' && (
+        <>
+          <Table.Cell style={tableCellStyle}>
+            {formatNumber(concentration || 0, 6, true)}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              unitPrice ? formatCurrency(unitPrice, currency) : '-'
+            ) : (
+              <input
+                type="number"
+                value={unitPrice || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  if (dialogCategory === 'Direct Materials') item.pricePerKg = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'white',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+        </>
+      )}
+      
+      {dialogCategory === 'Packaging Materials' && (
+        <>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '-'
+            ) : (
+              <input
+                type="number"
+                value={item.qty || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  item.qty = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              unitPrice ? formatCurrency(unitPrice, currency) : '-'
+            ) : (
+              <input
+                type="number"
+                value={unitPrice || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  if (item.unitPrice !== undefined) item.unitPrice = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'white',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+        </>
+      )}
+      
+      {dialogCategory === 'Direct Labor' && (
+        <>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              formatNumber(item.originalHours !== undefined ? item.originalHours : item.hours || 0, 2)
+            ) : (
+              <input
+                type="number"
+                value={item.hours || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  item.hours = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              unitPrice ? formatCurrency(unitPrice, currency) : '-'
+            ) : (
+              <input
+                type="number"
+                value={unitPrice || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  if (dialogCategory === 'Direct Labor') item.hourlyRate = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }} style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'white',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+        </>
+      )}
+      
+      {dialogCategory === 'Overhead' && (
+        <>
+          <Table.Cell style={tableCellStyle}>
+            {formatCurrency(item.totalCost || 0, currency)}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {item.basis}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              formatCurrency(totalCost, currency) 
+            ) : (
+              <input
+                type="number"
+                value={item.cost || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  item.cost = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'white',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+        </>
+      )}
+      
+      {/* Other Costs Section - ADDED THIS PART */}
+      {dialogCategory === 'Other Costs' && (
+        <>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              (item.originalQty !== undefined ? item.originalQty : item.qty)?.toString() || '1'
+            ) : (
+              <input
+                type="number"
+                value={item.qty || 1}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 1;
+                  item.qty = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: '#f9fafb',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+          <Table.Cell style={tableCellStyle}>
+            {autoMode ? (
+              unitPrice ? formatCurrency(unitPrice, currency) : '-'
+            ) : (
+              <input
+                type="number"
+                value={unitPrice || 0}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = parseFloat(e.target.value) || 0;
+                  if (item.unitPrice !== undefined) item.unitPrice = value;
+                  updateCategoryTotals(dialogCategory, {...data});
+                }}
+                style={{ 
+                  width: '70px',
+                  padding: '4px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'white',
+                  fontSize: '12px'
+                }}
+              />
+            )}
+          </Table.Cell>
+        </>
+      )}
+      
+      <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
+      <Table.Cell style={tableCellStyle}>
+        <RadixSelect.Root
+          value={solutions[dialogCategory]?.[index] || ''}
+          onValueChange={(value) => handleSolutionSelect(dialogCategory, index, value)}
+        >
+          <RadixSelect.Trigger 
+            aria-label="Select solution" 
+            style={{
+              backgroundColor: 'white',
+              border: '1px solid #e5e7eb',
+              borderRadius: '4px',
+              padding: '4px 8px',
+              fontSize: '0.8rem'
+            }}
+          />
+          <RadixSelect.Content style={{
+              backgroundColor: 'white',
+              borderRadius: '4px',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}>
+            {solutionsByCategory[dialogCategory].map((sol) => (
+              <RadixSelect.Item 
+                key={sol} 
+                value={sol}
+                style={{
+                  padding: '6px 10px',
+                  fontSize: '0.8rem'
+                }}
+              >
+                {sol}
+              </RadixSelect.Item>
+            ))}
+          </RadixSelect.Content>
+        </RadixSelect.Root>
+      </Table.Cell>
+    </Table.Row>
+  );
+})}
                     </Table.Body>
                   </Table.Root>
                 </Tabs.Content>
