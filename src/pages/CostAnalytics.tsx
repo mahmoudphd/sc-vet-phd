@@ -1688,7 +1688,7 @@ function CostAnalytics() {
                       </Table.Row>
                     </Table.Header>
                     <Table.Body>
-                     {getDetailsByCategory(dialogCategory).map((item, index) => {
+                    {getDetailsByCategory(dialogCategory).map((item, index) => {
   const concentration = dialogCategory === 'Direct Materials' ? 
     (item.originalConcentrationKg !== undefined ? item.originalConcentrationKg : item.concentrationKg) : 
     null;
@@ -1921,9 +1921,6 @@ function CostAnalytics() {
           </Table.Cell>
         </>
       )}
-      
-      {/* Total Cost Column - Common for all categories */}
-      <Table.Cell style={tableCellStyle}>{formatCurrency(totalCost, currency)}</Table.Cell>
       
       {/* Solution Column - Common for all categories */}
       <Table.Cell style={tableCellStyle}>
