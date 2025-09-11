@@ -8,7 +8,6 @@ import {
   Grid,
   Text,
   Progress,
-  DropdownMenu,
   Box,
   Dialog,
   TextField,
@@ -17,11 +16,8 @@ import {
   ScrollArea
 } from '@radix-ui/themes';
 import {
-  MagnifyingGlassIcon,
   FileTextIcon,
   CalendarIcon,
-  CheckCircledIcon,
-  CrossCircledIcon,
   PersonIcon,
   DownloadIcon,
   Pencil1Icon,
@@ -29,16 +25,11 @@ import {
   Cross2Icon,
   CubeIcon,
   LockClosedIcon,
-  GlobeIcon,
   TargetIcon,
   StarIcon
 } from '@radix-ui/react-icons';
 import { useState } from 'react';
-
-// Replace BuildingIcon with HomeIcon (or another appropriate icon)
-import { HomeIcon } from '@radix-ui/react-icons';
-// Replace WarningIcon with ExclamationTriangleIcon
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
+import { HomeIcon, ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 interface Authority {
   id: string;
@@ -60,9 +51,9 @@ interface Authority {
 
 interface TempData extends Partial<Omit<Authority, 'findings'>> {
   findings?: {
-    critical: number;
-    major: number;
-    minor: number;
+    critical?: number;
+    major?: number;
+    minor?: number;
   };
 }
 
@@ -193,13 +184,16 @@ const RegulatoryAuthorityManagement = () => {
 
   const handleFindingsChange = (type: keyof Authority['findings'], value: string) => {
     const numValue = parseInt(value) || 0;
-    setTempData(prev => ({
-      ...prev,
-      findings: {
-        ...prev.findings,
-        [type]: numValue
-      }
-    }));
+    setTempData(prev => {
+      const currentFindings = prev.findings || { critical: 0, major: 0, minor: 0 };
+      return {
+        ...prev,
+        findings: {
+          ...currentFindings,
+          [type]: numValue
+        }
+      };
+    });
   };
 
   const submitToBlockchain = async () => {
@@ -266,12 +260,12 @@ const RegulatoryAuthorityManagement = () => {
         </Flex>
       </Flex>
 
-      {/* Metrics Cards - Updated with requested titles */}
+      {/* Metrics Cards */}
       <Grid columns="4" gap="4" mb="5">
         {/* Regulatory Authorities Card */}
         <Card>
           <Flex direction="column" gap="2" align="center">
-            <HomeIcon width="24" height="24" color="blue" /> {/* Replaced BuildingIcon with HomeIcon */}
+            <HomeIcon width="24" height="24" color="blue" />
             <Text size="2" weight="bold">Regulatory Authorities</Text>
             <Heading size="7" style={{ color: '#2563eb' }}>{metrics.totalAuthorities}</Heading>
             <Text size="1">Active in system</Text>
@@ -281,7 +275,7 @@ const RegulatoryAuthorityManagement = () => {
         {/* Open Findings Card */}
         <Card>
           <Flex direction="column" gap="2" align="center">
-            <ExclamationTriangleIcon width="24" height="24" color="orange" /> {/* Replaced WarningIcon with ExclamationTriangleIcon */}
+            <ExclamationTriangleIcon width="24" height="24" color="orange" />
             <Text size="2" weight="bold">Open Findings</Text>
             <Heading size="7" style={{ color: '#ea580c' }}>{metrics.openFindings}</Heading>
             <Flex gap="1">
