@@ -30,7 +30,6 @@ import {
   CubeIcon,
   LockClosedIcon,
   GlobeIcon,
-  // Remove BuildingIcon and WarningIcon imports
   TargetIcon,
   StarIcon
 } from '@radix-ui/react-icons';
@@ -188,6 +187,21 @@ const RegulatoryAuthorityManagement = () => {
     setTempData({});
   };
 
+  const handleInputChange = (field: keyof Authority, value: any) => {
+    setTempData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleFindingsChange = (type: keyof Authority['findings'], value: string) => {
+    const numValue = parseInt(value) || 0;
+    setTempData(prev => ({
+      ...prev,
+      findings: {
+        ...prev.findings,
+        [type]: numValue
+      }
+    }));
+  };
+
   const submitToBlockchain = async () => {
     setIsSubmitting(true);
     try {
@@ -321,55 +335,141 @@ const RegulatoryAuthorityManagement = () => {
           {authorities.map((authority) => (
             <Table.Row key={authority.id}>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <PersonIcon className="text-blue-600" />
-                  {authority.name}
-                  <Badge variant="soft" color="blue">Regulatory</Badge>
-                </Flex>
-              </Table.Cell>
-              <Table.Cell>
-                <ScrollArea style={{ maxHeight: '120px', maxWidth: '300px' }}>
-                  <Flex direction="column" gap="1">
-                    {authority.certifications.map((certification) => (
-                      <div key={certification}>
-                        {renderCertificationBadge(certification)}
-                      </div>
-                    ))}
+                {editingId === authority.id ? (
+                  <TextField.Root
+                    value={tempData.name || ''}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                  />
+                ) : (
+                  <Flex align="center" gap="2">
+                    <PersonIcon className="text-blue-600" />
+                    {authority.name}
+                    <Badge variant="soft" color="blue">Regulatory</Badge>
                   </Flex>
-                </ScrollArea>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <CalendarIcon />
-                  {authority.lastAudit}
-                </Flex>
+                {editingId === authority.id ? (
+                  <TextField.Root
+                    value={tempData.certifications?.join(', ') || ''}
+                    onChange={(e) => handleInputChange('certifications', e.target.value.split(',').map(item => item.trim()))}
+                  />
+                ) : (
+                  <ScrollArea style={{ maxHeight: '120px', maxWidth: '300px' }}>
+                    <Flex direction="column" gap="1">
+                      {authority.certifications.map((certification) => (
+                        <div key={certification}>
+                          {renderCertificationBadge(certification)}
+                        </div>
+                      ))}
+                    </Flex>
+                  </ScrollArea>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Flex direction="column" gap="1">
-                  {authority.findings.critical > 0 && <Text size="1" color="red">Critical: {authority.findings.critical}</Text>}
-                  {authority.findings.major > 0 && <Text size="1" color="orange">Major: {authority.findings.major}</Text>}
-                  {authority.findings.minor > 0 && <Text size="1" color="yellow">Minor: {authority.findings.minor}</Text>}
-                </Flex>
+                {editingId === authority.id ? (
+                  <TextField.Root
+                    type="date"
+                    value={tempData.lastAudit || ''}
+                    onChange={(e) => handleInputChange('lastAudit', e.target.value)}
+                  />
+                ) : (
+                  <Flex align="center" gap="2">
+                    <CalendarIcon />
+                    {authority.lastAudit}
+                  </Flex>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <Progress value={authority.complianceScore} />
-                  <Text>{authority.complianceScore}%</Text>
-                </Flex>
+                {editingId === authority.id ? (
+                  <Flex direction="column" gap="2">
+                    <TextField.Root
+                      placeholder="Critical"
+                      value={tempData.findings?.critical || 0}
+                      onChange={(e) => handleFindingsChange('critical', e.target.value)}
+                    />
+                    <TextField.Root
+                      placeholder="Major"
+                      value={tempData.findings?.major || 0}
+                      onChange={(e) => handleFindingsChange('major', e.target.value)}
+                    />
+                    <TextField.Root
+                      placeholder="Minor"
+                      value={tempData.findings?.minor || 0}
+                      onChange={(e) => handleFindingsChange('minor', e.target.value)}
+                    />
+                  </Flex>
+                ) : (
+                  <Flex direction="column" gap="1">
+                    {authority.findings.critical > 0 && <Text size="1" color="red">Critical: {authority.findings.critical}</Text>}
+                    {authority.findings.major > 0 && <Text size="1" color="orange">Major: {authority.findings.major}</Text>}
+                    {authority.findings.minor > 0 && <Text size="1" color="yellow">Minor: {authority.findings.minor}</Text>}
+                  </Flex>
+                )}
               </Table.Cell>
               <Table.Cell>
-                {renderStatusBadge(authority.capaStatus)}
+                {editingId === authority.id ? (
+                  <TextField.Root
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={tempData.complianceScore || 0}
+                    onChange={(e) => handleInputChange('complianceScore', parseFloat(e.target.value))}
+                  />
+                ) : (
+                  <Flex align="center" gap="2">
+                    <Progress value={authority.complianceScore} />
+                    <Text>{authority.complianceScore}%</Text>
+                  </Flex>
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Flex align="center" gap="2">
-                  <CalendarIcon />
-                  {authority.nextAudit}
-                </Flex>
+                {editingId === authority.id ? (
+                  <Select.Root
+                    value={tempData.capaStatus || ''}
+                    onValueChange={(value) => handleInputChange('capaStatus', value)}
+                  >
+                    <Select.Trigger />
+                    <Select.Content>
+                      <Select.Item value="Completed">Completed</Select.Item>
+                      <Select.Item value="In Progress">In Progress</Select.Item>
+                      <Select.Item value="Under Review">Under Review</Select.Item>
+                      <Select.Item value="Not Started">Not Started</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                ) : (
+                  renderStatusBadge(authority.capaStatus)
+                )}
               </Table.Cell>
               <Table.Cell>
-                <Button size="1" onClick={() => handleEdit(authority)}>
-                  <Pencil1Icon /> Edit
-                </Button>
+                {editingId === authority.id ? (
+                  <TextField.Root
+                    type="date"
+                    value={tempData.nextAudit || ''}
+                    onChange={(e) => handleInputChange('nextAudit', e.target.value)}
+                  />
+                ) : (
+                  <Flex align="center" gap="2">
+                    <CalendarIcon />
+                    {authority.nextAudit}
+                  </Flex>
+                )}
+              </Table.Cell>
+              <Table.Cell>
+                {editingId === authority.id ? (
+                  <Flex gap="2">
+                    <Button size="1" color="green" onClick={() => handleSave(authority.id)}>
+                      <CheckIcon /> Save
+                    </Button>
+                    <Button size="1" color="red" onClick={handleCancelEdit}>
+                      <Cross2Icon /> Cancel
+                    </Button>
+                  </Flex>
+                ) : (
+                  <Button size="1" onClick={() => handleEdit(authority)}>
+                    <Pencil1Icon /> Edit
+                  </Button>
+                )}
               </Table.Cell>
             </Table.Row>
           ))}
