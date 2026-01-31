@@ -772,7 +772,7 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                     parseFloat(e.target.value) || 0
                   )}
                   step="0.01"
-                  min="0" // Changed this line only - removed restrictions
+                  min="0"
                   style={{ 
                     width: '70px',
                     padding: '4px 8px',
@@ -953,32 +953,59 @@ function CostAnalytics() {
   const generateSupplierPrices = (basePrice: number, materialName: string) => {
     const intBasePrice = Math.round(basePrice);
     
+    // Check if material is in the specified list
+    const specialMaterials = ['Leucine', 'Threonine', 'Taurine', 'Glycine', 'Arginine', 'Cynarin', 'Silymarin'];
+    const isSpecialMaterial = specialMaterials.includes(materialName);
+    
     const discounts = [
-      0.01 + Math.random() * 0.04,
-      0.01 + Math.random() * 0.04,
-      0.01 + Math.random() * 0.04
+      0.05 + Math.random() * 0.05, // 5-10% discount for all suppliers
+      0.05 + Math.random() * 0.05,
+      0.05 + Math.random() * 0.05
     ].sort(() => Math.random() - 0.5);
 
     const generateRandomMaterial = (supplierName: string): Material => {
       const testStatuses: ('Passed' | 'Failed' | 'Not Tested')[] = ['Passed', 'Failed', 'Not Tested'];
       const supplierStatuses: ('Approved' | 'Pending' | 'Rejected')[] = ['Approved', 'Pending', 'Rejected'];
       
-      return {
-        name: materialName,
-        tests: {
-          identity: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          microbial: { status: testStatuses[Math.floor(Math.random() * 3)] },
-          endotoxins: { status: testStatuses[Math.floor(Math.random() * 3)] }
-        },
-        certificate: Math.random() > 0.3,
-        supplier: {
-          status: supplierStatuses[Math.floor(Math.random() * 3)],
-          name: supplierName
-        },
-        expiryDate: new Date(Date.now() + Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        blockchainRegistered: Math.random() > 0.4
-      };
+      if (isSpecialMaterial) {
+        // For special materials, ensure high compliance (60-100%)
+        const complianceLevel = 0.6 + Math.random() * 0.4; // 60-100%
+        
+        return {
+          name: materialName,
+          tests: {
+            identity: { status: Math.random() < complianceLevel ? 'Passed' : (Math.random() < 0.7 ? 'Passed' : 'Not Tested') },
+            purity: { status: Math.random() < complianceLevel ? 'Passed' : (Math.random() < 0.7 ? 'Passed' : 'Not Tested') },
+            microbial: { status: Math.random() < complianceLevel ? 'Passed' : (Math.random() < 0.8 ? 'Passed' : 'Not Tested') },
+            endotoxins: { status: Math.random() < complianceLevel ? 'Passed' : (Math.random() < 0.8 ? 'Passed' : 'Not Tested') }
+          },
+          certificate: Math.random() < (complianceLevel + 0.1), // 70-110% chance
+          supplier: {
+            status: Math.random() < (complianceLevel + 0.1) ? 'Approved' : 'Pending',
+            name: supplierName
+          },
+          expiryDate: new Date(Date.now() + Math.floor((365 + Math.random() * 365) * 24 * 60 * 60 * 1000)).toISOString().split('T')[0],
+          blockchainRegistered: Math.random() < (complianceLevel + 0.1) // 70-110% chance
+        };
+      } else {
+        // Regular materials with random compliance
+        return {
+          name: materialName,
+          tests: {
+            identity: { status: testStatuses[Math.floor(Math.random() * 3)] },
+            purity: { status: testStatuses[Math.floor(Math.random() * 3)] },
+            microbial: { status: testStatuses[Math.floor(Math.random() * 3)] },
+            endotoxins: { status: testStatuses[Math.floor(Math.random() * 3)] }
+          },
+          certificate: Math.random() > 0.3,
+          supplier: {
+            status: supplierStatuses[Math.floor(Math.random() * 3)],
+            name: supplierName
+          },
+          expiryDate: new Date(Date.now() + Math.floor(Math.random() * 365) * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          blockchainRegistered: Math.random() > 0.4
+        };
+      }
     };
 
     const suppliers = [
@@ -986,9 +1013,9 @@ function CostAnalytics() {
         id: 1,
         name: 'Supplier A',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[0])),
-        rating: 4.7,
-        delivery: '1 week',
-        reliability: '97%',
+        rating: 4.5 + Math.random() * 0.5, // 4.5-5.0 for special materials
+        delivery: isSpecialMaterial ? '1 week' : '1 week',
+        reliability: isSpecialMaterial ? '95-99%' : '90-98%',
         selected: false,
         material: generateRandomMaterial('Supplier A')
       },
@@ -996,9 +1023,9 @@ function CostAnalytics() {
         id: 2,
         name: 'Supplier B',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[1])),
-        rating: 4.2,
-        delivery: '2 weeks',
-        reliability: '90%',
+        rating: isSpecialMaterial ? 4.3 + Math.random() * 0.7 : 4.0 + Math.random() * 1.0,
+        delivery: isSpecialMaterial ? '2 weeks' : '2 weeks',
+        reliability: isSpecialMaterial ? '92-97%' : '85-95%',
         selected: false,
         material: generateRandomMaterial('Supplier B')
       },
@@ -1006,9 +1033,9 @@ function CostAnalytics() {
         id: 3,
         name: 'Supplier C',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[2])),
-        rating: 3.8,
-        delivery: '3 weeks',
-        reliability: '85%',
+        rating: isSpecialMaterial ? 4.0 + Math.random() * 0.8 : 3.5 + Math.random() * 1.3,
+        delivery: isSpecialMaterial ? '3 weeks' : '3 weeks',
+        reliability: isSpecialMaterial ? '90-96%' : '80-92%',
         selected: false,
         material: generateRandomMaterial('Supplier C')
       }
@@ -1019,7 +1046,7 @@ function CostAnalytics() {
       
       const priceScore = (1 - (supplier.pricePerKg / intBasePrice)) * 40;
       const ratingScore = (supplier.rating / 5) * 30;
-      const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
+      const reliabilityScore = (parseInt(supplier.reliability.split('-')[0]) / 100) * 20;
       const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
       const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
       
@@ -1107,7 +1134,7 @@ function CostAnalytics() {
       const newData = {...prev};
       const categoryItems = [...getDetailsByCategory(category, newData)];
       const item = categoryItems[index];
-      item.costAfter = value; // Simply set the value without any restrictions
+      item.costAfter = value;
       
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
@@ -2561,14 +2588,14 @@ function CostAnalytics() {
         <EnhancedComplianceDisplay supplier={complianceTooltip.supplier} />
       )}
 
-      {/* Charts section - Restored to original sizes */}
+      {/* Charts section */}
       <Grid columns={{ initial: '1', md: '2' }} gap="4" mb="6">
         <Card style={{
           borderRadius: '12px',
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '400px' // Increased height for better clarity
+          height: '400px'
         }}>
           <Flex direction="column" height="100%">
             <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
@@ -2585,8 +2612,8 @@ function CostAnalytics() {
                   }))}
                   cx="50%"
                   cy="50%"
-                  outerRadius={100} // Increased outer radius
-                  innerRadius={60} // Added inner radius for donut chart
+                  outerRadius={100}
+                  innerRadius={60}
                   fill="#8884d8"
                   dataKey="value"
                   label={({ name, percent }) => `${name}\n${(percent * 100).toFixed(1)}%`}
@@ -2623,123 +2650,123 @@ function CostAnalytics() {
           boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
           backgroundColor: 'white',
           padding: '16px',
-          height: '350px' // Restored original height
+          height: '350px'
         }}>
-                  <Flex direction="column" height="100%">
-          <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-            Cost Gap Calculation
-          </Heading>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={costGapDataWithGap}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip content={<CustomTooltip />} />
-              <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="actual" 
-                stroke="#3b82f6" 
-                strokeWidth={2}
-                name="Actual Cost"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="benchmark" 
-                stroke="#f59e0b" 
-                strokeWidth={2}
-                strokeDasharray="5 5"
-                name="Benchmark Price"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="targetCost" 
-                stroke="#10b981" 
-                strokeWidth={2}
-                strokeDasharray="3 4 5 2"
-                name="Target Cost"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="gap" 
-                stroke="#ef4444" 
-                strokeWidth={2}
-                name="Cost Gap"
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </Flex>
-      </Card>
+          <Flex direction="column" height="100%">
+            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+              Cost Gap Calculation
+            </Heading>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={costGapDataWithGap}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip content={<CustomTooltip />} />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="actual" 
+                  stroke="#3b82f6" 
+                  strokeWidth={2}
+                  name="Actual Cost"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="benchmark" 
+                  stroke="#f59e0b" 
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  name="Benchmark Price"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="targetCost" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  strokeDasharray="3 4 5 2"
+                  name="Target Cost"
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="gap" 
+                  stroke="#ef4444" 
+                  strokeWidth={2}
+                  name="Cost Gap"
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
 
-      <Card style={{
-        borderRadius: '12px',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-        backgroundColor: 'white',
-        padding: '16px',
-        gridColumn: '1 / -1',
-        height: '350px' // Restored original height
-      }}>
-        <Flex direction="column" height="100%">
-          <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
-            Cost Gap Analysis
-          </Heading>
-          <Text align="center" mb="2" size="2">
-            Total Cost Gap: {formatCurrency(
-              categories.reduce((sum, category) => 
-                sum + getDetailsByCategory(category).reduce(
-                  (catSum, item) => catSum + calculateActualCost(item), 0
-                ), 0) - targetCost, 
-              currency
-            )}
-          </Text>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={categories.map(category => ({
-                name: category,
-                actual: getDetailsByCategory(category).reduce(
-                  (sum, item) => sum + calculateActualCost(item), 0
-                ),
-                target: totals[category].budget,
-                gap: getDetailsByCategory(category).reduce(
-                  (sum, item) => sum + calculateActualCost(item), 0
-                ) - totals[category].budget
-              }))}
-              margin={{ top: 20, right: 30, left: 20, bottom: 5 }} // Restored original margins
-            >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip 
-                formatter={(value: number) => formatCurrency(value, currency)}
-              />
-              <Legend />
-              <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
-              <Bar dataKey="target" fill="#10b981" name="Target Cost" />
-            </BarChart>
-          </ResponsiveContainer>
-        </Flex>
-      </Card>
-    </Grid>
+        <Card style={{
+          borderRadius: '12px',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+          backgroundColor: 'white',
+          padding: '16px',
+          gridColumn: '1 / -1',
+          height: '350px'
+        }}>
+          <Flex direction="column" height="100%">
+            <Heading size="4" mb="3" align="center" style={cardTitleStyle}>
+              Cost Gap Analysis
+            </Heading>
+            <Text align="center" mb="2" size="2">
+              Total Cost Gap: {formatCurrency(
+                categories.reduce((sum, category) => 
+                  sum + getDetailsByCategory(category).reduce(
+                    (catSum, item) => catSum + calculateActualCost(item), 0
+                  ), 0) - targetCost, 
+                currency
+              )}
+            </Text>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={categories.map(category => ({
+                  name: category,
+                  actual: getDetailsByCategory(category).reduce(
+                    (sum, item) => sum + calculateActualCost(item), 0
+                  ),
+                  target: totals[category].budget,
+                  gap: getDetailsByCategory(category).reduce(
+                    (sum, item) => sum + calculateActualCost(item), 0
+                  ) - totals[category].budget
+                }))}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip 
+                  formatter={(value: number) => formatCurrency(value, currency)}
+                />
+                <Legend />
+                <Bar dataKey="actual" fill="#3b82f6" name="Actual Cost" />
+                <Bar dataKey="target" fill="#10b981" name="Target Cost" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Flex>
+        </Card>
+      </Grid>
 
-    {/* Submit to blockchain button */}
-    <Flex justify="end" mt="6">
-      <Button 
-        size="2" 
-        style={{ 
-          backgroundColor: '#10b981', 
-          color: '#fff', 
-          fontWeight: 'bold',
-          padding: '12px 24px',
-          borderRadius: '6px'
-        }}
-        onClick={handleSubmitToBlockchain}
-        disabled={true}
-      >
-        <UploadIcon style={{ marginRight: '8px' }} />
-        Submit to Blockchain
-      </Button>
-    </Flex>
-  </Box>
+      {/* Submit to blockchain button */}
+      <Flex justify="end" mt="6">
+        <Button 
+          size="2" 
+          style={{ 
+            backgroundColor: '#10b981', 
+            color: '#fff', 
+            fontWeight: 'bold',
+            padding: '12px 24px',
+            borderRadius: '6px'
+          }}
+          onClick={handleSubmitToBlockchain}
+          disabled={true}
+        >
+          <UploadIcon style={{ marginRight: '8px' }} />
+          Submit to Blockchain
+        </Button>
+      </Flex>
+    </Box>
   );
 }
 
