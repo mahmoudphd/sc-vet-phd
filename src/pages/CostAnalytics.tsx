@@ -1008,14 +1008,15 @@ function CostAnalytics() {
       }
     };
 
+    // Keep original ratings and reliability values
     const suppliers = [
       {
         id: 1,
         name: 'Supplier A',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[0])),
-        rating: 4.5 + Math.random() * 0.5, // 4.5-5.0 for special materials
-        delivery: isSpecialMaterial ? '1 week' : '1 week',
-        reliability: isSpecialMaterial ? '95-99%' : '90-98%',
+        rating: 4.7, // Original value
+        delivery: '1 week',
+        reliability: '97%', // Original value
         selected: false,
         material: generateRandomMaterial('Supplier A')
       },
@@ -1023,9 +1024,9 @@ function CostAnalytics() {
         id: 2,
         name: 'Supplier B',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[1])),
-        rating: isSpecialMaterial ? 4.3 + Math.random() * 0.7 : 4.0 + Math.random() * 1.0,
-        delivery: isSpecialMaterial ? '2 weeks' : '2 weeks',
-        reliability: isSpecialMaterial ? '92-97%' : '85-95%',
+        rating: 4.2, // Original value
+        delivery: '2 weeks',
+        reliability: '90%', // Original value
         selected: false,
         material: generateRandomMaterial('Supplier B')
       },
@@ -1033,9 +1034,9 @@ function CostAnalytics() {
         id: 3,
         name: 'Supplier C',
         pricePerKg: Math.round(intBasePrice * (1 - discounts[2])),
-        rating: isSpecialMaterial ? 4.0 + Math.random() * 0.8 : 3.5 + Math.random() * 1.3,
-        delivery: isSpecialMaterial ? '3 weeks' : '3 weeks',
-        reliability: isSpecialMaterial ? '90-96%' : '80-92%',
+        rating: 3.8, // Original value
+        delivery: '3 weeks',
+        reliability: '85%', // Original value
         selected: false,
         material: generateRandomMaterial('Supplier C')
       }
@@ -1046,7 +1047,7 @@ function CostAnalytics() {
       
       const priceScore = (1 - (supplier.pricePerKg / intBasePrice)) * 40;
       const ratingScore = (supplier.rating / 5) * 30;
-      const reliabilityScore = (parseInt(supplier.reliability.split('-')[0]) / 100) * 20;
+      const reliabilityScore = (parseInt(supplier.reliability) / 100) * 20;
       const deliveryWeeks = parseInt(supplier.delivery.split(' ')[0]);
       const deliveryScore = (1 - (deliveryWeeks / 3)) * 10;
       
