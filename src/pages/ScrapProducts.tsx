@@ -1,291 +1,510 @@
+import React, { useState, useCallback } from 'react';
 import {
-    Table,
-    Badge,
-    Button,
-    Flex,
-    Heading,
-    Text,
-    Progress,
-    IconButton,
-    Box,
-    Dialog,
-    TextField,
-    Select
+  Table,
+  Badge,
+  Button,
+  Flex,
+  Heading,
+  Select,
+  TextField,
+  Box,
+  Dialog,
+  Text,
+  Tooltip,
+  IconButton,
+  Card
 } from '@radix-ui/themes';
 import {
-    CrossCircledIcon,
-    PlusIcon
+  CubeIcon as BlockchainIcon,
+  PlusIcon,
+  MagnifyingGlassIcon,
+  Cross2Icon
 } from '@radix-ui/react-icons';
-import { useState } from 'react';
 import { toast } from 'sonner';
-import { useTranslation } from 'react-i18next';
+
+interface ScrapEntry {
+  id: string;
+  productName: string;
+  batchId: string;
+  scrapType: string;
+  damageExtent: string;
+  damageReason: string;
+  handlingMethod: string;
+  weight: number;
+  date: string;
+  detectedAt?: string;
+}
 
 const ScrapProducts = () => {
-    const { t } = useTranslation('scrap-products');
-    const [open, setOpen] = useState(false);
-    const [scrapReason, setScrapReason] = useState('');
-    const [scrapWeight, setScrapWeight] = useState('');
-    const [selectedBatch, setSelectedBatch] = useState('');
-    const [scrapType, setScrapType] = useState('partial');
-    const [removalMethod, setRemovalMethod] = useState('Recycled');
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [scrapData, setScrapData] = useState<ScrapEntry[]>([
+    {
+      id: '1',
+      productName: 'Poultry Drug A',
+      batchId: 'BR-001',
+      scrapType: 'Product Only',
+      damageExtent: 'Full',
+      damageReason: 'Transportation Damage',
+      handlingMethod: 'Recycling',
+      weight: 0.5,
+      date: '2025-09-24',
+      detectedAt: '2025-09-24 14:30:45'
+    },
+    {
+      id: '2',
+      productName: 'Poultry Drug B',
+      batchId: 'BR-002',
+      scrapType: 'Packaging Only',
+      damageExtent: 'Partial',
+      damageReason: 'Expiration',
+      handlingMethod: 'Safe Disposal',
+      weight: 0.3,
+      date: '2025-09-24',
+      detectedAt: '2025-09-24 09:15:22'
+    },
+    {
+      id: '3',
+      productName: 'Poultry Drug C',
+      batchId: 'BR-003',
+      scrapType: 'Both',
+      damageExtent: 'Full',
+      damageReason: 'Contamination',
+      handlingMethod: 'Incineration',
+      weight: 0.75,
+      date: '2025-09-23',
+      detectedAt: '2025-09-23 16:45:30'
+    },
+  ]);
 
-    // Sample scrap products data
-    const scrapProducts = [
-        {
-            id: 'SCP001',
-            batchId: 'VC23001',
-            reason: 'reason.contamination',
-            type: 'type.partial',
-            status: 'status.pending',
-            recordedWeight: 5.2,
-            recordedDate: '2024-02-20',
-            removalMethod: 'recycled'
-        },
-        {
-            id: 'SCP002',
-            batchId: 'VC23002',
-            reason: 'reason.expired',
-            type: 'type.full',
-            status: 'status.approved',
-            recordedWeight: 8.1,
-            recordedDate: '2024-02-21',
-            removalMethod: 'disposed'
-        },
-    ];
+  const [newEntry, setNewEntry] = useState<ScrapEntry>({
+    id: '',
+    productName: '',
+    batchId: '',
+    scrapType: 'Product Only',
+    damageExtent: 'Full',
+    damageReason: 'Expiration',
+    handlingMethod: 'Recycling',
+    weight: 0,
+    date: new Date().toISOString().split('T')[0],
+  });
 
-    const handleNewScrap = () => {
-        if (!scrapReason || !scrapWeight || !selectedBatch) {
-            toast.error(t('errors.fillAllFields'));
-            return;
-        }
-        
-        // Validation for Scrap Weight
-        if (isNaN(scrapWeight as any)) {
-            toast.error(t('errors.invalidWeight'));
-            return;
-        }
+  // Scrap type options
+  const scrapTypes = [
+    { value: 'Product Only', label: 'Product Only' },
+    { value: 'Packaging Only', label: 'Packaging Only' },
+    { value: 'Both', label: 'Both' }
+  ];
 
-        // Validation for Removal Method
-        if (!removalMethod) {
-            toast.error(t('errors.missingRemovalMethod'));
-            return;
-        }
+  // Damage extent options
+  const damageExtents = [
+    { value: 'Full', label: 'Full' },
+    { value: 'Partial', label: 'Partial' }
+  ];
 
-        // Add your scrap creation logic here
-        
-        setOpen(false);
-        toast.success(t('success.scrapRecorded'));
-    };
+  // Damage reason options
+  const damageReasons = [
+    { value: 'Expiration', label: 'Expiration' },
+    { value: 'Transportation Damage', label: 'Transportation Damage' },
+    { value: 'Contamination', label: 'Contamination' },
+    { value: 'Manufacturing Defect', label: 'Manufacturing Defect' }
+  ];
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'status.pending':
-                return 'yellow';
-            case 'status.approved':
-                return 'green';
-            case 'status.rejected':
-                return 'red';
-            default:
-                return 'gray';
-        }
-    };
+  // Handling method options
+  const handlingMethods = [
+    { value: 'Recycling', label: 'Recycling' },
+    { value: 'Safe Disposal', label: 'Safe Disposal' },
+    { value: 'Repackaging', label: 'Repackaging' },
+    { value: 'Incineration', label: 'Incineration' }
+  ];
 
-    return (
-        <Box p="6" className="flex-1">
-            <Flex justify="between" align="center" mb="8">
-                <Heading size="6" mb="2">
-                    {t('heading')}
-                </Heading>
-
-                <Button
-                    variant="ghost"
-                    color="amber"
-                    onClick={() => setOpen(true)}
-                    className="h-11"
-                >
-                    <PlusIcon className="mr-2 h-4 w-4" /> {t('buttons.newScrap')}
-                </Button>
-            </Flex>
-
-            <Dialog.Root open={open} onOpenChange={setOpen}>
-                <Dialog.Content style={{ maxWidth: 600, minWidth: 450 }}>
-                    <Dialog.Title className="text-gray-800">
-                        {t('dialog.recordScrapTitle')}
-                    </Dialog.Title>
-
-                    <Flex direction="column" gap="4" mt="4">
-                        <Select.Root
-                            value={selectedBatch}
-                            onValueChange={setSelectedBatch}
-                        >
-                            <Select.Trigger
-                                placeholder={t('form.selectBatch')}
-                                className="bg-gray-100 rounded-lg"
-                            />
-                            <Select.Content>
-                                <Select.Item value="VC23001">
-                                    VC23001 - {t('products.anthelminticOralSuspension')}
-                                </Select.Item>
-                                <Select.Item value="VC23002">
-                                    VC23002 - {t('products.anthelminticOralSuspension')}
-                                </Select.Item>
-                            </Select.Content>
-                        </Select.Root>
-
-                        <TextField.Root
-                            value={scrapReason}
-                            onChange={(e) => setScrapReason(e.target.value)}
-                            placeholder={t('form.reason')}
-                            className="w-full h-11 rounded-lg border-gray-300"
-                        />
-
-                        <TextField.Root
-                            type="number"
-                            value={scrapWeight}
-                            onChange={(e) => setScrapWeight(e.target.value)}
-                            placeholder={t('form.weight')}
-                            className="w-full h-11 rounded-lg border-gray-300"
-                        >
-                            <TextField.Slot>
-                                <Text className="ml-2">kg</Text>
-                            </TextField.Slot>
-                        </TextField.Root>
-
-                        <Select.Root
-                            value={scrapType}
-                            onValueChange={setScrapType}
-                        >
-                            <Select.Trigger
-                                placeholder={t('form.selectType')}
-                                className="bg-gray-100 rounded-lg"
-                            />
-                            <Select.Content>
-                                <Select.Item value="partial">
-                                    {t('type.partial')}
-                                </Select.Item>
-                                <Select.Item value="full">
-                                    {t('type.full')}
-                                </Select.Item>
-                            </Select.Content>
-                        </Select.Root>
-
-                        <Select.Root
-                            value={removalMethod}
-                            onValueChange={setRemovalMethod}
-                        >
-                            <Select.Trigger
-                                placeholder={t('form.removalMethodStrategy')}
-                                className="bg-gray-100 rounded-lg"
-                            />
-                            <Select.Content>
-                                <Select.Item value="fifo">
-                                    {t('removalMethods.fifo')}
-                                </Select.Item>
-                                <Select.Item value="lifo">
-                                    {t('removalMethods.lifo')}
-                                </Select.Item>
-                                <Select.Item value="fefo">
-                                    {t('removalMethods.fefo')}
-                                </Select.Item>
-                                <Select.Item value="erto">
-                                    {t('removalMethods.erto')}
-                                </Select.Item>
-                                <Select.Item value="too">
-                                    {t('removalMethods.too')}
-                                </Select.Item>
-                            </Select.Content>
-                        </Select.Root>
-
-                        <Flex gap="3" justify="end" mt="4">
-                            <Button
-                                variant="ghost"
-                                color="gray"
-                                onClick={() => setOpen(false)}
-                                className="px-4 py-2 rounded-lg border-gray-300"
-                            >
-                                {t('buttons.cancel')}
-                            </Button>
-                            <Button
-                                variant="solid"
-                                color="amber"
-                                onClick={handleNewScrap}
-                                className="px-4 py-2 rounded-lg hover:bg-amber-600"
-                            >
-                                <PlusIcon className="mr-2 h-4 w-4" /> {t('buttons.recordScrap')}
-                            </Button>
-                        </Flex>
-                    </Flex>
-                </Dialog.Content>
-            </Dialog.Root>
-
-            <Table.Root variant="surface" className="rounded-xl shadow-sm">
-                <Table.Header>
-                    <Table.Row>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.scrapId')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.batch')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.reason')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.type')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.weight')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font-medium">
-                            {t('table.headers.status')}
-                        </Table.ColumnHeaderCell>
-                        <Table.ColumnHeaderCell className="text-gray-600 text-sm font_medium">
-                            {t('table.headers.removalMethod')}
-                        </Table.ColumnHeaderCell>
-                    </Table.Row>
-                </Table.Header>
-
-                <Table.Body>
-                    {scrapProducts.map((scrap) => (
-                        <Table.Row key={scrap.id} className="hover:bg-gray-50">
-                            <Table.Cell className="text-gray-800 font-medium">
-                                {scrap.id}
-                            </Table.Cell>
-                            <Table.Cell className="text-gray-800">
-                                {scrap.batchId} <Text className="text-sm text-gray-500 ml-2">
-                                    ({t('products.anthelminticOralSuspension')})
-                                </Text>
-                            </Table.Cell>
-                            <Table.Cell className="text-gray-800">
-                                {t(scrap.reason)}
-                            </Table.Cell>
-                            <Table.Cell className="text-gray-800">
-                                {t(scrap.type)}
-                            </Table.Cell>
-                            <Table.Cell className="text-gray-800">
-                                <Box className="flex items-center">
-                                    <Text className="font-medium mr-2">{scrap.recordedWeight}</Text>
-                                    <Text className="text-gray-500">kg</Text>
-                                </Box>
-                            </Table.Cell>
-                            <Table.Cell>
-                                <Badge
-                                    color={getStatusColor(scrap.status)}
-                                    variant="soft"
-                                    className="text-sm"
-                                >
-                                    {t(scrap.status)}
-                                </Badge>
-                            </Table.Cell>
-                            <Table.Cell className="text-gray-800">
-                                {t(`removalMethods.${scrap.removalMethod}`)}
-                            </Table.Cell>
-                        </Table.Row>
-                    ))}
-                </Table.Body>
-            </Table.Root>
-        </Box>
+  const filteredScraps = useCallback(() => {
+    return scrapData.filter(scrap =>
+      scrap.batchId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.scrapType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.damageReason.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      scrap.handlingMethod.toLowerCase().includes(searchQuery.toLowerCase())
     );
+  }, [scrapData, searchQuery]);
+
+  const handleAddEntry = () => {
+    if (!newEntry.productName || !newEntry.batchId || !newEntry.weight) {
+      toast.error('Please fill all required fields');
+      return;
+    }
+
+    const newId = (scrapData.length + 1).toString();
+    setScrapData([...scrapData, { 
+      ...newEntry, 
+      id: newId,
+      detectedAt: new Date().toLocaleString()
+    }]);
+    setIsDialogOpen(false);
+    setNewEntry({
+      id: '',
+      productName: '',
+      batchId: '',
+      scrapType: 'Product Only',
+      damageExtent: 'Full',
+      damageReason: 'Expiration',
+      handlingMethod: 'Recycling',
+      weight: 0,
+      date: new Date().toISOString().split('T')[0],
+    });
+    toast.success('Scrap entry added successfully');
+  };
+
+  const handleSubmitToBlockchain = () => {
+    toast.success('Scrap data submitted to blockchain successfully');
+  };
+
+  const handleFieldUpdate = (id: string, field: string, value: string | number) => {
+    setScrapData(prevData => 
+      prevData.map(item => 
+        item.id === id ? { ...item, [field]: value } : item
+      )
+    );
+  };
+
+  // Fixed color functions - using valid Radix UI color values without const assertions
+  const getScrapTypeColor = () => 'blue' as const;
+  const getDamageExtentColor = (extent: string) => extent === 'Full' ? 'red' as const : 'orange' as const;
+  const getDamageReasonColor = () => 'gray' as const;
+  const getMethodColor = (method: string) => method === 'Recycling' ? 'green' as const : 'orange' as const;
+
+  return (
+    <Card className="p-6 rounded-lg shadow-sm">
+      <Flex justify="between" align="center" mb="6">
+        <Heading size="6">Scrap Products Management</Heading>
+        
+        <Flex gap="3" align="center">
+          <TextField.Root
+            placeholder="Search scraps..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-56"
+            variant="soft"
+          >
+            <TextField.Slot>
+              <MagnifyingGlassIcon />
+            </TextField.Slot>
+          </TextField.Root>
+          
+          <Button 
+            variant="solid" 
+            color="green"
+            className="bg-green-700 hover:bg-green-800 transition-colors shadow-sm"
+            onClick={handleSubmitToBlockchain}
+          >
+            <BlockchainIcon className="mr-2" />
+            Submit to Blockchain
+          </Button>
+          
+          <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <Dialog.Trigger>
+              <Button variant="soft" className="shadow-sm">
+                <PlusIcon className="mr-2" /> New Scrap
+              </Button>
+            </Dialog.Trigger>
+
+            <Dialog.Content style={{ maxWidth: 600 }} className="p-6">
+              <Flex justify="between" align="center" mb="4">
+                <Dialog.Title className="font-bold">Add New Scrap Entry</Dialog.Title>
+                <IconButton variant="ghost" onClick={() => setIsDialogOpen(false)}>
+                  <Cross2Icon />
+                </IconButton>
+              </Flex>
+              
+              <Flex direction="column" gap="4">
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">Product Name</Text>
+                  <Select.Root
+                    value={newEntry.productName}
+                    onValueChange={(value) =>
+                      setNewEntry({ ...newEntry, productName: value })
+                    }
+                  >
+                    <Select.Trigger placeholder="Select product" />
+                    <Select.Content>
+                      <Select.Item value="Poultry Drug A">Poultry Drug A</Select.Item>
+                      <Select.Item value="Poultry Drug B">Poultry Drug B</Select.Item>
+                      <Select.Item value="Poultry Drug C">Poultry Drug C</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Flex>
+
+                <Flex direction="column" gap="2">
+                  <Text as="label" size="2" weight="bold">Batch ID</Text>
+                  <TextField.Root
+                    placeholder="BR-001"
+                    value={newEntry.batchId}
+                    onChange={(e) =>
+                      setNewEntry({ ...newEntry, batchId: e.target.value })
+                    }
+                  />
+                </Flex>
+
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Scrap Type</Text>
+                    <Select.Root
+                      value={newEntry.scrapType}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, scrapType: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {scrapTypes.map((type) => (
+                          <Select.Item key={type.value} value={type.value}>
+                            {type.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Weight (kg)</Text>
+                    <TextField.Root
+                      type="number"
+                      step="0.1"
+                      placeholder="0.5"
+                      value={newEntry.weight}
+                      onChange={(e) =>
+                        setNewEntry({ ...newEntry, weight: parseFloat(e.target.value) || 0 })
+                      }
+                    />
+                  </Flex>
+                </Flex>
+
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Damage Extent</Text>
+                    <Select.Root
+                      value={newEntry.damageExtent}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, damageExtent: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {damageExtents.map((extent) => (
+                          <Select.Item key={extent.value} value={extent.value}>
+                            {extent.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Damage Reason</Text>
+                    <Select.Root
+                      value={newEntry.damageReason}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, damageReason: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {damageReasons.map((reason) => (
+                          <Select.Item key={reason.value} value={reason.value}>
+                            {reason.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+                </Flex>
+
+                <Flex gap="3">
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Handling Method</Text>
+                    <Select.Root
+                      value={newEntry.handlingMethod}
+                      onValueChange={(value) =>
+                        setNewEntry({ ...newEntry, handlingMethod: value })
+                      }
+                    >
+                      <Select.Trigger />
+                      <Select.Content>
+                        {handlingMethods.map((method) => (
+                          <Select.Item key={method.value} value={method.value}>
+                            {method.label}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Flex>
+
+                  <Flex direction="column" gap="2" className="flex-1">
+                    <Text as="label" size="2" weight="bold">Date</Text>
+                    <TextField.Root
+                      type="date"
+                      value={newEntry.date}
+                      onChange={(e) =>
+                        setNewEntry({ ...newEntry, date: e.target.value })
+                      }
+                    />
+                  </Flex>
+                </Flex>
+              </Flex>
+
+              <Flex gap="3" justify="end" mt="4" className="border-t border-gray-100 pt-4">
+                <Button 
+                  variant="soft" 
+                  color="gray"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="hover:bg-gray-100"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleAddEntry}
+                  className="hover:bg-blue-600 transition-colors"
+                >
+                  Add Scrap
+                </Button>
+              </Flex>
+            </Dialog.Content>
+          </Dialog.Root>
+        </Flex>
+      </Flex>
+
+      <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
+        <Table.Header className="bg-gray-50">
+          <Table.Row className="[&>th]:font-semibold [&>th]:text-gray-700 [&>th]:py-3">
+            <Table.ColumnHeaderCell>Batch ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product Name</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Date</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Scrap Type</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Damage Extent</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Damage Reason</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Handling Method</Table.ColumnHeaderCell>
+          </Table.Row>
+        </Table.Header>
+
+        <Table.Body className="divide-y divide-gray-100">
+          {filteredScraps().map((entry) => (
+            <Table.Row key={entry.id} className="hover:bg-gray-50/50">
+              <Table.Cell className="font-medium">
+                {entry.batchId}
+              </Table.Cell>
+              
+              <Table.Cell>
+                {entry.productName}
+              </Table.Cell>
+              
+              <Table.Cell className="text-gray-700">
+                {entry.date}
+                {entry.detectedAt && (
+                  <Tooltip content={`Detected at: ${entry.detectedAt}`}>
+                    <Badge color="blue" variant="soft" className="ml-2 cursor-pointer">
+                      Via IoT
+                    </Badge>
+                  </Tooltip>
+                )}
+              </Table.Cell>
+              
+              <Table.Cell>
+                <TextField.Root
+                  type="number"
+                  step="0.1"
+                  value={entry.weight}
+                  onChange={(e) => handleFieldUpdate(entry.id, 'weight', parseFloat(e.target.value) || 0)}
+                  className="w-20"
+                  variant="soft"
+                />
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Select.Root
+                  value={entry.scrapType}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'scrapType', value)}
+                >
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getScrapTypeColor()} variant="soft">
+                      {entry.scrapType}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {scrapTypes.map((type) => (
+                      <Select.Item key={type.value} value={type.value}>
+                        {type.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Select.Root
+                  value={entry.damageExtent}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'damageExtent', value)}
+                >
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getDamageExtentColor(entry.damageExtent)} variant="soft">
+                      {entry.damageExtent}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {damageExtents.map((extent) => (
+                      <Select.Item key={extent.value} value={extent.value}>
+                        {extent.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Select.Root
+                  value={entry.damageReason}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'damageReason', value)}
+                >
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getDamageReasonColor()} variant="soft">
+                      {entry.damageReason}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {damageReasons.map((reason) => (
+                      <Select.Item key={reason.value} value={reason.value}>
+                        {reason.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+              
+              <Table.Cell>
+                <Select.Root
+                  value={entry.handlingMethod}
+                  onValueChange={(value) => handleFieldUpdate(entry.id, 'handlingMethod', value)}
+                >
+                  <Select.Trigger variant="ghost" className="w-full">
+                    <Badge color={getMethodColor(entry.handlingMethod)} variant="soft">
+                      {entry.handlingMethod}
+                    </Badge>
+                  </Select.Trigger>
+                  <Select.Content>
+                    {handlingMethods.map((method) => (
+                      <Select.Item key={method.value} value={method.value}>
+                        {method.label}
+                      </Select.Item>
+                    ))}
+                  </Select.Content>
+                </Select.Root>
+              </Table.Cell>
+            </Table.Row>
+          ))}
+        </Table.Body>
+      </Table.Root>
+    </Card>
+  );
 };
 
 export default ScrapProducts;

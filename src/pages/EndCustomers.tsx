@@ -1,78 +1,102 @@
 import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
-    Card, 
-    Flex, 
-    Heading, 
-    Table, 
-    Badge, 
-    Button, 
-    Grid,
-    Text,
-    Box,
-    Dialog,
-    TextField
+  Card, 
+  Flex, 
+  Heading, 
+  Table, 
+  Badge, 
+  Button, 
+  Grid,
+  Text,
+  Box,
+  Dialog,
+  TextField,
+  AlertDialog
 } from '@radix-ui/themes';
 import { 
-    LineChart, 
-    Line, 
-    PieChart, 
-    Pie, 
-    XAxis, 
-    YAxis, 
-    CartesianGrid, 
-    Tooltip,
-    Legend,
-    Cell
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip,
+  Legend,
+  Cell
 } from 'recharts';
 
 const EndCustomers = () => {
-  const { t } = useTranslation('end-customers');
   const [selectedReport, setSelectedReport] = useState('');
-  
+  const [isBlockchainDialogOpen, setIsBlockchainDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const customers = [
-    { id: 'PAT-04578', therapy: 'Antiparasitic Treatment', adherence: 92, outcomes: 'positive', feedback: 4.7, lastOrder: '2023-07-01' },
-    { id: 'PAT-04579', therapy: 'Antifungal Therapy', adherence: 85, outcomes: 'neutral', feedback: 4.2, lastOrder: '2023-07-05' },
-    { id: 'PAT-04580', therapy: 'Antibiotic Course', adherence: 78, outcomes: 'negative', feedback: 3.9, lastOrder: '2023-07-10' },
+    { id: 'CUST-02501', productPurchased: 'Poultry Drug A', purchasedFrequency: 92, satisfactionLevel: 'high', rating: 4.7, lastPurchaseDate: '2025-01-15' },
+    { id: 'CUST-02502', productPurchased: 'Poultry Drug B', purchasedFrequency: 85, satisfactionLevel: 'medium', rating: 4.2, lastPurchaseDate: '2025-02-05' },
+    { id: 'CUST-02503', productPurchased: 'Poultry Drug C', purchasedFrequency: 78, satisfactionLevel: 'low', rating: 3.9, lastPurchaseDate: '2025-03-10' },
   ];
 
-  const adherenceData = [
-    { month: t('jan'), adherence: 85 },
-    { month: t('feb'), adherence: 88 },
-    { month: t('mar'), adherence: 90 },
-    { month: t('apr'), adherence: 87 },
-    { month: t('may'), adherence: 91 },
-    { month: t('jun'), adherence: 93 },
+  const purchasedFrequencyData = [
+    { month: 'Jan', frequency: 85 },
+    { month: 'Feb', frequency: 88 },
+    { month: 'Mar', frequency: 90 },
+    { month: 'Apr', frequency: 87 },
+    { month: 'May', frequency: 91 },
+    { month: 'Jun', frequency: 93 },
   ];
 
-  const demographicsData = [
-    { name: t('age-18-30'), value: 25, color: '#3b82f6' },
-    { name: t('age-31-50'), value: 45, color: '#60a5fa' },
-    { name: t('age-51-plus'), value: 30, color: '#93c5fd' },
+  const satisfactionData = [
+    { name: 'High Satisfaction', value: 25, color: '#3b82f6' },
+    { name: 'Medium Satisfaction', value: 45, color: '#60a5fa' },
+    { name: 'Low Satisfaction', value: 30, color: '#93c5fd' },
   ];
+
+  const submitToBlockchain = async () => {
+    setIsSubmitting(true);
+    try {
+      // Simulate blockchain submission
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      alert('Data successfully submitted to blockchain!');
+    } catch (error) {
+      alert('Failed to submit data to blockchain');
+    } finally {
+      setIsSubmitting(false);
+      setIsBlockchainDialogOpen(false);
+    }
+  };
 
   return (
     <Box p="6">
       <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('patient-therapy-management')}</Heading>
+        <Heading size="6">End Customer Management</Heading>
         <Flex gap="3">
+          {/* Dark green blockchain button */}
+          <Button 
+            variant="solid" 
+            style={{ backgroundColor: '#166534' }} // Dark green color
+            onClick={() => setIsBlockchainDialogOpen(true)}
+          >
+            Submit to Blockchain
+          </Button>
+
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button variant="soft">{t('safety-reporting')}</Button>
+              <Button variant="soft">Safety Reporting</Button>
             </Dialog.Trigger>
             <Dialog.Content style={{ maxWidth: 450 }}>
-              <Dialog.Title>{t('safety-reporting')}</Dialog.Title>
+              <Dialog.Title>Safety Reporting</Dialog.Title>
               <Dialog.Description mb="4">
-                {t('report-adverse-event')}
+                Report an adverse event related to the product.
               </Dialog.Description>
               
               <Flex direction="column" gap="3">
                 <TextField.Root
-                  placeholder={t('patient-id-placeholder')}
+                  placeholder="Enter Customer ID"
                   onChange={(e) => setSelectedReport(e.target.value)}
                 />
                 <TextField.Root
-                  placeholder={t('event-description')}
+                  placeholder="Describe the event"
                   onChange={(e) => setSelectedReport(e.target.value)}
                 />
               </Flex>
@@ -80,11 +104,11 @@ const EndCustomers = () => {
               <Flex gap="3" mt="4" justify="end">
                 <Dialog.Close>
                   <Button variant="soft" color="gray">
-                    {t('cancel')}
+                    Cancel
                   </Button>
                 </Dialog.Close>
                 <Dialog.Close>
-                  <Button>{t('submit-report')}</Button>
+                  <Button>Submit Report</Button>
                 </Dialog.Close>
               </Flex>
             </Dialog.Content>
@@ -92,16 +116,16 @@ const EndCustomers = () => {
 
           <Dialog.Root>
             <Dialog.Trigger>
-              <Button variant="soft">{t('gdpr-compliance')}</Button>
+              <Button variant="soft">GDPR Compliance</Button>
             </Dialog.Trigger>
             <Dialog.Content style={{ maxWidth: 500 }}>
-              <Dialog.Title>{t('gdpr-compliance')}</Dialog.Title>
+              <Dialog.Title>GDPR Compliance</Dialog.Title>
               <Text as="div" size="2" mb="4">
-                {t('gdpr-description')}
+                We ensure full compliance with GDPR regulations.
               </Text>
               <Flex gap="3" mt="4" justify="end">
                 <Dialog.Close>
-                  <Button>{t('close')}</Button>
+                  <Button>Close</Button>
                 </Dialog.Close>
               </Flex>
             </Dialog.Content>
@@ -109,28 +133,54 @@ const EndCustomers = () => {
         </Flex>
       </Flex>
 
+      {/* Blockchain Submission Dialog */}
+      <AlertDialog.Root open={isBlockchainDialogOpen}>
+        <AlertDialog.Content style={{ maxWidth: 450 }}>
+          <AlertDialog.Title>Submit to Blockchain</AlertDialog.Title>
+          <AlertDialog.Description size="2" mb="4">
+            Are you sure you want to submit this customer data to the blockchain?
+          </AlertDialog.Description>
+          <Flex gap="3" mt="4" justify="end">
+            <Button 
+              variant="soft" 
+              color="gray" 
+              onClick={() => setIsBlockchainDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button 
+              style={{ backgroundColor: '#166534' }} // Dark green color
+              onClick={submitToBlockchain}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Confirm'}
+            </Button>
+          </Flex>
+        </AlertDialog.Content>
+      </AlertDialog.Root>
+
       <Grid columns="4" gap="4" mb="5">
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('active-patients')}</Text>
-            <Heading size="7">24,589</Heading>
+            <Text size="2">Active Customers</Text>
+            <Heading size="7">3,000</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('avg-adherence')}</Text>
+            <Text size="2">Average Purchase Frequency</Text>
             <Heading size="7">89%</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('ae-reports')}</Text>
-            <Heading size="7" className="text-red-500">45</Heading>
+            <Text size="2">Average Satisfaction Level</Text>
+            <Heading size="7">4.6/5</Heading>
           </Flex>
         </Card>
         <Card>
           <Flex direction="column" gap="1">
-            <Text size="2">{t('satisfaction')}</Text>
+            <Text size="2">Average Rating</Text>
             <Heading size="7">4.6/5</Heading>
           </Flex>
         </Card>
@@ -138,9 +188,9 @@ const EndCustomers = () => {
 
       <Flex gap="4" mb="5">
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('therapy-adherence')}</Heading>
+          <Heading size="4" mb="3">Purchase Frequency Over Time</Heading>
           <div className="h-64">
-            <LineChart width={800} height={250} data={adherenceData}>
+            <LineChart width={800} height={250} data={purchasedFrequencyData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
@@ -148,7 +198,7 @@ const EndCustomers = () => {
               <Legend />
               <Line 
                 type="monotone" 
-                dataKey="adherence" 
+                dataKey="frequency" 
                 stroke="#3b82f6" 
                 strokeWidth={2}
               />
@@ -157,11 +207,11 @@ const EndCustomers = () => {
         </Card>
         
         <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('demographics')}</Heading>
+          <Heading size="4" mb="3">Customer Satisfaction</Heading>
           <div className="h-64">
             <PieChart width={400} height={250}>
               <Pie
-                data={demographicsData}
+                data={satisfactionData}
                 cx="50%"
                 cy="50%"
                 innerRadius={60}
@@ -170,7 +220,7 @@ const EndCustomers = () => {
                 dataKey="value"
                 label
               >
-                {demographicsData.map((entry, index) => (
+                {satisfactionData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
@@ -184,27 +234,30 @@ const EndCustomers = () => {
       <Table.Root variant="surface">
         <Table.Header>
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('patient-id')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('therapy')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('adherence')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('outcomes')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('feedback')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('last-order')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Customer ID</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Product Purchased</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Purchase Frequency</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Satisfaction Level</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Rating</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell>Last Purchase Date</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
           {customers.map((customer) => (
             <Table.Row key={customer.id}>
               <Table.Cell>{customer.id}</Table.Cell>
-              <Table.Cell>{customer.therapy}</Table.Cell>
-              <Table.Cell>{customer.adherence}%</Table.Cell>
+              <Table.Cell>{customer.productPurchased}</Table.Cell>
+              <Table.Cell>{customer.purchasedFrequency} times</Table.Cell>
               <Table.Cell>
-                <Badge variant="soft" color={customer.outcomes === 'positive' ? 'green' : 'red'}>
-                  {t(customer.outcomes)}
+                <Badge variant="soft" color={
+                  customer.satisfactionLevel === 'high' ? 'green' :
+                  customer.satisfactionLevel === 'medium' ? 'amber' : 'red'
+                }>
+                  {customer.satisfactionLevel}
                 </Badge>
               </Table.Cell>
-              <Table.Cell>{customer.feedback}/5</Table.Cell>
-              <Table.Cell>{customer.lastOrder}</Table.Cell>
+              <Table.Cell>{customer.rating}/5</Table.Cell>
+              <Table.Cell>{customer.lastPurchaseDate}</Table.Cell>
             </Table.Row>
           ))}
         </Table.Body>
