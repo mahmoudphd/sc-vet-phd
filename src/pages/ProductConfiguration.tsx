@@ -1,327 +1,840 @@
+import React, { useState, useEffect } from 'react';
 import {
-    Card,
-    Flex,
-    Heading,
-    Table,
-    Badge,
-    Button,
-    Grid,
-    Text,
-    TextField,
-    DropdownMenu,
-    Progress,
-    Dialog,
-    Select,
-    TextArea,
-    Checkbox,
-    Box
+  Card,
+  Flex,
+  Heading,
+  Table,
+  Badge,
+  Button,
+  Grid,
+  Text,
+  TextField,
+  Dialog,
+  Select,
+  TextArea,
+  Box,
+  ScrollArea,
+  Separator,
+  Tabs,
+  Container
 } from '@radix-ui/themes';
 import {
-    PlusIcon,
-    FileTextIcon,
-    Cross2Icon,
-    Pencil2Icon
+  PlusIcon,
+  FileTextIcon,
+  Cross2Icon,
+  CubeIcon,
+  MagnifyingGlassIcon,
+  GearIcon,
+  CheckIcon,
+  LockClosedIcon,
+  UpdateIcon
 } from '@radix-ui/react-icons';
-import { PieChart, Pie } from 'recharts';
-import { useState } from 'react';
-import { useTranslation } from 'react-i18next';
+import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
+
+// تعريف الواجهات
+interface Component {
+  component: string;
+  weight: number;
+  percentage: number;
+  pricePerKg: number;
+}
+
+interface ProductionDesign {
+  packagingType: string;
+  dimensions: string;
+  closure: string;
+  color: string;
+  viscosity: string;
+  pH: string;
+  fillingTemp: string;
+  features: string[];
+  notes?: string;
+}
+
+interface BlockchainStatus {
+  txHash: string | null;
+  status: 'not-submitted' | 'pending' | 'confirmed' | 'failed';
+  timestamp: string | null;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  components: number;
+  status: string;
+  version: string;
+  compliance: string;
+  description: string;
+  removalMethod: string;
+  formula: Component[];
+  productionDesign: ProductionDesign;
+  blockchain: BlockchainStatus;
+}
+
+const complianceOptions = [
+  "Egyptian Drug Authority (EDA)",
+  "GMP",
+  "ICH Q11",
+  "FDA Guidance",
+  "EMEA",
+  "WHO"
+];
+
+const allComponents = [
+  { name: 'Vitamin B1', pricePerKg: 540 },
+  { name: 'Vitamin B2', pricePerKg: 600 },
+  { name: 'Vitamin B12', pricePerKg: 2300 },
+  { name: 'Nicotinamide B3', pricePerKg: 400 },
+  { name: 'Pantothenic Acid', pricePerKg: 1700 },
+  { name: 'Vitamin B6', pricePerKg: 900 },
+  { name: 'Leucine', pricePerKg: 200 },
+  { name: 'Threonine', pricePerKg: 950 },
+  { name: 'Taurine', pricePerKg: 3000 },
+  { name: 'Glycine', pricePerKg: 4200 },
+  { name: 'Arginine', pricePerKg: 5000 },
+  { name: 'Cynarin', pricePerKg: 3900 },
+  { name: 'Silymarin', pricePerKg: 700 },
+  { name: 'Sorbitol', pricePerKg: 360 },
+  { name: 'Carnitine', pricePerKg: 1070 },
+  { name: 'Betaine', pricePerKg: 1250 },
+  { name: 'Tween-80', pricePerKg: 90 },
+  { name: 'Water', pricePerKg: 1 }
+];
 
 const ProductConfiguration = () => {
-    const [newConfigModalOpen, setNewConfigModalOpen] = useState(false);
-    const [viewSpecModalOpen, setViewSpecModalOpen] = useState(false);
-    const [historyModalOpen, setHistoryModalOpen] = useState(false);
-    const [selectedProduct, setSelectedProduct] = useState<any>(null);
-    const { t } = useTranslation('product-configuration-page');
+  const [products, setProducts] = useState<Product[]>([
+    {
+      id: 'DRG-045',
+      name: 'Poultry Product A',
+      components: 18,
+      status: 'Approved',
+      version: 'v2.1',
+      compliance: 'Egyptian Drug Authority (EDA)',
+      description: 'Balanced vitamins and amino acids for healthier, faster-growing poultry.',
+      removalMethod: 'FIFO',
+      formula: [
+        { component: 'Vitamin B1', weight: 0.001, percentage: 0.1, pricePerKg: 540 },
+        { component: 'Vitamin B2', weight: 0.006, percentage: 0.6, pricePerKg: 600 },
+        { component: 'Vitamin B12', weight: 0.001, percentage: 0.1, pricePerKg: 2300 },
+        { component: 'Nicotinamide B3', weight: 0.010, percentage: 1.0, pricePerKg: 400 },
+        { component: 'Pantothenic Acid', weight: 0.004, percentage: 0.4, pricePerKg: 1700 },
+        { component: 'Vitamin B6', weight: 0.0015, percentage: 0.15, pricePerKg: 900 },
+        { component: 'Leucine', weight: 0.030, percentage: 3.0, pricePerKg: 200 },
+        { component: 'Threonine', weight: 0.010, percentage: 1.0, pricePerKg: 950 },
+        { component: 'Taurine', weight: 0.0025, percentage: 0.25, pricePerKg: 3000 },
+        { component: 'Glycine', weight: 0.0025, percentage: 0.25, pricePerKg: 4200 },
+        { component: 'Arginine', weight: 0.0025, percentage: 0.25, pricePerKg: 5000 },
+        { component: 'Cynarin', weight: 0.0025, percentage: 0.25, pricePerKg: 3900 },
+        { component: 'Silymarin', weight: 0.025, percentage: 2.5, pricePerKg: 700 },
+        { component: 'Sorbitol', weight: 0.010, percentage: 1.0, pricePerKg: 360 },
+        { component: 'Carnitine', weight: 0.005, percentage: 0.5, pricePerKg: 1070 },
+        { component: 'Betaine', weight: 0.020, percentage: 2.0, pricePerKg: 1250 },
+        { component: 'Tween-80', weight: 0.075, percentage: 7.5, pricePerKg: 90 },
+        { component: 'Water', weight: 0.571, percentage: 57.1, pricePerKg: 1 }
+      ],
+      productionDesign: {
+        packagingType: '1kg HDPE Plastic Bottle',
+        dimensions: 'Ø80mm × 180mm',
+        closure: '38mm Screw Cap with Foil Seal',
+        color: 'Egyptian Blue with Gold Accents',
+        viscosity: 'Medium (500-1000 cPs)',
+        pH: '6.5-7.5',
+        fillingTemp: '25°C ± 2°C',
+        features: [
+          'UV protection',
+          'Tamper-evident neck band',
+          'Graduated measuring marks',
+          'EDA compliant labeling'
+        ]
+      },
+      blockchain: {
+        txHash: null,
+        status: 'not-submitted',
+        timestamp: null
+      }
+    }
+  ]);
 
-    const products = [
-        {
-            id: 'FORM-045',
-            name: 'Antiparasitic Oral Suspension',
-            components: 8,
-            status: 'Draft',
-            version: 'v1.2',
-            compliance: 'ICH Q11',
-            cost: '$1200',
-            price: '$2500',
-            removalMethod: 'Chemical Dissolution',
-            description: 'Veterinary antiparasitic suspension for oral administration',
-            formula: [
-                { component: 'Albendazole', width: '250mm' },
-                { component: 'Suspending Agent', width: '120mm' }
-            ]
-        },
+  const [newProduct, setNewProduct] = useState<Product>({
+    id: '',
+    name: '',
+    components: 0,
+    status: 'Draft',
+    version: 'v1.0',
+    compliance: 'Egyptian Drug Authority (EDA)',
+    description: '',
+    removalMethod: 'FIFO',
+    formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
+    productionDesign: {
+      packagingType: '1kg HDPE Plastic Bottle',
+      dimensions: 'Ø80mm × 180mm',
+      closure: '38mm Screw Cap with Foil Seal',
+      color: 'Egyptian Blue with Gold Accents',
+      viscosity: 'Medium (500-1000 cPs)',
+      pH: '6.5-7.5',
+      fillingTemp: '25°C ± 2°C',
+      features: [
+        'UV protection',
+        'Tamper-evident neck band',
+        'Graduated measuring marks',
+        'EDA compliant labeling'
+      ],
+      notes: ''
+    },
+    blockchain: {
+      txHash: null,
+      status: 'not-submitted',
+      timestamp: null
+    }
+  });
+
+  const [newConfigModalOpen, setNewConfigModalOpen] = useState(false);
+  const [viewSpecModalOpen, setViewSpecModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('details');
+  const [totalPercentage, setTotalPercentage] = useState(0);
+
+  useEffect(() => {
+    const total = newProduct.formula.reduce(
+      (sum, item) => sum + (item.percentage || 0), 0);
+    setTotalPercentage(total);
+  }, [newProduct.formula]);
+
+  const submitToBlockchain = async (productId: string) => {
+    const productIndex = products.findIndex(p => p.id === productId);
+    if (productIndex === -1) return;
+    
+    const updatedProducts = [...products];
+    updatedProducts[productIndex] = {
+      ...updatedProducts[productIndex],
+      blockchain: {
+        ...updatedProducts[productIndex].blockchain,
+        status: 'pending'
+      }
+    };
+    setProducts(updatedProducts);
+    
+    try {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      
+      const mockTxHash = `0x${Math.random().toString(16).substr(2, 64)}`;
+      
+      const successfulUpdate = [...updatedProducts];
+      successfulUpdate[productIndex] = {
+        ...successfulUpdate[productIndex],
+        blockchain: {
+          txHash: mockTxHash,
+          status: 'confirmed',
+          timestamp: new Date().toISOString()
+        }
+      };
+      setProducts(successfulUpdate);
+    } catch (error) {
+      const failedUpdate = [...updatedProducts];
+      failedUpdate[productIndex] = {
+        ...failedUpdate[productIndex],
+        blockchain: {
+          ...failedUpdate[productIndex].blockchain,
+          status: 'failed'
+        }
+      };
+      setProducts(failedUpdate);
+    }
+  };
+
+  const BlockchainStatusBadge = ({ status }: { status: BlockchainStatus['status'] }) => {
+    switch (status) {
+      case 'confirmed':
+        return (
+          <Badge color="green" className="flex items-center gap-1">
+            <CheckIcon /> On Blockchain
+          </Badge>
+        );
+      case 'pending':
+        return (
+          <Badge color="orange" className="flex items-center gap-1">
+            <UpdateIcon className="animate-spin" /> Submitting...
+          </Badge>
+        );
+      case 'failed':
+        return (
+          <Badge color="red" className="flex items-center gap-1">
+            <Cross2Icon /> Failed
+          </Badge>
+        );
+      default:
+        return (
+          <Badge color="gray" className="flex items-center gap-1">
+            <LockClosedIcon /> Not Submitted
+          </Badge>
+        );
+    }
+  };
+
+  const handleAddProduct = () => {
+    if (!newProduct.id || !newProduct.name) {
+      alert('Please fill in required fields');
+      return;
+    }
+    setProducts([...products, newProduct]);
+    setNewProduct({
+      id: '',
+      name: '',
+      components: 0,
+      status: 'Draft',
+      version: 'v1.0',
+      compliance: 'Egyptian Drug Authority (EDA)',
+      description: '',
+      removalMethod: 'FIFO',
+      formula: [{ component: '', weight: 0, percentage: 0, pricePerKg: 0 }],
+      productionDesign: {
+        packagingType: '1kg HDPE Plastic Bottle',
+        dimensions: 'Ø80mm × 180mm',
+        closure: '38mm Screw Cap with Foil Seal',
+        color: 'Egyptian Blue with Gold Accents',
+        viscosity: 'Medium (500-1000 cPs)',
+        pH: '6.5-7.5',
+        fillingTemp: '25°C ± 2°C',
+        features: [
+          'UV protection',
+          'Tamper-evident neck band',
+          'Graduated measuring marks',
+          'EDA compliant labeling'
+        ],
+        notes: ''
+      },
+      blockchain: {
+        txHash: null,
+        status: 'not-submitted',
+        timestamp: null
+      }
+    });
+    setNewConfigModalOpen(false);
+  };
+
+  const addFormulaRow = () => {
+    setNewProduct({
+      ...newProduct,
+      formula: [...newProduct.formula, { component: '', weight: 0, percentage: 0, pricePerKg: 0 }]
+    });
+  };
+
+  const removeFormulaRow = (index: number) => {
+    const newFormula = [...newProduct.formula];
+    newFormula.splice(index, 1);
+    setNewProduct({
+      ...newProduct,
+      formula: newFormula
+    });
+  };
+
+  const updateFormulaRow = (index: number, field: keyof Component, value: any) => {
+    const newFormula = [...newProduct.formula];
+    newFormula[index] = { ...newFormula[index], [field]: value };
+    
+    if (field === 'weight') {
+      const totalWeight = newFormula.reduce((sum, item) => sum + (item.weight || 0), 0);
+      if (totalWeight > 0) {
+        newFormula[index].percentage = parseFloat(((value / totalWeight) * 100).toFixed(1));
+      }
+    }
+    
+    setNewProduct({
+      ...newProduct,
+      formula: newFormula
+    });
+  };
+
+  const filteredProducts = products.filter(product =>
+    product.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    product.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const ProductionDesignTable = ({ design }: { design: ProductionDesign }) => (
+    <Table.Root variant="surface">
+      <Table.Header>
+        <Table.Row>
+          <Table.ColumnHeaderCell colSpan={2}>
+            <Flex align="center" gap="2">
+              <CubeIcon /> Packaging Design
+            </Flex>
+          </Table.ColumnHeaderCell>
+        </Table.Row>
+      </Table.Header>
+      <Table.Body>
+        <Table.Row>
+          <Table.Cell className="font-bold">Type</Table.Cell>
+          <Table.Cell>{design.packagingType}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Dimensions</Table.Cell>
+          <Table.Cell>{design.dimensions}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Closure</Table.Cell>
+          <Table.Cell>{design.closure}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Color</Table.Cell>
+          <Table.Cell>{design.color}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Viscosity</Table.Cell>
+          <Table.Cell>{design.viscosity}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">pH Range</Table.Cell>
+          <Table.Cell>{design.pH}</Table.Cell>
+        </Table.Row>
+        <Table.Row>
+          <Table.Cell className="font-bold">Filling Temp</Table.Cell>
+          <Table.Cell>{design.fillingTemp}</Table.Cell>
+        </Table.Row>
+      </Table.Body>
+    </Table.Root>
+  );
+
+  const ComponentDistributionChart = ({ formula }: { formula: Component[] }) => {
+    const data = formula.map((item) => ({
+      name: item.component,
+      value: item.percentage,
+      pricePerKg: item.pricePerKg
+    }));
+
+    const COLORS = [
+      '#003f5c', '#2f4b7c', '#665191', '#a05195', 
+      '#d45087', '#f95d6a', '#ff7c43', '#ffa600',
+      '#00c49f', '#ffbb28', '#ff8042', '#8884d8'
     ];
 
-    const NewConfigurationModal = () => (
-        <Dialog.Root open={newConfigModalOpen} onOpenChange={setNewConfigModalOpen}>
-            <Dialog.Content style={{ maxWidth: 600 }}>
-                <Flex justify="between" align="center" mb="5">
-                    <Dialog.Title>{t('new-configuration-modal.title')}</Dialog.Title>
-                    <Dialog.Close>
-                        <Button variant="ghost" color="gray">
-                            <Cross2Icon />
-                        </Button>
-                    </Dialog.Close>
-                </Flex>
-
-                <Flex direction="column" gap="4">
-                    <TextField.Root placeholder={t('new-configuration-modal.product-name-placeholder')}>
-                        <TextField.Slot>Name</TextField.Slot>
-                    </TextField.Root>
-
-                    <TextArea placeholder={t('new-configuration-modal.product-description-placeholder')} />
-
-                    <Select.Root defaultValue="ich-q11">
-                        <Select.Group>
-                            <Select.Label>Compliance</Select.Label>
-                            <Select.Trigger />
-                            <Select.Content>
-                                <Select.Item value="ich-q11">
-                                    {t('new-configuration-modal.compliance-standards.ich-q11')}
-                                </Select.Item>
-                                <Select.Item value="ich-q8">
-                                    {t('new-configuration-modal.compliance-standards.ich-q8')}
-                                </Select.Item>
-                                <Select.Item value="fda">
-                                    {t('new-configuration-modal.compliance-standards.fda')}
-                                </Select.Item>
-                            </Select.Content>
-                        </Select.Group>
-                    </Select.Root>
-
-                    <Flex direction="column" gap="2">
-                        <Text weight="bold">{t('new-configuration-modal.product-components')}</Text>
-                        {[1, 2, 3].map((_, i) => (
-                            <Flex key={i} gap="3" align="center">
-                                <TextField.Root style={{ flex: 2 }}>
-                                    <input placeholder={t('new-configuration-modal.component-name-placeholder')} />
-                                </TextField.Root>
-                                <TextField.Root style={{ flex: 1 }}>
-                                    <input placeholder={t('new-configuration-modal.percentage-placeholder')} />
-                                </TextField.Root>
-                                <Button variant="ghost" color="red">
-                                    <Cross2Icon />
-                                </Button>
-                            </Flex>
-                        ))}
-                        <Button variant="soft">
-                            <PlusIcon /> {t('new-configuration-modal.add-component')}
-                        </Button>
-                    </Flex>
-
-                    <Flex gap="3" justify="end" mt="4">
-                        <Button variant="soft" color="gray" onClick={() => setNewConfigModalOpen(false)}>
-                            {t('new-configuration-modal.cancel')}
-                        </Button>
-                        <Button>
-                            <Pencil2Icon /> {t('new-configuration-modal.save-draft')}
-                        </Button>
-                    </Flex>
-                </Flex>
-            </Dialog.Content>
-        </Dialog.Root>
-    );
-
-    const ViewSpecModal = () => (
-        <Dialog.Root open={viewSpecModalOpen} onOpenChange={setViewSpecModalOpen}>
-            <Dialog.Content style={{ maxWidth: 800 }}>
-                <Flex justify="between" align="center" mb="5">
-                    <Dialog.Title>{t('view-spec-modal.title')}</Dialog.Title>
-                    <Dialog.Close>
-                        <Button variant="ghost" color="gray">
-                            <Cross2Icon />
-                        </Button>
-                    </Dialog.Close>
-                </Flex>
-
-                {selectedProduct && (
-                    <Flex direction="column" gap="4">
-                        <Grid columns="2" gap="4">
-                            <Flex direction="column" gap="1">
-                                <Text color="gray">{t('view-spec-modal.product-id')}</Text>
-                                <Text weight="bold">{selectedProduct.id}</Text>
-                            </Flex>
-                            <Flex direction="column" gap="1">
-                                <Text color="gray">{t('view-spec-modal.compliance-standard')}</Text>
-                                <Badge variant="soft">{selectedProduct.compliance}</Badge>
-                            </Flex>
-                        </Grid>
-
-                        <Flex direction="column" gap="1">
-                            <Text color="gray">{t('view-spec-modal.description')}</Text>
-                            <Text>{selectedProduct.description}</Text>
-                        </Flex>
-
-                        <Flex direction="column" gap="2">
-                            <Text weight="bold">{t('view-spec-modal.formula-composition')}</Text>
-                            <Table.Root variant="surface">
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.ColumnHeaderCell>{t('view-spec-modal.component')}</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>{t('view-spec-modal.percentage')}</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>{t('view-spec-modal.specification')}</Table.ColumnHeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                    {selectedProduct.formula.map((comp: any, i: number) => (
-                                        <Table.Row key={i}>
-                                            <Table.Cell>{comp.component}</Table.Cell>
-                                            <Table.Cell>{comp.percentage}k.g.</Table.Cell>
-                                            <Table.Cell>
-                                                <Badge variant="outline">{t('view-spec-modal.usp-standard')}</Badge>
-                                            </Table.Cell>
-                                        </Table.Row>
-                                    ))}
-                                </Table.Body>
-                            </Table.Root>
-                        </Flex>
-
-                        <Flex gap="2" mt="4">
-                            <Checkbox />
-                            <Text size="2">{t('view-spec-modal.verification-text')}</Text>
-                        </Flex>
-                    </Flex>
-                )}
-            </Dialog.Content>
-        </Dialog.Root>
-    );
-
-    const VersionHistoryModal = () => (
-        <Dialog.Root open={historyModalOpen} onOpenChange={setHistoryModalOpen}>
-            <Dialog.Content style={{ maxWidth: 800 }}>
-                <Flex justify="between" align="center" mb="5">
-                    <Dialog.Title>{t('version-history-modal.title')}</Dialog.Title>
-                    <Dialog.Close>
-                        <Button variant="ghost" color="gray">
-                            <Cross2Icon />
-                        </Button>
-                    </Dialog.Close>
-                </Flex>
-
-                <Flex direction="column" gap="3">
-                    {[1, 2, 3].map((v) => (
-                        <Card key={v}>
-                            <Flex justify="between" align="center">
-                                <Flex direction="column" gap="1">
-                                    <Flex align="center" gap="2">
-                                        <Text weight="bold">v1.{v}</Text>
-                                        <Badge color={v === 0 ? 'blue' : 'gray'}>
-                                            {v === 0
-                                                ? t('version-history-modal.current')
-                                                : t('version-history-modal.archived')}
-                                        </Badge>
-                                    </Flex>
-                                    <Text size="2" color="gray">
-                                        {t('version-history-modal.modified')}: 2023-07-{15 + v}
-                                    </Text>
-                                </Flex>
-                                <Button variant="soft">
-                                    <FileTextIcon /> {t('main-section.actions.view-spec')}
-                                </Button>
-                            </Flex>
-                        </Card>
-                    ))}
-                </Flex>
-            </Dialog.Content>
-        </Dialog.Root>
-    );
-
     return (
-        <Box p="6">
-            <NewConfigurationModal />
-            <ViewSpecModal />
-            <VersionHistoryModal />
-
-            <Flex justify="between" align="center" mb="5">
-                <Heading size="6">{t('main-section.title')}</Heading>
-                <Flex gap="3">
-                    <Button variant="soft" onClick={() => setNewConfigModalOpen(true)}>
-                        <PlusIcon /> {t('main-section.new-configuration')}
-                    </Button>
-                    <Button variant="soft" onClick={() => setHistoryModalOpen(true)}>
-                        {t('main-section.version-history')}
-                    </Button>
-                </Flex>
-            </Flex>
-
-            <Grid columns="3" gap="4" mb="5">
-                <Card>
-                    <Flex direction="column" gap="1">
-                        <Text size="2">{t('main-section.active-configuration')}</Text>
-                        <Heading size="7">24</Heading>
-                        <Text size="1" className="text-green-500">3 New Drafts</Text>
-                    </Flex>
-                </Card>
-                <Card>
-                    <Flex direction="column" gap="1">
-                        <Text size="2">{t('main-section.components-per-product')}</Text>
-                        <Heading size="7">8.2</Heading>
-                        <Progress value={65} />
-                    </Flex>
-                </Card>
-                <Card>
-                    <Flex direction="column" gap="1">
-                        <Text size="2">{t('main-section.approval-rate')}</Text>
-                        <Heading size="7">92%</Heading>
-                        <Text size="1">{t('main-section.first-pass')}</Text>
-                    </Flex>
-                </Card>
-            </Grid>
-
-            <Table.Root variant="surface">
-        <Table.Header>
-            <Table.Row>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.product-id')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.name')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.components')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.cost')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.price')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.removal-method')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.version')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.compliance')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.status')}</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell>{t('main-section.table-headers.actions')}</Table.ColumnHeaderCell>
-            </Table.Row>
-        </Table.Header>
-        <Table.Body>
-            {products.map(product => (
-                <Table.Row key={product.id}>
-                    <Table.Cell>{product.id}</Table.Cell>
-                    <Table.Cell>{product.name}</Table.Cell>
-                    <Table.Cell>{product.components}</Table.Cell>
-                    <Table.Cell>{product.cost}</Table.Cell>
-                    <Table.Cell>{product.price}</Table.Cell>
-                    <Table.Cell>{product.removalMethod}</Table.Cell>
-                    <Table.Cell>{product.version}</Table.Cell>
-                    <Table.Cell>
-                        <Badge variant="soft">{product.compliance}</Badge>
-                    </Table.Cell>
-                    <Table.Cell>
-                        <Badge color={product.status === 'Draft' ? 'blue' : 'green'}>
-                            {t('main-section.status.draft')}
-                        </Badge>
-                    </Table.Cell>
-                    <Table.Cell>
-                        <DropdownMenu.Root>
-                            <DropdownMenu.Trigger>
-                                <Button variant="ghost">•••</Button>
-                            </DropdownMenu.Trigger>
-                            <DropdownMenu.Content>
-                                <DropdownMenu.Item>
-                                    <FileTextIcon /> {t('main-section.actions.view-spec')}
-                                </DropdownMenu.Item>
-                                <DropdownMenu.Item>
-                                    {t('main-section.actions.history')}
-                                </DropdownMenu.Item>
-                            </DropdownMenu.Content>
-                        </DropdownMenu.Root>
-                    </Table.Cell>
-                </Table.Row>
+      <div className="w-full">
+        <PieChart width={400} height={300}>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+            nameKey="name"
+            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(1)}%`}
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
-        </Table.Body>
-    </Table.Root>
-        </Box>
+          </Pie>
+          <Tooltip 
+            formatter={(value: any, name: any, props: any) => [
+              `${value}%`, 
+              `Price/kg: ${props.payload.pricePerKg} EGP`
+            ]}
+          />
+          <Legend />
+        </PieChart>
+      </div>
     );
+  };
+
+  const NewConfigurationModal = () => (
+    <Dialog.Root open={newConfigModalOpen} onOpenChange={setNewConfigModalOpen}>
+      <Dialog.Content style={{ maxWidth: 700 }}>
+        <Flex justify="between" align="center" mb="4">
+          <Dialog.Title>New Product Configuration</Dialog.Title>
+          <Dialog.Close>
+            <Button variant="ghost" color="gray">
+              <Cross2Icon />
+            </Button>
+          </Dialog.Close>
+        </Flex>
+
+        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+          <Tabs.List>
+            <Tabs.Trigger value="details">Details</Tabs.Trigger>
+            <Tabs.Trigger value="formula">Formula</Tabs.Trigger>
+            <Tabs.Trigger value="production">Packaging</Tabs.Trigger>
+          </Tabs.List>
+
+          <Box pt="3">
+            <Tabs.Content value="details">
+              <Flex direction="column" gap="3">
+                <Grid columns="2" gap="3">
+                  <TextField.Root
+                    placeholder="Product ID"
+                    value={newProduct.id}
+                    onChange={(e) => setNewProduct({...newProduct, id: e.target.value})}
+                  />
+                  <TextField.Root
+                    placeholder="Product Name"
+                    value={newProduct.name}
+                    onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                  />
+                </Grid>
+
+                <TextArea
+                  placeholder="Description"
+                  value={newProduct.description}
+                  onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                />
+
+                <Grid columns="2" gap="3">
+                  <Select.Root
+                    value={newProduct.compliance}
+                    onValueChange={(value) => setNewProduct({...newProduct, compliance: value})}
+                  >
+                    <Select.Trigger placeholder="Compliance Standard" />
+                    <Select.Content>
+                      {complianceOptions.map(option => (
+                        <Select.Item key={option} value={option}>
+                          {option}
+                        </Select.Item>
+                      ))}
+                    </Select.Content>
+                  </Select.Root>
+
+                  <Select.Root
+                    value={newProduct.removalMethod}
+                    onValueChange={(value) => setNewProduct({...newProduct, removalMethod: value})}
+                  >
+                    <Select.Trigger placeholder="Removal Method" />
+                    <Select.Content>
+                      <Select.Item value="FIFO">FIFO</Select.Item>
+                      <Select.Item value="LIFO">LIFO</Select.Item>
+                    </Select.Content>
+                  </Select.Root>
+                </Grid>
+              </Flex>
+            </Tabs.Content>
+
+            <Tabs.Content value="formula">
+              <Flex direction="column" gap="3">
+                <Text size="2" color="gray">
+                  Define the components and their proportions
+                </Text>
+                {totalPercentage !== 100 && (
+                  <Text color="red" size="2">
+                    Total percentage: {totalPercentage.toFixed(1)}% (should be 100%)
+                  </Text>
+                )}
+                
+                <Table.Root variant="surface">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Percentage</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg (EGP)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell></Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {newProduct.formula.map((row, index) => (
+                      <Table.Row key={index}>
+                        <Table.Cell>
+                          <Select.Root
+                            value={row.component}
+                            onValueChange={(value) => {
+                              const selected = allComponents.find(c => c.name === value);
+                              updateFormulaRow(index, 'component', value);
+                              if (selected) {
+                                updateFormulaRow(index, 'pricePerKg', selected.pricePerKg);
+                              }
+                            }}
+                          >
+                            <Select.Trigger placeholder="Select component" />
+                            <Select.Content>
+                              {allComponents.map(comp => (
+                                <Select.Item key={comp.name} value={comp.name}>
+                                  {comp.name}
+                                </Select.Item>
+                              ))}
+                            </Select.Content>
+                          </Select.Root>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <TextField.Root
+                            placeholder="0.000"
+                            value={row.weight || ''}
+                            onChange={(e) => updateFormulaRow(index, 'weight', parseFloat(e.target.value) || 0)}
+                          />
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Text>{row.percentage.toFixed(1)}%</Text>
+                        </Table.Cell>
+                        <Table.Cell>
+                          <Text>{row.pricePerKg.toFixed(2)}</Text>
+                        </Table.Cell>
+                        <Table.Cell>
+                          {newProduct.formula.length > 1 && (
+                            <Button 
+                              variant="ghost" 
+                              color="red" 
+                              onClick={() => removeFormulaRow(index)}
+                            >
+                              <Cross2Icon />
+                            </Button>
+                          )}
+                        </Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+
+                <Flex justify="between" align="center">
+                  <Button variant="soft" onClick={addFormulaRow}>
+                    <PlusIcon /> Add Component
+                  </Button>
+                  <Text weight="bold">
+                    Total Cost: {newProduct.formula.reduce((sum, item) => 
+                      sum + (item.weight * item.pricePerKg), 0).toFixed(2)} EGP per 1 kg
+                  </Text>
+                </Flex>
+              </Flex>
+            </Tabs.Content>
+
+            <Tabs.Content value="production">
+              <ProductionDesignTable design={newProduct.productionDesign} />
+              <TextArea
+                placeholder="Additional packaging notes (optional)"
+                mt="3"
+                value={newProduct.productionDesign.notes || ''}
+                onChange={(e) => setNewProduct({
+                  ...newProduct,
+                  productionDesign: {
+                    ...newProduct.productionDesign,
+                    notes: e.target.value
+                  }
+                })}
+              />
+            </Tabs.Content>
+          </Box>
+        </Tabs.Root>
+
+        <Flex gap="3" justify="end" mt="4">
+          <Button variant="soft" color="gray" onClick={() => setNewConfigModalOpen(false)}>
+            Cancel
+          </Button>
+          <Button onClick={handleAddProduct}>
+            <PlusIcon /> Create Product
+          </Button>
+        </Flex>
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+
+  const ViewSpecModal = () => (
+    <Dialog.Root open={viewSpecModalOpen} onOpenChange={setViewSpecModalOpen}>
+      <Dialog.Content style={{ maxWidth: 700 }}>
+        <Flex justify="between" align="center" mb="4">
+          <Dialog.Title>Product Specification: {selectedProduct?.id}</Dialog.Title>
+          <Dialog.Close>
+            <Button variant="ghost" color="gray">
+              <Cross2Icon />
+            </Button>
+          </Dialog.Close>
+        </Flex>
+
+        {selectedProduct && (
+          <Tabs.Root defaultValue="details">
+            <Tabs.List>
+              <Tabs.Trigger value="details">Details</Tabs.Trigger>
+              <Tabs.Trigger value="formula">Formula</Tabs.Trigger>
+              <Tabs.Trigger value="production">Packaging</Tabs.Trigger>
+            </Tabs.List>
+
+            <Box pt="3">
+              <Tabs.Content value="details">
+                <Grid columns="2" gap="3">
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Product Name</Text>
+                    <Text weight="bold">{selectedProduct.name}</Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Status</Text>
+                    <Badge color={selectedProduct.status === 'Approved' ? 'green' : 'blue'}>
+                      {selectedProduct.status}
+                    </Badge>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Version</Text>
+                    <Text>{selectedProduct.version}</Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Compliance Standard</Text>
+                    <Text>{selectedProduct.compliance}</Text>
+                  </Flex>
+                  <Flex direction="column" gap="1">
+                    <Text color="gray">Removal Method</Text>
+                    <Text>{selectedProduct.removalMethod}</Text>
+                  </Flex>
+                </Grid>
+
+                <Flex direction="column" gap="1" mt="3">
+                  <Text color="gray">Description</Text>
+                  <Text>{selectedProduct.description}</Text>
+                </Flex>
+
+                <Flex direction="column" gap="1" mt="3">
+                  <Text color="gray">Blockchain Status</Text>
+                  <Flex align="center" gap="3">
+                    <BlockchainStatusBadge status={selectedProduct.blockchain.status} />
+                    {selectedProduct.blockchain.txHash && (
+                      <Text size="1" color="blue" className="truncate max-w-xs">
+                        TX: {selectedProduct.blockchain.txHash}
+                      </Text>
+                    )}
+                  </Flex>
+                  {selectedProduct.blockchain.status !== 'confirmed' && (
+                    <Button 
+                      variant="soft" 
+                      onClick={() => submitToBlockchain(selectedProduct.id)}
+                      disabled={selectedProduct.blockchain.status === 'pending'}
+                      mt="2"
+                      className="w-fit"
+                    >
+                      Submit to Blockchain
+                    </Button>
+                  )}
+                </Flex>
+              </Tabs.Content>
+
+              <Tabs.Content value="formula">
+                <Table.Root variant="surface">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell>Component</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Weight (kg)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Percentage</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Price/kg (EGP)</Table.ColumnHeaderCell>
+                      <Table.ColumnHeaderCell>Cost (EGP)</Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {selectedProduct.formula.map((comp, i) => (
+                      <Table.Row key={i}>
+                        <Table.Cell>{comp.component}</Table.Cell>
+                        <Table.Cell>{comp.weight.toFixed(3)}</Table.Cell>
+                        <Table.Cell>{comp.percentage.toFixed(1)}%</Table.Cell>
+                        <Table.Cell>{comp.pricePerKg.toFixed(2)}</Table.Cell>
+                        <Table.Cell>{(comp.weight * comp.pricePerKg).toFixed(2)}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table.Root>
+                <ComponentDistributionChart formula={selectedProduct.formula} />
+                <Flex justify="end" mt="3">
+                  <Text size="4" weight="bold">
+                    Total Cost: {selectedProduct.formula.reduce(
+                      (sum, item) => sum + (item.weight * item.pricePerKg), 0
+                    ).toFixed(2)} EGP per 1 kg
+                  </Text>
+                </Flex>
+              </Tabs.Content>
+
+              <Tabs.Content value="production">
+                <ProductionDesignTable design={selectedProduct.productionDesign} />
+                <Card mt="3">
+                  <Flex align="center" gap="3" p="3">
+                    <div className="w-20 h-32 bg-gradient-to-b from-blue-900 to-blue-700 rounded-t-full border-2 border-gold-500 relative shadow-lg">
+                      <div className="absolute top-2 left-1/2 transform -translate-x-1/2 w-16 h-28 bg-blue-800 rounded-t-full border border-blue-600">
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '25%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '50%' }}></div>
+                        <div className="absolute left-0 w-full border-t border-blue-600" style={{ top: '75%' }}></div>
+                      </div>
+                      <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 w-12 h-6 bg-yellow-500 rounded-t-md border-2 border-yellow-400 shadow-md"></div>
+                    </div>
+                    <Text size="2" color="gray">1kg Egyptian Blue Veterinary Bottle</Text>
+                  </Flex>
+                </Card>
+              </Tabs.Content>
+            </Box>
+          </Tabs.Root>
+        )}
+      </Dialog.Content>
+    </Dialog.Root>
+  );
+
+  return (
+    <Container size="3" className="p-4">
+      <NewConfigurationModal />
+      <ViewSpecModal />
+
+      <Flex direction="column" gap="4">
+        <Flex justify="between" align="center">
+          <Heading size="5" className="text-blue-900">Product Configuration</Heading>
+          <Flex gap="3">
+            <TextField.Root
+              placeholder="Search products..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-64"
+            >
+              <TextField.Slot>
+                <MagnifyingGlassIcon className="text-blue-700" />
+              </TextField.Slot>
+            </TextField.Root>
+            <Button 
+              onClick={() => setNewConfigModalOpen(true)}
+              className="bg-blue-700 hover:bg-blue-800 text-white"
+            >
+              <PlusIcon /> New Product
+            </Button>
+          </Flex>
+        </Flex>
+
+        <Table.Root variant="surface" className="shadow-sm">
+          <Table.Header className="bg-blue-50">
+            <Table.Row>
+              <Table.ColumnHeaderCell className="text-blue-900">Product ID</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Name</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Components</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Compliance</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Status</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Blockchain</Table.ColumnHeaderCell>
+              <Table.ColumnHeaderCell className="text-blue-900">Actions</Table.ColumnHeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {filteredProducts.map(product => (
+              <Table.Row key={product.id} className="hover:bg-blue-50">
+                <Table.Cell className="font-medium">{product.id}</Table.Cell>
+                <Table.Cell>{product.name}</Table.Cell>
+                <Table.Cell>{product.components}</Table.Cell>
+                <Table.Cell>
+                  <Text>{product.compliance}</Text>
+                </Table.Cell>
+                <Table.Cell>
+                  <Badge 
+                    color={product.status === 'Approved' ? 'green' : 'blue'}
+                    className="shadow-sm"
+                  >
+                    {product.status}
+                  </Badge>
+                </Table.Cell>
+                <Table.Cell>
+                  <BlockchainStatusBadge status={product.blockchain.status} />
+                </Table.Cell>
+                <Table.Cell>
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => {
+                      setSelectedProduct(product);
+                      setViewSpecModalOpen(true);
+                    }}
+                    className="text-blue-700 hover:bg-blue-100"
+                  >
+                    <FileTextIcon /> View
+                  </Button>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+      </Flex>
+    </Container>
+  );
 };
 
 export default ProductConfiguration;
