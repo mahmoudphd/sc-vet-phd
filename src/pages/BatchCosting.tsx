@@ -1,246 +1,371 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
-  Table,
-  Badge,
-  Button,
+  Card,
   Flex,
   Heading,
   Text,
-  IconButton,
+  Table,
+  Grid,
   Box,
-  Dialog,
-  TextField,
   Select,
-  Tooltip
+  Button,
 } from '@radix-ui/themes';
-import {
-  MagnifyingGlassIcon,
-  CubeIcon as BlockchainIcon,
-  FileTextIcon,
-  PlusIcon,
-  CheckCircledIcon,
-  ClockIcon,
-  CrossCircledIcon
-} from '@radix-ui/react-icons';
 
-type ApprovalStatus = 'approved' | 'pending' | 'rejected';
-
-interface BatchRecord {
+interface SubItem {
   id: string;
-  product: string;
-  approval: ApprovalStatus;
-  date: string;
-  author: string;
+  name: string;
+  declaredPrice: number;
+  actualCost: number;
+  variance: string;
+  incentives: string;
 }
 
-const BatchRecords: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+interface ItemGroup {
+  id: string;
+  title: string;
+  subItems: SubItem[];
+}
 
-  const PRODUCT_OPTIONS = [
-    'Poultry Drug A',
-    'Poultry Drug B',
-    'Poultry Drug C'
-  ] as const;
+const suppliers = ['A', 'B', 'C'];
+const products = ['A', 'B', 'C'];
+const currencies = ['USD', 'EGP'];
 
-  const records: BatchRecord[] = [
-    { 
-      id: 'BR-001', 
-      product: 'Poultry Drug A',
-      approval: 'approved',
-      date: '2025-07-25',
-      author: 'QA Auditor 1'
+const SupplierTierOptions = ['Tier 1', 'Tier 2', 'Tier 3'];
+const ComponentCriticalityOptions = ['High', 'Medium', 'Low'];
+const incentivesOptions = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
+  'Negotiation support',
+  'Joint problem solving teams',
+  'Shared Profit',
+];
+
+const BatchCosting = () => {
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('A');
+  const [selectedProduct, setSelectedProduct] = useState<string>('A');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+
+  const [supplierTier, setSupplierTier] = useState<string>('');
+  const [transactionVolume, setTransactionVolume] = useState<string>('');
+  const [componentCriticality, setComponentCriticality] = useState<string>('');
+  const [supplierIncentives, setSupplierIncentives] = useState<string>('');
+
+  const [items, setItems] = useState<ItemGroup[]>([
+    {
+      id: 'direct-material',
+      title: 'Direct Material',
+      subItems: [
+        { id: 'vitB1', name: 'Vitamin B1', declaredPrice: 220, actualCost: 200, variance: '-9.1%', incentives: '' },
+        { id: 'vitB2', name: 'Vitamin B2', declaredPrice: 320, actualCost: 315, variance: '-1.6%', incentives: '' },
+        { id: 'vitB12', name: 'Vitamin B12', declaredPrice: 260, actualCost: 250, variance: '-3.8%', incentives: '' },
+      ],
     },
-    { 
-      id: 'BR-002', 
-      product: 'Poultry Drug B',
-      approval: 'pending',
-      date: '2025-07-26',
-      author: 'QA Auditor 2'
+    {
+      id: 'other-material',
+      title: 'Other Material',
+      subItems: [
+        { id: 'item2sub1', name: 'Sample X', declaredPrice: 100, actualCost: 90, variance: '-10%', incentives: '' },
+      ],
     },
-    { 
-      id: 'BR-003', 
-      product: 'Poultry Drug C',
-      approval: 'rejected',
-      date: '2025-07-27',
-      author: 'QA Auditor 3'
-    },
+  ]);
+
+  const exchangeRate = 30;
+
+  const formatPrice = (value: number): string => {
+    if (selectedCurrency === 'USD') {
+      return `$${value.toLocaleString()}`;
+    } else if (selectedCurrency === 'EGP') {
+      return `EGP ${(value * exchangeRate).toLocaleString()}`;
+    }
+    return value.toString();
+  };
+
+  const handleSubItemChange = (
+    groupId: string,
+    subItemId: string,
+    field: 'declaredPrice' | 'actualCost',
+    value: string
+  ): void => {
+    setItems((prevItems) =>
+      prevItems.map((group) => {
+        if (group.id !== groupId) return group;
+        return {
+          ...group,
+          subItems: group.subItems.map((sub) => {
+            if (sub.id !== subItemId) return sub;
+            const numericValue = parseFloat(value);
+            const updatedSub = {
+              ...sub,
+              [field]: isNaN(numericValue) ? 0 : numericValue,
+            };
+            const diff = updatedSub.actualCost - updatedSub.declaredPrice;
+            const variancePercent =
+              updatedSub.declaredPrice === 0
+                ? '0%'
+                : ((diff / updatedSub.declaredPrice) * 100).toFixed(1) + '%';
+            updatedSub.variance = variancePercent.startsWith('-') ? variancePercent : '+' + variancePercent;
+            return updatedSub;
+          }),
+        };
+      })
+    );
+  };
+
+  const handleIncentivesChange = (groupId: string, subItemId: string, value: string): void => {
+    setItems((prevItems) =>
+      prevItems.map((group) => {
+        if (group.id !== groupId) return group;
+        return {
+          ...group,
+          subItems: group.subItems.map((sub) => {
+            if (sub.id !== subItemId) return sub;
+            return {
+              ...sub,
+              incentives: value,
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const handleSubmitToBlockchain = (): void => {
+    console.log('Submitting to blockchain:', {
+      selectedSupplier,
+      selectedProduct,
+      items,
+      supplierTier,
+      transactionVolume,
+      componentCriticality,
+      supplierIncentives
+    });
+    alert('Data submitted to blockchain successfully!');
+  };
+
+  const cardColors = [
+    'bg-blue-50 border-blue-200',
+    'bg-green-50 border-green-200',
+    'bg-purple-50 border-purple-200',
+    'bg-amber-50 border-amber-200'
   ];
 
-  const filteredRecords = useMemo(() => {
-    return records.filter(record =>
-      record.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      record.product.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [records, searchQuery]);
-
-  const handleSubmitToBlockchain = useCallback(() => {
-    alert('Records submitted to blockchain successfully');
-  }, []);
-
-  const getApprovalColor = (status: ApprovalStatus) => {
-    switch (status) {
-      case 'approved': return 'green';
-      case 'pending': return 'amber';
-      case 'rejected': return 'red';
-      default: return 'gray';
-    }
-  };
-
-  const getApprovalIcon = (status: ApprovalStatus) => {
-    switch (status) {
-      case 'approved': return <CheckCircledIcon className="mr-1" />;
-      case 'pending': return <ClockIcon className="mr-1" />;
-      case 'rejected': return <CrossCircledIcon className="mr-1" />;
-      default: return null;
-    }
-  };
-
   return (
-    <Box p="6" className="flex-1">
-      <Flex justify="between" align="center" mb="6" gap="4">
-        <Heading size="6" className="text-gray-800 font-bold">Batch Records</Heading>
-        
-        <Flex gap="3" align="center">
-          <TextField.Root
-            placeholder="Search records..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-56"
-            variant="soft"
-          >
-            <TextField.Slot className="text-gray-500">
-              <MagnifyingGlassIcon />
-            </TextField.Slot>
-          </TextField.Root>
-          
-          <Button 
-            variant="solid" 
-            color="green"
-            className="bg-green-700 hover:bg-green-800 transition-colors shadow-sm"
-            onClick={handleSubmitToBlockchain}
-          >
-            <BlockchainIcon className="mr-2" />
-            Submit to Blockchain
-          </Button>
-          
-          <Button 
-            variant="soft" 
-            className="whitespace-nowrap shadow-sm"
-            onClick={() => setIsDialogOpen(true)}
-          >
-            <PlusIcon className="mr-2" />
-            Add Record
-          </Button>
+    <Box p="6" className="bg-gray-50 min-h-screen">
+      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
+        <Heading size="6" className="text-gray-800">Open Book Accounting Overview</Heading>
+
+        <Flex gap="3" align="center" wrap="wrap">
+          <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
+            <Select.Trigger 
+              className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
+              aria-label="Select Supplier"
+            />
+            <Select.Content>
+              {suppliers.map((s) => (
+                <Select.Item key={s} value={s}>
+                  Supplier {s}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+
+          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Select.Trigger 
+              className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
+              aria-label="Select Product"
+            />
+            <Select.Content>
+              {products.map((p) => (
+                <Select.Item key={p} value={p}>
+                  Product {p}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+
+          <Flex align="center" gap="2" className="bg-white p-1 rounded-md border border-gray-300">
+            {currencies.map((c) => (
+              <Button
+                key={c}
+                variant={selectedCurrency === c ? 'solid' : 'soft'}
+                className={`${selectedCurrency === c ? 'bg-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                onClick={() => setSelectedCurrency(c)}
+              >
+                {c}
+              </Button>
+            ))}
+          </Flex>
         </Flex>
       </Flex>
 
-      <Table.Root variant="surface" className="rounded-lg shadow-sm border border-gray-200">
-        <Table.Header className="bg-gray-50">
+      <Grid columns="4" gap="4" mb="5">
+        <Card className={`${cardColors[0]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-blue-700">Supplier Tier</Text>
+            <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
+              <Select.Trigger 
+                className="bg-white border border-gray-300"
+                placeholder="Select Tier"
+              />
+              <Select.Content>
+                {SupplierTierOptions.map((tier) => (
+                  <Select.Item key={tier} value={tier}>
+                    {tier}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Flex>
+        </Card>
+
+        <Card className={`${cardColors[1]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-green-700">Transaction Volume</Text>
+            <input
+              type="number"
+              placeholder="Enter volume"
+              value={transactionVolume}
+              onChange={(e) => setTransactionVolume(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
+          </Flex>
+        </Card>
+
+        <Card className={`${cardColors[2]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-purple-700">Component Criticality</Text>
+            <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
+              <Select.Trigger 
+                className="bg-white border border-gray-300"
+                placeholder="Select criticality"
+              />
+              <Select.Content>
+                {ComponentCriticalityOptions.map((level) => (
+                  <Select.Item key={level} value={level}>
+                    {level}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
+          </Flex>
+        </Card>
+
+        <Card className={`${cardColors[3]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-amber-700">Supplier Incentives</Text>
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={supplierIncentives}
+              onChange={(e) => setSupplierIncentives(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
+          </Flex>
+        </Card>
+      </Grid>
+
+      <Table.Root variant="surface" className="shadow-sm">
+        <Table.Header className="bg-gray-100">
           <Table.Row>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Batch ID</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Product</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Status</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Date</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Author</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell className="font-bold text-gray-800">Actions</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Item</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              Declared Price
+              <div className="text-xs text-green-600 font-semibold">
+                via blockchain
+              </div>
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              Actual Cost
+              <div className="text-xs text-green-600 font-semibold">
+                via IoT
+              </div>
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
+        <Table.Body>
+          {items.map((group) => (
+            <React.Fragment key={group.id}>
+              <Table.Row className="bg-gray-50">
+                <Table.Cell
+                  colSpan={5}
+                  className="font-bold text-gray-800"
+                >
+                  {group.title}
+                </Table.Cell>
+              </Table.Row>
 
-        <Table.Body className="divide-y divide-gray-100">
-          {filteredRecords.map((record) => (
-            <Table.Row key={record.id} className="hover:bg-gray-50/50">
-              <Table.Cell className="font-medium">
-                <Badge 
-                  color="blue" 
-                  variant="soft"
-                  className="px-2 py-1 rounded-full text-xs font-medium text-blue-700"
-                >
-                  {record.id}
-                </Badge>
-              </Table.Cell>
-              
-              <Table.Cell>
-                <Select.Root defaultValue={record.product}>
-                  <Select.Trigger variant="soft" className="w-full" />
-                  <Select.Content>
-                    {PRODUCT_OPTIONS.map(product => (
-                      <Select.Item key={product} value={product}>{product}</Select.Item>
-                    ))}
-                  </Select.Content>
-                </Select.Root>
-              </Table.Cell>
-              
-              <Table.Cell>
-                <Badge 
-                  color={getApprovalColor(record.approval)}
-                  variant="soft"
-                  className="px-2 py-1 rounded-full text-xs font-medium"
-                >
-                  {getApprovalIcon(record.approval)}
-                  {record.approval.charAt(0).toUpperCase() + record.approval.slice(1)}
-                </Badge>
-              </Table.Cell>
-              
-              <Table.Cell className="text-gray-700">{record.date}</Table.Cell>
-              <Table.Cell className="text-gray-700">{record.author}</Table.Cell>
-              
-              <Table.Cell>
-                <Tooltip content="View PDF document">
-                  <IconButton variant="soft" className="hover:bg-blue-100">
-                    <FileTextIcon />
-                  </IconButton>
-                </Tooltip>
-              </Table.Cell>
-            </Table.Row>
+              {group.subItems.map((item) => (
+                <Table.Row key={item.id} className="hover:bg-gray-50">
+                  <Table.Cell className="pl-6 text-gray-700">{item.name}</Table.Cell>
+
+                  <Table.Cell>
+                    <input
+                      type="number"
+                      value={item.declaredPrice}
+                      onChange={(e) =>
+                        handleSubItemChange(group.id, item.id, 'declaredPrice', e.target.value)
+                      }
+                      className="w-full bg-transparent font-semibold focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+                    />
+                  </Table.Cell>
+
+                  <Table.Cell>
+                    <input
+                      type="number"
+                      value={item.actualCost}
+                      onChange={(e) =>
+                        handleSubItemChange(group.id, item.id, 'actualCost', e.target.value)
+                      }
+                      className="w-full bg-transparent font-semibold focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+                    />
+                  </Table.Cell>
+
+                  <Table.Cell className={`font-bold ${
+                    item.variance.startsWith('-') ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {item.variance}
+                  </Table.Cell>
+
+                  <Table.Cell>
+                    <Select.Root
+                      value={item.incentives}
+                      onValueChange={(value) => handleIncentivesChange(group.id, item.id, value)}
+                    >
+                      <Select.Trigger 
+                        className="w-full border border-gray-300"
+                        placeholder="Select incentive"
+                      />
+                      <Select.Content>
+                        {incentivesOptions.map((inc) => (
+                          <Select.Item key={inc} value={inc}>
+                            {inc}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </React.Fragment>
           ))}
         </Table.Body>
       </Table.Root>
 
-      <Dialog.Root open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <Dialog.Content style={{ maxWidth: 500 }} className="p-6">
-          <Dialog.Title className="text-xl font-bold text-gray-800 mb-2">Add New Batch Record</Dialog.Title>
-          
-          <Flex direction="column" gap="4" className="mb-6">
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold" className="text-gray-700">
-                Batch ID
-              </Text>
-              <TextField.Root placeholder="BR-XXX" />
-            </Flex>
-
-            <Flex direction="column" gap="2">
-              <Text as="label" size="2" weight="bold" className="text-gray-700">
-                Product
-              </Text>
-              <Select.Root>
-                <Select.Trigger placeholder="Select product" className="w-full" />
-                <Select.Content>
-                  {PRODUCT_OPTIONS.map(product => (
-                    <Select.Item key={product} value={product}>{product}</Select.Item>
-                  ))}
-                </Select.Content>
-              </Select.Root>
-            </Flex>
-          </Flex>
-
-          <Flex gap="3" justify="end" className="border-t border-gray-100 pt-4">
-            <Button 
-              variant="soft" 
-              color="gray"
-              onClick={() => setIsDialogOpen(false)}
-              className="hover:bg-gray-100"
-            >
-              Cancel
-            </Button>
-            <Button className="hover:bg-blue-600 transition-colors">
-              <PlusIcon className="mr-2" /> Add Record
-            </Button>
-          </Flex>
-        </Dialog.Content>
-      </Dialog.Root>
+      <Flex justify="end" mt="6">
+        <Button 
+          size="3" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm transition-colors"
+          onClick={handleSubmitToBlockchain}
+        >
+          Submit to Blockchain
+        </Button>
+      </Flex>
     </Box>
   );
 };
 
-export default BatchRecords;
+export default BatchCosting;
