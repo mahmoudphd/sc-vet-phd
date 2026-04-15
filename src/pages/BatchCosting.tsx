@@ -1,235 +1,368 @@
-import { useTranslation } from 'react-i18next';
+import React, { useState } from 'react';
 import {
   Card,
   Flex,
   Heading,
   Text,
   Table,
-  Badge,
-  Button,
   Grid,
-  Progress,
   Box,
-  Dialog,
-  TextField,
   Select,
+  Button,
 } from '@radix-ui/themes';
-import {
-  PieChartIcon,
-  BarChartIcon,
-  MixerHorizontalIcon
-} from '@radix-ui/react-icons';
-import { PieChart, Pie, BarChart, Bar } from 'recharts';
-// import { DialogClose, , DialogDescription, DialogTitle, DialogTrigger } from '@radix-ui/react-dialog';
+
+interface SubItem {
+  id: string;
+  name: string;
+  declaredPrice: number;
+  actualCost: number;
+  variance: string;
+  incentives: string;
+}
+
+interface ItemGroup {
+  id: string;
+  title: string;
+  subItems: SubItem[];
+}
+
+const suppliers = ['A', 'B', 'C'];
+const products = ['A', 'B', 'C'];
+const currencies = ['USD', 'EGP'];
+
+const SupplierTierOptions = ['Tier 1', 'Tier 2', 'Tier 3'];
+const ComponentCriticalityOptions = ['High', 'Medium', 'Low'];
+const incentivesOptions = [
+  'Greater volumes',
+  'Longer contracts',
+  'Technical support',
+  'Marketing support',
+  'Negotiation support',
+  'Joint problem solving teams',
+  'Shared Profit',
+];
 
 const BatchCosting = () => {
-  const { t } = useTranslation('batch-costing');
-  const batches = [
+  const [selectedSupplier, setSelectedSupplier] = useState<string>('A');
+  const [selectedProduct, setSelectedProduct] = useState<string>('A');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
+
+  const [supplierTier, setSupplierTier] = useState<string>('');
+  const [transactionVolume, setTransactionVolume] = useState<string>('');
+  const [componentCriticality, setComponentCriticality] = useState<string>('');
+  const [supplierIncentives, setSupplierIncentives] = useState<string>('');
+
+  const [items, setItems] = useState<ItemGroup[]>([
     {
-      id: 'VC23001',
-      product: 'Anthelmintic Oral Suspension',
-      materialCost: 24500,
-      laborCost: 12000,
-      overhead: 8500,
-      totalCost: 45000,
-      costPerUnit: 3.15,
-      variance: '-2.5%'
+      id: 'direct-material',
+      title: 'Direct Material',
+      subItems: [
+        { id: 'vitB1', name: 'Vitamin B1', declaredPrice: 220, actualCost: 200, variance: '-9.1%', incentives: '' },
+        { id: 'vitB2', name: 'Vitamin B2', declaredPrice: 320, actualCost: 315, variance: '-1.6%', incentives: '' },
+        { id: 'vitB12', name: 'Vitamin B12', declaredPrice: 260, actualCost: 250, variance: '-3.8%', incentives: '' },
+      ],
     },
+    {
+      id: 'other-material',
+      title: 'Other Material',
+      subItems: [
+        { id: 'item2sub1', name: 'Sample X', declaredPrice: 100, actualCost: 90, variance: '-10%', incentives: '' },
+      ],
+    },
+  ]);
+
+  const exchangeRate = 30;
+
+  const formatPrice = (value: number): string => {
+    if (selectedCurrency === 'USD') {
+      return `$${value.toLocaleString()}`;
+    } else if (selectedCurrency === 'EGP') {
+      return `EGP ${(value * exchangeRate).toLocaleString()}`;
+    }
+    return value.toString();
+  };
+
+  const handleSubItemChange = (
+    groupId: string,
+    subItemId: string,
+    field: 'declaredPrice' | 'actualCost',
+    value: string
+  ): void => {
+    setItems((prevItems) =>
+      prevItems.map((group) => {
+        if (group.id !== groupId) return group;
+        return {
+          ...group,
+          subItems: group.subItems.map((sub) => {
+            if (sub.id !== subItemId) return sub;
+            const numericValue = parseFloat(value);
+            const updatedSub = {
+              ...sub,
+              [field]: isNaN(numericValue) ? 0 : numericValue,
+            };
+            const diff = updatedSub.actualCost - updatedSub.declaredPrice;
+            const variancePercent =
+              updatedSub.declaredPrice === 0
+                ? '0%'
+                : ((diff / updatedSub.declaredPrice) * 100).toFixed(1) + '%';
+            updatedSub.variance = variancePercent.startsWith('-') ? variancePercent : '+' + variancePercent;
+            return updatedSub;
+          }),
+        };
+      })
+    );
+  };
+
+  const handleIncentivesChange = (groupId: string, subItemId: string, value: string): void => {
+    setItems((prevItems) =>
+      prevItems.map((group) => {
+        if (group.id !== groupId) return group;
+        return {
+          ...group,
+          subItems: group.subItems.map((sub) => {
+            if (sub.id !== subItemId) return sub;
+            return {
+              ...sub,
+              incentives: value,
+            };
+          }),
+        };
+      })
+    );
+  };
+
+  const handleSubmitToBlockchain = (): void => {
+    console.log('Submitting to blockchain:', {
+      selectedSupplier,
+      selectedProduct,
+      items,
+      supplierTier,
+      transactionVolume,
+      componentCriticality,
+      supplierIncentives
+    });
+    alert('Data submitted to blockchain successfully!');
+  };
+
+  const cardColors = [
+    'bg-blue-50 border-blue-200',
+    'bg-green-50 border-green-200',
+    'bg-purple-50 border-purple-200',
+    'bg-amber-50 border-amber-200'
   ];
 
   return (
-    <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">{t('batchCostAccounting')}</Heading>
-        <Flex gap="3">
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                <MixerHorizontalIcon /> {t('newCostRun')}
+    <Box p="6" className="bg-gray-50 min-h-screen">
+      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
+        <Heading size="6" className="text-gray-800">Open Book Accounting Overview</Heading>
+
+        <Flex gap="3" align="center" wrap="wrap">
+          <Select.Root value={selectedSupplier} onValueChange={setSelectedSupplier}>
+            <Select.Trigger 
+              className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
+              aria-label="Select Supplier"
+            />
+            <Select.Content>
+              {suppliers.map((s) => (
+                <Select.Item key={s} value={s}>
+                  Supplier {s}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+
+          <Select.Root value={selectedProduct} onValueChange={setSelectedProduct}>
+            <Select.Trigger 
+              className="w-40 bg-white border border-gray-300 rounded-md shadow-sm"
+              aria-label="Select Product"
+            />
+            <Select.Content>
+              {products.map((p) => (
+                <Select.Item key={p} value={p}>
+                  Product {p}
+                </Select.Item>
+              ))}
+            </Select.Content>
+          </Select.Root>
+
+          <Flex align="center" gap="2" className="bg-white p-1 rounded-md border border-gray-300">
+            {currencies.map((c) => (
+              <Button
+                key={c}
+                variant={selectedCurrency === c ? 'solid' : 'soft'}
+                className={`${selectedCurrency === c ? 'bg-blue-600' : 'bg-white hover:bg-gray-100'}`}
+                onClick={() => setSelectedCurrency(c)}
+              >
+                {c}
               </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content>
-              <Dialog.Title>{t('newCostRun')}</Dialog.Title>
-              <Dialog.Description>
-                {t('createNewCostDesc')}
-              </Dialog.Description>
-
-              <Flex direction="column" gap="3">
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('costRunName')}
-                  </Text>
-                  <TextField.Root placeholder={t('enterRunName')} />
-                </label>
-
-                <label>
-                  <Text as="div" size="2" mb="1" weight="bold">
-                    {t('selectBatch')}
-                  </Text>
-                  <Select.Root>
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="vc23001">VC23001</Select.Item>
-                      <Select.Item value="vc23002">VC23002</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-                </label>
-
-                <Flex gap="3" mt="2" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('cancel')}
-                    </Button>
-                  </Dialog.Close>
-                  <Button>{t('submit')}</Button>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
-          <Dialog.Root>
-            <Dialog.Trigger>
-              <Button variant="soft">
-                {t('compareStandards')}
-              </Button>
-            </Dialog.Trigger>
-
-            <Dialog.Content maxWidth="600px">
-              <Dialog.Title>{t('compareBatchStandards')}</Dialog.Title>
-
-              <Grid columns="2" gap="4" mb="4">
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch1')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-
-                <Select.Root>
-                  <Select.Trigger placeholder={t('selectBatch2')} />
-                  <Select.Content>
-                    <Select.Item value="vc23001">VC23001</Select.Item>
-                    <Select.Item value="vc23002">VC23002</Select.Item>
-                  </Select.Content>
-                </Select.Root>
-              </Grid>
-
-              <Flex direction="column" gap="2">
-                <Text size="4" weight="bold">{t('comparisonResults')}</Text>
-                <Card variant="classic">
-                  <Flex justify="between">
-                    <Text>{t('totalCostDiff')}</Text>
-                    <Badge color="ruby">+$1,200</Badge>
-                  </Flex>
-                  <Flex justify="between">
-                    <Text>{t('materialVariance')}</Text>
-                    <Badge color="jade">-4.2%</Badge>
-                  </Flex>
-                </Card>
-
-                <Flex gap="3" mt="4" justify="end">
-                  <Dialog.Close>
-                    <Button variant="soft" color="gray">
-                      {t('close')}
-                    </Button>
-                  </Dialog.Close>
-                </Flex>
-              </Flex>
-            </Dialog.Content>
-          </Dialog.Root>
+            ))}
+          </Flex>
         </Flex>
       </Flex>
 
       <Grid columns="4" gap="4" mb="5">
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('avgCostUnit')}</Text>
-            <Heading size="7">$3.45</Heading>
+        <Card className={`${cardColors[0]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-blue-700">Supplier Tier</Text>
+            <Select.Root value={supplierTier} onValueChange={setSupplierTier}>
+              <Select.Trigger 
+                className="bg-white border border-gray-300"
+                placeholder="Select Tier"
+              />
+              <Select.Content>
+                {SupplierTierOptions.map((tier) => (
+                  <Select.Item key={tier} value={tier}>
+                    {tier}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
           </Flex>
         </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('yieldVariance')}</Text>
-            <Heading size="7" className="text-green-500">-1.8%</Heading>
+
+        <Card className={`${cardColors[1]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-green-700">Transaction Volume</Text>
+            <input
+              type="number"
+              placeholder="Enter volume"
+              value={transactionVolume}
+              onChange={(e) => setTransactionVolume(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+            />
           </Flex>
         </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('materialWaste')}</Text>
-            <Heading size="7">4.5%</Heading>
+
+        <Card className={`${cardColors[2]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-purple-700">Component Criticality</Text>
+            <Select.Root value={componentCriticality} onValueChange={setComponentCriticality}>
+              <Select.Trigger 
+                className="bg-white border border-gray-300"
+                placeholder="Select criticality"
+              />
+              <Select.Content>
+                {ComponentCriticalityOptions.map((level) => (
+                  <Select.Item key={level} value={level}>
+                    {level}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select.Root>
           </Flex>
         </Card>
-        <Card>
-          <Flex direction="column" gap="1">
-            <Text size="2">{t('batchEfficiency')}</Text>
-            <Progress value={88} />
+
+        <Card className={`${cardColors[3]} border`}>
+          <Flex direction="column" gap="2">
+            <Text size="2" weight="bold" className="text-amber-700">Supplier Incentives</Text>
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={supplierIncentives}
+              onChange={(e) => setSupplierIncentives(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
+            />
           </Flex>
         </Card>
       </Grid>
 
-      <Table.Root variant="surface">
-        <Table.Header>
+      <Table.Root variant="surface" className="shadow-sm">
+        <Table.Header className="bg-gray-100">
           <Table.Row>
-            <Table.ColumnHeaderCell>{t('batchID')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('materialCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('conversionCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('totalCost')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('costPerUnit')}</Table.ColumnHeaderCell>
-            <Table.ColumnHeaderCell>{t('variance')}</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Item</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              Declared Price
+              <div className="text-xs text-green-600 font-semibold">
+                via blockchain
+              </div>
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">
+              Actual Cost
+              <div className="text-xs text-green-600 font-semibold">
+                via IoT
+              </div>
+            </Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Variance</Table.ColumnHeaderCell>
+            <Table.ColumnHeaderCell className="font-bold text-gray-800">Incentives</Table.ColumnHeaderCell>
           </Table.Row>
         </Table.Header>
         <Table.Body>
-          {batches.map((batch) => (
-            <Table.Row key={batch.id}>
-              <Table.Cell>{batch.id}</Table.Cell>
-              <Table.Cell>${batch.materialCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>
-                ${(batch.laborCost + batch.overhead).toLocaleString()}
-              </Table.Cell>
-              <Table.Cell>${batch.totalCost.toLocaleString()}</Table.Cell>
-              <Table.Cell>${batch.costPerUnit}</Table.Cell>
-              <Table.Cell>
-                <Badge color={batch.variance.startsWith('-') ? 'green' : 'red'}>
-                  {batch.variance}
-                </Badge>
-              </Table.Cell>
-            </Table.Row>
+          {items.map((group) => (
+            <React.Fragment key={group.id}>
+              <Table.Row className="bg-gray-50">
+                <Table.Cell
+                  colSpan={5}
+                  className="font-bold text-gray-800"
+                >
+                  {group.title}
+                </Table.Cell>
+              </Table.Row>
+
+              {group.subItems.map((item) => (
+                <Table.Row key={item.id} className="hover:bg-gray-50">
+                  <Table.Cell className="pl-6 text-gray-700">{item.name}</Table.Cell>
+
+                  <Table.Cell>
+                    <input
+                      type="number"
+                      value={item.declaredPrice}
+                      onChange={(e) =>
+                        handleSubItemChange(group.id, item.id, 'declaredPrice', e.target.value)
+                      }
+                      className="w-full bg-transparent font-semibold focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+                    />
+                  </Table.Cell>
+
+                  <Table.Cell>
+                    <input
+                      type="number"
+                      value={item.actualCost}
+                      onChange={(e) =>
+                        handleSubItemChange(group.id, item.id, 'actualCost', e.target.value)
+                      }
+                      className="w-full bg-transparent font-semibold focus:ring-2 focus:ring-blue-500 rounded px-2 py-1"
+                    />
+                  </Table.Cell>
+
+                  <Table.Cell className={`font-bold ${
+                    item.variance.startsWith('-') ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {item.variance}
+                  </Table.Cell>
+
+                  <Table.Cell>
+                    <Select.Root
+                      value={item.incentives}
+                      onValueChange={(value) => handleIncentivesChange(group.id, item.id, value)}
+                    >
+                      <Select.Trigger 
+                        className="w-full border border-gray-300"
+                        placeholder="Select incentive"
+                      />
+                      <Select.Content>
+                        {incentivesOptions.map((inc) => (
+                          <Select.Item key={inc} value={inc}>
+                            {inc}
+                          </Select.Item>
+                        ))}
+                      </Select.Content>
+                    </Select.Root>
+                  </Table.Cell>
+                </Table.Row>
+              ))}
+            </React.Fragment>
           ))}
         </Table.Body>
       </Table.Root>
 
-      <Flex mt="5" gap="4">
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('costBreakdown')}</Heading>
-          <div className="h-64">
-            <BarChart width={500} height={250} data={batches}>
-              <Bar dataKey="materialCost" fill="#3b82f6" name={t('material')} />
-              <Bar dataKey="laborCost" fill="#ef4444" name={t('labor')} />
-              <Bar dataKey="overhead" fill="#10b981" name={t('overhead')} />
-            </BarChart>
-          </div>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Heading size="4" mb="3">{t('varianceAnalysis')}</Heading>
-          <div className="h-64">
-            <PieChart width={300} height={250}>
-              <Pie
-                data={[
-                  { name: t('material'), value: 65 },
-                  { name: t('labor'), value: 25 },
-                  { name: t('overhead'), value: 10 }
-                ]}
-                cx="50%"
-                cy="50%"
-                innerRadius={60}
-                outerRadius={80}
-                paddingAngle={5}
-                dataKey="value"
-              />
-            </PieChart>
-          </div>
-        </Card>
+      <Flex justify="end" mt="6">
+        <Button 
+          size="3" 
+          className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-md shadow-sm transition-colors"
+          onClick={handleSubmitToBlockchain}
+        >
+          Submit to Blockchain
+        </Button>
       </Flex>
     </Box>
   );
