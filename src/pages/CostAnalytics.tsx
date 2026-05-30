@@ -766,14 +766,15 @@ const CostAfterView: React.FC<CostAfterViewProps> = ({
                 <input
                   type="number"
                   value={costAfter}
-                  onChange={(e) => updateCostAfterValue(
-                    category, 
-                    index, 
-                    parseFloat(e.target.value) || 0
-                  )}
+                  onChange={(e) =>
+                    updateCostAfterValue(
+                      category,
+                      index,
+                      e.target.value === '' ? 0 : parseFloat(e.target.value)
+                    )
+                  }
                   step="0.01"
-                  min={costBefore * 0.95}
-                  max={costBefore}
+                  min="0"
                   style={{ 
                     width: '70px',
                     padding: '4px 8px',
@@ -1105,15 +1106,13 @@ function CostAnalytics() {
 
   const updateCostAfterValue = (category: CostCategory, index: number, value: number) => {
     setData(prev => {
-      const newData = {...prev};
+      const newData = { ...prev };
       const categoryItems = [...getDetailsByCategory(category, newData)];
-      const item = categoryItems[index];
-      const actualCost = calculateActualCost(item);
-      
-      const maxAllowedSavings = actualCost * 0.05;
-      const minAllowedCostAfter = actualCost - maxAllowedSavings;
-      
-      item.costAfter = Math.max(value, minAllowedCostAfter);
+
+      categoryItems[index] = {
+        ...categoryItems[index],
+        costAfter: value
+      };
       
       switch (category) {
         case 'Direct Materials': newData.rawMaterials = categoryItems; break;
