@@ -433,6 +433,7 @@ const SimpleCarbonCostDialog = ({
 
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
+  const [stageCostCurrency, setStageCostCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Drug A');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto' | 'iot'>('auto');
@@ -607,6 +608,10 @@ const CO2Footprint = () => {
 
   const totalStageCostUSD = currentStageData.reduce((sum: number, item: any) => {
     return sum + calculateItemCarbonCost(item.emissions).costUSD;
+  }, 0);
+
+  const totalStageCostEGP = currentStageData.reduce((sum: number, item: any) => {
+    return sum + calculateItemCarbonCost(item.emissions).costEGP;
   }, 0);
 
   const handleStageClick = (stage: string) => {
@@ -1081,7 +1086,7 @@ const CO2Footprint = () => {
             <Box>
               <Heading size="4">Stage-Level Carbon Cost</Heading>
               <Text size="2" color="gray">
-                Click any category to view item-level emissions and default USD carbon cost.
+                Click any category to view item-level emissions and carbon cost.
               </Text>
             </Box>
 
@@ -1278,7 +1283,30 @@ const CO2Footprint = () => {
                   </Table.ColumnHeaderCell>
 
                   <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
-                    Carbon Cost (USD)
+                    <Flex align="center" gap="2">
+                      <Text weight="bold" size="2">
+                        Carbon Cost
+                      </Text>
+
+                      <Select.Root
+                        value={stageCostCurrency}
+                        onValueChange={(value) => setStageCostCurrency(value as 'USD' | 'EGP')}
+                      >
+                        <Select.Trigger
+                          variant="soft"
+                          style={{
+                            width: 72,
+                            height: 26,
+                            fontSize: '12px',
+                            backgroundColor: 'white',
+                          }}
+                        />
+                        <Select.Content>
+                          <Select.Item value="USD">USD</Select.Item>
+                          <Select.Item value="EGP">EGP</Select.Item>
+                        </Select.Content>
+                      </Select.Root>
+                    </Flex>
                   </Table.ColumnHeaderCell>
 
                   <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
@@ -1340,7 +1368,9 @@ const CO2Footprint = () => {
                           onClick={() => showItemCostDetails(item, openStage || '')}
                           style={compactButtonStyle}
                         >
-                          {itemCost.costUSD.toFixed(4)} USD
+                          {stageCostCurrency === 'USD'
+                            ? `${itemCost.costUSD.toFixed(4)} USD`
+                            : `${itemCost.costEGP.toFixed(2)} EGP`}
                         </Button>
                       </Table.Cell>
 
@@ -1370,7 +1400,11 @@ const CO2Footprint = () => {
                   </Table.Cell>
 
                   <Table.Cell style={compactNumberStyle}>
-                    <strong>{totalStageCostUSD.toFixed(4)} USD</strong>
+                    <strong>
+                      {stageCostCurrency === 'USD'
+                        ? `${totalStageCostUSD.toFixed(4)} USD`
+                        : `${totalStageCostEGP.toFixed(2)} EGP`}
+                    </strong>
                   </Table.Cell>
 
                   <Table.Cell style={compactNumberStyle}>
