@@ -14,6 +14,7 @@ import {
   TextField,
   Dialog,
   Badge,
+  Separator,
 } from '@radix-ui/themes';
 import {
   PieChart,
@@ -28,20 +29,24 @@ import {
   Bar,
 } from 'recharts';
 
+// =====================
 // Constants
+// =====================
 const CARBON_PRICE_PER_TON = 50; // USD per ton
 const EXCHANGE_RATE = 50; // EGP per USD
 const KG_PER_TON = 1000; // kg per ton
 const BATCH_SIZE = 1000; // Number of units per production batch
 
-// Chart colors
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
 const SCOPE_COLORS = ['#FF6B6B', '#0088FE'];
 
+// =====================
 // Interfaces
+// =====================
 interface RawMaterial {
   material: string;
   quantity: number;
+  unit: string;
   emissionFactor: number;
   emissions: number;
 }
@@ -119,27 +124,29 @@ interface EmissionDataItem {
   calculationEGP: string;
 }
 
-// Initial data
+// =====================
+// Initial Default Data
+// =====================
 const initialStageData: StageData = {
   'Raw Materials': [
-    { material: 'Vitamin B1', quantity: 0.001, emissionFactor: 85, emissions: 0.001 * 85 },
-    { material: 'Vitamin B2', quantity: 0.006, emissionFactor: 92, emissions: 0.006 * 92 },
-    { material: 'Vitamin B12', quantity: 0.001, emissionFactor: 120, emissions: 0.001 * 120 },
-    { material: 'Nicotinamide (B3)', quantity: 0.01, emissionFactor: 78, emissions: 0.01 * 78 },
-    { material: 'Pantothenic Acid', quantity: 0.004, emissionFactor: 65, emissions: 0.004 * 65 },
-    { material: 'Vitamin B6', quantity: 0.0015, emissionFactor: 88, emissions: 0.0015 * 88 },
-    { material: 'Leucine', quantity: 0.03, emissionFactor: 42, emissions: 0.03 * 42 },
-    { material: 'Threonine', quantity: 0.01, emissionFactor: 38, emissions: 0.01 * 38 },
-    { material: 'Taurine', quantity: 0.0025, emissionFactor: 55, emissions: 0.0025 * 55 },
-    { material: 'Glycine', quantity: 0.0025, emissionFactor: 32, emissions: 0.0025 * 32 },
-    { material: 'Arginine', quantity: 0.0025, emissionFactor: 48, emissions: 0.0025 * 48 },
-    { material: 'Cynarine', quantity: 0.0025, emissionFactor: 115, emissions: 0.0025 * 115 },
-    { material: 'Silymarin', quantity: 0.025, emissionFactor: 105, emissions: 0.025 * 105 },
-    { material: 'Sorbitol', quantity: 0.01, emissionFactor: 22, emissions: 0.01 * 22 },
-    { material: 'Carnitine', quantity: 0.005, emissionFactor: 95, emissions: 0.005 * 95 },
-    { material: 'Betaine', quantity: 0.02, emissionFactor: 28, emissions: 0.02 * 28 },
-    { material: 'Tween-80', quantity: 0.075, emissionFactor: 18, emissions: 0.075 * 18 },
-    { material: 'Water', quantity: 0.571, emissionFactor: 0.05, emissions: 0.571 * 0.05 },
+    { material: 'Vitamin B1', quantity: 0.001, unit: 'kg', emissionFactor: 85, emissions: 0.001 * 85 },
+    { material: 'Vitamin B2', quantity: 0.006, unit: 'kg', emissionFactor: 92, emissions: 0.006 * 92 },
+    { material: 'Vitamin B12', quantity: 0.001, unit: 'kg', emissionFactor: 120, emissions: 0.001 * 120 },
+    { material: 'Nicotinamide B3', quantity: 0.01, unit: 'kg', emissionFactor: 78, emissions: 0.01 * 78 },
+    { material: 'Pantothenic Acid', quantity: 0.004, unit: 'kg', emissionFactor: 65, emissions: 0.004 * 65 },
+    { material: 'Vitamin B6', quantity: 0.0015, unit: 'kg', emissionFactor: 88, emissions: 0.0015 * 88 },
+    { material: 'Leucine', quantity: 0.03, unit: 'kg', emissionFactor: 42, emissions: 0.03 * 42 },
+    { material: 'Threonine', quantity: 0.01, unit: 'kg', emissionFactor: 38, emissions: 0.01 * 38 },
+    { material: 'Taurine', quantity: 0.0025, unit: 'kg', emissionFactor: 55, emissions: 0.0025 * 55 },
+    { material: 'Glycine', quantity: 0.0025, unit: 'kg', emissionFactor: 32, emissions: 0.0025 * 32 },
+    { material: 'Arginine', quantity: 0.0025, unit: 'kg', emissionFactor: 48, emissions: 0.0025 * 48 },
+    { material: 'Cynarin', quantity: 0.0025, unit: 'kg', emissionFactor: 115, emissions: 0.0025 * 115 },
+    { material: 'Silymarin', quantity: 0.025, unit: 'kg', emissionFactor: 105, emissions: 0.025 * 105 },
+    { material: 'Sorbitol', quantity: 0.01, unit: 'kg', emissionFactor: 22, emissions: 0.01 * 22 },
+    { material: 'Carnitine', quantity: 0.005, unit: 'kg', emissionFactor: 95, emissions: 0.005 * 95 },
+    { material: 'Betaine', quantity: 0.02, unit: 'kg', emissionFactor: 28, emissions: 0.02 * 28 },
+    { material: 'Tween-80', quantity: 0.075, unit: 'kg', emissionFactor: 18, emissions: 0.075 * 18 },
+    { material: 'Water', quantity: 0.571, unit: 'kg', emissionFactor: 0.05, emissions: 0.571 * 0.05 },
   ],
 
   Manufacturing: [
@@ -300,7 +307,13 @@ const initialStageData: StageData = {
   ],
 };
 
-// Main carbon cost calculation
+// =====================
+// Utility Functions
+// =====================
+const getDefaultStageData = (): StageData => {
+  return JSON.parse(JSON.stringify(initialStageData));
+};
+
 const calculateCarbonCost = (emissionsKg: number) => {
   const validEmissions = isNaN(emissionsKg) || !isFinite(emissionsKg) ? 0 : emissionsKg;
 
@@ -316,7 +329,6 @@ const calculateCarbonCost = (emissionsKg: number) => {
   };
 };
 
-// Item-level carbon cost calculation
 const calculateItemCarbonCost = (emissionsKg: number) => {
   const validEmissions = isNaN(emissionsKg) || !isFinite(emissionsKg) ? 0 : emissionsKg;
 
@@ -329,19 +341,34 @@ const calculateItemCarbonCost = (emissionsKg: number) => {
   };
 };
 
+const formatNumber = (value: number, digits = 3) => {
+  if (isNaN(value) || !isFinite(value)) return Number(0).toFixed(digits);
+  return value.toFixed(digits);
+};
+
+// =====================
+// Component
+// =====================
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Drug A');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
-  const [mode, setMode] = useState<'manual' | 'auto' | 'iot'>('iot');
+  const [mode, setMode] = useState<'manual' | 'auto' | 'iot'>('auto');
   const [openStage, setOpenStage] = useState<string | null>(null);
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
   const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
-  const [stageData, setStageData] = useState<StageData>(initialStageData);
+  const [stageData, setStageData] = useState<StageData>(() => getDefaultStageData());
 
   useEffect(() => {
     document.title = 'Sustainability Dashboard';
   }, []);
+
+  // Reset default data when the user is not in IoT mode
+  useEffect(() => {
+    if (mode !== 'iot') {
+      setStageData(getDefaultStageData());
+    }
+  }, [mode]);
 
   const calculateStageEmissions = (items: any[]) => {
     return parseFloat(
@@ -382,13 +409,13 @@ const CO2Footprint = () => {
     setEmissionData(getEmissionData());
   }, [stageData, mode]);
 
-  // IoT mode simulation
+  // IoT simulation only works in IoT mode
   useEffect(() => {
     if (mode !== 'iot') return;
 
     const interval = setInterval(() => {
       setStageData((previousData) => {
-        const updatedData: StageData = { ...previousData };
+        const updatedData: StageData = JSON.parse(JSON.stringify(previousData));
 
         Object.keys(updatedData).forEach((stage: string) => {
           updatedData[stage] = updatedData[stage].map((item: any) => {
@@ -462,6 +489,12 @@ const CO2Footprint = () => {
   const revenue = currency === 'EGP' ? 55000 : 1800;
   const carbonIntensity = totalEmissions / (revenue / 1000);
 
+  const highestEmissionStage = useMemo(() => {
+    if (emissionData.length === 0) return null;
+
+    return [...emissionData].sort((a, b) => b.emissions - a.emissions)[0];
+  }, [emissionData]);
+
   const pieChartData = emissionData.map((item) => ({
     name: item.category,
     value: isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions,
@@ -479,6 +512,19 @@ const CO2Footprint = () => {
     if (!openStage) return [];
     return stageData[openStage] || [];
   }, [openStage, stageData]);
+
+  const totalStageEmissions = currentStageData.reduce((sum: number, item: any) => {
+    const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+    return sum + emissions;
+  }, 0);
+
+  const totalStageCostUSD = currentStageData.reduce((sum: number, item: any) => {
+    return sum + calculateItemCarbonCost(item.emissions).costUSD;
+  }, 0);
+
+  const totalStageCostEGP = currentStageData.reduce((sum: number, item: any) => {
+    return sum + calculateItemCarbonCost(item.emissions).costEGP;
+  }, 0);
 
   const handleStageClick = (stage: string) => {
     setOpenStage(stage);
@@ -523,10 +569,9 @@ const CO2Footprint = () => {
 
     if (isNaN(newValue)) return;
 
-    const updatedData: StageData = { ...stageData };
-    updatedData[stage] = [...updatedData[stage]];
+    const updatedData: StageData = JSON.parse(JSON.stringify(stageData));
+    const item = updatedData[stage][index];
 
-    const item = { ...updatedData[stage][index] };
     item.emissionFactor = newValue;
 
     if (stage === 'Packaging') {
@@ -543,7 +588,6 @@ const CO2Footprint = () => {
       item.emissions = (item.quantity || 0) * newValue;
     }
 
-    updatedData[stage][index] = item;
     setStageData(updatedData);
   };
 
@@ -597,9 +641,9 @@ const CO2Footprint = () => {
   };
 
   const getQuantityColumnTitle = (stage: string | null) => {
-    if (stage === 'Raw Materials') return 'Quantity (kg)';
+    if (stage === 'Raw Materials') return 'Quantity';
     if (stage === 'Manufacturing') return 'Quantity';
-    if (stage === 'Packaging') return 'Quantity (g)';
+    if (stage === 'Packaging') return 'Quantity';
     if (stage === 'Transport') return 'Distance / Duration';
     if (stage === 'Distribution') return 'Distance / Duration';
     if (stage === 'Use') return 'Distance / Duration / Quantity';
@@ -607,29 +651,36 @@ const CO2Footprint = () => {
     return 'Quantity';
   };
 
-  const totalStageEmissions = currentStageData.reduce((sum: number, item: any) => {
-    const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-    return sum + emissions;
-  }, 0);
-
-  const totalStageCostUSD = currentStageData.reduce((sum: number, item: any) => {
-    return sum + calculateItemCarbonCost(item.emissions).costUSD;
-  }, 0);
-
-  const totalStageCostEGP = currentStageData.reduce((sum: number, item: any) => {
-    return sum + calculateItemCarbonCost(item.emissions).costEGP;
-  }, 0);
+  const modeDescription =
+    mode === 'iot'
+      ? 'Live simulated IoT readings are active. Quantities may change every 3 seconds.'
+      : mode === 'manual'
+        ? 'Manual mode is active. Category emissions can be edited manually.'
+        : 'Auto mode is active. Default baseline values are used.';
 
   return (
-    <Box p="6">
-      <Flex justify="between" align="center" mb="5">
-        <Heading size="6">Sustainability Dashboard</Heading>
+    <Box
+      p="6"
+      style={{
+        background: 'linear-gradient(180deg, #f8fafc 0%, #ffffff 100%)',
+        minHeight: '100vh',
+      }}
+    >
+      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="4">
+        <Box>
+          <Heading size="7">Sustainability Dashboard</Heading>
+          <Text size="2" color="gray">
+            Carbon footprint, environmental cost, and item-level cost analysis
+          </Text>
+        </Box>
 
-        <Flex gap="3">
+        <Flex gap="3" wrap="wrap">
           <Box>
-            <Text size="1">Mode</Text>
+            <Text size="1" color="gray">
+              Mode
+            </Text>
             <Select.Root value={mode} onValueChange={(value) => setMode(value as 'manual' | 'auto' | 'iot')}>
-              <Select.Trigger style={{ width: 110 }} />
+              <Select.Trigger style={{ width: 120 }} />
               <Select.Content>
                 <Select.Item value="auto">Auto</Select.Item>
                 <Select.Item value="manual">Manual</Select.Item>
@@ -639,7 +690,9 @@ const CO2Footprint = () => {
           </Box>
 
           <Box style={{ width: 180 }}>
-            <Text size="1">Product</Text>
+            <Text size="1" color="gray">
+              Product
+            </Text>
             <Select.Root value={selectedProduct} onValueChange={(value) => setSelectedProduct(value)}>
               <Select.Trigger />
               <Select.Content>
@@ -651,7 +704,9 @@ const CO2Footprint = () => {
           </Box>
 
           <Box style={{ width: 100 }}>
-            <Text size="1">Currency</Text>
+            <Text size="1" color="gray">
+              Currency
+            </Text>
             <Select.Root value={currency} onValueChange={(value) => setCurrency(value as 'USD' | 'EGP')}>
               <Select.Trigger />
               <Select.Content>
@@ -663,107 +718,115 @@ const CO2Footprint = () => {
         </Flex>
       </Flex>
 
-      {mode === 'iot' && (
-        <Card
-          mb="4"
-          style={{
-            background: 'linear-gradient(135deg, #0d47a1 0%, #1976d2 100%)',
-            color: 'white',
-            border: '1px solid #42a5f5',
-            boxShadow: '0 4px 12px rgba(13, 71, 161, 0.3)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-          }}
-        >
-          <Flex p="4" align="center" gap="3">
+      <Card
+        mb="5"
+        style={{
+          borderRadius: '16px',
+          border: mode === 'iot' ? '1px solid #2563eb' : '1px solid #d1d5db',
+          background:
+            mode === 'iot'
+              ? 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
+          color: mode === 'iot' ? 'white' : '#111827',
+        }}
+      >
+        <Flex p="4" justify="between" align="center" wrap="wrap" gap="3">
+          <Flex align="center" gap="3">
             <Box
               style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                padding: '12px',
-                borderRadius: '10px',
+                width: 46,
+                height: 46,
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: mode === 'iot' ? 'rgba(255,255,255,0.18)' : '#e0f2fe',
+                fontSize: 24,
               }}
             >
-              <Text size="5">📡</Text>
+              {mode === 'iot' ? '📡' : mode === 'manual' ? '✍️' : '⚙️'}
             </Box>
 
-            <Box style={{ flex: 1 }}>
-              <Flex align="center" gap="2" mb="1">
-                <Badge color="blue" variant="solid" highContrast size="2">
-                  LIVE
+            <Box>
+              <Flex align="center" gap="2">
+                <Heading size="4">{mode === 'iot' ? 'IoT Mode Active' : mode === 'manual' ? 'Manual Mode' : 'Auto Baseline Mode'}</Heading>
+                <Badge color={mode === 'iot' ? 'blue' : mode === 'manual' ? 'orange' : 'green'} variant="solid">
+                  {mode.toUpperCase()}
                 </Badge>
-                <Heading size="5" style={{ margin: 0 }}>
-                  IoT Mode Active
-                </Heading>
               </Flex>
-
-              <Text size="2" style={{ opacity: 0.9 }}>
-                Real-time data collection from sensors. Quantities update every 3 seconds with simulated variations.
+              <Text size="2" style={{ opacity: 0.85 }}>
+                {modeDescription}
               </Text>
             </Box>
           </Flex>
-        </Card>
-      )}
 
-      <Grid columns="4" gap="4" mb="5">
-        <Card>
+          <Box>
+            <Text size="1" style={{ opacity: 0.75 }}>
+              Carbon Price
+            </Text>
+            <Text size="4" weight="bold">
+              {CARBON_PRICE_PER_TON} USD / ton CO₂e
+            </Text>
+          </Box>
+        </Flex>
+      </Card>
+
+      <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="4" mb="5">
+        <Card style={{ borderRadius: '16px' }}>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">
-              <strong>Total Emissions</strong>
+            <Text size="2" color="gray">
+              Total Emissions
+            </Text>
+            <Heading size="7">{totalEmissions.toFixed(3)} kg CO₂e</Heading>
+            <Badge color="green" variant="soft">
+              Baseline target: {(totalEmissions * 0.8).toFixed(3)} kg CO₂e
+            </Badge>
+          </Flex>
+        </Card>
+
+        <Card style={{ borderRadius: '16px' }}>
+          <Flex direction="column" gap="1" p="4">
+            <Text size="2" color="gray">
+              Environmental Cost
             </Text>
             <Heading size="7">
-              <strong>{totalEmissions.toFixed(3)} kg CO₂e</strong>
+              {currency === 'EGP' ? totalCost.toFixed(2) : totalCost.toFixed(4)} {currency}
             </Heading>
-            <Text size="1" color="green">
-              ↓ 12% YoY
+            <Text size="1" color="gray">
+              Converted using {EXCHANGE_RATE} EGP/USD
             </Text>
           </Flex>
         </Card>
 
-        <Card>
+        <Card style={{ borderRadius: '16px' }}>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">
-              <strong>Environmental Cost</strong>
+            <Text size="2" color="gray">
+              Carbon Intensity
             </Text>
             <Heading size="7">
-              <strong>
-                {totalCost} {currency}
-              </strong>
+              {isNaN(carbonIntensity) || !isFinite(carbonIntensity) ? '0.0000' : carbonIntensity.toFixed(4)}
             </Heading>
+            <Text size="1" color="gray">
+              kg CO₂e per {currency === 'USD' ? '$' : 'EGP'}K revenue
+            </Text>
           </Flex>
         </Card>
 
-        <Card>
+        <Card style={{ borderRadius: '16px' }}>
           <Flex direction="column" gap="1" p="4">
-            <Text size="2">
-              <strong>Carbon Intensity</strong>
+            <Text size="2" color="gray">
+              Highest Emission Stage
             </Text>
-            <Heading size="7">
-              <strong>
-                {isNaN(carbonIntensity) || !isFinite(carbonIntensity)
-                  ? '0.0000'
-                  : carbonIntensity.toFixed(4)}{' '}
-                kg/{currency === 'USD' ? '$' : 'EGP '}K
-              </strong>
-            </Heading>
-          </Flex>
-        </Card>
-
-        <Card>
-          <Flex direction="column" gap="1" p="4">
-            <Text size="2">
-              <strong>Scope 3 Share</strong>
+            <Heading size="5">{highestEmissionStage?.category || 'N/A'}</Heading>
+            <Text size="2" weight="bold">
+              {highestEmissionStage ? `${highestEmissionStage.emissions.toFixed(3)} kg CO₂e` : '0.000 kg CO₂e'}
             </Text>
-            <Heading size="7">
-              <strong>
-                {totalEmissions > 0 ? ((ghgScopeData[1].value / totalEmissions) * 100).toFixed(1) : '0.0'}%
-              </strong>
-            </Heading>
           </Flex>
         </Card>
       </Grid>
 
-      <Grid columns="2" gap="4" mb="4">
-        <Card>
+      <Grid columns={{ initial: '1', lg: '2' }} gap="4" mb="4">
+        <Card style={{ borderRadius: '16px' }}>
           <Box p="3">
             <Heading size="4" mb="2">
               Emissions by Category
@@ -801,7 +864,7 @@ const CO2Footprint = () => {
           </Box>
         </Card>
 
-        <Card>
+        <Card style={{ borderRadius: '16px' }}>
           <Box p="3">
             <Heading size="4" mb="2">
               GHG Protocol Scopes
@@ -814,7 +877,7 @@ const CO2Footprint = () => {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  outerRadius={80}
+                  outerRadius={90}
                   dataKey="value"
                   nameKey="name"
                   label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
@@ -830,7 +893,9 @@ const CO2Footprint = () => {
               </PieChart>
             </ResponsiveContainer>
 
-            <Box mt="2" style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>
+            <Separator my="3" />
+
+            <Box style={{ fontSize: '12px', textAlign: 'center', color: '#666' }}>
               <div>Scope 1+2: Manufacturing + Packaging</div>
               <div>Scope 3: Raw Materials + Transport + Distribution + Use + End of Life</div>
             </Box>
@@ -838,7 +903,7 @@ const CO2Footprint = () => {
         </Card>
       </Grid>
 
-      <Card mb="4">
+      <Card mb="4" style={{ borderRadius: '16px' }}>
         <Box p="3">
           <Heading size="4" mb="2">
             Environmental Cost by Category
@@ -861,122 +926,136 @@ const CO2Footprint = () => {
         </Box>
       </Card>
 
-      <Box mb="4" style={{ maxHeight: 420, overflowY: 'auto' }}>
-        <Table.Root variant="surface">
-          <Table.Header>
-            <Table.Row>
-              <Table.ColumnHeaderCell>
-                <strong>Category</strong>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                <strong>Emissions (kg CO₂e)</strong>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                <strong>Environmental Cost ({currency})</strong>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                <strong>% of Total</strong>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                <strong>Target (kg CO₂e)</strong>
-              </Table.ColumnHeaderCell>
-              <Table.ColumnHeaderCell>
-                <strong>Certification</strong>
-              </Table.ColumnHeaderCell>
-            </Table.Row>
-          </Table.Header>
+      <Card style={{ borderRadius: '16px' }}>
+        <Box p="3">
+          <Flex justify="between" align="center" mb="3" wrap="wrap" gap="2">
+            <Box>
+              <Heading size="4">Stage-Level Environmental Cost</Heading>
+              <Text size="2" color="gray">
+                Click any category to view item-level emissions and environmental cost.
+              </Text>
+            </Box>
 
-          <Table.Body>
-            {emissionData.map((item, index) => (
-              <Table.Row key={item.category}>
-                <Table.Cell>
-                  <Button
-                    variant="ghost"
-                    onClick={() => handleStageClick(item.category)}
-                    style={{ padding: 0, fontWeight: 'bold' }}
-                  >
-                    {item.category}
-                  </Button>
-                </Table.Cell>
+            <Badge color="gray" variant="soft">
+              Product: {selectedProduct}
+            </Badge>
+          </Flex>
 
-                <Table.Cell>
-                  {mode === 'manual' ? (
-                    <TextField.Root
-                      size="1"
-                      value={item.emissions.toString()}
-                      onChange={(event) => handleEmissionChange(index, event.target.value)}
-                      style={{ maxWidth: 100 }}
-                    />
-                  ) : (
-                    <Text weight="bold">{isNaN(item.emissions) ? '0.000' : item.emissions.toFixed(3)}</Text>
-                  )}
-                </Table.Cell>
+          <Box style={{ maxHeight: 430, overflowY: 'auto' }}>
+            <Table.Root variant="surface">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell>
+                    <strong>Category</strong>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <strong>Emissions (kg CO₂e)</strong>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <strong>Environmental Cost ({currency})</strong>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <strong>% of Total</strong>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <strong>Target (kg CO₂e)</strong>
+                  </Table.ColumnHeaderCell>
+                  <Table.ColumnHeaderCell>
+                    <strong>Certification</strong>
+                  </Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
 
-                <Table.Cell>
-                  <Button variant="ghost" onClick={() => showCostDetails(item)} style={{ padding: 0 }}>
-                    {currency === 'EGP'
-                      ? `${isNaN(item.costEGP) ? '0.00' : item.costEGP.toFixed(2)} EGP`
-                      : `${isNaN(item.costUSD) ? '0.0000' : item.costUSD.toFixed(4)} USD`}
-                  </Button>
-                </Table.Cell>
+              <Table.Body>
+                {emissionData.map((item, index) => (
+                  <Table.Row key={item.category}>
+                    <Table.Cell>
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleStageClick(item.category)}
+                        style={{ padding: 0, fontWeight: 'bold' }}
+                      >
+                        {item.category}
+                      </Button>
+                    </Table.Cell>
 
-                <Table.Cell>
-                  <strong>
-                    {isNaN(item.emissions) || totalEmissions === 0
-                      ? '0.0'
-                      : ((item.emissions / totalEmissions) * 100).toFixed(1)}
-                    %
-                  </strong>
-                </Table.Cell>
+                    <Table.Cell>
+                      {mode === 'manual' ? (
+                        <TextField.Root
+                          size="1"
+                          value={item.emissions.toString()}
+                          onChange={(event) => handleEmissionChange(index, event.target.value)}
+                          style={{ maxWidth: 100 }}
+                        />
+                      ) : (
+                        <Text weight="bold">{formatNumber(item.emissions, 3)}</Text>
+                      )}
+                    </Table.Cell>
 
-                <Table.Cell>
-                  <strong>{(isNaN(item.emissions) ? 0 : item.emissions * 0.8).toFixed(3)}</strong>
-                </Table.Cell>
+                    <Table.Cell>
+                      <Button variant="ghost" onClick={() => showCostDetails(item)} style={{ padding: 0 }}>
+                        {currency === 'EGP'
+                          ? `${item.costEGP.toFixed(2)} EGP`
+                          : `${item.costUSD.toFixed(4)} USD`}
+                      </Button>
+                    </Table.Cell>
 
-                <Table.Cell>
-                  <Select.Root value={certifications[index]} onValueChange={(value) => handleCertificationChange(index, value)}>
-                    <Select.Trigger />
-                    <Select.Content>
-                      <Select.Item value="ISO 14001">ISO 14001</Select.Item>
-                      <Select.Item value="ISO 50001">ISO 50001</Select.Item>
-                      <Select.Item value="ISO 14064">ISO 14064</Select.Item>
-                      <Select.Item value="ISO 14067">ISO 14067 (Carbon Footprint)</Select.Item>
-                      <Select.Item value="GHG Protocol">GHG Protocol</Select.Item>
-                      <Select.Item value="C2C">Cradle to Cradle (C2C)</Select.Item>
-                      <Select.Item value="None">None</Select.Item>
-                    </Select.Content>
-                  </Select.Root>
-                </Table.Cell>
-              </Table.Row>
-            ))}
+                    <Table.Cell>
+                      <strong>
+                        {totalEmissions === 0 ? '0.0' : ((item.emissions / totalEmissions) * 100).toFixed(1)}%
+                      </strong>
+                    </Table.Cell>
 
-            <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
-              <Table.RowHeaderCell>
-                <strong>Total</strong>
-              </Table.RowHeaderCell>
-              <Table.Cell>
-                <strong>{totalEmissions.toFixed(3)}</strong>
-              </Table.Cell>
-              <Table.Cell>
-                <strong>
-                  {totalCost} {currency}
-                </strong>
-              </Table.Cell>
-              <Table.Cell>
-                <strong>100%</strong>
-              </Table.Cell>
-              <Table.Cell>
-                <strong>{(totalEmissions * 0.8).toFixed(3)}</strong>
-              </Table.Cell>
-              <Table.Cell />
-            </Table.Row>
-          </Table.Body>
-        </Table.Root>
-      </Box>
+                    <Table.Cell>
+                      <strong>{(item.emissions * 0.8).toFixed(3)}</strong>
+                    </Table.Cell>
 
-      <Flex mt="4" justify="between" align="center">
+                    <Table.Cell>
+                      <Select.Root value={certifications[index]} onValueChange={(value) => handleCertificationChange(index, value)}>
+                        <Select.Trigger />
+                        <Select.Content>
+                          <Select.Item value="ISO 14001">ISO 14001</Select.Item>
+                          <Select.Item value="ISO 50001">ISO 50001</Select.Item>
+                          <Select.Item value="ISO 14064">ISO 14064</Select.Item>
+                          <Select.Item value="ISO 14067">ISO 14067 (Carbon Footprint)</Select.Item>
+                          <Select.Item value="GHG Protocol">GHG Protocol</Select.Item>
+                          <Select.Item value="C2C">Cradle to Cradle (C2C)</Select.Item>
+                          <Select.Item value="None">None</Select.Item>
+                        </Select.Content>
+                      </Select.Root>
+                    </Table.Cell>
+                  </Table.Row>
+                ))}
+
+                <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                  <Table.RowHeaderCell>
+                    <strong>Total</strong>
+                  </Table.RowHeaderCell>
+                  <Table.Cell>
+                    <strong>{totalEmissions.toFixed(3)}</strong>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <strong>
+                      {currency === 'EGP' ? totalCost.toFixed(2) : totalCost.toFixed(4)} {currency}
+                    </strong>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <strong>100%</strong>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <strong>{(totalEmissions * 0.8).toFixed(3)}</strong>
+                  </Table.Cell>
+                  <Table.Cell />
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
+          </Box>
+        </Box>
+      </Card>
+
+      <Flex mt="4" justify="between" align="center" wrap="wrap" gap="3">
         <Text size="1" color="gray">
-          Last updated: {new Date().toLocaleDateString()}
+          Last updated: {new Date().toLocaleDateString()} | Default data is restored automatically outside IoT mode.
         </Text>
 
         <Flex gap="3">
@@ -999,19 +1078,48 @@ const CO2Footprint = () => {
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
-        <Dialog.Content style={{ maxWidth: 1100, maxHeight: '90vh' }}>
+        <Dialog.Content style={{ maxWidth: 1150, maxHeight: '90vh' }}>
           <Dialog.Title>{openStage} Detailed Emissions and Environmental Cost</Dialog.Title>
 
           <Dialog.Description mb="4">
-            Detailed breakdown of emissions and carbon cost for each item within the {openStage} stage.
+            Detailed breakdown of emissions, item-level carbon cost, and contribution percentage within the selected stage.
             {mode === 'iot' && (
               <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
-                Live Data
+                Live IoT Data
               </Badge>
             )}
           </Dialog.Description>
 
-          <Box style={{ overflowY: 'auto', maxHeight: '70vh' }}>
+          <Grid columns={{ initial: '1', sm: '3' }} gap="3" mb="4">
+            <Card>
+              <Box p="3">
+                <Text size="1" color="gray">
+                  Stage Emissions
+                </Text>
+                <Heading size="5">{totalStageEmissions.toFixed(6)} kg CO₂e</Heading>
+              </Box>
+            </Card>
+
+            <Card>
+              <Box p="3">
+                <Text size="1" color="gray">
+                  Stage Cost USD
+                </Text>
+                <Heading size="5">{totalStageCostUSD.toFixed(4)} USD</Heading>
+              </Box>
+            </Card>
+
+            <Card>
+              <Box p="3">
+                <Text size="1" color="gray">
+                  Stage Cost EGP
+                </Text>
+                <Heading size="5">{totalStageCostEGP.toFixed(2)} EGP</Heading>
+              </Box>
+            </Card>
+          </Grid>
+
+          <Box style={{ overflowY: 'auto', maxHeight: '60vh' }}>
             <Table.Root variant="surface">
               <Table.Header>
                 <Table.Row>
@@ -1064,7 +1172,11 @@ const CO2Footprint = () => {
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px' }}>
-                        {mode === 'iot' ? <Text weight="bold">{getQuantityDisplay(item, openStage || '')}</Text> : getQuantityDisplay(item, openStage || '')}
+                        {mode === 'iot' ? (
+                          <Text weight="bold">{getQuantityDisplay(item, openStage || '')}</Text>
+                        ) : (
+                          getQuantityDisplay(item, openStage || '')
+                        )}
                       </Table.Cell>
 
                       {openStage === 'Packaging' && (
@@ -1083,7 +1195,7 @@ const CO2Footprint = () => {
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                        {(isNaN(item.emissions) ? 0 : item.emissions).toFixed(6)}
+                        {formatNumber(item.emissions, 6)}
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
@@ -1138,7 +1250,7 @@ const CO2Footprint = () => {
       </Dialog.Root>
 
       <Dialog.Root open={costDetailsOpen} onOpenChange={setCostDetailsOpen}>
-        <Dialog.Content style={{ maxWidth: 500 }}>
+        <Dialog.Content style={{ maxWidth: 520 }}>
           <Dialog.Title>Environmental Cost Details</Dialog.Title>
 
           <Box>
