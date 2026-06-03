@@ -792,22 +792,18 @@ const CO2Footprint = () => {
     backgroundColor: '#E3EEFD',
     color: '#1E3A5F',
     fontWeight: 'bold',
-    fontSize: '12px',
-    paddingTop: '7px',
-    paddingBottom: '7px',
+    fontSize: '13px',
   };
 
   const compactNumberStyle = {
-    fontSize: '12px',
+    fontSize: '13px',
     fontWeight: '600',
-    paddingTop: '6px',
-    paddingBottom: '6px',
   };
 
   const compactButtonStyle = {
     padding: 0,
     fontWeight: '700',
-    fontSize: '12px',
+    fontSize: '13px',
     color: '#2563eb',
     cursor: 'pointer',
   };
@@ -1299,7 +1295,7 @@ const CO2Footprint = () => {
 
                   return (
                     <Table.Row key={`${openStage}-${index}`}>
-                      <Table.Cell style={{ fontSize: '12px', fontWeight: '600' }}>
+                      <Table.Cell style={{ fontSize: '13px', fontWeight: '600' }}>
                         {getItemName(item, openStage || '')}
                       </Table.Cell>
 
@@ -1320,7 +1316,7 @@ const CO2Footprint = () => {
                       )}
 
                       {openStage === 'Packaging' && (
-                        <Table.Cell style={{ fontSize: '12px' }}>
+                        <Table.Cell style={{ fontSize: '13px' }}>
                           {item.material}
                         </Table.Cell>
                       )}
@@ -1330,7 +1326,7 @@ const CO2Footprint = () => {
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(event) => handleEmissionFactorChange(openStage!, index, event.target.value)}
-                          style={{ maxWidth: 120, fontSize: '12px' }}
+                          style={{ maxWidth: 120, fontSize: '13px' }}
                         />
                       </Table.Cell>
 
@@ -1364,7 +1360,7 @@ const CO2Footprint = () => {
                           ? 4
                           : 3
                     }
-                    style={{ fontWeight: 'bold', fontSize: '12px' }}
+                    style={{ fontWeight: 'bold', fontSize: '13px' }}
                   >
                     <strong>Total</strong>
                   </Table.RowHeaderCell>
