@@ -362,6 +362,7 @@ const CO2Footprint = () => {
 
   const [itemCostDetailsOpen, setItemCostDetailsOpen] = useState(false);
   const [currentItemCostDetails, setCurrentItemCostDetails] = useState<any>(null);
+  const [showItemEgpCalculation, setShowItemEgpCalculation] = useState(false);
 
   const [stageData, setStageData] = useState<StageData>(() => getDefaultStageData());
 
@@ -560,10 +561,21 @@ const CO2Footprint = () => {
     const costUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
     const costEGP = costUSD * EXCHANGE_RATE;
 
+    const stageTotalEmissions = (stageData[stage] || []).reduce((sum: number, stageItem: any) => {
+      const stageItemEmissions =
+        isNaN(stageItem.emissions) || !isFinite(stageItem.emissions) ? 0 : stageItem.emissions;
+
+      return sum + stageItemEmissions;
+    }, 0);
+
+    const stageShare =
+      stageTotalEmissions > 0 ? ((emissionsKg / stageTotalEmissions) * 100).toFixed(1) : '0.0';
+
     setCurrentItemCostDetails({
       stage,
       itemName: getItemName(item, stage),
       emissions: emissionsKg,
+      stageShare,
       carbonPricePerTon: CARBON_PRICE_PER_TON,
       carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
       exchangeRate: EXCHANGE_RATE,
@@ -573,6 +585,7 @@ const CO2Footprint = () => {
       calculationEGP: `${costUSD.toFixed(4)} USD × ${EXCHANGE_RATE} EGP/USD`,
     });
 
+    setShowItemEgpCalculation(false);
     setItemCostDetailsOpen(true);
   };
 
@@ -1136,11 +1149,12 @@ const CO2Footprint = () => {
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
-        <Dialog.Content style={{ maxWidth: 1150, maxHeight: '90vh' }}>
-          <Dialog.Title>{openStage} Detailed Emissions and Carbon Cost</Dialog.Title>
+        <Dialog.Content style={{ maxWidth: 980, maxHeight: '90vh' }}>
+          <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
 
           <Dialog.Description mb="4">
-            Detailed breakdown of emissions, item-level carbon cost, and contribution percentage within the selected stage.
+            Detailed breakdown of item-level emissions and contribution percentage within the selected stage.
+            Click any item to view its carbon cost details.
             {mode === 'iot' && (
               <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
                 Live IoT Data
@@ -1204,29 +1218,32 @@ const CO2Footprint = () => {
                   </Table.ColumnHeaderCell>
 
                   <Table.ColumnHeaderCell style={greenHeaderStyle}>
-                    Carbon Cost (USD)
-                  </Table.ColumnHeaderCell>
-
-                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
-                    Carbon Cost (EGP)
-                  </Table.ColumnHeaderCell>
-
-                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
-                    % of Stage
+                    Stage %
                   </Table.ColumnHeaderCell>
                 </Table.Row>
               </Table.Header>
 
               <Table.Body>
                 {currentStageData.map((item: any, index: number) => {
-                  const itemCost = calculateItemCarbonCost(item.emissions);
                   const itemShare =
                     totalStageEmissions > 0 ? ((item.emissions / totalStageEmissions) * 100).toFixed(1) : '0.0';
 
                   return (
                     <Table.Row key={`${openStage}-${index}`}>
                       <Table.Cell style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                        {getItemName(item, openStage || '')}
+                        <Button
+                          variant="ghost"
+                          onClick={() => showItemCostDetails(item, openStage || '')}
+                          style={{
+                            padding: 0,
+                            fontWeight: 'bold',
+                            fontSize: '13px',
+                            color: '#0b5f0b',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {getItemName(item, openStage || '')}
+                        </Button>
                       </Table.Cell>
 
                       <Table.Cell style={compactNumberStyle}>
@@ -1259,26 +1276,6 @@ const CO2Footprint = () => {
                       </Table.Cell>
 
                       <Table.Cell style={compactNumberStyle}>
-                        <Button
-                          variant="ghost"
-                          onClick={() => showItemCostDetails(item, openStage || '')}
-                          style={compactButtonStyle}
-                        >
-                          {itemCost.costUSD.toFixed(4)} USD
-                        </Button>
-                      </Table.Cell>
-
-                      <Table.Cell style={compactNumberStyle}>
-                        <Button
-                          variant="ghost"
-                          onClick={() => showItemCostDetails(item, openStage || '')}
-                          style={compactButtonStyle}
-                        >
-                          {itemCost.costEGP.toFixed(2)} EGP
-                        </Button>
-                      </Table.Cell>
-
-                      <Table.Cell style={compactNumberStyle}>
                         {itemShare}%
                       </Table.Cell>
                     </Table.Row>
@@ -1295,14 +1292,6 @@ const CO2Footprint = () => {
 
                   <Table.Cell style={compactNumberStyle}>
                     <strong>{totalStageEmissions.toFixed(3)}</strong>
-                  </Table.Cell>
-
-                  <Table.Cell style={compactNumberStyle}>
-                    <strong>{totalStageCostUSD.toFixed(4)} USD</strong>
-                  </Table.Cell>
-
-                  <Table.Cell style={compactNumberStyle}>
-                    <strong>{totalStageCostEGP.toFixed(2)} EGP</strong>
                   </Table.Cell>
 
                   <Table.Cell style={compactNumberStyle}>
@@ -1388,8 +1377,8 @@ const CO2Footprint = () => {
       </Dialog.Root>
 
       <Dialog.Root open={itemCostDetailsOpen} onOpenChange={setItemCostDetailsOpen}>
-        <Dialog.Content style={{ maxWidth: 540 }}>
-          <Dialog.Title>Carbon Cost Details</Dialog.Title>
+        <Dialog.Content style={{ maxWidth: 720 }}>
+          <Dialog.Title>Item-Level Carbon Cost Details</Dialog.Title>
 
           <Box>
             <Text as="div" size="3" weight="bold" mb="1">
@@ -1400,53 +1389,127 @@ const CO2Footprint = () => {
               Stage: {currentItemCostDetails?.stage}
             </Text>
 
-            <Table.Root>
+            <Table.Root variant="surface">
+              <Table.Header>
+                <Table.Row>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                    Item
+                  </Table.ColumnHeaderCell>
+
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                    Emissions
+                  </Table.ColumnHeaderCell>
+
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                    Carbon Cost (USD)
+                  </Table.ColumnHeaderCell>
+
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                    Carbon Cost (EGP)
+                  </Table.ColumnHeaderCell>
+
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                    Stage %
+                  </Table.ColumnHeaderCell>
+                </Table.Row>
+              </Table.Header>
+
               <Table.Body>
                 <Table.Row>
-                  <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.emissions?.toFixed(3)} kg CO₂e</Table.Cell>
-                </Table.Row>
-
-                <Table.Row>
-                  <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.carbonPricePerTon} USD/ton</Table.Cell>
-                </Table.Row>
-
-                <Table.Row>
-                  <Table.RowHeaderCell>Carbon Price per kg</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.carbonPricePerKg?.toFixed(4)} USD/kg</Table.Cell>
-                </Table.Row>
-
-                <Table.Row>
-                  <Table.RowHeaderCell>USD Calculation</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.calculationUSD}</Table.Cell>
-                </Table.Row>
-
-                <Table.Row>
-                  <Table.RowHeaderCell>Carbon Cost (USD)</Table.RowHeaderCell>
-                  <Table.Cell>
-                    <Text weight="bold">{currentItemCostDetails?.costUSD} USD</Text>
+                  <Table.Cell style={compactNumberStyle}>
+                    {currentItemCostDetails?.itemName}
                   </Table.Cell>
-                </Table.Row>
 
-                <Table.Row>
-                  <Table.RowHeaderCell>Exchange Rate</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.exchangeRate} EGP/USD</Table.Cell>
-                </Table.Row>
+                  <Table.Cell style={compactNumberStyle}>
+                    {currentItemCostDetails?.emissions?.toFixed(3)} kg CO₂e
+                  </Table.Cell>
 
-                <Table.Row>
-                  <Table.RowHeaderCell>EGP Calculation</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.calculationEGP}</Table.Cell>
-                </Table.Row>
+                  <Table.Cell style={compactNumberStyle}>
+                    {currentItemCostDetails?.costUSD} USD
+                  </Table.Cell>
 
-                <Table.Row>
-                  <Table.RowHeaderCell>Carbon Cost (EGP)</Table.RowHeaderCell>
-                  <Table.Cell>
-                    <Text weight="bold">{currentItemCostDetails?.costEGP} EGP</Text>
+                  <Table.Cell style={compactNumberStyle}>
+                    <Button
+                      variant="ghost"
+                      onClick={() => setShowItemEgpCalculation(true)}
+                      style={{
+                        padding: 0,
+                        fontWeight: '700',
+                        fontSize: '13px',
+                        color: '#2563eb',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {currentItemCostDetails?.costEGP} EGP
+                    </Button>
+                  </Table.Cell>
+
+                  <Table.Cell style={compactNumberStyle}>
+                    {currentItemCostDetails?.stageShare}%
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>
             </Table.Root>
+
+            {showItemEgpCalculation && (
+              <Box mt="4">
+                <Heading size="3" mb="2">
+                  EGP Carbon Cost Calculation
+                </Heading>
+
+                <Table.Root variant="surface">
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                        Item
+                      </Table.ColumnHeaderCell>
+
+                      <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                        Carbon Price
+                      </Table.ColumnHeaderCell>
+
+                      <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                        USD Calculation
+                      </Table.ColumnHeaderCell>
+
+                      <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                        Exchange Rate
+                      </Table.ColumnHeaderCell>
+
+                      <Table.ColumnHeaderCell style={greenHeaderStyle}>
+                        EGP Calculation
+                      </Table.ColumnHeaderCell>
+                    </Table.Row>
+                  </Table.Header>
+
+                  <Table.Body>
+                    <Table.Row>
+                      <Table.Cell style={compactNumberStyle}>
+                        {currentItemCostDetails?.itemName}
+                      </Table.Cell>
+
+                      <Table.Cell style={compactNumberStyle}>
+                        {currentItemCostDetails?.carbonPricePerTon} USD/ton
+                        <br />
+                        {currentItemCostDetails?.carbonPricePerKg?.toFixed(4)} USD/kg
+                      </Table.Cell>
+
+                      <Table.Cell style={compactNumberStyle}>
+                        {currentItemCostDetails?.calculationUSD}
+                      </Table.Cell>
+
+                      <Table.Cell style={compactNumberStyle}>
+                        {currentItemCostDetails?.exchangeRate} EGP/USD
+                      </Table.Cell>
+
+                      <Table.Cell style={compactNumberStyle}>
+                        {currentItemCostDetails?.calculationEGP}
+                      </Table.Cell>
+                    </Table.Row>
+                  </Table.Body>
+                </Table.Root>
+              </Box>
+            )}
           </Box>
 
           <Flex justify="end" mt="4">
