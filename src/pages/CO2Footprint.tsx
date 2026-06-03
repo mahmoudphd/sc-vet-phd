@@ -369,7 +369,6 @@ const CO2Footprint = () => {
     document.title = 'Sustainability Dashboard';
   }, []);
 
-  // Restore default baseline data outside IoT mode
   useEffect(() => {
     if (mode !== 'iot') {
       setStageData(getDefaultStageData());
@@ -415,7 +414,6 @@ const CO2Footprint = () => {
     setEmissionData(getEmissionData());
   }, [stageData, mode]);
 
-  // IoT simulation works only in IoT mode
   useEffect(() => {
     if (mode !== 'iot') return;
 
@@ -571,7 +569,7 @@ const CO2Footprint = () => {
       exchangeRate: EXCHANGE_RATE,
       costUSD: costUSD.toFixed(4),
       costEGP: costEGP.toFixed(2),
-      calculationUSD: `${emissionsKg.toFixed(6)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
       calculationEGP: `${costUSD.toFixed(4)} USD × ${EXCHANGE_RATE} EGP/USD`,
     });
 
@@ -697,6 +695,24 @@ const CO2Footprint = () => {
       : mode === 'manual'
         ? 'Manual mode is active. Category emissions can be edited manually.'
         : 'Auto mode is active. Default baseline values are used.';
+
+  const greenHeaderStyle = {
+    backgroundColor: '#006400',
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: '13px',
+  };
+
+  const compactNumberStyle = {
+    fontSize: '13px',
+    fontWeight: '600',
+  };
+
+  const compactButtonStyle = {
+    padding: 0,
+    fontWeight: '600',
+    fontSize: '13px',
+  };
 
   return (
     <Box
@@ -1138,7 +1154,7 @@ const CO2Footprint = () => {
                 <Text size="1" color="gray">
                   Stage Emissions
                 </Text>
-                <Heading size="5">{totalStageEmissions.toFixed(6)} kg CO₂e</Heading>
+                <Heading size="5">{totalStageEmissions.toFixed(3)} kg CO₂e</Heading>
               </Box>
             </Card>
 
@@ -1165,37 +1181,37 @@ const CO2Footprint = () => {
             <Table.Root variant="surface">
               <Table.Header>
                 <Table.Row>
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     {getNameColumnTitle(openStage)}
                   </Table.ColumnHeaderCell>
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     {getQuantityColumnTitle(openStage)}
                   </Table.ColumnHeaderCell>
 
                   {openStage === 'Packaging' && (
-                    <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                    <Table.ColumnHeaderCell style={greenHeaderStyle}>
                       Material
                     </Table.ColumnHeaderCell>
                   )}
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     Emission Factor
                   </Table.ColumnHeaderCell>
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     Emissions (kg CO₂e)
                   </Table.ColumnHeaderCell>
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     Carbon Cost (USD)
                   </Table.ColumnHeaderCell>
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     Carbon Cost (EGP)
                   </Table.ColumnHeaderCell>
 
-                  <Table.ColumnHeaderCell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.ColumnHeaderCell style={greenHeaderStyle}>
                     % of Stage
                   </Table.ColumnHeaderCell>
                 </Table.Row>
@@ -1209,20 +1225,22 @@ const CO2Footprint = () => {
 
                   return (
                     <Table.Row key={`${openStage}-${index}`}>
-                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      <Table.Cell style={{ fontSize: '13px', fontWeight: 'bold' }}>
                         {getItemName(item, openStage || '')}
                       </Table.Cell>
 
-                      <Table.Cell style={{ fontSize: '14px' }}>
+                      <Table.Cell style={compactNumberStyle}>
                         {mode === 'iot' ? (
-                          <Text weight="bold">{getQuantityDisplay(item, openStage || '')}</Text>
+                          <Text weight="bold" style={compactNumberStyle}>
+                            {getQuantityDisplay(item, openStage || '')}
+                          </Text>
                         ) : (
                           getQuantityDisplay(item, openStage || '')
                         )}
                       </Table.Cell>
 
                       {openStage === 'Packaging' && (
-                        <Table.Cell style={{ fontSize: '14px' }}>
+                        <Table.Cell style={{ fontSize: '13px' }}>
                           {item.material}
                         </Table.Cell>
                       )}
@@ -1232,35 +1250,35 @@ const CO2Footprint = () => {
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(event) => handleEmissionFactorChange(openStage!, index, event.target.value)}
-                          style={{ maxWidth: 120, fontSize: '14px' }}
+                          style={{ maxWidth: 120, fontSize: '13px' }}
                         />
                       </Table.Cell>
 
-                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                        {formatNumber(item.emissions, 6)}
+                      <Table.Cell style={compactNumberStyle}>
+                        {formatNumber(item.emissions, 3)}
                       </Table.Cell>
 
-                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      <Table.Cell style={compactNumberStyle}>
                         <Button
                           variant="ghost"
                           onClick={() => showItemCostDetails(item, openStage || '')}
-                          style={{ padding: 0, fontWeight: 'bold' }}
+                          style={compactButtonStyle}
                         >
                           {itemCost.costUSD.toFixed(4)} USD
                         </Button>
                       </Table.Cell>
 
-                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      <Table.Cell style={compactNumberStyle}>
                         <Button
                           variant="ghost"
                           onClick={() => showItemCostDetails(item, openStage || '')}
-                          style={{ padding: 0, fontWeight: 'bold' }}
+                          style={compactButtonStyle}
                         >
                           {itemCost.costEGP.toFixed(2)} EGP
                         </Button>
                       </Table.Cell>
 
-                      <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
+                      <Table.Cell style={compactNumberStyle}>
                         {itemShare}%
                       </Table.Cell>
                     </Table.Row>
@@ -1270,24 +1288,24 @@ const CO2Footprint = () => {
                 <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
                   <Table.RowHeaderCell
                     colSpan={openStage === 'Packaging' ? 4 : 3}
-                    style={{ fontWeight: 'bold', fontSize: '14px' }}
+                    style={{ fontWeight: 'bold', fontSize: '13px' }}
                   >
                     <strong>Total</strong>
                   </Table.RowHeaderCell>
 
-                  <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
-                    <strong>{totalStageEmissions.toFixed(6)}</strong>
+                  <Table.Cell style={compactNumberStyle}>
+                    <strong>{totalStageEmissions.toFixed(3)}</strong>
                   </Table.Cell>
 
-                  <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.Cell style={compactNumberStyle}>
                     <strong>{totalStageCostUSD.toFixed(4)} USD</strong>
                   </Table.Cell>
 
-                  <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.Cell style={compactNumberStyle}>
                     <strong>{totalStageCostEGP.toFixed(2)} EGP</strong>
                   </Table.Cell>
 
-                  <Table.Cell style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                  <Table.Cell style={compactNumberStyle}>
                     <strong>100%</strong>
                   </Table.Cell>
                 </Table.Row>
@@ -1386,7 +1404,7 @@ const CO2Footprint = () => {
               <Table.Body>
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
-                  <Table.Cell>{currentItemCostDetails?.emissions?.toFixed(6)} kg CO₂e</Table.Cell>
+                  <Table.Cell>{currentItemCostDetails?.emissions?.toFixed(3)} kg CO₂e</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
