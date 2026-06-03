@@ -745,7 +745,22 @@ const CO2Footprint = () => {
     return 'Item';
   };
 
-  const getQuantityDisplay = (item: any, stage: string) => {
+  const shouldShowUnitColumn = (stage: string | null) => {
+    return stage === 'Manufacturing';
+  };
+
+  const getEmissionFactorColumnTitle = (stage: string | null) => {
+    if (stage === 'Manufacturing') return 'Emission Factor (kg CO₂e/unit)';
+    if (stage === 'Raw Materials') return 'Emission Factor (kg CO₂e/kg)';
+    if (stage === 'Packaging') return 'Emission Factor';
+    return 'Emission Factor';
+  };
+
+  const getFormattedQuantity = (item: any, stage: string) => {
+    if (stage === 'Manufacturing') {
+      return Number(item.quantity || 0).toFixed(2);
+    }
+
     if (stage === 'Raw Materials') {
       return `${item.quantity ?? 0}`;
     }
@@ -755,13 +770,13 @@ const CO2Footprint = () => {
     }
 
     if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
-      if (item.distance !== undefined) return `${item.distance} km`;
-      if (item.duration !== undefined) return `${item.duration} days`;
-      if (item.quantity !== undefined) return `${item.quantity} ${item.unit || ''}`;
+      if (item.distance !== undefined) return `${item.distance}`;
+      if (item.duration !== undefined) return `${item.duration}`;
+      if (item.quantity !== undefined) return `${item.quantity}`;
       return 'N/A';
     }
 
-    return `${item.quantity ?? 0} ${item.unit || ''}`;
+    return `${item.quantity ?? 0}`;
   };
 
   const getNameColumnTitle = (stage: string | null) => {
@@ -1236,14 +1251,13 @@ const CO2Footprint = () => {
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
         <Dialog.Content style={{ maxWidth: 1080, maxHeight: '90vh' }}>
-          <Dialog.Title>{openStage} Detailed Emissions and Carbon Cost</Dialog.Title>
+          <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
 
           <Dialog.Description mb="4">
-            Detailed breakdown of item-level emissions, default USD carbon cost, and contribution percentage within the selected stage.
-            Click the USD carbon cost to view the full calculation and EGP conversion.
+            Detailed breakdown of emissions for {openStage} stage (per unit)
             {mode === 'iot' && (
               <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
-                Live IoT Data
+                Live Data
               </Badge>
             )}
           </Dialog.Description>
@@ -1280,6 +1294,12 @@ const CO2Footprint = () => {
                     {getQuantityColumnTitle(openStage)}
                   </Table.ColumnHeaderCell>
 
+                  {shouldShowUnitColumn(openStage) && (
+                    <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
+                      Unit
+                    </Table.ColumnHeaderCell>
+                  )}
+
                   {openStage === 'Packaging' && (
                     <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
                       Material
@@ -1287,7 +1307,7 @@ const CO2Footprint = () => {
                   )}
 
                   <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
-                    Emission Factor
+                    {getEmissionFactorColumnTitle(openStage)}
                   </Table.ColumnHeaderCell>
 
                   <Table.ColumnHeaderCell style={softBlueHeaderStyle}>
@@ -1312,19 +1332,25 @@ const CO2Footprint = () => {
 
                   return (
                     <Table.Row key={`${openStage}-${index}`}>
-                      <Table.Cell style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                      <Table.Cell style={{ fontSize: '13px', fontWeight: '600' }}>
                         {getItemName(item, openStage || '')}
                       </Table.Cell>
 
                       <Table.Cell style={compactNumberStyle}>
                         {mode === 'iot' ? (
                           <Text weight="bold" style={compactNumberStyle}>
-                            {getQuantityDisplay(item, openStage || '')}
+                            {getFormattedQuantity(item, openStage || '')}
                           </Text>
                         ) : (
-                          getQuantityDisplay(item, openStage || '')
+                          getFormattedQuantity(item, openStage || '')
                         )}
                       </Table.Cell>
+
+                      {shouldShowUnitColumn(openStage) && (
+                        <Table.Cell style={compactNumberStyle}>
+                          {item.unit}
+                        </Table.Cell>
+                      )}
 
                       {openStage === 'Packaging' && (
                         <Table.Cell style={{ fontSize: '13px' }}>
@@ -1362,9 +1388,15 @@ const CO2Footprint = () => {
                   );
                 })}
 
-                <Table.Row style={{ backgroundColor: 'var(--accent-a3)' }}>
+                <Table.Row style={{ backgroundColor: '#EEF4FF' }}>
                   <Table.RowHeaderCell
-                    colSpan={openStage === 'Packaging' ? 4 : 3}
+                    colSpan={
+                      openStage === 'Packaging'
+                        ? 4
+                        : shouldShowUnitColumn(openStage)
+                          ? 4
+                          : 3
+                    }
                     style={{ fontWeight: 'bold', fontSize: '13px' }}
                   >
                     <strong>Total</strong>
