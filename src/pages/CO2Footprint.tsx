@@ -1,5 +1,3 @@
-'use client';
-
 import { useState, useMemo, useEffect } from 'react';
 import {
   Box,
@@ -29,20 +27,14 @@ import {
   Bar,
 } from 'recharts';
 
-// =====================
-// Constants
-// =====================
-const CARBON_PRICE_PER_TON = 50; // USD per ton CO2e
-const EXCHANGE_RATE = 50; // EGP per USD
-const KG_PER_TON = 1000; // kg per ton
-const BATCH_SIZE = 1000; // Number of units per production batch
+const CARBON_PRICE_PER_TON = 50;
+const EXCHANGE_RATE = 50;
+const KG_PER_TON = 1000;
+const BATCH_SIZE = 1000;
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FF6B6B'];
 const SCOPE_COLORS = ['#FF6B6B', '#0088FE'];
 
-// =====================
-// Interfaces
-// =====================
 interface RawMaterial {
   material: string;
   quantity: number;
@@ -142,9 +134,6 @@ interface SimpleCarbonCostDialogProps {
   data: CarbonCostDialogData | null;
 }
 
-// =====================
-// Initial Default Data
-// =====================
 const initialStageData: StageData = {
   'Raw Materials': [
     { material: 'Vitamin B1', quantity: 0.001, unit: 'kg', emissionFactor: 50, emissions: 0.001 * 50 },
@@ -325,9 +314,6 @@ const initialStageData: StageData = {
   ],
 };
 
-// =====================
-// Utility Functions
-// =====================
 const getDefaultStageData = (): StageData => {
   return JSON.parse(JSON.stringify(initialStageData));
 };
@@ -364,9 +350,6 @@ const formatNumber = (value: number, digits = 3) => {
   return value.toFixed(digits);
 };
 
-// =====================
-// Simple Dialog Component
-// =====================
 const SimpleCarbonCostDialog = ({
   open,
   onOpenChange,
@@ -448,9 +431,6 @@ const SimpleCarbonCostDialog = ({
   );
 };
 
-// =====================
-// Main Component
-// =====================
 const CO2Footprint = () => {
   const [currency, setCurrency] = useState<'USD' | 'EGP'>('USD');
   const [selectedProduct, setSelectedProduct] = useState('Poultry Drug A');
@@ -812,18 +792,22 @@ const CO2Footprint = () => {
     backgroundColor: '#E3EEFD',
     color: '#1E3A5F',
     fontWeight: 'bold',
-    fontSize: '13px',
+    fontSize: '12px',
+    paddingTop: '7px',
+    paddingBottom: '7px',
   };
 
   const compactNumberStyle = {
-    fontSize: '13px',
+    fontSize: '12px',
     fontWeight: '600',
+    paddingTop: '6px',
+    paddingBottom: '6px',
   };
 
   const compactButtonStyle = {
     padding: 0,
     fontWeight: '700',
-    fontSize: '13px',
+    fontSize: '12px',
     color: '#2563eb',
     cursor: 'pointer',
   };
@@ -888,60 +872,57 @@ const CO2Footprint = () => {
         </Flex>
       </Flex>
 
-      <Card
-        mb="5"
-        style={{
-          borderRadius: '16px',
-          border: mode === 'iot' ? '1px solid #2563eb' : '1px solid #d1d5db',
-          background:
-            mode === 'iot'
-              ? 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%)',
-          color: mode === 'iot' ? 'white' : '#111827',
-        }}
-      >
-        <Flex p="4" justify="between" align="center" wrap="wrap" gap="3">
-          <Flex align="center" gap="3">
-            <Box
-              style={{
-                width: 46,
-                height: 46,
-                borderRadius: '12px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                background: mode === 'iot' ? 'rgba(255,255,255,0.18)' : '#e0f2fe',
-                fontSize: 24,
-              }}
-            >
-              {mode === 'iot' ? '📡' : mode === 'manual' ? '✍️' : '⚙️'}
-            </Box>
+      {mode === 'iot' && (
+        <Card
+          mb="5"
+          style={{
+            borderRadius: '16px',
+            border: '1px solid #2563eb',
+            background: 'linear-gradient(135deg, #0f172a 0%, #1d4ed8 100%)',
+            color: 'white',
+          }}
+        >
+          <Flex p="4" justify="between" align="center" wrap="wrap" gap="3">
+            <Flex align="center" gap="3">
+              <Box
+                style={{
+                  width: 46,
+                  height: 46,
+                  borderRadius: '12px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(255,255,255,0.18)',
+                  fontSize: 24,
+                }}
+              >
+                📡
+              </Box>
+
+              <Box>
+                <Flex align="center" gap="2">
+                  <Heading size="4">IoT Mode Active</Heading>
+                  <Badge color="blue" variant="solid">
+                    IOT
+                  </Badge>
+                </Flex>
+                <Text size="2" style={{ opacity: 0.85 }}>
+                  {modeDescription}
+                </Text>
+              </Box>
+            </Flex>
 
             <Box>
-              <Flex align="center" gap="2">
-                <Heading size="4">
-                  {mode === 'iot' ? 'IoT Mode Active' : mode === 'manual' ? 'Manual Mode' : 'Auto Baseline Mode'}
-                </Heading>
-                <Badge color={mode === 'iot' ? 'blue' : mode === 'manual' ? 'orange' : 'green'} variant="solid">
-                  {mode.toUpperCase()}
-                </Badge>
-              </Flex>
-              <Text size="2" style={{ opacity: 0.85 }}>
-                {modeDescription}
+              <Text size="1" style={{ opacity: 0.75 }}>
+                Carbon Price
+              </Text>
+              <Text size="4" weight="bold">
+                {CARBON_PRICE_PER_TON} USD / ton CO₂e
               </Text>
             </Box>
           </Flex>
-
-          <Box>
-            <Text size="1" style={{ opacity: 0.75 }}>
-              Carbon Price
-            </Text>
-            <Text size="4" weight="bold">
-              {CARBON_PRICE_PER_TON} USD / ton CO₂e
-            </Text>
-          </Box>
-        </Flex>
-      </Card>
+        </Card>
+      )}
 
       <Grid columns={{ initial: '1', sm: '2', lg: '4' }} gap="4" mb="5">
         <Card style={{ borderRadius: '16px' }}>
@@ -1250,10 +1231,16 @@ const CO2Footprint = () => {
       </Flex>
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
-        <Dialog.Content style={{ maxWidth: 1080, maxHeight: '90vh' }}>
+        <Dialog.Content
+          style={{
+            maxWidth: 1050,
+            maxHeight: '82vh',
+            padding: '18px',
+          }}
+        >
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
 
-          <Dialog.Description mb="4">
+          <Dialog.Description mb="2">
             Detailed breakdown of emissions for {openStage} stage (per unit)
             {mode === 'iot' && (
               <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
@@ -1262,27 +1249,7 @@ const CO2Footprint = () => {
             )}
           </Dialog.Description>
 
-          <Grid columns={{ initial: '1', sm: '2' }} gap="3" mb="4">
-            <Card>
-              <Box p="3">
-                <Text size="1" color="gray">
-                  Stage Emissions
-                </Text>
-                <Heading size="5">{totalStageEmissions.toFixed(3)} kg CO₂e</Heading>
-              </Box>
-            </Card>
-
-            <Card>
-              <Box p="3">
-                <Text size="1" color="gray">
-                  Stage Carbon Cost USD
-                </Text>
-                <Heading size="5">{totalStageCostUSD.toFixed(4)} USD</Heading>
-              </Box>
-            </Card>
-          </Grid>
-
-          <Box style={{ overflowY: 'auto', maxHeight: '60vh' }}>
+          <Box style={{ overflowY: 'auto', maxHeight: '62vh' }}>
             <Table.Root variant="surface">
               <Table.Header>
                 <Table.Row>
@@ -1332,7 +1299,7 @@ const CO2Footprint = () => {
 
                   return (
                     <Table.Row key={`${openStage}-${index}`}>
-                      <Table.Cell style={{ fontSize: '13px', fontWeight: '600' }}>
+                      <Table.Cell style={{ fontSize: '12px', fontWeight: '600' }}>
                         {getItemName(item, openStage || '')}
                       </Table.Cell>
 
@@ -1353,7 +1320,7 @@ const CO2Footprint = () => {
                       )}
 
                       {openStage === 'Packaging' && (
-                        <Table.Cell style={{ fontSize: '13px' }}>
+                        <Table.Cell style={{ fontSize: '12px' }}>
                           {item.material}
                         </Table.Cell>
                       )}
@@ -1363,7 +1330,7 @@ const CO2Footprint = () => {
                           size="1"
                           value={(item.emissionFactor || 0).toString()}
                           onChange={(event) => handleEmissionFactorChange(openStage!, index, event.target.value)}
-                          style={{ maxWidth: 120, fontSize: '13px' }}
+                          style={{ maxWidth: 120, fontSize: '12px' }}
                         />
                       </Table.Cell>
 
@@ -1397,7 +1364,7 @@ const CO2Footprint = () => {
                           ? 4
                           : 3
                     }
-                    style={{ fontWeight: 'bold', fontSize: '13px' }}
+                    style={{ fontWeight: 'bold', fontSize: '12px' }}
                   >
                     <strong>Total</strong>
                   </Table.RowHeaderCell>
@@ -1418,7 +1385,7 @@ const CO2Footprint = () => {
             </Table.Root>
           </Box>
 
-          <Flex mt="4" justify="end">
+          <Flex mt="3" justify="end">
             <Button variant="soft" onClick={() => setOpenStage(null)}>
               Close Details
             </Button>
