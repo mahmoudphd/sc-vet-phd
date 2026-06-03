@@ -32,7 +32,7 @@ import {
 // =====================
 // Constants
 // =====================
-const CARBON_PRICE_PER_TON = 50; // USD per ton
+const CARBON_PRICE_PER_TON = 50; // USD per ton CO2e
 const EXCHANGE_RATE = 50; // EGP per USD
 const KG_PER_TON = 1000; // kg per ton
 const BATCH_SIZE = 1000; // Number of units per production batch
@@ -129,12 +129,12 @@ interface EmissionDataItem {
 // =====================
 const initialStageData: StageData = {
   'Raw Materials': [
-    { material: 'Vitamin B1', quantity: 0.001, unit: 'kg', emissionFactor: 85, emissions: 0.001 * 85 },
-    { material: 'Vitamin B2', quantity: 0.006, unit: 'kg', emissionFactor: 92, emissions: 0.006 * 92 },
-    { material: 'Vitamin B12', quantity: 0.001, unit: 'kg', emissionFactor: 120, emissions: 0.001 * 120 },
-    { material: 'Nicotinamide B3', quantity: 0.01, unit: 'kg', emissionFactor: 78, emissions: 0.01 * 78 },
+    { material: 'Vitamin B1', quantity: 0.001, unit: 'kg', emissionFactor: 50, emissions: 0.001 * 50 },
+    { material: 'Vitamin B2', quantity: 0.006, unit: 'kg', emissionFactor: 70, emissions: 0.006 * 70 },
+    { material: 'Vitamin B12', quantity: 0.001, unit: 'kg', emissionFactor: 110, emissions: 0.001 * 110 },
+    { material: 'Nicotinamide B3', quantity: 0.01, unit: 'kg', emissionFactor: 70, emissions: 0.01 * 70 },
     { material: 'Pantothenic Acid', quantity: 0.004, unit: 'kg', emissionFactor: 65, emissions: 0.004 * 65 },
-    { material: 'Vitamin B6', quantity: 0.0015, unit: 'kg', emissionFactor: 88, emissions: 0.0015 * 88 },
+    { material: 'Vitamin B6', quantity: 0.0015, unit: 'kg', emissionFactor: 80, emissions: 0.0015 * 80 },
     { material: 'Leucine', quantity: 0.03, unit: 'kg', emissionFactor: 42, emissions: 0.03 * 42 },
     { material: 'Threonine', quantity: 0.01, unit: 'kg', emissionFactor: 38, emissions: 0.01 * 38 },
     { material: 'Taurine', quantity: 0.0025, unit: 'kg', emissionFactor: 55, emissions: 0.0025 * 55 },
@@ -354,16 +354,22 @@ const CO2Footprint = () => {
   const [selectedProduct, setSelectedProduct] = useState('Poultry Drug A');
   const [certifications, setCertifications] = useState<string[]>(Array(7).fill('ISO 14001'));
   const [mode, setMode] = useState<'manual' | 'auto' | 'iot'>('auto');
+
   const [openStage, setOpenStage] = useState<string | null>(null);
+
   const [costDetailsOpen, setCostDetailsOpen] = useState(false);
   const [currentCostDetails, setCurrentCostDetails] = useState<any>(null);
+
+  const [itemCostDetailsOpen, setItemCostDetailsOpen] = useState(false);
+  const [currentItemCostDetails, setCurrentItemCostDetails] = useState<any>(null);
+
   const [stageData, setStageData] = useState<StageData>(() => getDefaultStageData());
 
   useEffect(() => {
     document.title = 'Sustainability Dashboard';
   }, []);
 
-  // Reset default data when the user is not in IoT mode
+  // Restore default baseline data outside IoT mode
   useEffect(() => {
     if (mode !== 'iot') {
       setStageData(getDefaultStageData());
@@ -409,7 +415,7 @@ const CO2Footprint = () => {
     setEmissionData(getEmissionData());
   }, [stageData, mode]);
 
-  // IoT simulation only works in IoT mode
+  // IoT simulation works only in IoT mode
   useEffect(() => {
     if (mode !== 'iot') return;
 
@@ -477,7 +483,9 @@ const CO2Footprint = () => {
       .reduce((sum, item) => sum + item.emissions, 0);
 
     const scope3Emissions = emissionData
-      .filter((item) => ['Raw Materials', 'Transport', 'Distribution', 'Use', 'End of Life'].includes(item.category))
+      .filter((item) =>
+        ['Raw Materials', 'Transport', 'Distribution', 'Use', 'End of Life'].includes(item.category)
+      )
       .reduce((sum, item) => sum + item.emissions, 0);
 
     return [
@@ -491,7 +499,6 @@ const CO2Footprint = () => {
 
   const highestEmissionStage = useMemo(() => {
     if (emissionData.length === 0) return null;
-
     return [...emissionData].sort((a, b) => b.emissions - a.emissions)[0];
   }, [emissionData]);
 
@@ -538,12 +545,37 @@ const CO2Footprint = () => {
     setCurrentCostDetails({
       category: item.category,
       emissions: emissionsKg,
+      carbonPricePerTon: CARBON_PRICE_PER_TON,
+      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
+      exchangeRate: EXCHANGE_RATE,
       costUSD: costInUSD.toFixed(4),
       costEGP: costInEGP.toFixed(2),
-      calculation: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      calculationEGP: `${costInUSD.toFixed(4)} USD × ${EXCHANGE_RATE} EGP/USD`,
     });
 
     setCostDetailsOpen(true);
+  };
+
+  const showItemCostDetails = (item: any, stage: string) => {
+    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+    const costUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
+    const costEGP = costUSD * EXCHANGE_RATE;
+
+    setCurrentItemCostDetails({
+      stage,
+      itemName: getItemName(item, stage),
+      emissions: emissionsKg,
+      carbonPricePerTon: CARBON_PRICE_PER_TON,
+      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
+      exchangeRate: EXCHANGE_RATE,
+      costUSD: costUSD.toFixed(4),
+      costEGP: costEGP.toFixed(2),
+      calculationUSD: `${emissionsKg.toFixed(6)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      calculationEGP: `${costUSD.toFixed(4)} USD × ${EXCHANGE_RATE} EGP/USD`,
+    });
+
+    setItemCostDetailsOpen(true);
   };
 
   const handleEmissionChange = (index: number, value: string) => {
@@ -619,6 +651,14 @@ const CO2Footprint = () => {
   };
 
   const getQuantityDisplay = (item: any, stage: string) => {
+    if (stage === 'Raw Materials') {
+      return `${item.quantity ?? 0}`;
+    }
+
+    if (stage === 'Packaging') {
+      return `${item.quantity ?? 0}`;
+    }
+
     if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
       if (item.distance !== undefined) return `${item.distance} km`;
       if (item.duration !== undefined) return `${item.duration} days`;
@@ -641,9 +681,9 @@ const CO2Footprint = () => {
   };
 
   const getQuantityColumnTitle = (stage: string | null) => {
-    if (stage === 'Raw Materials') return 'Quantity';
+    if (stage === 'Raw Materials') return 'Quantity (kg)';
     if (stage === 'Manufacturing') return 'Quantity';
-    if (stage === 'Packaging') return 'Quantity';
+    if (stage === 'Packaging') return 'Quantity (g)';
     if (stage === 'Transport') return 'Distance / Duration';
     if (stage === 'Distribution') return 'Distance / Duration';
     if (stage === 'Use') return 'Distance / Duration / Quantity';
@@ -670,7 +710,7 @@ const CO2Footprint = () => {
         <Box>
           <Heading size="7">Sustainability Dashboard</Heading>
           <Text size="2" color="gray">
-            Carbon footprint, environmental cost, and item-level cost analysis
+            Carbon footprint, carbon cost, and item-level carbon cost analysis
           </Text>
         </Box>
 
@@ -749,7 +789,9 @@ const CO2Footprint = () => {
 
             <Box>
               <Flex align="center" gap="2">
-                <Heading size="4">{mode === 'iot' ? 'IoT Mode Active' : mode === 'manual' ? 'Manual Mode' : 'Auto Baseline Mode'}</Heading>
+                <Heading size="4">
+                  {mode === 'iot' ? 'IoT Mode Active' : mode === 'manual' ? 'Manual Mode' : 'Auto Baseline Mode'}
+                </Heading>
                 <Badge color={mode === 'iot' ? 'blue' : mode === 'manual' ? 'orange' : 'green'} variant="solid">
                   {mode.toUpperCase()}
                 </Badge>
@@ -787,7 +829,7 @@ const CO2Footprint = () => {
         <Card style={{ borderRadius: '16px' }}>
           <Flex direction="column" gap="1" p="4">
             <Text size="2" color="gray">
-              Environmental Cost
+              Carbon Cost
             </Text>
             <Heading size="7">
               {currency === 'EGP' ? totalCost.toFixed(2) : totalCost.toFixed(4)} {currency}
@@ -906,7 +948,7 @@ const CO2Footprint = () => {
       <Card mb="4" style={{ borderRadius: '16px' }}>
         <Box p="3">
           <Heading size="4" mb="2">
-            Environmental Cost by Category
+            Carbon Cost by Category
           </Heading>
 
           <ResponsiveContainer width="100%" height={300}>
@@ -916,11 +958,11 @@ const CO2Footprint = () => {
               <Tooltip
                 formatter={(value: number) => [
                   `${value.toFixed(currency === 'EGP' ? 2 : 4)} ${currency}`,
-                  'Environmental Cost',
+                  'Carbon Cost',
                 ]}
               />
               <Legend />
-              <Bar dataKey="cost" name={`Environmental Cost (${currency})`} />
+              <Bar dataKey="cost" name={`Carbon Cost (${currency})`} />
             </BarChart>
           </ResponsiveContainer>
         </Box>
@@ -930,9 +972,9 @@ const CO2Footprint = () => {
         <Box p="3">
           <Flex justify="between" align="center" mb="3" wrap="wrap" gap="2">
             <Box>
-              <Heading size="4">Stage-Level Environmental Cost</Heading>
+              <Heading size="4">Stage-Level Carbon Cost</Heading>
               <Text size="2" color="gray">
-                Click any category to view item-level emissions and environmental cost.
+                Click any category to view item-level emissions and carbon cost.
               </Text>
             </Box>
 
@@ -952,7 +994,7 @@ const CO2Footprint = () => {
                     <strong>Emissions (kg CO₂e)</strong>
                   </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>
-                    <strong>Environmental Cost ({currency})</strong>
+                    <strong>Carbon Cost ({currency})</strong>
                   </Table.ColumnHeaderCell>
                   <Table.ColumnHeaderCell>
                     <strong>% of Total</strong>
@@ -1079,7 +1121,7 @@ const CO2Footprint = () => {
 
       <Dialog.Root open={!!openStage} onOpenChange={(open) => !open && setOpenStage(null)}>
         <Dialog.Content style={{ maxWidth: 1150, maxHeight: '90vh' }}>
-          <Dialog.Title>{openStage} Detailed Emissions and Environmental Cost</Dialog.Title>
+          <Dialog.Title>{openStage} Detailed Emissions and Carbon Cost</Dialog.Title>
 
           <Dialog.Description mb="4">
             Detailed breakdown of emissions, item-level carbon cost, and contribution percentage within the selected stage.
@@ -1103,7 +1145,7 @@ const CO2Footprint = () => {
             <Card>
               <Box p="3">
                 <Text size="1" color="gray">
-                  Stage Cost USD
+                  Stage Carbon Cost USD
                 </Text>
                 <Heading size="5">{totalStageCostUSD.toFixed(4)} USD</Heading>
               </Box>
@@ -1112,7 +1154,7 @@ const CO2Footprint = () => {
             <Card>
               <Box p="3">
                 <Text size="1" color="gray">
-                  Stage Cost EGP
+                  Stage Carbon Cost EGP
                 </Text>
                 <Heading size="5">{totalStageCostEGP.toFixed(2)} EGP</Heading>
               </Box>
@@ -1199,11 +1241,23 @@ const CO2Footprint = () => {
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                        {itemCost.costUSD.toFixed(4)} USD
+                        <Button
+                          variant="ghost"
+                          onClick={() => showItemCostDetails(item, openStage || '')}
+                          style={{ padding: 0, fontWeight: 'bold' }}
+                        >
+                          {itemCost.costUSD.toFixed(4)} USD
+                        </Button>
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                        {itemCost.costEGP.toFixed(2)} EGP
+                        <Button
+                          variant="ghost"
+                          onClick={() => showItemCostDetails(item, openStage || '')}
+                          style={{ padding: 0, fontWeight: 'bold' }}
+                        >
+                          {itemCost.costEGP.toFixed(2)} EGP
+                        </Button>
                       </Table.Cell>
 
                       <Table.Cell style={{ fontSize: '14px', fontWeight: 'bold' }}>
@@ -1251,7 +1305,7 @@ const CO2Footprint = () => {
 
       <Dialog.Root open={costDetailsOpen} onOpenChange={setCostDetailsOpen}>
         <Dialog.Content style={{ maxWidth: 520 }}>
-          <Dialog.Title>Environmental Cost Details</Dialog.Title>
+          <Dialog.Title>Carbon Cost Details</Dialog.Title>
 
           <Box>
             <Text as="div" size="3" weight="bold" mb="2">
@@ -1263,48 +1317,46 @@ const CO2Footprint = () => {
                 <Table.Row>
                   <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
                   <Table.Cell>
-                    {isNaN(currentCostDetails?.emissions) ? '0.000' : currentCostDetails?.emissions.toFixed(3)} kg CO₂e
+                    {currentCostDetails?.emissions?.toFixed(3)} kg CO₂e
                   </Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
                   <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
-                  <Table.Cell>{CARBON_PRICE_PER_TON} USD/ton</Table.Cell>
+                  <Table.Cell>{currentCostDetails?.carbonPricePerTon} USD/ton</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
                   <Table.RowHeaderCell>Carbon Price per kg</Table.RowHeaderCell>
-                  <Table.Cell>{(CARBON_PRICE_PER_TON / KG_PER_TON).toFixed(4)} USD/kg</Table.Cell>
+                  <Table.Cell>{currentCostDetails?.carbonPricePerKg?.toFixed(4)} USD/kg</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
-                  <Table.RowHeaderCell>Calculation</Table.RowHeaderCell>
-                  <Table.Cell>
-                    {currentCostDetails?.calculation}
-                    {currency === 'EGP' && ` × ${EXCHANGE_RATE} EGP/USD`}
-                  </Table.Cell>
+                  <Table.RowHeaderCell>USD Calculation</Table.RowHeaderCell>
+                  <Table.Cell>{currentCostDetails?.calculationUSD}</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
-                  <Table.RowHeaderCell>Cost in US Dollars</Table.RowHeaderCell>
+                  <Table.RowHeaderCell>Carbon Cost (USD)</Table.RowHeaderCell>
                   <Table.Cell>
-                    <Text weight="bold">
-                      {isNaN(currentCostDetails?.costUSD) ? '0.0000' : currentCostDetails?.costUSD} USD
-                    </Text>
+                    <Text weight="bold">{currentCostDetails?.costUSD} USD</Text>
                   </Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
                   <Table.RowHeaderCell>Exchange Rate</Table.RowHeaderCell>
-                  <Table.Cell>{EXCHANGE_RATE} EGP/USD</Table.Cell>
+                  <Table.Cell>{currentCostDetails?.exchangeRate} EGP/USD</Table.Cell>
                 </Table.Row>
 
                 <Table.Row>
-                  <Table.RowHeaderCell>Cost in Egyptian Pounds</Table.RowHeaderCell>
+                  <Table.RowHeaderCell>EGP Calculation</Table.RowHeaderCell>
+                  <Table.Cell>{currentCostDetails?.calculationEGP}</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Cost (EGP)</Table.RowHeaderCell>
                   <Table.Cell>
-                    <Text weight="bold">
-                      {isNaN(currentCostDetails?.costEGP) ? '0.00' : currentCostDetails?.costEGP} EGP
-                    </Text>
+                    <Text weight="bold">{currentCostDetails?.costEGP} EGP</Text>
                   </Table.Cell>
                 </Table.Row>
               </Table.Body>
@@ -1313,6 +1365,74 @@ const CO2Footprint = () => {
 
           <Flex justify="end" mt="4">
             <Button onClick={() => setCostDetailsOpen(false)}>Close</Button>
+          </Flex>
+        </Dialog.Content>
+      </Dialog.Root>
+
+      <Dialog.Root open={itemCostDetailsOpen} onOpenChange={setItemCostDetailsOpen}>
+        <Dialog.Content style={{ maxWidth: 540 }}>
+          <Dialog.Title>Carbon Cost Details</Dialog.Title>
+
+          <Box>
+            <Text as="div" size="3" weight="bold" mb="1">
+              {currentItemCostDetails?.itemName}
+            </Text>
+
+            <Text as="div" size="2" color="gray" mb="3">
+              Stage: {currentItemCostDetails?.stage}
+            </Text>
+
+            <Table.Root>
+              <Table.Body>
+                <Table.Row>
+                  <Table.RowHeaderCell>Total Emissions</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.emissions?.toFixed(6)} kg CO₂e</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Price</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.carbonPricePerTon} USD/ton</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Price per kg</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.carbonPricePerKg?.toFixed(4)} USD/kg</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>USD Calculation</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.calculationUSD}</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Cost (USD)</Table.RowHeaderCell>
+                  <Table.Cell>
+                    <Text weight="bold">{currentItemCostDetails?.costUSD} USD</Text>
+                  </Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Exchange Rate</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.exchangeRate} EGP/USD</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>EGP Calculation</Table.RowHeaderCell>
+                  <Table.Cell>{currentItemCostDetails?.calculationEGP}</Table.Cell>
+                </Table.Row>
+
+                <Table.Row>
+                  <Table.RowHeaderCell>Carbon Cost (EGP)</Table.RowHeaderCell>
+                  <Table.Cell>
+                    <Text weight="bold">{currentItemCostDetails?.costEGP} EGP</Text>
+                  </Table.Cell>
+                </Table.Row>
+              </Table.Body>
+            </Table.Root>
+          </Box>
+
+          <Flex justify="end" mt="4">
+            <Button onClick={() => setItemCostDetailsOpen(false)}>Close</Button>
           </Flex>
         </Dialog.Content>
       </Dialog.Root>
