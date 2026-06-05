@@ -1,30 +1,30 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
+  Badge,
   Box,
   Button,
   Card,
+  Dialog,
   Flex,
   Grid,
   Heading,
   Select,
+  Separator,
   Table,
   Text,
   TextField,
-  Dialog,
-  Badge,
-  Separator,
 } from '@radix-ui/themes';
 import {
-  PieChart,
-  Pie,
+  Bar,
+  BarChart,
   Cell,
+  Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-  BarChart,
-  Bar,
 } from 'recharts';
 
 const CARBON_PRICE_PER_TON = 50;
@@ -437,7 +437,9 @@ const SimpleCarbonCostDialog = ({
               <Table.Row>
                 <Table.RowHeaderCell>Cost in USD</Table.RowHeaderCell>
                 <Table.Cell>
-                  <Text weight="bold">{data ? `${data.costUSD} USD` : '0.00 USD'}</Text>
+                  <Text weight="bold">
+                    {data ? `${data.costUSD} USD` : '0.00 USD'}
+                  </Text>
                 </Table.Cell>
               </Table.Row>
 
@@ -451,7 +453,9 @@ const SimpleCarbonCostDialog = ({
               <Table.Row>
                 <Table.RowHeaderCell>Cost in EGP</Table.RowHeaderCell>
                 <Table.Cell>
-                  <Text weight="bold">{data ? `${data.costEGP} EGP` : '0.00 EGP'}</Text>
+                  <Text weight="bold">
+                    {data ? `${data.costEGP} EGP` : '0.00 EGP'}
+                  </Text>
                 </Table.Cell>
               </Table.Row>
             </Table.Body>
@@ -481,16 +485,59 @@ const CO2Footprint = () => {
   const [itemCostDetailsOpen, setItemCostDetailsOpen] = useState(false);
   const [currentItemCostDetails, setCurrentItemCostDetails] = useState<CarbonCostDialogData | null>(null);
 
-  const [stageData, setStageData] = useState(() => getDefaultStageData());
+  const [stageData, setStageData] = useState<StageData>(() => getDefaultStageData());
 
   useEffect(() => {
     document.title = 'Sustainability Dashboard';
   }, []);
 
   useEffect(() => {
-    if (mode !== 'iot') {
+    if (mode === 'auto') {
       setStageData(getDefaultStageData());
     }
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== 'iot') return;
+
+    const interval = setInterval(() => {
+      setStageData((previousData) => {
+        const updatedData: StageData = JSON.parse(JSON.stringify(previousData));
+
+        Object.keys(updatedData).forEach((stage: string) => {
+          updatedData[stage] = updatedData[stage].map((item: any) => {
+            const randomFactor = 0.99 + Math.random() * 0.02;
+            const newQuantity = item.quantity !== undefined ? item.quantity * randomFactor : item.quantity;
+
+            let newEmissions = item.emissions;
+
+            if (stage === 'Packaging') {
+              newEmissions = ((newQuantity || 0) * (item.emissionFactor || 0)) / 1000;
+            } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
+              if (item.distance !== undefined) {
+                newEmissions = ((item.distance || 0) * (item.emissionFactor || 0)) / BATCH_SIZE;
+              } else if (item.duration !== undefined) {
+                newEmissions = ((item.duration || 0) * (item.emissionFactor || 0)) / BATCH_SIZE;
+              } else {
+                newEmissions = ((newQuantity || 0) * (item.emissionFactor || 0)) / BATCH_SIZE;
+              }
+            } else {
+              newEmissions = (newQuantity || 0) * (item.emissionFactor || 0);
+            }
+
+            return {
+              ...item,
+              quantity: newQuantity !== undefined ? parseFloat(newQuantity.toFixed(4)) : item.quantity,
+              emissions: parseFloat(newEmissions.toFixed(6)),
+            };
+          });
+        });
+
+        return updatedData;
+      });
+    }, 3000);
+
+    return () => clearInterval(interval);
   }, [mode]);
 
   const calculateStageEmissions = (items: any[]) => {
@@ -504,7 +551,7 @@ const CO2Footprint = () => {
     );
   };
 
-  const getEmissionData = (): EmissionDataItem[] => {
+  const emissionData = useMemo<EmissionDataItem[]>(() => {
     const categories = [
       'Raw Materials',
       'Manufacturing',
@@ -524,56 +571,7 @@ const CO2Footprint = () => {
         ...calculateCarbonCost(emissions),
       };
     });
-  };
-
-  const [emissionData, setEmissionData] = useState<EmissionDataItem[]>(getEmissionData());
-
-  useEffect(() => {
-    setEmissionData(getEmissionData());
-  }, [stageData, mode]);
-
-  useEffect(() => {
-    if (mode !== 'iot') return;
-
-    const interval = setInterval(() => {
-      setStageData((previousData) => {
-        const updatedData: StageData = JSON.parse(JSON.stringify(previousData));
-
-        Object.keys(updatedData).forEach((stage: string) => {
-          updatedData[stage] = updatedData[stage].map((item: any) => {
-            const randomFactor = 0.99 + Math.random() * 0.02;
-            const newQuantity = (item.quantity || 0) * randomFactor;
-
-            let newEmissions = item.emissions;
-
-            if (stage === 'Packaging') {
-              newEmissions = (newQuantity * (item.emissionFactor || 0)) / 1000;
-            } else if (stage === 'Transport' || stage === 'Distribution' || stage === 'Use') {
-              if (item.distance !== undefined) {
-                newEmissions = (item.distance * (item.emissionFactor || 0)) / BATCH_SIZE;
-              } else if (item.duration !== undefined) {
-                newEmissions = (item.duration * (item.emissionFactor || 0)) / BATCH_SIZE;
-              } else {
-                newEmissions = (newQuantity * (item.emissionFactor || 0)) / BATCH_SIZE;
-              }
-            } else {
-              newEmissions = newQuantity * (item.emissionFactor || 0);
-            }
-
-            return {
-              ...item,
-              quantity: parseFloat(newQuantity.toFixed(4)),
-              emissions: parseFloat(newEmissions.toFixed(6)),
-            };
-          });
-        });
-
-        return updatedData;
-      });
-    }, 3000);
-
-    return () => clearInterval(interval);
-  }, [mode]);
+  }, [stageData]);
 
   const totalEmissions = useMemo(() => {
     const total = emissionData.reduce((sum, item) => {
@@ -611,6 +609,7 @@ const CO2Footprint = () => {
   }, [emissionData]);
 
   const revenue = currency === 'EGP' ? 55000 : 1800;
+
   const carbonIntensity = totalEmissions / (revenue / 1000);
 
   const highestEmissionStage = useMemo(() => {
@@ -653,62 +652,41 @@ const CO2Footprint = () => {
     setOpenStage(stage);
   };
 
-  const showCostDetails = (item: EmissionDataItem) => {
-    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-    const costInUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
-    const costInEGP = costInUSD * EXCHANGE_RATE;
-
-    setCurrentCostDetails({
-      title: item.category,
-      subtitle: '',
-      emissions: emissionsKg,
-      carbonPricePerTon: CARBON_PRICE_PER_TON,
-      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
-      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
-      costUSD: costInUSD.toFixed(2),
-      exchangeRate: EXCHANGE_RATE,
-      costEGP: costInEGP.toFixed(2),
-    });
-
-    setCostDetailsOpen(true);
-  };
-
-  const showItemCostDetails = (item: any, stage: string) => {
-    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-    const costUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
-    const costEGP = costUSD * EXCHANGE_RATE;
-
-    setCurrentItemCostDetails({
-      title: `Item: ${getItemName(item, stage)}`,
-      subtitle: stage,
-      emissions: emissionsKg,
-      carbonPricePerTon: CARBON_PRICE_PER_TON,
-      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
-      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
-      costUSD: costUSD.toFixed(2),
-      exchangeRate: EXCHANGE_RATE,
-      costEGP: costEGP.toFixed(2),
-    });
-
-    setItemCostDetailsOpen(true);
-  };
-
   const handleEmissionChange = (index: number, value: string) => {
     if (mode !== 'manual') return;
 
     const newValue = parseFloat(value);
+    if (isNaN(newValue)) return;
 
-    if (!isNaN(newValue)) {
-      const newData = [...emissionData];
+    const category = emissionData[index].category;
+    const currentItems = stageData[category];
 
-      newData[index] = {
-        ...newData[index],
-        emissions: newValue,
-        ...calculateCarbonCost(newValue),
-      };
+    if (!currentItems || currentItems.length === 0) return;
 
-      setEmissionData(newData);
+    const currentTotal = currentItems.reduce((sum: number, item: any) => {
+      const emissions = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+      return sum + emissions;
+    }, 0);
+
+    const updatedData: StageData = JSON.parse(JSON.stringify(stageData));
+
+    if (currentTotal === 0) {
+      const equalShare = newValue / currentItems.length;
+
+      updatedData[category] = updatedData[category].map((item: any) => ({
+        ...item,
+        emissions: equalShare,
+      }));
+    } else {
+      const scaleFactor = newValue / currentTotal;
+
+      updatedData[category] = updatedData[category].map((item: any) => ({
+        ...item,
+        emissions: item.emissions * scaleFactor,
+      }));
     }
+
+    setStageData(updatedData);
   };
 
   const handleEmissionFactorChange = (stage: string, index: number, value: string) => {
@@ -819,6 +797,46 @@ const CO2Footprint = () => {
     if (stage === 'Use') return 'Distance / Duration / Quantity';
     if (stage === 'End of Life') return 'Quantity';
     return 'Quantity';
+  };
+
+  const showCostDetails = (item: EmissionDataItem) => {
+    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+    const costInUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
+    const costInEGP = costInUSD * EXCHANGE_RATE;
+
+    setCurrentCostDetails({
+      title: item.category,
+      subtitle: '',
+      emissions: emissionsKg,
+      carbonPricePerTon: CARBON_PRICE_PER_TON,
+      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
+      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      costUSD: costInUSD.toFixed(2),
+      exchangeRate: EXCHANGE_RATE,
+      costEGP: costInEGP.toFixed(2),
+    });
+
+    setCostDetailsOpen(true);
+  };
+
+  const showItemCostDetails = (item: any, stage: string) => {
+    const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
+    const costUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
+    const costEGP = costUSD * EXCHANGE_RATE;
+
+    setCurrentItemCostDetails({
+      title: `Item: ${getItemName(item, stage)}`,
+      subtitle: stage,
+      emissions: emissionsKg,
+      carbonPricePerTon: CARBON_PRICE_PER_TON,
+      carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
+      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
+      costUSD: costUSD.toFixed(2),
+      exchangeRate: EXCHANGE_RATE,
+      costEGP: costEGP.toFixed(2),
+    });
+
+    setItemCostDetailsOpen(true);
   };
 
   const modeDescription =
@@ -1244,7 +1262,7 @@ const CO2Footprint = () => {
 
       <Flex mt="4" justify="between" align="center" wrap="wrap" gap="3">
         <Text size="1" color="gray">
-          Last updated: {new Date().toLocaleDateString()} | Default data is restored automatically outside IoT mode.
+          Last updated: {new Date().toLocaleDateString()} | Auto mode restores the default baseline data.
         </Text>
 
         <Flex gap="3">
