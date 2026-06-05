@@ -157,9 +157,27 @@ const initialStageData: StageData = {
   ],
 
   Manufacturing: [
-    { process: 'Equipment Cleaning', quantity: 3, unit: 'L', emissionFactor: 0.003, emissions: 3 * 0.003 },
-    { process: 'Material Mixing', quantity: 0.5, unit: 'kWh', emissionFactor: 0.55, emissions: 0.5 * 0.55 },
-    { process: 'Liquid Filling', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.3 * 0.55 },
+    {
+      process: 'Equipment Cleaning',
+      quantity: 3,
+      unit: 'L',
+      emissionFactor: 0.003,
+      emissions: 3 * 0.003,
+    },
+    {
+      process: 'Material Mixing',
+      quantity: 0.5,
+      unit: 'kWh',
+      emissionFactor: 0.55,
+      emissions: 0.5 * 0.55,
+    },
+    {
+      process: 'Liquid Filling',
+      quantity: 0.3,
+      unit: 'kWh',
+      emissionFactor: 0.55,
+      emissions: 0.3 * 0.55,
+    },
     {
       process: 'Sterilization/Microbial Control',
       quantity: 1.5,
@@ -167,8 +185,20 @@ const initialStageData: StageData = {
       emissionFactor: 0.55,
       emissions: 1.5 * 0.55,
     },
-    { process: 'Primary Packaging', quantity: 0.2, unit: 'kWh', emissionFactor: 0.55, emissions: 0.2 * 0.55 },
-    { process: 'Quality Inspection', quantity: 0.3, unit: 'kWh', emissionFactor: 0.55, emissions: 0.3 * 0.55 },
+    {
+      process: 'Primary Packaging',
+      quantity: 0.2,
+      unit: 'kWh',
+      emissionFactor: 0.55,
+      emissions: 0.2 * 0.55,
+    },
+    {
+      process: 'Quality Inspection',
+      quantity: 0.3,
+      unit: 'kWh',
+      emissionFactor: 0.55,
+      emissions: 0.3 * 0.55,
+    },
   ],
 
   Packaging: [
@@ -393,7 +423,7 @@ const SimpleCarbonCostDialog = ({
               </Table.Row>
 
               <Table.Row>
-                <Table.RowHeaderCell>Carbon Price (per kg)</Table.RowHeaderCell>
+                <Table.RowHeaderCell>Carbon Price Per kg</Table.RowHeaderCell>
                 <Table.Cell>
                   {data ? `${data.carbonPricePerKg.toFixed(4)} USD/kg` : '0.0000 USD/kg'}
                 </Table.Cell>
@@ -405,7 +435,7 @@ const SimpleCarbonCostDialog = ({
               </Table.Row>
 
               <Table.Row>
-                <Table.RowHeaderCell>Cost (US Dollars)</Table.RowHeaderCell>
+                <Table.RowHeaderCell>Cost in USD</Table.RowHeaderCell>
                 <Table.Cell>
                   <Text weight="bold">{data ? `${data.costUSD} USD` : '0.00 USD'}</Text>
                 </Table.Cell>
@@ -419,7 +449,7 @@ const SimpleCarbonCostDialog = ({
               </Table.Row>
 
               <Table.Row>
-                <Table.RowHeaderCell>Cost (Egyptian Pounds)</Table.RowHeaderCell>
+                <Table.RowHeaderCell>Cost in EGP</Table.RowHeaderCell>
                 <Table.Cell>
                   <Text weight="bold">{data ? `${data.costEGP} EGP` : '0.00 EGP'}</Text>
                 </Table.Cell>
@@ -451,7 +481,7 @@ const CO2Footprint = () => {
   const [itemCostDetailsOpen, setItemCostDetailsOpen] = useState(false);
   const [currentItemCostDetails, setCurrentItemCostDetails] = useState<CarbonCostDialogData | null>(null);
 
-  const [stageData, setStageData] = useState<StageData>(() => getDefaultStageData());
+  const [stageData, setStageData] = useState(() => getDefaultStageData());
 
   useEffect(() => {
     document.title = 'Sustainability Dashboard';
@@ -826,10 +856,10 @@ const CO2Footprint = () => {
         minHeight: '100vh',
       }}
     >
-      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="4">
+      <Flex justify="between" align="center" mb="5" wrap="wrap" gap="3">
         <Box>
-          <Heading size="7">Sustainability Dashboard</Heading>
-          <Text size="2" color="gray">
+          <Heading size="8">Sustainability Dashboard</Heading>
+          <Text size="3" color="gray">
             Carbon footprint, carbon cost, and item-level carbon cost analysis
           </Text>
         </Box>
@@ -1176,9 +1206,9 @@ const CO2Footprint = () => {
                           <Select.Item value="ISO 14001">ISO 14001</Select.Item>
                           <Select.Item value="ISO 50001">ISO 50001</Select.Item>
                           <Select.Item value="ISO 14064">ISO 14064</Select.Item>
-                          <Select.Item value="ISO 14067">ISO 14067 (Carbon Footprint)</Select.Item>
+                          <Select.Item value="ISO 14067">ISO 14067 Carbon Footprint</Select.Item>
                           <Select.Item value="GHG Protocol">GHG Protocol</Select.Item>
-                          <Select.Item value="C2C">Cradle to Cradle (C2C)</Select.Item>
+                          <Select.Item value="C2C">Cradle to Cradle C2C</Select.Item>
                           <Select.Item value="None">None</Select.Item>
                         </Select.Content>
                       </Select.Root>
@@ -1247,7 +1277,7 @@ const CO2Footprint = () => {
           <Dialog.Title>{openStage} Detailed Emissions</Dialog.Title>
 
           <Dialog.Description mb="2">
-            Detailed breakdown of emissions for {openStage} stage (per unit)
+            Detailed breakdown of emissions for {openStage} stage per unit
             {mode === 'iot' && (
               <Badge color="blue" variant="solid" ml="2" style={{ verticalAlign: 'middle' }}>
                 Live Data
