@@ -350,6 +350,23 @@ const calculateItemCarbonCost = (emissionsKg: number) => {
   };
 };
 
+const calculateStageCostFromItems = (items: any[]) => {
+  const costUSD = items.reduce((sum: number, item: any) => {
+    return sum + calculateItemCarbonCost(item.emissions).costUSD;
+  }, 0);
+
+  const costEGP = items.reduce((sum: number, item: any) => {
+    return sum + calculateItemCarbonCost(item.emissions).costEGP;
+  }, 0);
+
+  return {
+    costUSD: parseFloat(costUSD.toFixed(4)),
+    costEGP: parseFloat(costEGP.toFixed(2)),
+    calculation: 'Sum of item-level carbon costs',
+    calculationEGP: 'Sum of item-level carbon costs in EGP',
+  };
+};
+
 const formatNumber = (value: number, digits = 3) => {
   if (isNaN(value) || !isFinite(value)) return Number(0).toFixed(digits);
   return value.toFixed(digits);
@@ -487,11 +504,12 @@ const CO2Footprint = () => {
 
     return categories.map((category) => {
       const emissions = calculateStageEmissions(stageData[category]);
+      const stageCost = calculateStageCostFromItems(stageData[category]);
 
       return {
         category,
         emissions,
-        ...calculateCarbonCost(emissions),
+        ...stageCost,
       };
     });
   };
@@ -625,19 +643,17 @@ const CO2Footprint = () => {
 
   const showCostDetails = (item: EmissionDataItem) => {
     const emissionsKg = isNaN(item.emissions) || !isFinite(item.emissions) ? 0 : item.emissions;
-    const costInUSD = emissionsKg * (CARBON_PRICE_PER_TON / KG_PER_TON);
-    const costInEGP = costInUSD * EXCHANGE_RATE;
 
     setCurrentCostDetails({
       title: item.category,
-      subtitle: '',
+      subtitle: 'Calculated as the sum of item-level carbon costs',
       emissions: emissionsKg,
       carbonPricePerTon: CARBON_PRICE_PER_TON,
       carbonPricePerKg: CARBON_PRICE_PER_TON / KG_PER_TON,
-      calculationUSD: `${emissionsKg.toFixed(3)} kg CO₂e × (${CARBON_PRICE_PER_TON} USD/ton ÷ ${KG_PER_TON})`,
-      costUSD: costInUSD.toFixed(2),
+      calculationUSD: 'Sum of item-level carbon costs',
+      costUSD: item.costUSD.toFixed(4),
       exchangeRate: EXCHANGE_RATE,
-      costEGP: costInEGP.toFixed(2),
+      costEGP: item.costEGP.toFixed(2),
     });
 
     setCostDetailsOpen(true);
